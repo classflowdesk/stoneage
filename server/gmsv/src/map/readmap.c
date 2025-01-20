@@ -1408,7 +1408,7 @@ int MAP_getMapMaxNum(void) { return MAP_idtblsize; }
 Player_Diy_Map PlayerDiyMap[Player_Diy_Map_NUM];
 
 int MAP_intPlayerMap(void) {
-  struct dirent *ent = NULL;
+  struct dirent64 *ent = NULL;
   DIR *pDir;
   pDir = opendir("playermap");
   if (pDir == NULL) {
@@ -1417,7 +1417,7 @@ int MAP_intPlayerMap(void) {
   }
   int i = 0;
   memset(PlayerDiyMap, 0, sizeof(PlayerDiyMap));
-  while (NULL != (ent = readdir(pDir))) {
+  while (NULL != (ent = readdir64(pDir))) {
     if (ent->d_name[0] == '.')
       continue;
     if (ent->d_type == 8) {

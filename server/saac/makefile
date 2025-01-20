@@ -7,7 +7,7 @@ export SED=sed
 export SHELL=/bin/sh
 
 INCFLAGS=-I../common -I./include
-CFLAGS=-m32 -w -O3 -g -pipe -Wall $(INCFLAGS)
+CFLAGS=-m32 -w -O3 -g -pipe -Wall $(INCFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 
 ifeq ($(shell uname),CYGWIN_NT-5.1)
 	SQLSRC=sasql_cygwin.c
@@ -20,24 +20,17 @@ ifeq ($(shell uname),Linux)
 	TARGET=../../csa/saac/saacjt
 endif
 
-RPCSRC = saacproto_serv.c saacproto_util.c 
-RPCINCLUDE = saacproto_serv.h saacproto_util.h
-RPCNOUSE = saacproto_cli.c saacproto_cli.h
-
-SRC=main.c recv.c char.c db.c mail.c acfamily.c lock.c $(SQLSRC) $(RPCSRC)
+SRC=main.c char.c db.c mail.c acfamily.c lock.c $(SQLSRC)
 OBJ=$(SRC:.c=.o)
 COMMON_LIB=../common/libcommon.a
+SERVER_LIB=../common/libsaacserver.a
 
-${TARGET}: $(RPCSRC) $(OBJ)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) $(COMMON_LIB) $(SQL)
+${TARGET}: $(OBJ)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) $(SERVER_LIB) $(COMMON_LIB) $(SQL)
 	$(RM) $(OBJ)
 
 clean:
 	$(RM) $(TARGET)
 	$(RM) $(OBJ)
 	$(RM) *~
-
-rpc : ${RPCHTML} ${RPCGEN}
-	$(PERL) ${RPCGEN} ${RPCHTML} -h . -o .
-	rm -f ${RPCNOUSE}
 

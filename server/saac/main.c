@@ -3,8 +3,7 @@
 #include "main.h"
 #include "db.h"
 #include "mail.h"
-#include "saacproto_serv.h"
-#include "saacproto_util.h"
+#include "saac_server.h"
 #include "util.h"
 
 // CoolFish: Family 2001/5/9
@@ -24,6 +23,8 @@
 
 #define BACKLOGNUM 5
 int worksockfd;
+
+WorkSpace gSaacWorkSpace;
 
 static int findregBlankMemBuf(void);
 static int unregMemBuf(int index);
@@ -62,9 +63,9 @@ int mbuse;
 
 int cpuuse;
 
-int mainsockfd;               /* accept 及  域娄醒卞中木月 */
-struct sockaddr_in localaddr; /* bind 允月失玉伊旦 */
-struct connection *con;       /* 戊生弁扑亦件     */
+int mainsockfd;
+struct sockaddr_in localaddr;
+struct connection *con;
 static int mb_finder = 0;
 
 char tmpbuf[1024 * 1024];
@@ -686,21 +687,30 @@ int main(int argc, char **argv) {
       break;
     }
   }
-  saacproto_InitServer(netWrite, CHARDATASIZE);
+  InitWorkSpace(&gSaacWorkSpace, netWrite, CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
+  log("InitWorkSpace Succeed.\n");
 
 #ifdef _AC_SEND_FM_PK // WON ADD 庄园对战列表储存在AC
+  log("Init FM PK...\n");
   load_fm_pk_list();
+  log("Succeed.\n");
 #endif
 
 #ifdef _ACFMPK_LIST
+  log("Load FM PK...\n");
   FMPK_LoadList();
+  log("Succeed.\n");
 #endif
 #ifdef _ALLDOMAN
+  log("Load HeroList...\n");
   LOAD_herolist(); // Syu ADD 排行榜NPC
+  log("Succeed.\n");
 #endif
 
 #ifdef _ANGEL_SUMMON
+  log("Load Mission Table...\n");
   initMissionTable();
+  log("Succeed.\n");
 #endif
   log("\n服务端版本: <%s>\n", SERVER_VERSION);
   log("\n开始工作.....\n");
@@ -741,7 +751,7 @@ int main(int argc, char **argv) {
               fclose(f1);
               for (i = 0; i < MAXCONNECTION; i++) {
                 if (gs[i].use && gs[i].name[0]) {
-                  saacproto_LotterySystem_send(i, todayaward);
+                  SaacServer_LotterySystem_send(i, todayaward);
                 }
               }
               lottery = TRUE;
@@ -845,7 +855,7 @@ int main(int argc, char **argv) {
         if (l > 0) {
           char debugfun[256];
           buf[l] = 0;
-          if (saacproto_ServerDispatchMessage(i, buf, debugfun) < 0) {
+          if (SaacServer_ServerDispatchMessage(i, buf, debugfun) < 0) {
             printf("buf:%s;%d\n", buf, strlen(buf));
             char token[256];
             char tmp[256];
@@ -1426,7 +1436,7 @@ void checkGSUCheck(char *id) {
     if (gs[i].name[0] && strcmp(gs[i].name, gname) == 0) {
       log("发送解锁检查[%s] 到 %d.%x/%s 服务器:%d !!\n", id, i, getHash(id),
           gname, gs[i].fd);
-      saacproto_ACUCheck_send(gs[i].fd, id);
+      SaacServer_ACUCheck_send(gs[i].fd, id);
       return;
     }
   }
@@ -1461,7 +1471,7 @@ void gmsvBroadcast(int fd, char *p1, char *p2, char *p3, int flag) {
     if ((flag == 1) && (i == fd))
       continue;
     if (gs[i].use && gs[i].name[0]) {
-      saacproto_Broadcast_send(i, p1, p2, p3);
+      SaacServer_Broadcast_send(i, p1, p2, p3);
       c++;
     }
   }
@@ -1570,7 +1580,7 @@ void delMissionTableOnedata(int index) {
 
   for (gi = 0; gi < MAXCONNECTION; gi++) {
     if (gs[gi].use && gs[gi].name[0]) {
-      saacproto_ACMissionTable_send(gi, index, 3, "", "");
+      SaacServer_ACMissionTable_send(gi, index, 3, "", "");
     }
   }
 }
@@ -1617,7 +1627,7 @@ void checkMissionTimelimit(void) {
               missiontable[index].time, missiontable[index].limittime);
       for (gi = 0; gi < MAXCONNECTION; gi++) {
         if (gs[gi].use && gs[gi].name[0]) {
-          saacproto_ACMissionTable_send(gi, 1, 1, buf, "");
+          SaacServer_ACMissionTable_send(gi, 1, 1, buf, "");
         }
       }
 

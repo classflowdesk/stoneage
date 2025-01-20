@@ -1,5 +1,5 @@
-INCFLAGS=-I../../include -I../.. -I../lua
-CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
+INCFLAGS=-I../../include -I../.. -I../lua -I../../../common
+CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 
 TARGET=libutil.a
 SRC=$(wildcard *.c)

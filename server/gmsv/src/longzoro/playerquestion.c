@@ -1,4 +1,3 @@
-#include <string.h>
 #include "version.h"
 #include "longzoro/playerquestion.h"
 #include "char_base.h"
@@ -46,11 +45,13 @@ BOOL PlayQuestionOnline(int charaindex, char *messageeraseescape)
 						itemindex = ITEM_makeItemAndRegist( PlayerQuestion.value );
 					  if( itemindex != -1 ){
 							ret = CHAR_addItemSpecificItemIndex( charaindex, itemindex);
-#ifdef _NEW_ITEM_
+#ifdef _NEW_ITEM_
+
 extern int CheckCharMaxItem(int charindex);
 #endif
 							if( ret < 0 ||
-#ifdef _NEW_ITEM_
+#ifdef _NEW_ITEM_
+
 								ret >= CheckCharMaxItem(charaindex)
 #else
 								ret >= CHAR_MAXITEMHAVE

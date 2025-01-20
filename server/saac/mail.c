@@ -1,7 +1,7 @@
 #define __MAIL_C__
 #include "mail.h"
 #include "main.h"
-#include "saacproto_serv.h"
+#include "saac_server.h"
 #include "util.h"
 
 typedef enum {
@@ -189,7 +189,7 @@ void receiveMail(const char *id_from, const char *char_name_from,
     int i;
     for (i = 0; i < MAXCONNECTION; i++) {
       if (gs[i].use && gs[i].name[0]) {
-        saacproto_Message_send(i, id_from, char_name_from, id_to, char_name_to,
+        SaacServer_Message_send(i, id_from, char_name_from, id_to, char_name_to,
                                message, option, mailbuf[mbindex].message_id);
         mailbuf[mbindex].state = MS_WAIT_ACK;
       }
@@ -271,7 +271,7 @@ void flushMail(const int fd, const char *id, const char *char_name) {
     }
   }
   for (i = 0; i < flush_i; i++) {
-    saacproto_Message_send(
+    SaacServer_Message_send(
         fd, mailbuf[flush_index[i]].id_from,
         mailbuf[flush_index[i]].char_name_from, mailbuf[flush_index[i]].id_to,
         mailbuf[flush_index[i]].char_name_to, mailbuf[flush_index[i]].text,
@@ -345,15 +345,15 @@ int readMail(const char *dir) {
       continue;
     }
     while (1) {
-      struct dirent *de;
-      de = readdir(d);
-      if (de == NULL)
+      struct dirent64 *p_dirent;
+      p_dirent = readdir64(d);
+      if (p_dirent == NULL)
         break;
-      if (de->d_name[0] != '.') {
+      if (p_dirent->d_name[0] != '.') {
         char filename[1000];
         FILE *fp;
         struct stat s;
-        snprintf(filename, sizeof(filename), "%s/%s", dirname, de->d_name);
+        snprintf(filename, sizeof(filename), "%s/%s", dirname, p_dirent->d_name);
         if (stat(filename, &s) < 0) {
           continue;
         }
@@ -415,7 +415,7 @@ int readMail(const char *dir) {
             continue;
           }
           receiveMail(fromid, fromchar, toid, tochar, text, opt, 1,
-                      strtoul(de->d_name, NULL, 10));
+                      strtoul(p_dirent->d_name, NULL, 10));
           read_count++;
         }
         fclose(fp);

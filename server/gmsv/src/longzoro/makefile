@@ -6,7 +6,7 @@ export RANLIB=ranlib
 export SED=sed
 export SHELL=/bin/sh
 
-INCFLAGS=-I. -I../../include -I.. -I../lua
+INCFLAGS=-I. -I../../include -I.. -I../lua -I../../../common
 
 CFLAGS=-w -O3 -Wall -pipe $(INCFLAGS)
 

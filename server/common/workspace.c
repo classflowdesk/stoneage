@@ -1,5 +1,6 @@
-#define __COMMON_PROTO_C__
-#include "proto.h"
+#define __WORKSPACE_C__
+
+#include "workspace.h"
 
 char *cnv10to62(int src_input, char *output, int output_len) {
   int i, j;
@@ -89,7 +90,7 @@ char *common_utoa(const unsigned long v) {
   return out;
 }
 
-void strcpysafe(char *des, const char *src, const int max_len) {
+char *strcpysafe(char *des, const char *src, const int max_len) {
   int i;
   const int limit = max_len - 1;
   for (i = 0; i < limit; ++i) {
@@ -98,9 +99,14 @@ void strcpysafe(char *des, const char *src, const int max_len) {
       break;
   }
   des[i] = 0;
+  return des;
 }
 
-void strcatsafe(char *des, const char *src, const int max_len) {
+char *strcpysafe2(char *des, const int max_len, const char *src) {
+  return strcpysafe(des, src, max_len);
+}
+
+char *strcatsafe(char *des, const char *src, const int max_len) {
   int i, j;
   const limit = max_len - 1;
   for (i = 0; i < limit; ++i) {
@@ -114,113 +120,105 @@ void strcatsafe(char *des, const char *src, const int max_len) {
       break;
     }
   }
+  return des;
 }
 
-void GetMessageInfo(int *id, char *function_name, const int len,
-                    const char **token_list) {
-  if (token_list[0] == NULL || token_list[1] == NULL) {
-    *id = 0;
-    strcpysafe(function_name, "", len);
-    return;
-  }
-  *id = strtoul(token_list[0], NULL, 10);
-  strcpysafe(function_name, token_list[1], len);
-  return;
-}
-
-char *mkstr_int(TagProto *proto, const int i) {
+char *mkstr_int(WorkSpace *ws, const int i) {
 #define MKSTR_INT(v) common_ltoa((const long)(v))
-  strcpysafe(proto->val_str, (char *)MKSTR_INT(i), proto->work_buf_size);
-  strcatsafe(proto->val_str, " ", proto->work_buf_size);
-  return proto->val_str;
+  strcpysafe(ws->val_str, (char *)MKSTR_INT(i), ws->work_buf_size);
+  strcatsafe(ws->val_str, " ", ws->work_buf_size);
+  return ws->val_str;
 }
-char *mkstr_u_int(TagProto *proto, const unsigned int i) {
+char *mkstr_u_int(WorkSpace *ws, const unsigned int i) {
 #define MKSTR_U_INT(v) common_utoa((const unsigned long)(v))
-  strcpysafe(proto->val_str, MKSTR_U_INT(i), proto->work_buf_size);
-  strcatsafe(proto->val_str, " ", proto->work_buf_size);
-  return proto->val_str;
+  strcpysafe(ws->val_str, MKSTR_U_INT(i), ws->work_buf_size);
+  strcatsafe(ws->val_str, " ", ws->work_buf_size);
+  return ws->val_str;
 }
-char *mkstr_long(TagProto *proto, const long l) {
+char *mkstr_long(WorkSpace *ws, const long l) {
 #define MKSTR_LONG(v) common_ltoa(v)
-  strcpysafe(proto->val_str, MKSTR_LONG(l), proto->work_buf_size);
-  strcatsafe(proto->val_str, " ", proto->work_buf_size);
-  return proto->val_str;
+  strcpysafe(ws->val_str, MKSTR_LONG(l), ws->work_buf_size);
+  strcatsafe(ws->val_str, " ", ws->work_buf_size);
+  return ws->val_str;
 }
-char *mkstr_u_long(TagProto *proto, const unsigned long l) {
+char *mkstr_u_long(WorkSpace *ws, const unsigned long l) {
 #define MKSTR_U_LONG(v) common_utoa(v)
-  strcpysafe(proto->val_str, MKSTR_U_LONG(l), proto->work_buf_size);
-  strcatsafe(proto->val_str, " ", proto->work_buf_size);
-  return proto->val_str;
+  strcpysafe(ws->val_str, MKSTR_U_LONG(l), ws->work_buf_size);
+  strcatsafe(ws->val_str, " ", ws->work_buf_size);
+  return ws->val_str;
 }
-char *mkstr_short(TagProto *proto, const short s) {
+char *mkstr_short(WorkSpace *ws, const short s) {
 #define MKSTR_SHORT(v) common_ltoa((const long)(v))
-  strcpysafe(proto->val_str, MKSTR_SHORT(s), proto->work_buf_size);
-  strcatsafe(proto->val_str, " ", proto->work_buf_size);
-  return proto->val_str;
+  strcpysafe(ws->val_str, MKSTR_SHORT(s), ws->work_buf_size);
+  strcatsafe(ws->val_str, " ", ws->work_buf_size);
+  return ws->val_str;
 }
-char *mkstr_u_short(TagProto *proto, const unsigned short s) {
+char *mkstr_u_short(WorkSpace *ws, const unsigned short s) {
 #define MKSTR_U_SHORT(v) common_utoa((const unsigned long)(v))
-  strcpysafe(proto->val_str, MKSTR_U_SHORT(s), proto->work_buf_size);
-  strcatsafe(proto->val_str, " ", proto->work_buf_size);
-  return proto->val_str;
+  strcpysafe(ws->val_str, MKSTR_U_SHORT(s), ws->work_buf_size);
+  strcatsafe(ws->val_str, " ", ws->work_buf_size);
+  return ws->val_str;
 }
-char *mkstr_char(TagProto *proto, const char c) {
+char *mkstr_char(WorkSpace *ws, const char c) {
 #define MKSTR_CHAR(v) common_ltoa((long)(v))
-  strcpysafe(proto->val_str, MKSTR_CHAR(c), proto->work_buf_size);
-  strcatsafe(proto->val_str, " ", proto->work_buf_size);
-  return proto->val_str;
+  strcpysafe(ws->val_str, MKSTR_CHAR(c), ws->work_buf_size);
+  strcatsafe(ws->val_str, " ", ws->work_buf_size);
+  return ws->val_str;
 }
-char *mkstr_u_char(TagProto *proto, const unsigned char c) {
+char *mkstr_u_char(WorkSpace *ws, const unsigned char c) {
 #define MKSTR_U_CHAR(v) common_utoa((const unsigned long)(v))
-  strcpysafe(proto->val_str, MKSTR_U_CHAR(c), proto->work_buf_size);
-  strcatsafe(proto->val_str, " ", proto->work_buf_size);
-  return proto->val_str;
+  strcpysafe(ws->val_str, MKSTR_U_CHAR(c), ws->work_buf_size);
+  strcatsafe(ws->val_str, " ", ws->work_buf_size);
+  return ws->val_str;
 }
-char *mkstr_string(TagProto *proto, const char *a) {
-  char *ret = escape_string(proto, a);
-  strcatsafe(ret, " ", proto->work_buf_size);
+char *mkstr_string(WorkSpace *ws, const char *a) {
+  char *ret = escape_string(ws, a);
+  strcatsafe(ret, " ", ws->work_buf_size);
   return ret;
 }
-char *mkstr_float(TagProto *proto, const float f) {
-  sprintf(proto->val_str, "%f", f);
-  return proto->val_str;
+char *mkstr_float(WorkSpace *ws, const float f) {
+  sprintf(ws->val_str, "%f", f);
+  return ws->val_str;
 }
-char *mkstr_double(TagProto *proto, const double d) {
-  sprintf(proto->val_str, "%f", d);
-  return proto->val_str;
+char *mkstr_double(WorkSpace *ws, const double d) {
+  sprintf(ws->val_str, "%f", d);
+  return ws->val_str;
 }
 
 #define MKSTR_ARRAYMACRO(func)                                                 \
   {                                                                            \
     int i;                                                                     \
-    proto->array_work[0] = '\0';                                               \
+    ws->array_work[0] = '\0';                                                  \
     for (i = 0; i < size; i++) {                                               \
-      strcatsafe(proto->array_work, func(proto, array[i]), proto->work_buf_size);     \
+      strcatsafe(ws->array_work, func(ws, array[i]), ws->work_buf_size);       \
     }                                                                          \
-    return proto->array_work;                                                  \
+    return ws->array_work;                                                     \
   }
-char *mkstr_int_array(TagProto *proto, const int size, const int *array) {
+char *mkstr_int_array(WorkSpace *ws, const int size, const int *array) {
   MKSTR_ARRAYMACRO(mkstr_int);
 }
-char *mkstr_u_int_array(TagProto *proto, const int size, const unsigned int *array) {
+char *mkstr_u_int_array(WorkSpace *ws, const int size,
+                        const unsigned int *array) {
   MKSTR_ARRAYMACRO(mkstr_u_int);
 }
-char *mkstr_short_array(TagProto *proto, const int size, const short *array) {
+char *mkstr_short_array(WorkSpace *ws, const int size, const short *array) {
   MKSTR_ARRAYMACRO(mkstr_short);
 }
-char *mkstr_u_short_array(TagProto *proto, const int size, const unsigned short *array) {
+char *mkstr_u_short_array(WorkSpace *ws, const int size,
+                          const unsigned short *array) {
   MKSTR_ARRAYMACRO(mkstr_u_short);
 }
-char *mkstr_char_array(TagProto *proto, const int size, const char *array) {
+char *mkstr_char_array(WorkSpace *ws, const int size, const char *array) {
   MKSTR_ARRAYMACRO(mkstr_char);
 }
-char *mkstr_u_char_array(TagProto *proto, const int size, const unsigned char *array) {
+char *mkstr_u_char_array(WorkSpace *ws, const int size,
+                         const unsigned char *array) {
   MKSTR_ARRAYMACRO(mkstr_u_char);
 }
-char *mkstr_float_array(TagProto *proto, const int size, const float *array) {
+char *mkstr_float_array(WorkSpace *ws, const int size, const float *array) {
   MKSTR_ARRAYMACRO(mkstr_float);
 }
-char *mkstr_double_array(TagProto *proto, const int size, const double *array) {
+char *mkstr_double_array(WorkSpace *ws, const int size, const double *array) {
   MKSTR_ARRAYMACRO(mkstr_double);
 }
 int demkstr_int(const char *a) {
@@ -273,12 +271,12 @@ double demkstr_double(const char *a) {
     return 0.0F;
   return (double)strtod(a, NULL);
 }
-char *demkstr_string(TagProto *proto, const char *a) {
+char *demkstr_string(WorkSpace *ws, const char *a) {
   if (a == (const char *)NULL) {
-    strcpysafe(proto->escape_work, "", proto->work_buf_size);
-    return proto->escape_work;
+    strcpysafe(ws->escape_work, "", ws->work_buf_size);
+    return ws->escape_work;
   }
-  return descape_string(proto, a);
+  return descape_string(ws, a);
 }
 
 #define DEMKSTR_ARRAYMACRO(func, defaultvalue)                                 \
@@ -335,107 +333,141 @@ double *demkstr_u_double_array(const char **token_list, double *array,
   DEMKSTR_ARRAYMACRO(demkstr_double, (double)0.0);
 }
 
-char *escape_string(TagProto *proto, const char *a) {
+char *escape_string(WorkSpace *ws, const char *a) {
   int i, c = 0;
-  proto->escape_work[0] = '\0';
+  ws->escape_work[0] = '\0';
   for (i = 0;; i++) {
     if (a[i] == '\0') {
-      proto->escape_work[c++] = '\0';
+      ws->escape_work[c++] = '\0';
       break;
     } else if (a[i] == '\\') {
-      proto->escape_work[c++] = '\\';
-      proto->escape_work[c++] = '\\';
+      ws->escape_work[c++] = '\\';
+      ws->escape_work[c++] = '\\';
     } else if (a[i] == ' ') {
-      proto->escape_work[c++] = '\\';
-      proto->escape_work[c++] = 'S';
+      ws->escape_work[c++] = '\\';
+      ws->escape_work[c++] = 'S';
     } else if (a[i] == '\n') {
-      proto->escape_work[c++] = '\\';
-      proto->escape_work[c++] = 'n';
+      ws->escape_work[c++] = '\\';
+      ws->escape_work[c++] = 'n';
     } else if (a[i] == '\r') {
-      proto->escape_work[c++] = '\\';
-      proto->escape_work[c++] = 'r';
+      ws->escape_work[c++] = '\\';
+      ws->escape_work[c++] = 'r';
     } else {
-      proto->escape_work[c++] = a[i];
+      ws->escape_work[c++] = a[i];
     }
   }
-  return proto->escape_work;
+  return ws->escape_work;
 }
-char *descape_string(TagProto *proto, const char *a) {
+char *descape_string(WorkSpace *ws, const char *a) {
   int i, c = 0;
-  proto->escape_work[0] = '\0';
+  ws->escape_work[0] = '\0';
   for (i = 0;; i++) {
     if (a[i] == '\0') {
-      proto->escape_work[c++] = '\0';
+      ws->escape_work[c++] = '\0';
       break;
     } else if (a[i] == '\\') {
       if (a[i + 1] == 0) { /* null */
-        proto->escape_work[c++] = a[i];
+        ws->escape_work[c++] = a[i];
         continue;
       }
       if (a[i + 1] == 'S') { /* space */
-        proto->escape_work[c++] = ' ';
+        ws->escape_work[c++] = ' ';
       } else if (a[i + 1] == 'n') {
-        proto->escape_work[c++] = '\n';
+        ws->escape_work[c++] = '\n';
       } else if (a[i + 1] == 'r') {
-        proto->escape_work[c++] = '\r';
+        ws->escape_work[c++] = '\r';
       } else if (a[i + 1] == '\\') {
-        proto->escape_work[c++] = '\\';
+        ws->escape_work[c++] = '\\';
       } else {
-        proto->escape_work[c++] = a[i];
+        ws->escape_work[c++] = a[i];
       }
       i++;
     } else {
-      proto->escape_work[c++] = a[i];
+      ws->escape_work[c++] = a[i];
     }
   }
-  return proto->escape_work;
+  return ws->escape_work;
 }
 
-int InitProto(TagProto *proto, const int work_buf_size) {
-  proto->work_buf_size = work_buf_size;
-  proto->work = NULL;
-  proto->array_work = NULL;
-  proto->escape_work = NULL;
-  proto->val_str = NULL;
-  proto->token_list = NULL;
-  proto->crypt_work = NULL;
-  proto->jencode_copy = NULL;
-  proto->jencode_out = NULL;
-  proto->compress_work = NULL;
-  proto->work = (char *)calloc(1, proto->work_buf_size);
-  proto->array_work = (char *)calloc(1, proto->work_buf_size);
-  proto->escape_work = (char *)calloc(1, proto->work_buf_size);
-  proto->val_str = (char *)calloc(1, proto->work_buf_size);
-  proto->token_list =
-      (char **)calloc(1, proto->work_buf_size * sizeof(char **));
-  proto->crypt_work = (char *)calloc(1, proto->work_buf_size * 3);
-  proto->jencode_copy = (char *)calloc(1, proto->work_buf_size * 3);
-  proto->jencode_out = (char *)calloc(1, proto->work_buf_size * 3);
-  proto->compress_work = (char *)calloc(1, proto->work_buf_size * 3);
-  memset(proto->work, 0, proto->work_buf_size);
-  memset(proto->array_work, 0, proto->work_buf_size);
-  memset(proto->escape_work, 0, proto->work_buf_size);
-  memset(proto->val_str, 0, proto->work_buf_size);
-  memset((char *)proto->token_list, 0, proto->work_buf_size * sizeof(char **));
-  memset(proto->crypt_work, 0, proto->work_buf_size * 3);
-  memset(proto->jencode_copy, 0, proto->work_buf_size * 3);
-  memset(proto->jencode_out, 0, proto->work_buf_size * 3);
-  memset(proto->compress_work, 0, proto->work_buf_size * 3);
-  if (proto->work == NULL || proto->array_work == NULL ||
-      proto->escape_work == NULL || proto->val_str == NULL ||
-      proto->token_list == NULL || proto->crypt_work == NULL ||
-      proto->jencode_copy == NULL || proto->jencode_out == NULL ||
-      proto->compress_work == NULL) {
-    free(proto->work);
-    free(proto->val_str);
-    free(proto->escape_work);
-    free(proto->array_work);
-    free(proto->token_list);
-    free(proto->crypt_work);
-    free(proto->jencode_copy);
-    free(proto->jencode_out);
-    free(proto->compress_work);
+#define FREE(x) if (x != NULL) free(x);
+
+int InitWorkSpace(WorkSpace *ws, int (*write_func)(int, char*, int),
+                  const int work_buf_size, const int string_buffer_size) {
+
+  ws->work_buf_size = work_buf_size;
+  ws->string_buffer_size = string_buffer_size;
+  ws->write_func = write_func;
+
+  int i, j;
+  ws->string_buffer = (char **)calloc(1, sizeof(char *) * string_buffer_size);
+  if (ws->string_buffer == NULL)
+    return -1;
+  memset(ws->string_buffer, 0, sizeof(char *) * string_buffer_size);
+  for (i = 0; i < string_buffer_size; ++i) {
+    ws->string_buffer[i] = (char *)calloc(1, work_buf_size);
+    if (ws->string_buffer[i] == NULL) {
+      for (j = 0; j < i; ++j) {
+        FREE(ws->string_buffer[i]);
+        return -1;
+      }
+    }
+  }
+  ws->work = (char *)calloc(1, ws->work_buf_size);
+  ws->array_work = (char *)calloc(1, ws->work_buf_size);
+  ws->escape_work = (char *)calloc(1, ws->work_buf_size);
+  ws->val_str = (char *)calloc(1, ws->work_buf_size);
+  ws->token_list = (char **)calloc(1, ws->work_buf_size * sizeof(char **));
+  ws->crypt_work = (char *)calloc(1, ws->work_buf_size * 3);
+  ws->jencode_copy = (char *)calloc(1, ws->work_buf_size * 3);
+  ws->jencode_out = (char *)calloc(1, ws->work_buf_size * 3);
+  ws->compress_work = (char *)calloc(1, ws->work_buf_size * 3);
+  ws->ret_work = (char *)calloc(1, sizeof(work_buf_size));
+  memset(ws->work, 0, ws->work_buf_size);
+  memset(ws->array_work, 0, ws->work_buf_size);
+  memset(ws->escape_work, 0, ws->work_buf_size);
+  memset(ws->val_str, 0, ws->work_buf_size);
+  memset((char *)ws->token_list, 0, ws->work_buf_size * sizeof(char **));
+  for (i = 0; i < work_buf_size; ++i) {
+    ws->token_list[i] = (char *)malloc(1024);
+    memset(ws->token_list[i], 0, 1024);
+  }
+  memset(ws->crypt_work, 0, ws->work_buf_size * 3);
+  memset(ws->jencode_copy, 0, ws->work_buf_size * 3);
+  memset(ws->jencode_out, 0, ws->work_buf_size * 3);
+  memset(ws->compress_work, 0, ws->work_buf_size * 3);
+  memset(ws->ret_work, 0, ws->work_buf_size);
+  if (ws->work == NULL || ws->array_work == NULL || ws->escape_work == NULL ||
+      ws->val_str == NULL || ws->token_list == NULL || ws->crypt_work == NULL ||
+      ws->jencode_copy == NULL || ws->jencode_out == NULL ||
+      ws->compress_work == NULL || ws->ret_work == NULL) {
+    FreeWorkSpace(ws);
     return -1;
   }
   return 0;
+}
+
+void FreeWorkSpace(WorkSpace *ws) {
+  int i;
+  for (i = 0; i < ws->string_buffer_size; i++) {
+    FREE(ws->string_buffer[i]);
+  }
+  FREE(ws->string_buffer);
+  FREE(ws->work);
+  FREE(ws->array_work);
+  FREE(ws->escape_work);
+  FREE(ws->val_str);
+  for (i = 0; i < ws->work_buf_size; i++) {
+    FREE(ws->token_list[i]);
+  }
+  FREE(ws->token_list);
+  FREE(ws->crypt_work);
+  FREE(ws->jencode_copy);
+  FREE(ws->jencode_out);
+  FREE(ws->compress_work);
+  FREE(ws->ret_work);
+}
+
+void SetLogFiles(WorkSpace *ws, const char *r_log, const char *w_log) {
+  strcpysafe(ws->w_log, w_log, sizeof(ws->w_log));
+  strcpysafe(ws->r_log, r_log, sizeof(ws->r_log));
 }

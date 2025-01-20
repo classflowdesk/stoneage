@@ -53,7 +53,7 @@ char *chartime();
 // Spock 2000/10/27
 #define log(format, args...)    \
 {\
-    fprintf( stderr, format , ## args );\
+    fprintf( stderr, format, ##args );\
 }
 // Spock end
 #define SUCCESSFUL "successful"
@@ -133,3 +133,4 @@ typedef enum
 
 #undef EXT
 #endif
+

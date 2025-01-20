@@ -1,9 +1,11 @@
-#include "version.h"
+#define __SAAC_CLIENT_SEND_C__
+#include "gmsv_server.h"
+#include "saac_client.h"
+//
 #include "char.h"
 #include "chatroom.h"
 #include "config_file.h"
 #include "handletime.h"
-#include "lssproto_serv.h"
 #include "map_deal.h"
 #include "msignal.h"
 #include "net.h"
@@ -13,14 +15,13 @@
 #include "npc_warpman.h"
 #include "object.h"
 #include "readmap.h"
-#include "saacproto_cli.h"
 // CoolFish: Family 2001/5/24
 #include "battle.h"
 #include "buf.h"
 #include "enemy.h"
 #include "family.h"
 #include "log.h"
-#ifdef _ALLDOMAN // (���ɿ�) Syu ADD ���а�NPC
+#ifdef _ALLDOMAN
 #include "npc_alldoman.h"
 #endif
 
@@ -39,7 +40,7 @@ void saacproto_ACGmsvDownRequest_recv(int fd, int min) {
   int i;
   int player_max_num = CHAR_getPlayerMaxNum();
 
-  snprintf(buff, sizeof(buff), "%s���档", getGameservername());
+  snprintf(buff, sizeof(buff), "%s即将关闭.", getGameservername());
   for (i = 0; i < player_max_num; i++) {
     if (CHAR_getCharUse(i) != FALSE) {
       CHAR_talkToCli(i, -1, buff, CHAR_COLORYELLOW);
@@ -166,10 +167,10 @@ void saacproto_ACCharSave_recv(int fd, char *result, char *data, int retfd) {
     SERVSTATE_decrementCloseallsocketnum();
     if (SERVSTATE_getCloseallsocketnum() == 0) {
       SERVSTATE_SetAcceptMore(-1);
-      print("��������浵\n");
-      print("\n �رշ�����ʱ�� =%d", i_shutdown_time); // ttom
+      print("Server is shutdown.\n");
+      print("\nShutDown in Time=%d.\n", i_shutdown_time); // ttom
       if (i_shutdown_time == 1) {
-        system("�����ر�");
+        system(".");
         sigshutdown(0);
       }
     }

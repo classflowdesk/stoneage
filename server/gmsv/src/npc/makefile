@@ -1,4 +1,4 @@
-INCFLAGS=-I../../include -I.. -I../lua
+INCFLAGS=-I../../include -I.. -I../lua -I../../../common
 CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
 
 TARGET=libnpc.a

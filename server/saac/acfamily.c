@@ -1,7 +1,7 @@
 #define _FAMILY_C_
 #include "acfamily.h"
 #include "main.h"
-#include "saacproto_serv.h"
+#include "saac_server.h"
 #include "util.h"
 
 // 家族 Int 资料
@@ -979,8 +979,6 @@ int writeFamily(const char *dir) {
 // 从档案读取家族庄园（启动时读取）
 int readFMPoint(const char *dir) {
   char dirname[256];
-  DIR *d;
-  struct dirent *de;
   int i = 0;
   {
     char tmp[256];
@@ -988,22 +986,22 @@ int readFMPoint(const char *dir) {
     if (mkdir(tmp, 0755) == 0)
       log("create %s\n", tmp);
   }
-
   snprintf(dirname, sizeof(dirname), "%s", dir);
-  d = opendir(dirname);
-  if (d == NULL) {
+  DIR *p_dir = opendir(dirname);
+  if (p_dir == NULL) {
     log("无法打开文件 %s\n", dirname);
     return -1;
   }
+  struct dirent64 *p_dirent;
   while (1) {
-    de = readdir(d);
-    if (de == NULL)
+    p_dirent = readdir64(p_dir);
+    if (p_dirent == NULL)
       break;
-    if (de->d_name[0] != '.') {
+    if (p_dirent->d_name[0] != '.') {
       char filename[256];
       FILE *fp;
       struct stat s;
-      snprintf(filename, sizeof(filename), "%s/%s", dirname, de->d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, p_dirent->d_name);
       if (stat(filename, &s) < 0) {
         continue;
       }
@@ -1049,7 +1047,7 @@ int readFMPoint(const char *dir) {
       fclose(fp);
     }
   }
-  closedir(d);
+  closedir(p_dir);
   return 0;
 }
 
@@ -1294,7 +1292,7 @@ void delovertimeFMMem(int time) {
       // 传送家族已删除之讯息至各 GMSV
       for (k = 0; k < MAXCONNECTION; k++) {
         if (gs[k].use && gs[k].name[0])
-          saacproto_ACFMAnnounce_send(k, SUCCESSFUL, family[i].fmname,
+          SaacServer_ACFMAnnounce_send(k, SUCCESSFUL, family[i].fmname,
                                       family[i].fmindex, i, 2, "", 0);
       }
 
@@ -1321,7 +1319,7 @@ void delovertimeFMMem(int time) {
           char buf[256];
           sprintf(buf, "(%s)因太久未上线而离开您的家族了！目前家族人数：%4d人",
                   family[i].fmmemberindex[j].charname, family[i].fmjoinnum);
-          saacproto_ACFMAnnounce_send(family[i].fmmemberindex[0].onlineflag,
+          SaacServer_ACFMAnnounce_send(family[i].fmmemberindex[0].onlineflag,
                                       SUCCESSFUL, family[i].fmname,
                                       family[i].fmindex, i, 3, buf,
                                       family[i].fmmemberindex[0].charfdid);
@@ -1334,7 +1332,7 @@ void delovertimeFMMem(int time) {
 
     for (i = 0; i < MAXCONNECTION; i++) {
       if (gs[i].use && gs[i].name[0])
-        saacproto_ACShowFMList_send(i, SUCCESSFUL, fmnownum, data);
+        SaacServer_ACShowFMList_send(i, SUCCESSFUL, fmnownum, data);
     }
   }
 }
@@ -1487,7 +1485,7 @@ int ACJoinFM(int fd, int index, char *fmname, int fmindex, char *charname,
       db_familyupdate[index] = 1;
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
                       // 更新玩家资料
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[i].onlineflag, SUCCESSFUL, index,
           ACgetFMFloor(fmindex), family[index].fmtotalfame,
           family[index].fmmemberindex[i].charflag, family[index].fmsetupflag, 1,
@@ -1500,7 +1498,7 @@ int ACJoinFM(int fd, int index, char *fmname, int fmindex, char *charname,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[i].onlineflag, SUCCESSFUL, index,
           ACgetFMFloor(fmindex), family[index].fmpopular,
           family[index].fmmemberindex[i].charflag, family[index].fmsetupflag, 1,
@@ -1511,7 +1509,7 @@ int ACJoinFM(int fd, int index, char *fmname, int fmindex, char *charname,
         char buf[256];
         sprintf(buf, "(%s lv:%d)正要求加入您的家族喔！目前家族人数：%4d人",
                 charname, charlv, family[index].fmjoinnum);
-        saacproto_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
+        SaacServer_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
                                     SUCCESSFUL, fmname, fmindex, index, 3, buf,
                                     family[index].fmmemberindex[0].charfdid);
       }
@@ -1542,7 +1540,7 @@ int ACLeaveFM(int index, char *fmname, int fmindex, char *charname,
         char buf[256];
         sprintf(buf, "(%s)已经离开您的家族了！目前家族人数：%4d人", charname,
                 family[index].fmjoinnum);
-        saacproto_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
+        SaacServer_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
                                     SUCCESSFUL, fmname, fmindex, index, 3, buf,
                                     family[index].fmmemberindex[0].charfdid);
       }
@@ -1710,7 +1708,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
     // 更新族长资料
     if (family[index].fmmemberindex[0].onlineflag > 0) {
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, index, floor,
           family[index].fmtotalfame, family[index].fmmemberindex[0].charflag,
           family[index].fmsetupflag, 1, 0,
@@ -1722,7 +1720,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, index, floor,
           family[index].fmpopular, family[index].fmmemberindex[0].charflag,
           family[index].fmsetupflag, 1, 0,
@@ -1732,7 +1730,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
     // 更新成员资料
     if (family[index].fmmemberindex[charindex].onlineflag > 0) {
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL, index,
           floor, family[index].fmtotalfame,
           family[index].fmmemberindex[charindex].charflag,
@@ -1745,7 +1743,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL, index,
           floor, family[index].fmpopular,
           family[index].fmmemberindex[charindex].charflag,
@@ -1838,7 +1836,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
     if (family[index].fmmemberindex[0].onlineflag > 0) {
       int floor = ACgetFMFloor(fmindex);
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, index, floor,
           family[index].fmtotalfame,
 #ifdef _FMVER21
@@ -1855,7 +1853,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(family[index].fmmemberindex[0].onlineflag,
+      SaacServer_ACFMCharLogin_send(family[index].fmmemberindex[0].onlineflag,
                                    SUCCESSFUL, index, floor,
                                    family[index].fmpopular,
 #ifdef _FMVER21
@@ -1922,7 +1920,7 @@ int ACFixFMPK(int winindex, char *winfmname, int winfmindex, int loseindex,
     if (family[winindex].fmmemberindex[0].onlineflag > 0) {
       int floor = ACgetFMFloor(winfmindex);
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[winindex].fmmemberindex[0].onlineflag, SUCCESSFUL, winindex,
           floor, family[winindex].fmtotalfame,
 #ifdef _FMVER21
@@ -1939,7 +1937,7 @@ int ACFixFMPK(int winindex, char *winfmname, int winfmindex, int loseindex,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(family[winindex].fmmemberindex[0].onlineflag,
+      SaacServer_ACFMCharLogin_send(family[winindex].fmmemberindex[0].onlineflag,
                                    SUCCESSFUL, winindex, floor,
                                    family[winindex].fmpopular,
 #ifdef _FMVER21
@@ -1972,7 +1970,7 @@ int ACFixFMPK(int winindex, char *winfmname, int winfmindex, int loseindex,
     if (family[loseindex].fmmemberindex[0].onlineflag > 0) {
       int floor = ACgetFMFloor(losefmindex);
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[loseindex].fmmemberindex[0].onlineflag, SUCCESSFUL, loseindex,
           floor, family[loseindex].fmtotalfame,
 #ifdef _FMVER21
@@ -1989,7 +1987,7 @@ int ACFixFMPK(int winindex, char *winfmname, int winfmindex, int loseindex,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[loseindex].fmmemberindex[0].onlineflag, SUCCESSFUL, loseindex,
           floor, family[loseindex].fmpopular,
 #ifdef _FMVER21
@@ -2064,7 +2062,7 @@ int ACDelFM(int index, char *fmname, int fmindex) {
     // 传送最新状态给家族成员
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
     if (family[index].fmmemberindex[i].onlineflag > 0)
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[i].onlineflag, FAILED, index,
           family[index].fmpointindex, family[index].fmtotalfame, -1,
           family[index].fmsetupflag, 0, i,
@@ -2077,7 +2075,7 @@ int ACDelFM(int index, char *fmname, int fmindex) {
       );
 #else
     if (family[index].fmmemberindex[i].onlineflag > 0)
-      saacproto_ACFMCharLogin_send(family[index].fmmemberindex[i].onlineflag,
+      SaacServer_ACFMCharLogin_send(family[index].fmmemberindex[i].onlineflag,
                                    FAILED, index, family[index].fmpointindex,
                                    family[index].fmpopular, -1,
                                    family[index].fmsetupflag, 0, i,
@@ -2102,7 +2100,7 @@ int ACDelFM(int index, char *fmname, int fmindex) {
   // 传送家族已删除之讯息至各 GMSV 以清除对战排程
   for (i = 0; i < MAXCONNECTION; i++) {
     if (gs[i].use && gs[i].name[0])
-      saacproto_ACFMClearPK_send(i, SUCCESSFUL, fmname, fmindex, index);
+      SaacServer_ACFMClearPK_send(i, SUCCESSFUL, fmname, fmindex, index);
   }
 
   DelFMMaintainSort(index);
@@ -2117,7 +2115,7 @@ int ACShowFMTotem(int fd) {
   int i = 0;
   for (i = 0; i <= fmindexmaxnum; i++) {
     if ((strcmp(family[i].fmname, "") != 0) && (family[i].fmindex != -1)) {
-      saacproto_ACShowFMTotem_send(fd, SUCCESSFUL, i, family[i].familytotem);
+      SaacServer_ACShowFMTotem_send(fd, SUCCESSFUL, i, family[i].familytotem);
     }
   }
 }
@@ -2319,7 +2317,7 @@ int ACMemberJoinFM(int index, char *fmname, int fmindex, char *charname,
       sprintf(buf, "恭喜你！%s族长已经审核完毕您的加入申请！",
               family[index].fmname);
 #endif
-      saacproto_ACFMAnnounce_send(
+      SaacServer_ACFMAnnounce_send(
           family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL, fmname,
           fmindex, index, 3, buf,
           family[index].fmmemberindex[charindex].charfdid);
@@ -2361,7 +2359,7 @@ int ACMemberJoinFM(int index, char *fmname, int fmindex, char *charname,
       }
 #endif
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL, index,
           floor, family[index].fmtotalfame,
 #ifdef _FMVER21
@@ -2378,7 +2376,7 @@ int ACMemberJoinFM(int index, char *fmname, int fmindex, char *charname,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL, index,
           floor, family[index].fmpopular,
 #ifdef _FMVER21
@@ -2393,7 +2391,7 @@ int ACMemberJoinFM(int index, char *fmname, int fmindex, char *charname,
     // 更新族长状态
     if (family[index].fmmemberindex[charindex].onlineflag > 0) {
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, index, floor,
           family[index].fmtotalfame,
 #ifdef _FMVER21
@@ -2410,7 +2408,7 @@ int ACMemberJoinFM(int index, char *fmname, int fmindex, char *charname,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(family[index].fmmemberindex[0].onlineflag,
+      SaacServer_ACFMCharLogin_send(family[index].fmmemberindex[0].onlineflag,
                                    SUCCESSFUL, index, floor,
                                    family[index].fmpopular,
 #ifdef _FMVER21
@@ -2461,7 +2459,7 @@ int ACMemberLeaveFM(int index, char *fmname, int fmindex, char *charname,
     if (family[index].fmmemberindex[charindex].onlineflag > 0) {
       char buf[256];
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[charindex].onlineflag, FAILED, index,
           family[index].fmpointindex, 0, -1, family[index].fmsetupflag, 1,
           charindex,
@@ -2473,7 +2471,7 @@ int ACMemberLeaveFM(int index, char *fmname, int fmindex, char *charname,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[charindex].onlineflag, FAILED, index,
           family[index].fmpointindex, family[index].fmpopular, -1,
           family[index].fmsetupflag, 1, charindex,
@@ -2487,7 +2485,7 @@ int ACMemberLeaveFM(int index, char *fmname, int fmindex, char *charname,
 #else
         sprintf(buf, "%s族长已经将你踢出家族了！", family[index].fmname);
 #endif
-        saacproto_ACFMAnnounce_send(
+        SaacServer_ACFMAnnounce_send(
             family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL,
             fmname, fmindex, index, 3, buf,
             family[index].fmmemberindex[charindex].charfdid);
@@ -2574,7 +2572,7 @@ int ACMemberLeaveFM(int index, char *fmname, int fmindex, char *charname,
             token,
             "在七天之内要赶快召集１０名成员，否则家族会被解散喔！剩馀%d天。",
             (int)((family[index].predel_time - t1) / (60 * 60 * 24)));
-        saacproto_ACFMAnnounce_send(
+        SaacServer_ACFMAnnounce_send(
             family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, fmname,
             fmindex, index, 3, token, family[index].fmmemberindex[0].charfdid);
       }
@@ -2613,7 +2611,7 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
   if (count >= FMELDERNUM) {
     sprintf(buf, "\n只能指派%d位家族成员成为%s喔！", FMELDERNUM,
             MEMBERKIND_INTDATA[result]);
-    saacproto_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
+    SaacServer_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
                                 SUCCESSFUL, fmname, fmindex, index, 4, buf,
                                 family[index].fmmemberindex[0].charfdid);
     return -1;
@@ -2622,7 +2620,7 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
     family[index].fmmemberindex[charindex].charflag = result;
     if (family[index].fmmemberindex[charindex].onlineflag > 0) {
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL, index,
           floor, family[index].fmtotalfame,
           family[index].fmmemberindex[charindex].charflag,
@@ -2635,7 +2633,7 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL, index,
           floor, family[index].fmpopular,
           family[index].fmmemberindex[charindex].charflag,
@@ -2645,7 +2643,7 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
       // 通知玩家
       sprintf(buf, "%s族长已经将你的家族职等改为%s！", family[index].fmname,
               MEMBERKIND_INTDATA[result]);
-      saacproto_ACFMAnnounce_send(
+      SaacServer_ACFMAnnounce_send(
           family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL, fmname,
           fmindex, index, 3, buf,
           family[index].fmmemberindex[charindex].charfdid);
@@ -2654,7 +2652,7 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
       // 通知族长
       sprintf(buf, "\n你已经将%s的职等改为%s了！", charname,
               MEMBERKIND_INTDATA[result]);
-      saacproto_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
+      SaacServer_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
                                   SUCCESSFUL, fmname, fmindex, index, 4, buf,
                                   family[index].fmmemberindex[0].charfdid);
     }
@@ -2941,7 +2939,7 @@ int ACSetFMPoint(int index, char *fmname, int fmindex, int fmpointindex, int fl,
       int floor = ACgetFMFloor(fmindex);
 #ifdef _FMVER21
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[i].onlineflag, SUCCESSFUL, index, floor,
           family[index].fmtotalfame, family[index].fmmemberindex[i].charflag,
           family[index].fmsetupflag, 1, i,
@@ -2953,7 +2951,7 @@ int ACSetFMPoint(int index, char *fmname, int fmindex, int fmpointindex, int fl,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[index].fmmemberindex[i].onlineflag, SUCCESSFUL, index, floor,
           family[index].fmpopular, family[index].fmmemberindex[i].charflag,
           family[index].fmsetupflag, 1, i,
@@ -2966,7 +2964,7 @@ int ACSetFMPoint(int index, char *fmname, int fmindex, int fmpointindex, int fl,
           joinflag = 1;
         else
           joinflag = 2;
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[i].onlineflag, SUCCESSFUL, index, floor,
             family[index].fmpopular, joinflag, family[index].fmsetupflag, 1, i,
             family[index].fmmemberindex[i].charfdid);
@@ -2980,7 +2978,7 @@ int ACSetFMPoint(int index, char *fmname, int fmindex, int fmpointindex, int fl,
     if (ACFMPointList(data) >= 0) {
       for (i = 0; i < MAXCONNECTION; i++)
         if (gs[i].use && gs[i].name[0])
-          saacproto_ACFMPointList_send(i, SUCCESSFUL, data);
+          SaacServer_ACFMPointList_send(i, SUCCESSFUL, data);
     }
   }
 
@@ -3014,7 +3012,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
       if (ACFMPointList(data) >= 0) {
         for (i = 0; i < MAXCONNECTION; i++)
           if (gs[i].use && gs[i].name[0])
-            saacproto_ACFMPointList_send(i, SUCCESSFUL, data);
+            SaacServer_ACFMPointList_send(i, SUCCESSFUL, data);
       }
     }
     db_fmpointupdate = 1;
@@ -3093,7 +3091,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
       int floor = ACgetFMFloor(winfmindex);
 #ifdef _FMVER21
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-      saacproto_ACFMCharLogin_send(
+      SaacServer_ACFMCharLogin_send(
           family[winindex].fmmemberindex[i].onlineflag, SUCCESSFUL, winindex,
           floor, family[winindex].fmtotalfame,
           family[winindex].fmmemberindex[i].charflag,
@@ -3106,7 +3104,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
 #endif
       );
 #else
-      saacproto_ACFMCharLogin_send(family[winindex].fmmemberindex[i].onlineflag,
+      SaacServer_ACFMCharLogin_send(family[winindex].fmmemberindex[i].onlineflag,
                                    SUCCESSFUL, winindex, floor,
                                    family[winindex].fmpopular,
                                    family[winindex].fmmemberindex[i].charflag,
@@ -3120,7 +3118,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
           joinflag = 1;
         else
           joinflag = 2;
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[winindex].fmmemberindex[i].onlineflag, SUCCESSFUL, winindex,
             floor, family[winindex].fmpopular, joinflag,
             family[winindex].fmsetupflag, 1, i,
@@ -3142,7 +3140,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
       if (family[loseindex].fmmemberindex[i].onlineflag > 0) {
 #ifdef _FMVER21
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[loseindex].fmmemberindex[i].onlineflag, SUCCESSFUL,
             loseindex, -1, family[loseindex].fmtotalfame,
             family[loseindex].fmmemberindex[i].charflag,
@@ -3155,7 +3153,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
 #endif
         );
 #else
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[loseindex].fmmemberindex[i].onlineflag, SUCCESSFUL,
             loseindex, -1, family[loseindex].fmpopular,
             family[loseindex].fmmemberindex[i].charflag,
@@ -3169,7 +3167,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
           joinflag = 1;
         else
           joinflag = 2;
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[loseindex].fmmemberindex[i].onlineflag, SUCCESSFUL,
             loseindex, -1, family[loseindex].fmpopular, joinflag,
             family[loseindex].fmsetupflag, 1, i,
@@ -3187,7 +3185,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
     if (ACFMPointList(data) >= 0) {
       for (i = 0; i < MAXCONNECTION; i++)
         if (gs[i].use && gs[i].name[0])
-          saacproto_ACFMPointList_send(i, SUCCESSFUL, data);
+          SaacServer_ACFMPointList_send(i, SUCCESSFUL, data);
     }
   }
   db_fmpointupdate = 1;
@@ -3558,7 +3556,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
         sortFamily();
 #endif
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, index, floor,
             family[index].fmtotalfame, family[index].fmmemberindex[0].charflag,
             family[index].fmsetupflag, 1, 0,
@@ -3570,7 +3568,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
 #endif
         );
 #else
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, index, floor,
             family[index].fmpopular, family[index].fmmemberindex[0].charflag,
             family[index].fmsetupflag, 1, 0,
@@ -3621,7 +3619,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
         db_familyupdate[index] = 1;
         sortFamily();
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, index, floor,
             family[index].fmtotalfame, family[index].fmmemberindex[0].charflag,
             family[index].fmsetupflag, 1, 0,
@@ -3633,7 +3631,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
 #endif
         );
 #else
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[0].onlineflag, SUCCESSFUL, index, floor,
             family[index].fmpopular, family[index].fmmemberindex[0].charflag,
             family[index].fmsetupflag, 1, 0,
@@ -3725,7 +3723,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
         sortFamily();
 #endif
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL,
             index, floor, family[index].fmtotalfame,
             family[index].fmmemberindex[charindex].charflag,
@@ -3738,7 +3736,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
 #endif
         );
 #else
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL,
             index, floor, family[index].fmpopular,
             family[index].fmmemberindex[charindex].charflag,
@@ -3767,7 +3765,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
         db_familyupdate[index] = 1;
         sortFamily();
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL,
             index, floor, family[index].fmtotalfame,
             family[index].fmmemberindex[charindex].charflag,
@@ -3780,7 +3778,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
 #endif
         );
 #else
-        saacproto_ACFMCharLogin_send(
+        SaacServer_ACFMCharLogin_send(
             family[index].fmmemberindex[charindex].onlineflag, SUCCESSFUL,
             index, floor, family[index].fmpopular,
             family[index].fmmemberindex[charindex].charflag,
@@ -3826,7 +3824,7 @@ int ChangeFMLeader(int index, char *fmname, int fmindex) {
     char tmpbuf[256];
     sprintf(tmpbuf, "您已经退出家族了～\n族长职位已让给%s，辛苦你了！",
             family[index].fmmemberindex[0].charname);
-    saacproto_ACFMAnnounce_send(
+    SaacServer_ACFMAnnounce_send(
         family[index].fmmemberindex[tmpindex].onlineflag, SUCCESSFUL, fmname,
         fmindex, index, 4, tmpbuf,
         family[index].fmmemberindex[tmpindex].charfdid);

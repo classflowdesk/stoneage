@@ -3,8 +3,6 @@
 
 #include "common.h"
 
-#define IS_2BYTEWORD(_a_) ((char)(0x80) <= (_a_) && (_a_) <= (char)(0xFF))
-
 typedef struct tagSTRING32 {
   char string[32];
 } STRING32;
@@ -36,9 +34,6 @@ void dchop(char *src, char *del);
 #define chomp(src) dchop(src, "\n");
 void chompex(char *buf);
 void pohcd(char *src, char *del);
-void strcpysafe(char *des, const size_t n, const char *src);
-void strncpysafe(char *des, const size_t n, const char *src, const int length);
-char *strcatsafe(char *src, const size_t n, char *ap);
 BOOL strtolchecknum(char *arg, void *number, int base, CTYPE type);
 int strcmptail(const char *s1, const char *s2);
 int textToInt(const char *str);
@@ -54,12 +49,9 @@ BOOL getStringFromIndexWithDelim_body(const char *src, const char *delim, const 
 void getFourIntsFromString(char *src, int *int1, int *int2, int *int3, int *int4);
 void deleteSequentChar(char *src, char *dels);
 int hashpjw(const char *s);
-double gettimemillis(void);
-double gettimemicros(void);
 
 int bindLocalhost(unsigned short port);
 int connectHost(char *hostname, unsigned short port);
-int existsNewLineCharacter(char *line);
 int charInclude(const char *src, const char *include);
 char *nindex(char *string, int c, int number);
 int rgetFileName(const char *dirname, const STRING64 *string, const int size);
@@ -70,7 +62,6 @@ BOOL checkStringsUnique(char **strings, int num, int verbose);
 
 char *makeEscapeString(char *src, char *dest, int sizeofdest);
 char *makeStringFromEscaped(char *src);
-INLINE double time_diff(struct timeval subtrahend, struct timeval subtractor);
 BOOL PointInRect(RECT *rect, POINT *p);
 BOOL CoordinateInRect(RECT *rect, int x, int y);
 int clipRect(RECT *rect1, RECT *rect2, RECT *ret);
@@ -79,8 +70,6 @@ void easyGetTokenFromString(char *src, int count, char *output, int len);
 
 float linearDiv(float val1, float val2, float d);
 BOOL isExistFile(char *filename);
-
-
 BOOL checkRedundancy(const int *array, const int array_size);
 unsigned short CheckCRC(unsigned char *p, int size);
 // Shan Add

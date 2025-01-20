@@ -6,7 +6,7 @@ export RANLIB=ranlib
 export SED=sed
 export SHELL=/bin/sh
 
-INCFLAGS=-I../include -I. -I./lua
+INCFLAGS=-I../include -I. -I./lua -I../../common
 CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
 
 ifeq ($(shell uname),Linux)
@@ -15,7 +15,7 @@ ifeq ($(shell uname),Linux)
 endif
 
 SUBDIR=char npc net map item battle magic longzoro mylua lua npc_lua utils
-LIBS=net/libnet.a char/libchar.a npc/libnpc.a map/libmap.a item/libitem.a magic/libmagic.a battle/libbattle.a longzoro/custom.a mylua/libmylua.a npc_lua/libnpc_lua.a lua/libluajit.a utils/libutil.a
+LIBS=net/libnet.a char/libchar.a npc/libnpc.a map/libmap.a item/libitem.a magic/libmagic.a battle/libbattle.a longzoro/custom.a mylua/libmylua.a npc_lua/libnpc_lua.a lua/libluajit.a utils/libutil.a ../../common/libcommon.a
 
 SRC=main.c init.c config_file.c buf.c msignal.c shop.c object.c handletime.c function.c log.c autil.c descrypt.c const.c
 

@@ -1,9 +1,3 @@
-/*
- * epollnet.c
- *
- *  Created on: 2015��10��22��
- *  Author: hult
- */
 #include "version.h"
 #include "net.h"
 #include "epollnet.h"

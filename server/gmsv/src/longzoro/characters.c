@@ -1,6 +1,4 @@
-#include <string.h>
 #include "version.h"
-#include "common.h"
 #include "longzoro/characters.h"
 #include "readmap.h"
 #include "saacproto_cli.h"

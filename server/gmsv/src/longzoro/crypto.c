@@ -1,10 +1,8 @@
-#include  <stdio.h>
-#include  <dirent.h>   
-#include  <string.h>  
-#include  <sys/types.h>   
-#include  <sys/stat.h> 
-#include  "autil.h"
-#include  "util.h"
+#include <dirent.h>   
+#include <sys/types.h>   
+#include <sys/stat.h> 
+#include "autil.h"
+#include "util.h"
 
 //char cryptokey[]=DEFAULTTABLE;
 char cryptokey[]="aBcDeFgHiJkLmNoPqRsTuVwXyZ";

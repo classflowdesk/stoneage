@@ -1,10 +1,12 @@
 #include "version.h"
 #include "linux_platform.h"
-#include "util.h"
+#include "proto.h"
 #include "config_file.h"
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include "util.h"
+#include <dirent.h>
 
 void chompex(char *buf) {
   while (*buf) {
@@ -15,13 +17,6 @@ void chompex(char *buf) {
   }
 }
 
-void chop(char *src) {
-  int length = strlen(src);
-  if (length == 0)
-    return;
-  src[length - 1] = '\0';
-}
-
 void dchop(char *src, char *del) {
   int dellen, srclen;
   int i;
@@ -30,14 +25,12 @@ void dchop(char *src, char *del) {
   dellen = strlen(del);
   if (srclen == 0 || dellen == 0)
     return;
-
   for (i = 0; i < dellen; i++) {
     if (src[srclen - 1] == del[i]) {
       delete = TRUE;
       break;
     }
   }
-
   if (delete)
     src[srclen - 1] = '\0';
 }
@@ -73,65 +66,6 @@ int charInclude(const char *src, const char *include) {
         return i;
   }
   return -1;
-}
-
-char *strncpy2(char *dest, const char *src, size_t n) {
-  if (n > 0) {
-    char *d = dest;
-    const char *s = src;
-    int i;
-    for (i = 0; i < n; i++) {
-      if (*(s + i) == 0) {
-        *(d + i) = '\0';
-        return dest;
-      }
-      if (*(s + i) & 0x80) {
-        *(d + i) = *(s + i);
-        i++;
-        if (i >= n) {
-          *(d + i - 1) = '\0';
-          break;
-        }
-        *(d + i) = *(s + i);
-      } else
-        *(d + i) = *(s + i);
-    }
-  }
-  return dest;
-}
-
-void strcpysafe(char *dest, const size_t n, const char *src) {
-  if (!src) {
-    *dest = '\0';
-    return;
-  }
-  int cpy_len = strlen(src);
-  if (n <= 0)
-    return;
-  else if (n < cpy_len + 1) {
-    strncpy2(dest, src, n - 1);
-    dest[n - 1] = '\0';
-  } else
-    strcpy(dest, src);
-}
-
-void strncpysafe(char *dest, const size_t n, const char *src,
-                 const int length) {
-  int cpy_len = min(strlen(src), length);
-  if (n < cpy_len + 1) {
-    strncpy2(dest, src, n - 1);
-    dest[n - 1] = '\0';
-  } else if (n <= 0) {
-    return;
-  } else {
-    strncpy2(dest, src, cpy_len);
-    dest[cpy_len] = '\0';
-  }
-}
-
-char *strcatsafe(char *src, const size_t n, char *ap) {
-  strcpysafe(src + strlen(src), n - strlen(src), ap);
-  return src;
 }
 
 int strcmptail(const char *s1, const char *s2) {
@@ -170,12 +104,10 @@ static int findNumberString(char *in, char *out, int outsiz) {
   for (i = 0, j = 0; in[i] != '\0' && j < outsiz - 2; i++) {
     findflag = 0;
     if (in[i] & 0x80) {
-      /* EUC������ */
       tmp[0] = in[i];
       tmp[1] = in[i + 1];
       tmp[2] = '\0';
     } else {
-      /* ASCII������ */
       tmp[0] = in[i];
       tmp[1] = '\0';
     }
@@ -385,11 +317,7 @@ BOOL strtolchecknum(char *arg, void *number, int base, CTYPE type) {
   }
 
   if (strlen(buf) >= 1)
-    /*
-     * ��Ի  ٯ��ؤ�����е��Ƿ�  ������ľ��ئ�����е���ئ���֣�
-     */
     return FALSE;
-
   return TRUE;
 }
 
@@ -461,109 +389,6 @@ char makeCharFromEscaped(char c) // add this function,because the second had it
   }
   return c;
 }
-char *makeStringFromEscaped(char *src) {
-
-  int i;
-  // CoolFish: Fix bug 2001/10/13
-  // int     srclen = strlen( src );
-  int srclen = 0;
-  int searchindex = 0;
-
-  // CoolFish: Fix bug 2001/10/13
-  if (!src)
-    return NULL;
-  srclen = strlen(src);
-
-  for (i = 0; i < srclen; i++) {
-    // for 2Byte Word
-    if (IS_2BYTEWORD(src[i])) {
-      src[searchindex++] = src[i++];
-      src[searchindex++] = src[i];
-    } else if (src[i] == '\\') {
-      // �ݼ�  ٯ�����
-      i++;
-      src[searchindex++] = makeCharFromEscaped(src[i]);
-    } else {
-      src[searchindex++] = src[i];
-    }
-  }
-  src[searchindex] = '\0';
-  return src;
-}
-
-char *makeEscapeString(
-    char *src, char *dest,
-    int sizeofdest) { // ttom this function all change, copy from the second
-  int i;
-  int srclen = 0;
-  int destindex = 0;
-
-  // CoolFish: Fix bug 2001/10/13
-  if (!src)
-    return NULL;
-  srclen = strlen(src);
-
-  for (i = 0; i < srclen; i++) {
-    BOOL dirty = FALSE;
-    int j;
-    char escapechar = '\0';
-    if (destindex + 1 >= sizeofdest)
-      break;
-    if (IS_2BYTEWORD(src[i])) {
-      if (destindex + 2 >= sizeofdest)
-        break;
-
-      dest[destindex] = src[i];
-      dest[destindex + 1] = src[i + 1];
-      destindex += 2;
-      i++;
-      continue;
-    }
-    for (j = 0; j < sizeof(escapeChar) / sizeof(escapeChar[0]); j++) {
-      if (src[i] == escapeChar[j].escapechar) {
-        dirty = TRUE;
-        escapechar = escapeChar[j].escapedchar;
-        break;
-      }
-    }
-    if (dirty == TRUE) {
-      if (destindex + 2 < sizeofdest) {
-        dest[destindex] = '\\';
-        dest[destindex + 1] = escapechar;
-        destindex += 2;
-        dirty = TRUE;
-        continue;
-      } else {
-        dest[destindex] = '\0';
-        return dest;
-      }
-    } else {
-      dest[destindex] = src[i];
-      destindex++;
-    }
-  }
-  dest[destindex] = '\0';
-  return dest;
-}
-
-// this function copy all from the second
-char *ScanOneByte(char *src, char delim) {
-  // Nuke
-  if (!src)
-    return NULL;
-  for (; src[0] != '\0'; src++) {
-    if (IS_2BYTEWORD(src[0])) {
-      if (src[1] != 0) {
-        src++;
-      }
-      continue;
-    }
-    if (src[0] == delim) {
-      return src;
-    }
-  }
-  return NULL;
-}
 
 /*----------------------------------------
  * delim: 查找
@@ -590,22 +415,23 @@ BOOL getStringFromIndexWithDelim_body(
     char *buf, const int buflen,
     const char *file, const int line) {
   int i, length = 0, addlen = 0;
+  const int delim_len = strlen(delim);
   for (i = 0; i < index; i++) {
     char *last;
     src += addlen;
-    if (strlen(delim) == 0) {
-      last = ScanOneByte(src, delim[0]);
+    if (delim_len == 0) {
+      last = strstr_onebyte(src, delim[0]);
     } else {
       last = strstr(src, delim);
     }
     if (last == NULL) {
-      strcpysafe(buf, buflen, src);
+      util_strncpysafe2(buf, buflen, src);
       return i == index - 1 ? TRUE : FALSE;
     }
     length = last - src;
-    addlen = length + strlen(delim);
+    addlen = length + delim_len;
   }
-  strncpysafe(buf, buflen, src, length);
+  util_strncpysafe1(buf, buflen, src, length);
   return TRUE;
 }
 
@@ -648,11 +474,11 @@ void getFourIntsFromString(char *src, int *int1, int *int2, int *int3,
 }
 
 void deleteSequentChar(char *src, char *dels) {
-  int length;           /* src ��Ӯ�� */
-  int delength;         /* dels ��Ӯ�� */
-  int i, j;             /* �����  �� */
-  int index = 0;        /* ����  ٯ  �� index */
-  char backchar = '\0'; /* ��������  ٯ */
+  int length;
+  int delength;
+  int i, j;
+  int index = 0;
+  char backchar = '\0';
   length = strlen(src);
   delength = strlen(dels);
 
@@ -680,27 +506,6 @@ void deleteSequentChar(char *src, char *dels) {
     src[index++] = src[i];
   }
   src[index++] = '\0';
-}
-
-/*----------------------------------------
- * hashpjw:
- * Param:
- *   s (const char *): input string.
- * Return Value:
- *   (int): hash value of the input string.
- *----------------------------------------*/
-int hashpjw(const char *s) {
-  char *p;
-  unsigned int h = 0, g;
-  for (p = s; *p; p++) {
-    h = (h << 4) + (*p);
-    if ((g = h & 0xf0000000) != 0) {
-      h = h ^ (g >> 24);
-      h = h ^ g;
-    }
-  }
-  // 211 is a preset prime to mode.
-  return h % 211;
 }
 
 /*----------------------------------------
@@ -780,19 +585,10 @@ int connectHost(char *hostname, unsigned short port) {
   return fd;
 }
 
-int existsNewLineCharacter(char *line) {
-  char *old = line;
-  do {
-    if (*line == NEWLINE)
-      return line - old;
-  } while (*(line++));
-  return -1;
-}
-
 char *nindex(char *string, int c, int number) {
-  int i; /*�����  ��*/
+  int i;
   int num = 0;
-  int length = strlen(string); /*Ʃ����  ٯ  ��Ӯ��*/
+  int length = strlen(string);
   if (number <= 0)
     return string;
   for (i = 0; i < length; i++) {
@@ -806,45 +602,41 @@ char *nindex(char *string, int c, int number) {
 
 BOOL rrd(const char *dirname, const STRING64 *buf, const int bufsize,
          int *index) {
-  DIR *d;
   char dirn[1024];
-  d = opendir(dirname);
-  if (d == NULL)
+  struct dirent64 *p_dirent;
+  struct stat st;
+  BOOL ret_val = TRUE;
+  DIR *p_dir = opendir(dirname);
+  if (p_dir == NULL)
     return FALSE;
-  while (1) {
-    struct dirent *dent;
-    struct stat st;
-    dent = readdir(d);
-    if (dent == NULL) {
-      print("dent is NULL.\n");
+  while (TRUE) {
+    p_dirent = readdir64(p_dir);
+    if (p_dirent == NULL) {
       if (errno == EBADF) {
-        errorprint;
-        closedir(d);
-        return FALSE;
-      } else {
         print("%d\n", errno);
-        break;
+        ret_val = FALSE;
       }
+      break;
     }
-    print("%s\n", dent->d_name);
-    if (dent->d_name[0] == '.')
+    print("%s\n", p_dirent->d_name);
+    if (p_dirent->d_name[0] == '.')
       continue;
-    snprintf(dirn, sizeof(dirn), "%s/%s", dirname, dent->d_name);
+    snprintf(dirn, sizeof(dirn), "%s/%s", dirname, p_dirent->d_name);
     if (stat(dirn, &st) == -1)
       continue;
     if (S_ISDIR(st.st_mode)) {
       if (rrd(dirn, buf, bufsize, index) == FALSE) {
-        closedir(d);
-        return FALSE;
+        ret_val = FALSE;
+        break;
       }
     } else {
       if (*index >= bufsize)
         break;
-      strcpysafe(buf[*index].string, sizeof(buf[*index].string), dirn);
+      util_strncpysafe2(buf[*index].string, sizeof(buf[*index].string), dirn);
       (*index)++;
     }
   }
-  closedir(d);
+  closedir(p_dir);
   return TRUE;
 }
 
@@ -910,42 +702,6 @@ BOOL isstring1or0(char *string) {
   if (strcasecmp(string, "OFF") == 0)
     return FALSE;
   return FALSE;
-}
-
-void easyGetTokenFromString(char *src, int count, char *output, int len) {
-  int i;
-  int counter = 0;
-
-  if (len <= 0)
-    return;
-
-#define ISSPACETAB(c) ((c) == ' ' || (c) == '\t')
-
-  for (i = 0;; i++) {
-    if (src[i] == '\0') {
-      output[0] = '\0';
-      return;
-    }
-    if (i > 0 && !ISSPACETAB(src[i - 1]) && !ISSPACETAB(src[i])) {
-      continue;
-    }
-
-    if (!ISSPACETAB(src[i])) {
-      counter++;
-      if (counter == count) {
-        /* copy it */
-        int j;
-        for (j = 0; j < len - 1; j++) {
-          if (src[i + j] == '\0' || ISSPACETAB(src[i + j])) {
-            break;
-          }
-          output[j] = src[i + j];
-        }
-        output[j] = '\0';
-        return;
-      }
-    }
-  }
 }
 
 float linearDiv(float val1, float val2, float d) {

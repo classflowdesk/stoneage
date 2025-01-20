@@ -1,4 +1,5 @@
-#include "version.h"
+#include "gmsv_server.h"
+//
 #include "addressbook.h"
 #include "battle.h"
 #include "battle_command.h"
@@ -10,7 +11,6 @@
 #include "item_event.h" // shan: blackmarket
 #include "item_gen.h"
 #include "log.h" //add this because the second had it
-#include "lssproto_serv.h"
 #include "magic.h"
 #include "map_deal.h" // CoolFish: 2001/4/18
 #include "net.h"
@@ -116,8 +116,6 @@ void lssproto_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
             strcmp(ip, getNoAttIp(2)) != 0 && strcmp(ip, getNoAttIp(3)) != 0 &&
             strcmp(ip, getNoAttIp(4)) != 0) {
           if (getNoCdkeyType() == 0) {
-            // if(sasql_query_online_ip(ip)==0 &&
-            // sasql_check_lockip(ip,getFengType())<1){
             if (sasql_query_online_ip(ip) == 0) {
               print("����1��\n");
               CONNECT_endOne_debug(fd);
@@ -137,10 +135,7 @@ void lssproto_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
             strcmp(ip, getNoAttIp(2)) != 0 && strcmp(ip, getNoAttIp(3)) != 0 &&
             strcmp(ip, getNoAttIp(4)) != 0) {
           if (getNoCdkeyType() == 0) {
-            // if(sasql_query_online_ip(ip)==0 &&
-            // sasql_check_lockip(ip,getFengType())<1){
             if (sasql_query_online_ip(ip) == 0) {
-              // if(sasql_add_lockip(ip,getFengType(),getServernumber(),2)==1){
               print("����3��\n");
               CONNECT_endOne_debug(fd);
               return;

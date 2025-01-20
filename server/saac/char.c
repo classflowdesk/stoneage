@@ -1,7 +1,7 @@
 #define _CHAR_C_
 #include "char.h"
 #include "main.h"
-#include "saacproto_serv.h"
+#include "saac_server.h"
 #include "util.h"
 
 // CoolFish: Family 2001/6/12
@@ -77,22 +77,22 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
     char data[100];
     snprintf(data, sizeof(data), "%d", auth);
 #ifdef _NewSave
-    saacproto_ACCharLoad_send(ti, FAILED, data, mesgid, char_index);
+    SaacServer_ACCharLoad_send(ti, FAILED, data, mesgid, char_index);
 #else
-    saacproto_ACCharLoad_send(ti, FAILED, data, mesgid);
+    SaacServer_ACCharLoad_send(ti, FAILED, data, mesgid);
 #endif
     return;
   }
   if (isLocked(id)) {
     int process = atoi(c3);
 #ifdef _NewSave
-    saacproto_ACCharLoad_send(ti, FAILED, "locked", mesgid, char_index);
+    SaacServer_ACCharLoad_send(ti, FAILED, "locked", mesgid, char_index);
 #else
-    saacproto_ACCharLoad_send(ti, FAILED, "locked", mesgid);
+    SaacServer_ACCharLoad_send(ti, FAILED, "locked", mesgid);
 #endif
     DeleteMemLock(getHash(id) & 0xff, id, &process); // 如果AP无锁则AC解锁
     log("\n (%s) AC同一星系重覆登入，踢人!! ", id);
-    saacproto_ACKick_recv(ti, id, 1, -1); // 踢人
+    SaacServer_ACKick_recv(ti, id, 1, -1); // 踢人
 
     checkGSUCheck(id);
     return;
@@ -106,20 +106,20 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
   if (char_index < 0) {
     /* 非法的char_index */
 #ifdef _NewSave
-    saacproto_ACCharLoad_send(ti, FAILED, "char nonexistent", mesgid,
+    SaacServer_ACCharLoad_send(ti, FAILED, "char nonexistent", mesgid,
                               char_index);
 #else
-    saacproto_ACCharLoad_send(ti, FAILED, "char nonexistent", mesgid);
+    SaacServer_ACCharLoad_send(ti, FAILED, "char nonexistent", mesgid);
 #endif
     return;
   }
 
   if (loadCharOne(id, char_index, loadbuf, sizeof(loadbuf)) < 0) {
 #ifdef _NewSave
-    saacproto_ACCharLoad_send(ti, FAILED, "cannot load ( disk i/o error?)",
+    SaacServer_ACCharLoad_send(ti, FAILED, "cannot load ( disk i/o error?)",
                               mesgid, char_index);
 #else
-    saacproto_ACCharLoad_send(ti, FAILED, "cannot load ( disk i/o error?)",
+    SaacServer_ACCharLoad_send(ti, FAILED, "cannot load ( disk i/o error?)",
                               mesgid);
 #endif
     return;
@@ -142,7 +142,7 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
     if (lockUser(getGSName(ti), id, passwd, 1, result, sizeof(result), retdata,
                  sizeof(retdata), process, deadline) < 0) {
 #endif
-      saacproto_ACCharLoad_send(ti, FAILED, "lock FAIL!!", mesgid, char_index);
+      SaacServer_ACCharLoad_send(ti, FAILED, "lock FAIL!!", mesgid, char_index);
       return;
     }
   }
@@ -150,13 +150,13 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
   getCharInfoFromString(loadbuf, infobuf);
   makeStringFromEscaped(infobuf);
 #ifdef _NewSave
-  saacproto_ACCharLoad_send(ti, SUCCESSFUL, infobuf, mesgid, char_index);
+  SaacServer_ACCharLoad_send(ti, SUCCESSFUL, infobuf, mesgid, char_index);
 #else
-  saacproto_ACCharLoad_send(ti, SUCCESSFUL, infobuf, mesgid);
+  SaacServer_ACCharLoad_send(ti, SUCCESSFUL, infobuf, mesgid);
 #endif
 
 #ifdef _WAEI_KICK
-  saacproto_ACKick_recv(ti, id, 10, -1); // 踢其他星系
+  SaacServer_ACKick_recv(ti, id, 10, -1); // 踢其他星系
 #endif
 }
 
@@ -204,7 +204,7 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
   if (makeSaveCharString(savebuf, sizeof(savebuf), charname, opt, charinfo) <
       0) {
     log("\n AC存档:太长  ");
-    saacproto_ACCharSave_send(ti, FAILED, "too long", mesgid);
+    SaacServer_ACCharSave_send(ti, FAILED, "too long", mesgid);
     // Spock fixed 2000/11/1
     return ret;
   }
@@ -219,7 +219,7 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
     int blankind = findBlankCharIndex(id);
     if (blankind < 0) {
       log("\n ACCharSave:char full  ");
-      saacproto_ACCharSave_send(ti, FAILED, "char full", mesgid);
+      SaacServer_ACCharSave_send(ti, FAILED, "char full", mesgid);
       return ret;
     } else {
       char_index = blankind;
@@ -229,11 +229,11 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
   log("账号:[%s] 人物:[%s]\n", id, charname);
   if (saveCharOne(id, char_index, savebuf) < 0) {
     log("\n ACCharSave:disk I/O error or a bug  ");
-    saacproto_ACCharSave_send(ti, FAILED, "disk I/O error or a bug", mesgid);
+    SaacServer_ACCharSave_send(ti, FAILED, "disk I/O error or a bug", mesgid);
     return ret;
   }
 
-  saacproto_ACCharSave_send(ti, SUCCESSFUL, "", mesgid);
+  SaacServer_ACCharSave_send(ti, SUCCESSFUL, "", mesgid);
   return ret;
 }
 
@@ -245,17 +245,17 @@ void charListCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
   if (auth != 0) {
     char data[100];
     snprintf(data, sizeof(data), "%d", auth);
-    saacproto_ACCharList_send(ti, FAILED, "你的账号暂时无法登陆！", mesgid);
+    SaacServer_ACCharList_send(ti, FAILED, "你的账号暂时无法登陆！", mesgid);
     total_ng_charlist++;
     return;
   }
   // 取消下列 unlock 动作
   if (isLocked(id)) {
-    saacproto_ACCharList_send(ti, FAILED,
+    SaacServer_ACCharList_send(ti, FAILED,
                               "你的账号处理锁定状态，请重新登陆，如果三次都不能"
                               "进入，请联系管理员为您解锁！",
                               mesgid);
-    saacproto_ACKick_recv(ti, id, 1, -1);
+    SaacServer_ACKick_recv(ti, id, 1, -1);
     checkGSUCheck(id);
     total_ng_charlist++;
     return;
@@ -323,7 +323,7 @@ void charListCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
 
   loadCharNameAndOption(id, listbuf, sizeof(listbuf));
   // Arminius
-  saacproto_ACCharList_send(ti, SUCCESSFUL, listbuf, mesgid);
+  SaacServer_ACCharList_send(ti, SUCCESSFUL, listbuf, mesgid);
   total_ok_charlist++;
 }
 
@@ -340,18 +340,18 @@ void charDeleteCallback(int ti, int auth, char *c0, char *c1, char *c2,
   if (auth != 0) {
     char data[100];
     snprintf(data, sizeof(data), "%d", auth);
-    saacproto_ACCharDelete_send(ti, FAILED, data, mesgid);
+    SaacServer_ACCharDelete_send(ti, FAILED, data, mesgid);
     return;
   }
 
   char_index = getCharIndexByName(id, charname);
   if (char_index < 0) {
-    saacproto_ACCharDelete_send(ti, FAILED, "nochar", mesgid);
+    SaacServer_ACCharDelete_send(ti, FAILED, "nochar", mesgid);
     return;
   }
 
   if (unlinkCharFile(id, char_index) < 0) {
-    saacproto_ACCharDelete_send(ti, FAILED, "fileI/O", mesgid);
+    SaacServer_ACCharDelete_send(ti, FAILED, "fileI/O", mesgid);
     return;
   }
 #ifdef _FAMILY
@@ -406,7 +406,7 @@ void charDeleteCallback(int ti, int auth, char *c0, char *c1, char *c2,
           now->tm_min, now->tm_sec, id, charname, char_index);
   // Spock end
   USERLOG(id, "账号删除: 成功\n");
-  saacproto_ACCharDelete_send(ti, SUCCESSFUL, "ok", mesgid);
+  SaacServer_ACCharDelete_send(ti, SUCCESSFUL, "ok", mesgid);
 }
 
 void dummyCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,

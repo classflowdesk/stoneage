@@ -24,20 +24,20 @@ void Lock_Init(void) {
 }
 
 LockNode *Creat_newNodes(void) {
-  LockNode *newln = NULL;
-  newln = (LockNode *)calloc(1, sizeof(LockNode));
-  if (newln == NULL) {
+  LockNode *newlock_node = NULL;
+  newlock_node = (LockNode *)calloc(1, sizeof(LockNode));
+  if (newlock_node == NULL) {
     log("err Can't calloc:%d lock nodes !!\n", sizeof(LockNode));
     return 0;
   }
-  newln->use = 0;
-  newln->next = NULL;
-  memset(newln->cdkey, 0, sizeof(newln->cdkey));
-  memset(newln->server, 0, sizeof(newln->server));
+  newlock_node->use = 0;
+  newlock_node->next = NULL;
+  memset(newlock_node->cdkey, 0, sizeof(newlock_node->cdkey));
+  memset(newlock_node->server, 0, sizeof(newlock_node->server));
 #ifdef _LOCK_ADD_NAME
-  memset(newln->name, 0, sizeof(newln->name));
+  memset(newlock_node->name, 0, sizeof(newlock_node->name));
 #endif
-  return newln;
+  return newlock_node;
 }
 
 #ifdef _LOCK_ADD_NAME
@@ -49,7 +49,7 @@ int InsertMemLock(int entry, char *cdkey, char *passwd, char *server,
 #endif
 {
   int j;
-  LockNode *ln = userlock[entry];
+  LockNode *lock_node = userlock[entry];
 #ifdef _LOCK_ADD_NAME
   log("进入游戏:目录:char/0x%x 账号:%s 名称:%s 服务器:%s\n", entry, cdkey, name,
       server);
@@ -57,10 +57,10 @@ int InsertMemLock(int entry, char *cdkey, char *passwd, char *server,
   log("进入游戏:目录:%x 账号:%s 服务器:%s\n", entry, cdkey, server);
 #endif
 
-  while ((ln != NULL) && (ln->use != 0))
-    ln = ln->next;
+  while ((lock_node != NULL) && (lock_node->use != 0))
+    lock_node = lock_node->next;
 
-  if (ln == NULL) {
+  if (lock_node == NULL) {
     LockNode *fhead = NULL;
     LockNode *p = userlock[entry];
     log("Add more lock nodes.\n");
@@ -68,26 +68,26 @@ int InsertMemLock(int entry, char *cdkey, char *passwd, char *server,
       p = p->next;
     fhead = p;
     for (j = 0; j < 32; j++) { // allocate more nodes
-      if ((ln = Creat_newNodes()) == NULL)
+      if ((lock_node = Creat_newNodes()) == NULL)
         return 0;
-      ln->prev = p;
-      p->next = ln;
-      p = ln;
+      lock_node->prev = p;
+      p->next = lock_node;
+      p = lock_node;
     }
     while ((fhead != NULL) && (fhead->use != 0))
       fhead = fhead->next;
-    ln = fhead;
+    lock_node = fhead;
   }
 
-  if (ln->use != 0)
+  if (lock_node->use != 0)
     return 0;
-  ln->use = 1;
-  strcpy(ln->cdkey, cdkey);
-  strcpy(ln->server, server);
+  lock_node->use = 1;
+  strcpy(lock_node->cdkey, cdkey);
+  strcpy(lock_node->server, server);
 #ifdef _LOCK_ADD_NAME
-  strcpy(ln->name, name);
+  strcpy(lock_node->name, name);
 #endif
-  ln->process = process;
+  lock_node->process = process;
 #ifdef _SASQL
   sasql_online(cdkey, name, NULL, NULL, 2);
 #endif
@@ -95,25 +95,25 @@ int InsertMemLock(int entry, char *cdkey, char *passwd, char *server,
 }
 
 int DeleteMemLock(int entry, char *cdkey, int *process) {
-  LockNode *ln = userlock[entry];
+  LockNode *lock_node = userlock[entry];
 
   log("删除内存信息 位置=%x 账号=%s ..", entry, cdkey);
 
-  while (ln != NULL) {
-    if (ln->use != 0) {
-      if (strcmp(ln->cdkey, cdkey) == 0)
+  while (lock_node != NULL) {
+    if (lock_node->use != 0) {
+      if (strcmp(lock_node->cdkey, cdkey) == 0)
         break;
     }
-    ln = ln->next;
+    lock_node = lock_node->next;
   }
-  if (ln != NULL) {
-    ln->use = 0;
-    memset(ln->cdkey, 0, sizeof(ln->cdkey));
-    memset(ln->server, 0, sizeof(ln->server));
+  if (lock_node != NULL) {
+    lock_node->use = 0;
+    memset(lock_node->cdkey, 0, sizeof(lock_node->cdkey));
+    memset(lock_node->server, 0, sizeof(lock_node->server));
 #ifdef _LOCK_ADD_NAME
-    memset(ln->name, 0, sizeof(ln->name));
+    memset(lock_node->name, 0, sizeof(lock_node->name));
 #endif
-    *process = ln->process;
+    *process = lock_node->process;
     log("删除成功\n");
 #ifdef _SQL_BACKGROUND
     sasql_online(cdkey, NULL, NULL, NULL, 0);
@@ -126,78 +126,78 @@ int DeleteMemLock(int entry, char *cdkey, int *process) {
 
 void DeleteMemLockServer(char *sname) {
   int i;
-  LockNode *ln;
+  LockNode *lock_node;
   for (i = 0; i < 256; i++) {
-    ln = userlock[i];
-    while (ln != NULL) {
-      if (ln->use != 0) {
-        if (strcmp(ln->server, sname) == 0) {
-          ln->use = 0;
+    lock_node = userlock[i];
+    while (lock_node != NULL) {
+      if (lock_node->use != 0) {
+        if (strcmp(lock_node->server, sname) == 0) {
+          lock_node->use = 0;
         }
       }
-      ln = ln->next;
+      lock_node = lock_node->next;
     }
   }
 }
 
 int isMemLocked(int entry, char *cdkey) {
-  LockNode *ln = userlock[entry];
-  while (ln != NULL) {
-    if (ln->use != 0) {
-      if (strcmp(ln->cdkey, cdkey) == 0) {
-        if (!strcmp(ln->server, "星系移民"))
+  LockNode *lock_node = userlock[entry];
+  while (lock_node != NULL) {
+    if (lock_node->use != 0) {
+      if (strcmp(lock_node->cdkey, cdkey) == 0) {
+        if (!strcmp(lock_node->server, "星系移民"))
           log("星系移民中");
         break;
       }
     }
-    ln = ln->next;
+    lock_node = lock_node->next;
   }
-  if (ln != NULL)
+  if (lock_node != NULL)
     return 1;
   else
     return 0;
 }
 
 int GetMemLockState(int entry, char *cdkey, char *result) {
-  LockNode *ln = userlock[entry];
+  LockNode *lock_node = userlock[entry];
 
-  while (ln != NULL) {
-    if (ln->use != 0) {
-      if (strcmp(ln->cdkey, cdkey) == 0) {
-        sprintf(result, "%s 是在 %s 被锁的.", cdkey, ln->server);
+  while (lock_node != NULL) {
+    if (lock_node->use != 0) {
+      if (strcmp(lock_node->cdkey, cdkey) == 0) {
+        sprintf(result, "%s 是在 %s 被锁的.", cdkey, lock_node->server);
         return 1;
       }
     }
-    ln = ln->next;
+    lock_node = lock_node->next;
   }
   sprintf(result, "%s 没有被锁.", cdkey);
   return 0;
 }
 
 int GetMemLockServer(int entry, char *cdkey, char *result) {
-  LockNode *ln = userlock[entry];
-  while (ln != NULL) {
-    if (ln->use != 0) {
-      if (strcmp(ln->cdkey, cdkey) == 0) {
-        strcpy(result, ln->server);
+  LockNode *lock_node = userlock[entry];
+  while (lock_node != NULL) {
+    if (lock_node->use != 0) {
+      if (strcmp(lock_node->cdkey, cdkey) == 0) {
+        strcpy(result, lock_node->server);
         return 1;
       }
     }
-    ln = ln->next;
+    lock_node = lock_node->next;
   }
   return 0;
 }
 
 int LockNode_getGname(int entries, char *id, char *gname) {
-  LockNode *ln = userlock[entries];
-  while (ln != NULL) {
-    if (ln->use != 0) {
-      if (!strcmp(ln->cdkey, id)) {
-        sprintf(gname, "%s", ln->server);
+  LockNode *lock_node = userlock[entries];
+  while (lock_node != NULL) {
+    if (lock_node->use != 0) {
+      if (!strcmp(lock_node->cdkey, id)) {
+        sprintf(gname, "%s", lock_node->server);
         return 1;
       }
     }
-    ln = ln->next;
+    lock_node = lock_node->next;
   }
   return 0;
 }

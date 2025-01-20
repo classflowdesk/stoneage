@@ -1,5 +1,5 @@
-#include "version.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
+//
 #include "autil.h"
 #include "battle.h"
 #include "char.h"
@@ -11,60 +11,13 @@
 #include <errno.h>
 #include <net.h>
 
+
 #ifdef _ABSOLUTE_DEBUG
 extern char charId[32];
 extern char errordata[256];
 extern int lastfunctime;
 #endif
 
-void lssproto_SetServerLogFiles(char *r, char *w) {
-  proto_strcpysafe(lssproto_writelogfilename, w,
-                   sizeof(lssproto_writelogfilename));
-  proto_strcpysafe(lssproto_readlogfilename, r,
-                   sizeof(lssproto_readlogfilename));
-}
-
-int lssproto_InitServer(int (*writefunc)(int, char *, int), int worksiz) {
-  int i;
-  if ((void *)writefunc == NULL) {
-    lssproto.write_func = lssproto_default_write_wrap;
-  } else {
-    lssproto.write_func = writefunc;
-  }
-  lssproto_AllocateCommonWork(worksiz);
-  lssproto_stringwrapper = (char **)calloc(1, sizeof(char *) * MAXLSRPCARGS);
-  if (lssproto_stringwrapper == NULL)
-    return -1;
-  memset(lssproto_stringwrapper, 0, sizeof(char *) * MAXLSRPCARGS);
-  for (i = 0; i < MAXLSRPCARGS; i++) {
-    lssproto_stringwrapper[i] = (char *)calloc(1, worksiz);
-    if (lssproto_stringwrapper[i] == NULL) {
-      for (i = 0; i < MAXLSRPCARGS; i++) {
-        free(lssproto_stringwrapper[i]);
-        return -1;
-      }
-    }
-  }
-  lssproto.ret_work = (char *)calloc(1, sizeof(worksiz));
-  if (lssproto.ret_work == NULL) {
-    return -1;
-  }
-  return 0;
-}
-
-void lssproto_CleanupServer(void) {
-  int i;
-  free(lssproto.work);
-  free(lssproto.arraywork);
-  free(lssproto.escapework);
-  free(lssproto.val_str);
-  free(lssproto.token_list);
-  for (i = 0; i < MAXLSRPCARGS; i++) {
-    free(lssproto_stringwrapper[i]);
-  }
-  free(lssproto_stringwrapper);
-  free(lssproto.ret_work);
-}
 #define DME() print("<DME(%d)%d:%d>", fd, __LINE__, func)
 extern int cliretfunc;
 int lssproto_ServerDispatchMessage(int fd, char *encoded) {
@@ -118,21 +71,6 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
     }
     return -1;
   }
-#endif
-#ifdef _SERVER_DEF
-  /*
-if (func != 71 && func != 79 && func != 87 && func != 77 && func != 81 && func
-!= 73 && func != 75 && func != 203)//登录前封包
-全部可执行，其他封包检查是否已经有玩家在线！
-          {
-                  if( !CHAR_CHECKINDEX( CONNECT_getCharaindex(fd) )
-)//并没有登入人物，仅仅是一个连接！
-                  {
-  close(fd);//断开玩家之间的连接
-                          return -1;//你要做的事!
-                  }
-          }
-          */
 #endif
   cliretfunc = func;
 #ifdef _ABSOLUTE_DEBUG
@@ -3212,7 +3150,7 @@ void lssproto_STREET_VENDOR_send(int fd, char *message) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]LSSPROTO_STREET_VENDOR_SEND-message:%s\n", message);
+  printf("[发送]LSSSTREET_VENDOR_SEND-message:%s\n", message);
 #endif
   char buffer[65500];
   int checksum = 0;

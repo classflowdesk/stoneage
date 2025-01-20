@@ -1,4 +1,3 @@
-#include <string.h>
 #include "version.h"
 #include "longzoro/newshop.h"
 #include "longzoro/sasql.h"
@@ -236,8 +235,10 @@ void OnlineShop_Buy(int fd, int charaindex, int type, int page, int id, int num)
 						int itemindex = ITEM_makeItemAndRegist( onlineshop[type-1][id].id );
 						
 						if( itemindex != -1 ){
-#ifdef _MO_LUA_ADDITEM_CALLBACK
-							NpcAdditemFunction(charaindex, onlineshop[type-1][id].id);
+#ifdef _MO_LUA_ADDITEM_CALLBACK
+
+							NpcAdditemFunction(charaindex, onlineshop[type-1][id].id);
+
 #endif
 							 CHAR_setItemIndex( charaindex, emptyitemindexinchara, itemindex );
 							 ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
