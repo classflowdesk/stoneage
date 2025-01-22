@@ -195,10 +195,6 @@ void sigusr1(int a) {
   }
 }
 
-static int netWrite(int ti, char *buf, int len) {
-  return tcpstruct_write(ti, buf, len);
-}
-
 gmsv gs[MAXCONNECTION];
 
 #if _ATTESTAION_ID == 1
@@ -620,6 +616,7 @@ int main(int argc, char **argv) {
       printf("%08x %08lx %08lx %08lx %08lx\n",0,eax,ebx,ecx,edx);
   */
 
+  const char* fm_pk = "data/family/fm_pk_list.txt";
   // 给出一个随机数种子. 产生随机数。
   srand((int)time(0));
   parseOpts(argc, argv);
@@ -661,34 +658,37 @@ int main(int argc, char **argv) {
   readFamily(familydir);
 #endif
   log("准备档案目录\n");
-  prepareDirectories(chardir);
+  PrepareDirectories(chardir);
   log("准备日志目录\n");
-  prepareDirectories(logdir);
+  PrepareDirectories(logdir);
   log("准备邮件目录\n");
-  prepareDirectories(maildir);
-
+  PrepareDirectories(maildir);
 #ifdef _SLEEP_CHAR
-  prepareDirectories(sleepchardir);
+  PrepareDirectories(sleepchardir);
   log("准备睡眠档案目录\n");
 #endif
-
   if (readMail(maildir) < 0) {
     log("不能初始化邮件\n");
     exit(1);
   }
   /* TCPSTRUCT */
-  while (1) {
+  do {
     int tcpr;
     if ((tcpr = tcpstruct_init(NULL, port, 0, CHARDATASIZE * 16 * MAXCONNECTION,
                                1 /* DEBUG */)) < 0) {
       log("不能监听TCP端口，错误代码: %d, 请稍等...\n", tcpr);
-      sleep(10);
+      sleep(1);
     } else {
       break;
     }
+  } while(1);
+  printf("IS_FILE: %d %d %d\n", isFile(fm_pk_list), CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
+  int ret = InitWorkSpace(&gSaacWorkSpace, tcpstruct_write, CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
+  if (ret == 0) {
+    log("InitWorkSpace Succeed.\n");
+  } else {
+    log("InitWorkSpace Failed.\n");
   }
-  InitWorkSpace(&gSaacWorkSpace, netWrite, CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
-  log("InitWorkSpace Succeed.\n");
 
 #ifdef _AC_SEND_FM_PK // WON ADD 庄园对战列表储存在AC
   log("Init FM PK...\n");
@@ -717,12 +717,9 @@ int main(int argc, char **argv) {
 
   int itime = 0;
   while (1) {
-
     int newti, i;
     static time_t main_loop_time;
-
     sys_time = time(NULL);
-
 #ifdef _LOTTERY_SYSTEM
     char todayaward[256] = "-1,-1,-1,-1,-1,-1,-1";
     {

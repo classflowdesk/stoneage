@@ -72,14 +72,14 @@ static char *MEMBERKIND_INTDATA[FMMEMBER_KINDNUM] = {
 };
 
 // 家族之间留言板
-struct FMSMEMO {
+typedef struct tagFMSMEMO {
   int num;                                   // 留言数量
   int fmsnowwritenum;                        // 目前留言位置
   char memodata[FMSMEMONUM][FAMILY_MEMOLEN]; // 留言内容
-};
+} FMSMEMO;
 
 // 庄园
-struct FMPOINT {
+typedef struct tagFMPOINT {
   int fl;                       // 庄园进入图层
   int x;                        // 庄园进入Ｘ座标
   int y;                        // 庄园进入Ｙ座标
@@ -91,7 +91,7 @@ struct FMPOINT {
 #ifdef _FIX_FMPOINTTIME
   int fmpointtime; // 占领庄园时间
 #endif
-};
+} FMPOINT;
 
 // 家族成员资料
 typedef struct {
@@ -193,8 +193,8 @@ int fmfeedindex[MAX_FAMILY];
 int fmsynthesizeindex[MAX_FAMILY];
 int fmdealfoodindex[MAX_FAMILY];
 int fmpkindex[MAX_FAMILY];
-struct FMPOINT fmpoint[MAX_FMPOINT];
-struct FMSMEMO fmsmemo;
+FMPOINT fmpoint[MAX_FMPOINT];
+FMSMEMO fmsmemo;
 
 // Arminius: sort family & output the sorted list
 // Make a sorted index (fmindex) for the family data (family)
@@ -3990,5 +3990,40 @@ void addFmPayPoint(int fmindex, char *fmname, int paypoint) {
   family[index].fmpaypoint += paypoint;
   printf("家族[%s]充值积分为：%d\n", family[index].fmname,
          family[index].fmpaypoint);
+}
+#endif
+
+#ifdef _AC_SEND_FM_PK // WON ADD 庄园对战列表储存在AC
+void load_fm_pk_list() {
+  int i;
+  const char *filename = "data/family/fm_pk_list.txt";
+  FILE *fp;
+  printf("Start to create %s\n", filename);
+  if (!(fp = fopen(filename, "r"))) {
+    printf("Failed to create %s\n", filename);
+    return;
+  }
+  printf("Failed to create %s\n", filename);
+  for (i = 0; i < FMPKLIST_MAXNUM; i++) {
+    char buf[256];
+    if (fscanf(fp, "%s", buf) == EOF)
+      break;
+    buf[strlen(buf) + 1] = 0;
+    memcpy(fm_pk_list[i], buf, strlen(buf) + 1);
+  }
+  fclose(fp);
+}
+
+void save_fm_pk_list() {
+  int i;
+  const char *filename = "data/family/fm_pk_list.txt";
+  FILE *fp;
+  if (!(fp = fopen(filename, "w"))) {
+    return;
+  }
+  for (i = 0; i < FMPKLIST_MAXNUM; i++) {
+    fprintf(fp, "%s\n", fm_pk_list[i]);
+  }
+  fclose(fp);
 }
 #endif

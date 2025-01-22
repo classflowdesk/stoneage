@@ -29,12 +29,12 @@ int getHash(const char *s) {
   return h;
 }
 
+#define ISSPACETAB(c) ((c) == ' ' || (c) == '\t')
 void easyGetTokenFromString(char *src, int count, char *output, int len) {
   int i;
   int counter = 0;
   if (len <= 0)
     return;
-#define ISSPACETAB(c) ((c) == ' ' || (c) == '\t')
   for (i = 0;; i++) {
     if (src[i] == '\0') {
       output[0] = '\0';
@@ -60,24 +60,28 @@ void easyGetTokenFromString(char *src, int count, char *output, int len) {
   }
 }
 
-void prepareDirectories(char *base) {
-  int i;
-  char dname[1024];
-
-  for (i = 0; i < 256; i++) {
-    int ret;
-    snprintf(dname, sizeof(dname), "%s/0x%x", base, i);
-    ret = mkdir(dname, 0755);
+int CreateDir(const char *dirname, int mode) {
+    // ret == 0 目录创建成功
+    // ret == -1 且不是目录已存在, 则返回错误.
+    int ret = mkdir(dirname, mode);
     if (ret < 0 && errno != EEXIST) {
-      printf("mkdir error:%d %s: %s\n", ret, strerror(errno), dname);
+      printf("mkdir error:%d %s: %s\n", ret, strerror(errno), dirname);
+      return -1;
     }
-    if (ret == 0)
-      printf(".");
+    return 0;
+}
+
+void PrepareDirectories(const char *base_dirname) {
+  int i;
+  char dirname[1024];
+  for (i = 0; i < 256; i++) {
+    snprintf(dirname, sizeof(dirname), "%s/0x%x", base_dirname, i);
+    CreateDir(dirname, 0755);
   }
 }
 
 void makeDirFilename(char *out, const int out_len, const char *base,
-                     int dir_char, const char *child) {
+                     const int dir_char, const char *child) {
   snprintf(out, out_len, "%s/0x%x/%s", base, dir_char & 0xFF, child);
 }
 
@@ -88,17 +92,6 @@ int isFile(const char *filename) {
   } else {
     fclose(fp);
     return 1;
-  }
-}
-
-int createFile(const char *filename, const char *line) {
-  FILE *fp = fopen(filename, "w");
-  if (fp == NULL) {
-    return -1;
-  } else {
-    fprintf(fp, "%s", line);
-    fclose(fp);
-    return 0;
   }
 }
 

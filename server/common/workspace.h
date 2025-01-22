@@ -15,8 +15,8 @@ char *strcatsafe(char *des, const char *src, const int max_len);
 
 typedef struct tagWorkSpace {
   int (*write_func)(int, char *, int); /* write function */
-  unsigned work_buf_size;              /* size of work area */
-  unsigned string_buffer_size;
+  int work_buf_size;              /* size of work area */
+  int string_buffer_size;
   char *work;
   char *array_work;
   char *escape_work;
@@ -32,10 +32,10 @@ typedef struct tagWorkSpace {
   char w_log[1024];
 } WorkSpace;
 
-char *escape_string(WorkSpace *proto, const char *a);
-char *descape_string(WorkSpace *proto, const char *a);
-InitWorkSpace(WorkSpace *proto, int (*write_func)(int, char *, int),
+char *escape_string(WorkSpace *ws, const char *a);
+char *descape_string(WorkSpace *ws, const char *a);
+int InitWorkSpace(WorkSpace *ws, int (*write_func)(int, char *, int),
               const int work_buf_size, const int string_buffer_size);
-CleanWorkSpace(WorkSpace *proto);
+void FreeWorkSpace(WorkSpace *ws);
 
 #endif // __WORKSPACE_H__

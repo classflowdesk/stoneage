@@ -389,6 +389,8 @@ char *descape_string(WorkSpace *ws, const char *a) {
   return ws->escape_work;
 }
 
+#define TOKEN_LIST_LEN 32
+#define TOKEN_LEN 1024
 #define FREE(x) if (x != NULL) free(x);
 
 int InitWorkSpace(WorkSpace *ws, int (*write_func)(int, char*, int),
@@ -399,50 +401,61 @@ int InitWorkSpace(WorkSpace *ws, int (*write_func)(int, char*, int),
   ws->write_func = write_func;
 
   int i, j;
-  ws->string_buffer = (char **)calloc(1, sizeof(char *) * string_buffer_size);
+  // Init String Buffer.
+  ws->string_buffer = (char **)calloc(1, sizeof(char **) * ws->string_buffer_size);
   if (ws->string_buffer == NULL)
     return -1;
-  memset(ws->string_buffer, 0, sizeof(char *) * string_buffer_size);
-  for (i = 0; i < string_buffer_size; ++i) {
-    ws->string_buffer[i] = (char *)calloc(1, work_buf_size);
+  for (i = 0; i < ws->string_buffer_size; ++i) {
+    ws->string_buffer[i] = (char *)calloc(1, ws->work_buf_size);
     if (ws->string_buffer[i] == NULL) {
       for (j = 0; j < i; ++j) {
-        FREE(ws->string_buffer[i]);
-        return -1;
+        FREE(ws->string_buffer[j]);
       }
+      return -1;
     }
+    memset(ws->string_buffer[i], 0, ws->work_buf_size);
+  }
+  ws->token_list = (char **)calloc(1, TOKEN_LIST_LEN * sizeof(char **));
+  if (ws->token_list == NULL)
+    return -1;
+  for (i = 0; i < TOKEN_LIST_LEN; ++i) {
+    ws->token_list[i] = (char *)calloc(1, TOKEN_LEN);
+    if (ws->token_list[i] == NULL) {
+      for (j = 0; j < i; ++j) {
+        FREE(ws->token_list[j]);
+      }
+      return -1;
+    }
+    memset(ws->token_list[i], 0, TOKEN_LEN);
   }
   ws->work = (char *)calloc(1, ws->work_buf_size);
   ws->array_work = (char *)calloc(1, ws->work_buf_size);
   ws->escape_work = (char *)calloc(1, ws->work_buf_size);
   ws->val_str = (char *)calloc(1, ws->work_buf_size);
-  ws->token_list = (char **)calloc(1, ws->work_buf_size * sizeof(char **));
   ws->crypt_work = (char *)calloc(1, ws->work_buf_size * 3);
   ws->jencode_copy = (char *)calloc(1, ws->work_buf_size * 3);
   ws->jencode_out = (char *)calloc(1, ws->work_buf_size * 3);
   ws->compress_work = (char *)calloc(1, ws->work_buf_size * 3);
-  ws->ret_work = (char *)calloc(1, sizeof(work_buf_size));
+  ws->ret_work = (char *)calloc(1, ws->work_buf_size);
+  if (ws->work == NULL || ws->array_work == NULL || ws->escape_work == NULL ||
+      ws->val_str == NULL || ws->crypt_work == NULL ||
+      ws->jencode_copy == NULL || ws->jencode_out == NULL ||
+      ws->compress_work == NULL || ws->ret_work == NULL) {
+    printf("Memory Alloc Failed.\n");
+    FreeWorkSpace(ws);
+    return -1;
+  }
   memset(ws->work, 0, ws->work_buf_size);
   memset(ws->array_work, 0, ws->work_buf_size);
   memset(ws->escape_work, 0, ws->work_buf_size);
   memset(ws->val_str, 0, ws->work_buf_size);
-  memset((char *)ws->token_list, 0, ws->work_buf_size * sizeof(char **));
-  for (i = 0; i < work_buf_size; ++i) {
-    ws->token_list[i] = (char *)malloc(1024);
-    memset(ws->token_list[i], 0, 1024);
-  }
   memset(ws->crypt_work, 0, ws->work_buf_size * 3);
   memset(ws->jencode_copy, 0, ws->work_buf_size * 3);
   memset(ws->jencode_out, 0, ws->work_buf_size * 3);
   memset(ws->compress_work, 0, ws->work_buf_size * 3);
+  // 内存越界写会导致fopen无法查明原因的阻塞，这个还是很有意思的.
   memset(ws->ret_work, 0, ws->work_buf_size);
-  if (ws->work == NULL || ws->array_work == NULL || ws->escape_work == NULL ||
-      ws->val_str == NULL || ws->token_list == NULL || ws->crypt_work == NULL ||
-      ws->jencode_copy == NULL || ws->jencode_out == NULL ||
-      ws->compress_work == NULL || ws->ret_work == NULL) {
-    FreeWorkSpace(ws);
-    return -1;
-  }
+  printf("Finshed.\n");
   return 0;
 }
 
@@ -456,7 +469,7 @@ void FreeWorkSpace(WorkSpace *ws) {
   FREE(ws->array_work);
   FREE(ws->escape_work);
   FREE(ws->val_str);
-  for (i = 0; i < ws->work_buf_size; i++) {
+  for (i = 0; i < TOKEN_LIST_LEN; i++) {
     FREE(ws->token_list[i]);
   }
   FREE(ws->token_list);

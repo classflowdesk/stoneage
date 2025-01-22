@@ -22,25 +22,6 @@ static void DecodeString(char *src, char *out);
 static void EncodeString(char *src, char *out, int maxoutlen);
 #endif
 
-/*
-  if (readlogfilename[0] != '\0') {
-    FILE *rfp;
-    rfp = fopen(readlogfilename, "a+");
-    if (rfp)
-      fprintf(rfp, "%s\n", decoded);
-    if (rfp)
-      fclose(rfp);
-  }
-
-  if (writelogfilename[0] != '\0') {
-    FILE *wfp = fopen(writelogfilename, "a+");
-    if (wfp)
-      fprintf(wfp, "%s\n", msg);
-    if (wfp)
-      fclose(wfp);
-  }
-*/
-
 void GetMessageInfo(int *id, char *function_name, const int len,
                     const char **token_list) {
   if (token_list[0] == NULL || token_list[1] == NULL) {

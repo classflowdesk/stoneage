@@ -252,4 +252,11 @@ int FMPK_SetData(int ti, int Pkflg, char *Data, int sizes);
 #ifdef _FAMILY_PAY_POINT
 void addFmPayPoint(int fmindex, char *fmname, int paypoint);
 #endif
+
+#ifdef _AC_SEND_FM_PK // WON ADD 庄园对战列表储存在AC
+void load_fm_pk_list(void);
+void save_fm_pk_list(void);
+char fm_pk_list[FMPKLIST_MAXNUM][255];
+#endif
+
 #endif

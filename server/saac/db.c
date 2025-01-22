@@ -637,11 +637,11 @@ int dbRead(const char *dir) {
   char tmp[1024];
   snprintf(tmp, sizeof(tmp), "%s/int", dir);
   if (mkdir(tmp, 0755) == 0) {
-    log("创建 %s\n", tmp);
+    log("创建目录 %s\n", tmp);
   }
   snprintf(tmp, sizeof(tmp), "%s/string", dir);
   if (mkdir(tmp, 0755) == 0) {
-    log("创建 %s\n", tmp);
+    log("创建目录 %s\n", tmp);
   }
   snprintf(dirname, sizeof(dirname), "%s/int", dir);
   d = opendir(dirname);
@@ -658,7 +658,7 @@ int dbRead(const char *dir) {
       FILE *fp;
       struct stat s;
       snprintf(filename, sizeof(filename), "%s/%s", dirname, de->d_name);
-      log("读取数据:%s\n..", filename);
+      log("读取数据:%s\n", filename);
       if (stat(filename, &s) < 0) {
         continue;
       }
@@ -704,7 +704,7 @@ int dbRead(const char *dir) {
       FILE *fp;
       struct stat s;
       snprintf(filename, sizeof(filename), "%s/%s", dirname, de->d_name);
-      log("读取数据:%s\n..", filename);
+      log("读取数据:%s\n", filename);
 
       if (stat(filename, &s) < 0) {
         continue;

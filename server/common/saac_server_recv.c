@@ -1155,38 +1155,6 @@ void SendEffect(char *effect) {
 }
 #endif
 
-#ifdef _AC_SEND_FM_PK // WON ADD 庄园对战列表储存在AC
-void load_fm_pk_list() {
-  int i;
-  const char *filename = "data/family/fm_pk_list.txt";
-  FILE *fp;
-  if (!(fp = fopen(filename, "r"))) {
-    return;
-  }
-  for (i = 0; i < FMPKLIST_MAXNUM; i++) {
-    char buf[256];
-    if (fscanf(fp, "%s", buf) == EOF)
-      break;
-    buf[strlen(buf) + 1] = 0;
-    memcpy(fm_pk_list[i], buf, strlen(buf) + 1);
-  }
-  fclose(fp);
-}
-
-void save_fm_pk_list() {
-  int i;
-  const char *filename = "data/family/fm_pk_list.txt";
-  FILE *fp;
-  if (!(fp = fopen(filename, "w"))) {
-    return;
-  }
-  for (i = 0; i < FMPKLIST_MAXNUM; i++) {
-    fprintf(fp, "%s\n", fm_pk_list[i]);
-  }
-  fclose(fp);
-}
-#endif
-
 #ifdef _CHAR_POOLITEM
 void SaacServer_ACCharInsertPoolItem_recv(int fd, char *cdkey, int userindex,
                                           int clifdid, char *Pooldataarg) {
