@@ -8,7 +8,6 @@
 #include "log.h" // for StoneAge
 #include "npc_lua_interface.h"
 #include "shop.h"
-#include <errno.h>
 #include <net.h>
 
 

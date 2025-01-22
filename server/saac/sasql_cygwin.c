@@ -58,22 +58,22 @@ static int readConfig( char *path )
         }
         if( strcmp( command , "SQL_DSN" ) == 0 ){
             snprintf( config.SQL_DSN , sizeof( config.SQL_DSN) , param) ;
-            log("数据库 DSN：%s\n",config.SQL_DSN);
+            logErr("数据库 DSN：%s\n",config.SQL_DSN);
         } else if( strcmp( command , "SQL_INFOTABLE" ) == 0 ){
             snprintf( config.SQL_INFOTABLE , sizeof( config.SQL_INFOTABLE) , param) ;
-            log("人物信息表：%s\n",config.SQL_INFOTABLE);
+            logErr("人物信息表：%s\n",config.SQL_INFOTABLE);
         } else if( strcmp( command , "SQL_LOCK" ) == 0 ){
             snprintf( config.SQL_LOCK , sizeof( config.SQL_LOCK) , param) ;
-            log("锁定账号表：%s\n",config.SQL_LOCK);
+            logErr("锁定账号表：%s\n",config.SQL_LOCK);
         } else if( strcmp( command , "SQL_REGTIME" ) == 0 ){
             snprintf( config.SQL_RegTime , sizeof( config.SQL_RegTime) , param) ;
-            log("注册时间：%s\n",config.SQL_RegTime);
+            logErr("注册时间：%s\n",config.SQL_RegTime);
         } else if( strcmp( command , "AUTOREG" ) == 0 ){
             AUTOREG = atoi( param );
             if(AUTOREG){
-              log("开放自动注册：YES\n");
+              logErr("开放自动注册：YES\n");
             }else{
-              log("开放自动注册：NO\n");
+              logErr("开放自动注册：NO\n");
             }
         }
     }
@@ -481,7 +481,7 @@ char *sasql_OnlineCost( char *id, char *costpasswd )
           check_return (rc,henv,hdbc,hstmt);
           if (rc == SQL_SUCCESS || rc == SQL_SUCCESS_WITH_INFO) 
           {
-            log("充值卡号%s已充值！\n",costpasswd);
+            logErr("充值卡号%s已充值！\n",costpasswd);
           }
           sprintf(token, "充值已成功，充值卡面值为%d，您当前会员点数共%d", costval, vippoint);
           return token;

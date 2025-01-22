@@ -5,21 +5,23 @@ export RANLIB=ranlib
 export SHELL=/bin/sh
 
 INCFLAGS=-I.
-CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
+CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 SAAC_CFLAGS=$(CFLAGS) -I../saac/include
-GMSV_CFLAGS=$(CFLAGS) -I../gmsv/include -I../gmsv/src/lua
+GMSV_CFLAGS=$(CFLAGS) -I../gmsv/include -I../gmsv/lua
 
-TARGET=libcommon.a libsaacserver.a libsaacclient.a libgmsvserver.a
-LIBCOMMON=libcommon.a
+LIBUTIL=libutil.a
+LIBSERVERUTIL=libserverutil.a
 LIBSAACSERVER=libsaacserver.a
 LIBSAACCLIENT=libsaacclient.a
 LIBGMSVSERVER=libgmsvserver.a
-
+TARGET=$(LIBUTIL) $(LIBSERVERUTIL) $(LIBSAACSERVER) $(LIBSAACCLIENT) $(LIBGMSVSERVER)
 SRC=$(wildcard *.c)
 OBJ=$(SRC:.c=.o)
-COMMON_SRC=md5.c util.c server_util.c workspace.c
-COMMON_OBJ=$(COMMON_SRC:.c=.o)
 
+UTILS_SRC=utils/md5.c utils/util_string.c utils/util_file.c
+UTILS_OBJ=$(UTILS_SRC:.c=.o)
+SERVERUTIL_SRC=server_util.c workspace.c
+SERVERUTIL_OBJ=$(SERVERUTIL_SRC:.c=.o)
 SAACSERVER_SRC=saac_server_send.c saac_server_recv.c
 SAACSERVER_OBJ=$(SAACSERVER_SRC:.c=.o)
 SAACCLIENT_SRC=saac_client_send.c saac_client_recv.c
@@ -35,15 +37,24 @@ RANLIB=ranlib
 SHELL=/bin/sh
 endif
 
-all: copyright $(LIBCOMMON) $(LIBSAACSERVER) $(LIBSAACCLIENT) $(LIBGMSVSERVER)
+all: copyright $(TARGET)
 
-${LIBCOMMON}: $(COMMON_OBJ)
-	$(RM) $(LIBCOMMON)
-	$(AR) $(LIBCOMMON) $(COMMON_OBJ)
-	$(RANLIB) $(LIBCOMMON)
-	$(RM) $(COMMON_OBJ)
+${LIBUTIL}: $(UTILS_OBJ)
+	$(RM) $(LIBUTIL)
+	$(AR) $(LIBUTIL) $(UTILS_OBJ)
+	$(RANLIB) $(LIBUTIL)
+	$(RM) $(UTILS_OBJ)
 
-$(COMMON_OBJ): %.o: %.c
+$(UTILS_OBJ): %.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+${LIBSERVERUTIL}: $(SERVERUTIL_OBJ)
+	$(RM) $(LIBSERVERUTIL)
+	$(AR) $(LIBSERVERUTIL) $(SERVERUTIL_OBJ)
+	$(RANLIB) $(LIBSERVERUTIL)
+	$(RM) $(SERVERUTIL_OBJ)
+
+$(SERVERUTIL_OBJ): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 ${LIBSAACSERVER}: $(SAACSERVER_OBJ)
@@ -80,7 +91,3 @@ clean:
 	$(RM) $(TARGET)
 	$(RM) $(OBJ)
 	$(RM) *~
-
-print:
-	echo $(COMMON_SRC)
-	echo $(COMMON_OBJ)

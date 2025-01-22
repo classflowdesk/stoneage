@@ -400,7 +400,7 @@ int ACShowTopFMList(char *data, int datasize, int kindflag) {
       if (i < MAX_FAMILY)
         strcat(t1, " ");
       if (strlen(data) + strlen(t1) >= datasize) {
-        log("getFMsortedlist: datafer overflow.");
+        logErr("getFMsortedlist: datafer overflow.");
         return -1;
       }
       strcat(data, t1);
@@ -417,7 +417,7 @@ int ACShowTopFMList(char *data, int datasize, int kindflag) {
       if (i < TOPFMLISTNUM)
         strcat(t1, " ");
       if (strlen(data) + strlen(t1) >= datasize) {
-        log("getFMsortedlist: datafer overflow.");
+        logErr("getFMsortedlist: datafer overflow.");
         return -1;
       }
       strcat(data, t1);
@@ -435,7 +435,7 @@ int ACShowTopFMList(char *data, int datasize, int kindflag) {
       if (i < TOPFMLISTNUM)
         strcat(t1, " ");
       if (strlen(data) + strlen(t1) >= datasize) {
-        log("getFMsortedlist: datafer overflow.");
+        logErr("getFMsortedlist: datafer overflow.");
         return -1;
       }
       strcat(data, t1);
@@ -453,7 +453,7 @@ int ACShowTopFMList(char *data, int datasize, int kindflag) {
       if (i < TOPFMLISTNUM)
         strcat(t1, " ");
       if (strlen(data) + strlen(t1) >= datasize) {
-        log("getFMsortedlist: datafer overflow.");
+        logErr("getFMsortedlist: datafer overflow.");
         return -1;
       }
       strcat(data, t1);
@@ -471,7 +471,7 @@ int ACShowTopFMList(char *data, int datasize, int kindflag) {
       if (i < TOPFMLISTNUM)
         strcat(t1, " ");
       if (strlen(data) + strlen(t1) >= datasize) {
-        log("getFMsortedlist: datafer overflow.");
+        logErr("getFMsortedlist: datafer overflow.");
         return -1;
       }
       strcat(data, t1);
@@ -488,7 +488,7 @@ int ACShowTopFMList(char *data, int datasize, int kindflag) {
       if (i < TOPFMLISTNUM)
         strcat(t1, " ");
       if (strlen(data) + strlen(t1) >= datasize) {
-        log("getFMsortedlist: datafer overflow.");
+        logErr("getFMsortedlist: datafer overflow.");
         return -1;
       }
       strcat(data, t1);
@@ -508,7 +508,7 @@ int ACShowTopFMList(char *data, int datasize, int kindflag) {
       if (i < MAX_FAMILY)
         strcat(t1, " ");
       if (strlen(data) + strlen(t1) >= datasize) {
-        log("getFMsortedlist: datafer overflow.");
+        logErr("getFMsortedlist: datafer overflow.");
         return -1;
       }
       strcat(data, t1);
@@ -529,7 +529,7 @@ int ACShowTopFMList(char *data, int datasize, int kindflag) {
       if (i < MAX_FAMILY)
         strcat(t1, " ");
       if (strlen(data) + strlen(t1) >= datasize) {
-        log("getFMsortedlist: datafer overflow.");
+        logErr("getFMsortedlist: datafer overflow.");
         return -1;
       }
       strcat(data, t1);
@@ -555,9 +555,9 @@ void AddFMMaintainSort(int index) {
       fmpopularindex[k] = fmpopularindex[k - 1];
     fmpopularindex[i] = index;
   } else if (j < i) {
-    log("ACAddFM: fmpopularindex add error (j < i)");
+    logErr("ACAddFM: fmpopularindex add error (j < i)");
   } else
-    log("ACAddFM: fmpopularindex add error (j = i)");
+    logErr("ACAddFM: fmpopularindex add error (j = i)");
   // modify adv sort
   i = 0;
   j = MAX_FAMILY;
@@ -575,9 +575,9 @@ void AddFMMaintainSort(int index) {
       fmadvindex[k] = fmadvindex[k - 1];
     fmadvindex[i] = index;
   } else if (j < i) {
-    log("ACAddFM: fmadvindex add error (j < i)");
+    logErr("ACAddFM: fmadvindex add error (j < i)");
   } else
-    log("ACAddFM: fmadvindex add error (j = i)");
+    logErr("ACAddFM: fmadvindex add error (j = i)");
   // modify feed sort
   i = 0;
   j = MAX_FAMILY;
@@ -595,9 +595,9 @@ void AddFMMaintainSort(int index) {
       fmfeedindex[k] = fmfeedindex[k - 1];
     fmfeedindex[i] = index;
   } else if (j < i) {
-    log("ACAddFM: fmfeedindex add error (j < i)");
+    logErr("ACAddFM: fmfeedindex add error (j < i)");
   } else
-    log("ACAddFM: fmfeedindex add error (j = i)");
+    logErr("ACAddFM: fmfeedindex add error (j = i)");
   // modify synthesize sort
   i = 0;
   j = MAX_FAMILY;
@@ -616,9 +616,9 @@ void AddFMMaintainSort(int index) {
       fmsynthesizeindex[k] = fmsynthesizeindex[k - 1];
     fmsynthesizeindex[i] = index;
   } else if (j < i) {
-    log("ACAddFM: fmsynthesizeindex add error (j < i)");
+    logErr("ACAddFM: fmsynthesizeindex add error (j < i)");
   } else
-    log("ACAddFM: fmsynthesizeindex add error (j = i)");
+    logErr("ACAddFM: fmsynthesizeindex add error (j = i)");
   // modify dealfood sort
   i = 0;
   j = MAX_FAMILY;
@@ -636,9 +636,9 @@ void AddFMMaintainSort(int index) {
       fmdealfoodindex[k] = fmdealfoodindex[k - 1];
     fmdealfoodindex[i] = index;
   } else if (j < i) {
-    log("ACAddFM: fmdealfoodindex add error (j < i)");
+    logErr("ACAddFM: fmdealfoodindex add error (j < i)");
   } else
-    log("ACAddFM: fmdealfoodindex add error (j = i)");
+    logErr("ACAddFM: fmdealfoodindex add error (j = i)");
   // modify pk sort
   i = 0;
   j = MAX_FAMILY;
@@ -656,9 +656,9 @@ void AddFMMaintainSort(int index) {
       fmpkindex[k] = fmpkindex[k - 1];
     fmpkindex[i] = index;
   } else if (j < i) {
-    log("ACAddFM: fmpkindex add error (j < i)");
+    logErr("ACAddFM: fmpkindex add error (j < i)");
   } else
-    log("ACAddFM: fmpkindex add error (j = i)");
+    logErr("ACAddFM: fmpkindex add error (j = i)");
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
   // modify pk sort
   i = 0;
@@ -678,9 +678,9 @@ void AddFMMaintainSort(int index) {
       fmtotalfameindex[k] = fmtotalfameindex[k - 1];
     fmtotalfameindex[i] = index;
   } else if (j < i) {
-    log("ACAddFM: fmtotalfameindex add error (j < i)");
+    logErr("ACAddFM: fmtotalfameindex add error (j < i)");
   } else
-    log("ACAddFM: fmtotalfameindex add error (j = i)");
+    logErr("ACAddFM: fmtotalfameindex add error (j = i)");
 #endif
 #ifdef _NEW_MANOR_LAW
   // modify momentum sort
@@ -700,9 +700,9 @@ void AddFMMaintainSort(int index) {
       fmMomentumIndex[k] = fmMomentumIndex[k - 1];
     fmMomentumIndex[i] = index;
   } else if (j < i) {
-    log("ACAddFM: fmMomentumIndex add error (j < i)");
+    logErr("ACAddFM: fmMomentumIndex add error (j < i)");
   } else
-    log("ACAddFM: fmMomentumIndex add error (j = i)");
+    logErr("ACAddFM: fmMomentumIndex add error (j = i)");
 #endif
 }
 
@@ -803,17 +803,17 @@ int readFamily(const char *dir) {
     char tmp[256];
     snprintf(tmp, sizeof(tmp), "%s", dir);
     if (mkdir(tmp, 0755) == 0)
-      log("create %s\n", tmp);
+      logErr("create %s\n", tmp);
   }
   snprintf(dirname, sizeof(dirname), "%s", dir);
   p_dir = opendir(dirname);
   if (p_dir == NULL) {
-    log("[读取家族资料]无法打开目录: %s\n", dirname);
+    logErr("[读取家族资料]无法打开目录: %s\n", dirname);
     return -1;
   }
   p_dirent = readdir64(p_dir);
   if (p_dirent == NULL) {
-    log("[读取家族资料]无法读取目录: %s\n", dirname);
+    logErr("[读取家族资料]无法读取目录: %s\n", dirname);
     return -1;
   }
   
@@ -826,12 +826,12 @@ int readFamily(const char *dir) {
       continue;
 
     if (!(s.st_mode & S_IFREG)) {
-      log("%s is not a regular file\n", filename);
+      logErr("%s is not a regular file\n", filename);
       continue;
     }
     if (readOneFamily(filename, i) != 1) {
       if (remove(filename) == -1)
-        log("cannot open file %s %s\n", filename, strerror(errno));
+        logErr("cannot open file %s %s\n", filename, strerror(errno));
       continue;
     }
     fmnum = fmnum + 1;
@@ -984,12 +984,12 @@ int readFMPoint(const char *dir) {
     char tmp[256];
     snprintf(tmp, sizeof(tmp), "%s", dir);
     if (mkdir(tmp, 0755) == 0)
-      log("create %s\n", tmp);
+      logErr("create %s\n", tmp);
   }
   snprintf(dirname, sizeof(dirname), "%s", dir);
   DIR *p_dir = opendir(dirname);
   if (p_dir == NULL) {
-    log("无法打开文件 %s\n", dirname);
+    logErr("无法打开文件 %s\n", dirname);
     return -1;
   }
   struct dirent64 *p_dirent;
@@ -1006,12 +1006,12 @@ int readFMPoint(const char *dir) {
         continue;
       }
       if (!(s.st_mode & S_IFREG)) {
-        log("%s is not a regular file\n", filename);
+        logErr("%s is not a regular file\n", filename);
         continue;
       }
       fp = fopen(filename, "r");
       if (fp == NULL) {
-        log("无法打开文件 %s %s\n", filename, strerror(errno));
+        logErr("无法打开文件 %s %s\n", filename, strerror(errno));
         continue;
       }
       while (1) {
@@ -1060,10 +1060,10 @@ int writeFMPoint(const char *dir) {
   if (db_fmpointupdate == 0)
     return 0;
   else
-    log("已将更新资料db_fmpoint写入文件.\n");
+    logErr("已将更新资料db_fmpoint写入文件.\n");
   fp = fopen(filename, "w");
   if (fp == NULL) {
-    log("无法打开文件: %s %s\n", filename, strerror(errno));
+    logErr("无法打开文件: %s %s\n", filename, strerror(errno));
     return -1;
   }
   for (i = 0; i < MAX_FMPOINT; i++) {
@@ -1096,13 +1096,13 @@ int readFMSMemo(const char *dir) {
     char tmp[256];
     snprintf(tmp, sizeof(tmp), "%s", dir);
     if (mkdir(tmp, 0755) == 0)
-      log("create %s\n", tmp);
+      logErr("create %s\n", tmp);
   }
 
   snprintf(dirname, sizeof(dirname), "%s", dir);
   d = opendir(dirname);
   if (d == NULL) {
-    log("无法打开文件 %s\n", dirname);
+    logErr("无法打开文件 %s\n", dirname);
     return -1;
   }
   while (1) {
@@ -1118,12 +1118,12 @@ int readFMSMemo(const char *dir) {
         continue;
       }
       if (!(s.st_mode & S_IFREG)) {
-        log("%s 不是正常文件\n", filename);
+        logErr("%s 不是正常文件\n", filename);
         continue;
       }
       fp = fopen(filename, "r");
       if (fp == NULL) {
-        log("无法打开文件 %s %s\n", filename, strerror(errno));
+        logErr("无法打开文件 %s %s\n", filename, strerror(errno));
         continue;
       }
       {
@@ -1157,16 +1157,16 @@ int writeFMSMemo(const char *dir) {
   if (db_fmsmemoupdate == 0)
     return 0;
   else
-    log("已将更新资料db_fmsmemo写入文件.\n");
+    logErr("已将更新资料db_fmsmemo写入文件.\n");
   fp = fopen(filename, "w");
   if (fp == NULL) {
-    log("无法打开文件: %s %s\n", filename, strerror(errno));
+    logErr("无法打开文件: %s %s\n", filename, strerror(errno));
     return -1;
   }
   fprintf(fp, "%d|%d", fmsmemo.num, fmsmemo.fmsnowwritenum);
   for (i = 0; i < fmsmemo.num; i++) {
     fprintf(fp, "|%s", fmsmemo.memodata[i]);
-    log("%s\n", fmsmemo.memodata[i]);
+    logErr("%s\n", fmsmemo.memodata[i]);
   } // for
   fprintf(fp, "\n");
   fclose(fp);
@@ -1243,28 +1243,28 @@ int CheckFM(int *index, char *fmname, int fmindex) {
     *index = getindex(fmindex, fmname);
   }
   if ((*index > MAX_FAMILY) || (*index < 0)) {
-    log("CheckFM_2 *index: big small? %d\n", *index);
+    logErr("CheckFM_2 *index: big small? %d\n", *index);
     return -1;
   } else {
     if ((family[*index].fmindex != fmindex) ||
         strcmp(family[*index].fmname, fmname) != 0) {
-      log("CheckFM_3 [*index].fmindex:%d fmindex:%d [index].fmname:%s "
+      logErr("CheckFM_3 [*index].fmindex:%d fmindex:%d [index].fmname:%s "
           "fmname:%s\n",
           family[*index].fmindex, fmindex, family[*index].fmname, fmname);
       return -1;
     }
   }
   if (*index == -1) {
-    log("CheckFM_4 index: -1 ? %d\n", *index);
+    logErr("CheckFM_4 index: -1 ? %d\n", *index);
     return -1;
   }
   if (CheckFMUse(*index) == 0) {
-    log("CheckFM_5 index: -1 ? %d\n", *index);
+    logErr("CheckFM_5 index: -1 ? %d\n", *index);
     return -1;
   }
   if (family[*index].fmnum > MAX_MEMBERNUM ||
       family[*index].fmjoinnum > MAX_MEMBERNUM) {
-    log("CheckFM_6 fmnum: -1 ? %d\n", family[*index].fmnum);
+    logErr("CheckFM_6 fmnum: -1 ? %d\n", family[*index].fmnum);
     return -1;
   }
   return 0;
@@ -1283,7 +1283,7 @@ void delovertimeFMMem(int time) {
          (family[i].fmsetupflag != 1)) ||
         (family[i].fmjoinnum == 0)) {
 
-      log("ACDelOverTimeFM fmindex:%d fmname:%s fmjoinnum:%d flag:%d \n",
+      logErr("ACDelOverTimeFM fmindex:%d fmname:%s fmjoinnum:%d flag:%d \n",
           family[i].fmindex, family[i].fmname, family[i].fmjoinnum,
           family[i].fmsetupflag);
 
@@ -1424,7 +1424,7 @@ int ACAddFM(int fd, int *workindex, char *fmname, char *fmleadername,
   fmnownum++;
   if (fmindexmaxnum <= index)
     fmindexmaxnum = index + 1;
-  log("AddFM fmindexmaxnum:%d fmnownum:%d\n", fmindexmaxnum, fmnownum);
+  logErr("AddFM fmindexmaxnum:%d fmnownum:%d\n", fmindexmaxnum, fmnownum);
 
   AddFMMaintainSort(index);
 
@@ -1473,7 +1473,7 @@ int ACJoinFM(int fd, int index, char *fmname, int fmindex, char *charname,
       family[index].fmmemberindex[i].predeltime = t1 + PREDEL_TIME;
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
       family[index].fmmemberindex[i].popular = fame;
-      log("fame:%d\n", fame);
+      logErr("fame:%d\n", fame);
       // 这个时候还不可以把这个人的声望加到家族
 #endif
 #ifdef _NEW_MANOR_LAW
@@ -1566,7 +1566,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
     recvdata = atoi(data1);
     if (recvdata > MAXRECVPOP &&
         (kindflag == 2 || (kindflag >= 7 && kindflag <= 10))) {
-      log("ACDelOverTimePOP index:%d fmname:%s kindflag:%d charindex:%d "
+      logErr("ACDelOverTimePOP index:%d fmname:%s kindflag:%d charindex:%d "
           "recvdata:%d\n",
           index, fmname, kindflag, charindex, recvdata);
       return -1;
@@ -1658,7 +1658,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
         strcmp(family[index].fmmemberindex[charindex].charid, "") == 0)
       return -1;
     // shan 2002/01/04
-    log("\nshan-->fmindex:%d fmname:%s newleadername:%s newleaderid->%s\n",
+    logErr("\nshan-->fmindex:%d fmname:%s newleadername:%s newleaderid->%s\n",
         fmindex, fmname, family[index].fmmemberindex[charindex].charname,
         family[index].fmmemberindex[charindex].charid);
     strcpy(charname, family[index].fmmemberindex[charindex].charname);
@@ -1807,7 +1807,7 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
           ((family[index].fmjoinnum * family[index].fmjoinnum) / 10 + 1) * 100;
       if (family[index].fmmomentum > 2000000000)
         family[index].fmmomentum = 2000000000;
-//			 log("\nACFixFMData total family momentum
+//			 logErr("\nACFixFMData total family momentum
 //%d\n",family[index].fmmomentum);
 #endif
     }
@@ -2030,7 +2030,7 @@ int ACDelFM(int index, char *fmname, int fmindex) {
   if (CheckFM(&index, fmname, fmindex) < 0)
     return -1;
 
-  log("\nACDelFM index:%d fmname:%s fmindex:%d\n", index, fmname, fmindex);
+  logErr("\nACDelFM index:%d fmname:%s fmindex:%d\n", index, fmname, fmindex);
 
   if (family[index].fmpointindex >= 0) {
     delfmpointindex(family[index].fmindex);
@@ -2531,7 +2531,7 @@ int ACMemberLeaveFM(int index, char *fmname, int fmindex, char *charname,
         if (family[index].fmmemberindex[i].charflag > 0)
           fmnum2 = fmnum2 + 1;
       }
-      log("MemberLeave_fmnum err!\n index:%d fmname:%s"
+      logErr("MemberLeave_fmnum err!\n index:%d fmname:%s"
           " orifmnum:%d orifmjoinnum:%d\n fmnum1:%d fmnum2:%d\n",
           index, fmname, family[index].fmnum, family[index].fmjoinnum, fmnum1,
           fmnum2);
@@ -2600,7 +2600,7 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
     return -1;
 #endif
 
-  log("AsssignOcp index:%d fmindex:%d fmname:%s charname:%s charindex:%d "
+  logErr("AsssignOcp index:%d fmindex:%d fmname:%s charname:%s charindex:%d "
       "result:%d\n",
       index, fmindex, fmname, charname, charindex, result);
   for (i = 0; i < MAX_MEMBERNUM; i++) {
@@ -2659,7 +2659,7 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
     db_familyupdate[index] = 1;
     return 0;
   }
-  log("AssignOcp Failed\n");
+  logErr("AssignOcp Failed\n");
 #endif
   return -1;
 }
@@ -3042,7 +3042,7 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
     // family[winindex].fmgold 小於零可能是溢位
     if (family[winindex].fmgold < 0 || family[winindex].fmgold > FMMAXGOLD)
       family[winindex].fmgold = FMMAXGOLD;
-    log("ACFMGetMoney fmindex:%d fmname:%s fmoldgold:%d getmoney:%d "
+    logErr("ACFMGetMoney fmindex:%d fmname:%s fmoldgold:%d getmoney:%d "
         "fmnewgold:%d\n",
         family[winindex].fmindex, family[winindex].fmname, iOldGold,
         iTotalGetGold, family[winindex].fmgold);
@@ -3441,7 +3441,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
   int floor = ACgetFMFloor(index);
   if (index < 0 || index > MAX_FAMILY)
     return -1;
-  log("GMFixFMData index:%d charid:%s cmd:%s data:%s\n", index, charid, cmd,
+  logErr("GMFixFMData index:%d charid:%s cmd:%s data:%s\n", index, charid, cmd,
       data);
   strcpy(fmname, family[index].fmname);
   if (charid[0] == '-' && charid[1] == '1') {
@@ -3450,72 +3450,72 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
         switch (i) {
         case 2:
           family[index].fmnum = atoi(data);
-          log("fmnum:%s\n", data);
+          logErr("fmnum:%s\n", data);
           break;
         case 3:
           family[index].fmjoinnum = atoi(data);
-          log("fmjoinnum:%s\n", data);
+          logErr("fmjoinnum:%s\n", data);
           break;
         case 4:
           family[index].fmacceptflag = atoi(data);
-          log("fmacceptflag:%s\n", data);
+          logErr("fmacceptflag:%s\n", data);
           break;
         case 5:
           family[index].fmsetupflag = atoi(data);
-          log("fmsetupflag:%s\n", data);
+          logErr("fmsetupflag:%s\n", data);
           break;
         case 6:
           family[index].fmsprite = atoi(data);
-          log("fmsprite:%s\n", data);
+          logErr("fmsprite:%s\n", data);
           break;
         case 7:
           family[index].fmpointindex = atoi(data);
-          log("fmpointindex:%s\n", data);
+          logErr("fmpointindex:%s\n", data);
           break;
         case 8:
           family[index].fmpopular = atoi(data);
-          log("fmpopular:%s\n", data);
+          logErr("fmpopular:%s\n", data);
           break;
         case 9:
           family[index].fmgold = atoi(data);
-          log("fmgold:%s\n", data);
+          logErr("fmgold:%s\n", data);
           break;
         case 11:
           family[index].apply_time = atoi(data);
-          log("apply_time:%s\n", data);
+          logErr("apply_time:%s\n", data);
           break;
         case 12:
           family[index].setup_time = atoi(data);
-          log("setup_time:%s\n", data);
+          logErr("setup_time:%s\n", data);
           break;
         case 13:
           family[index].predel_time = atoi(data);
-          log("predel_time:%s\n", data);
+          logErr("predel_time:%s\n", data);
           break;
         case 16:
           family[index].fmadv = atoi(data);
-          log("adv:%s\n", data);
+          logErr("adv:%s\n", data);
           break;
         case 17:
           family[index].fmfeed = atoi(data);
-          log("feed:%s\n", data);
+          logErr("feed:%s\n", data);
           break;
         case 18:
           family[index].fmsynthesize = atoi(data);
-          log("synthesize:%s\n", data);
+          logErr("synthesize:%s\n", data);
           break;
         case 19:
           family[index].fmdealfood = atoi(data);
-          log("dealfood:%s\n", data);
+          logErr("dealfood:%s\n", data);
           break;
         case 20:
           family[index].fmpk = atoi(data);
-          log("pk:%s\n", data);
+          logErr("pk:%s\n", data);
           break;
 #ifdef _NEW_MANOR_LAW
         case 21:
           family[index].fmmomentum = atoi(data);
-          log("momentum:%s\n", data);
+          logErr("momentum:%s\n", data);
           for (i = 0; i < MAX_MEMBERNUM; i++) {
             if ((family[index].fmmemberindex[i].charflag != FMMEMBER_NONE) &&
                 (family[index].fmmemberindex[i].charflag != FMMEMBER_APPLY))
@@ -3534,7 +3534,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
 #ifdef _FAMILY_PAY_POINT
         case 23:
           family[index].fmpaypoint = atoi(data);
-          log("pk:%s\n", data);
+          logErr("pk:%s\n", data);
           break;
 #endif
 
@@ -3582,35 +3582,35 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
         switch (i) {
         case 0:
           strncpy(family[index].fmname, data, sizeof(family[index].fmname));
-          log("fmname:%s\n", data);
+          logErr("fmname:%s\n", data);
           break;
         case 1:
           strncpy(family[index].fmleadername, data,
                   sizeof(family[index].fmleadername));
-          log("fmleadername:%s\n", data);
+          logErr("fmleadername:%s\n", data);
           break;
         case 2:
           strncpy(family[index].fmleaderid, data,
                   sizeof(family[index].fmleaderid));
-          log("fmleaderid:%s\n", data);
+          logErr("fmleaderid:%s\n", data);
           break;
         case 3:
           strncpy(family[index].petname, data, sizeof(family[index].petname));
-          log("petname:%s\n", data);
+          logErr("petname:%s\n", data);
           break;
         case 4:
           strncpy(family[index].petattr, data, sizeof(family[index].petattr));
-          log("petattr:%s\n", data);
+          logErr("petattr:%s\n", data);
           break;
         case 5:
           strncpy(family[index].fmrule, data, sizeof(family[index].fmrule));
-          log("fmrule:%s\n", data);
+          logErr("fmrule:%s\n", data);
           break;
 #ifdef _FAMILY_TOTEM
         case 6:
           strncpy(family[index].familytotem, data,
                   sizeof(family[index].familytotem));
-          log("familytotem:%s\n", data);
+          logErr("familytotem:%s\n", data);
           break;
 #endif
         default:
@@ -3650,7 +3650,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
     }
     // 找不到家族成员
     if (charindex == -1) {
-      log("FMName:%s,id:%s\n", fmname, charid);
+      logErr("FMName:%s,id:%s\n", fmname, charid);
       return -1;
     }
     for (i = 0; i < memberdatamaxint; i++) {
@@ -3658,27 +3658,27 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
         switch (i) {
         case 0:
           family[index].fmmemberindex[charindex].charlv = atoi(data);
-          log("charlv:%s\n", data);
+          logErr("charlv:%s\n", data);
           break;
         case 1:
           family[index].fmmemberindex[charindex].charflag = atoi(data);
-          log("charflag:%s\n", data);
+          logErr("charflag:%s\n", data);
           break;
         case 2:
           family[index].fmmemberindex[charindex].onlineflag = atoi(data);
-          log("onlineflag:%s\n", data);
+          logErr("onlineflag:%s\n", data);
           break;
         case 3:
           family[index].fmmemberindex[charindex].charfdid = atoi(data);
-          log("charfdid:%s\n", data);
+          logErr("charfdid:%s\n", data);
           break;
         case 4:
           family[index].fmmemberindex[charindex].predeltime = atoi(data);
-          log("predeltime:%s\n", data);
+          logErr("predeltime:%s\n", data);
           break;
         case 5:
           family[index].fmmemberindex[charindex].popular = atoi(data);
-          log("popular:%s\n", data);
+          logErr("popular:%s\n", data);
           // 计算家族声望
           family[index].fmpopular = family[index].fmadv + family[index].fmfeed +
                                     family[index].fmsynthesize +
@@ -3694,12 +3694,12 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
           break;
         case 6:
           family[index].fmmemberindex[charindex].eventflag = atoi(data);
-          log("eventflag:%s\n", data);
+          logErr("eventflag:%s\n", data);
           break;
 #ifdef _NEW_MANOR_LAW
         case 7:
           family[index].fmmemberindex[charindex].momentum = atoi(data);
-          log("momentum:%s\n", data);
+          logErr("momentum:%s\n", data);
           for (i = 0; i < MAX_MEMBERNUM; i++) {
             if ((family[index].fmmemberindex[i].charflag != FMMEMBER_NONE) &&
                 (family[index].fmmemberindex[i].charflag != FMMEMBER_APPLY))
@@ -3752,12 +3752,12 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
         case 0:
           strncpy(family[index].fmmemberindex[charindex].charname, data,
                   sizeof(family[index].fmmemberindex[charindex].charname));
-          log("charname:%s\n", data);
+          logErr("charname:%s\n", data);
           break;
         case 1:
           strncpy(family[index].fmmemberindex[charindex].charid, data,
                   sizeof(family[index].fmmemberindex[charindex].charid));
-          log("charid:%s\n", data);
+          logErr("charid:%s\n", data);
           break;
         default:
           break;
@@ -3812,14 +3812,14 @@ int ChangeFMLeader(int index, char *fmname, int fmindex) {
       }
     }
   }
-  log("ChangeFMLeader_1 tmpindex:%d\n", tmpindex);
+  logErr("ChangeFMLeader_1 tmpindex:%d\n", tmpindex);
   if (tmpindex == 0)
     return -1; // shan return 0 -> -1
   sprintf(buf, "%d", family[index].fmleadergrano);
   if (ACFixFMData(index, fmname, fmindex, 11, tmpindex, buf,
                   family[index].fmmemberindex[tmpindex].charname) < 0)
     return -1;
-  log("ChangeFMLeader_2 tmpindex:%d\n", tmpindex);
+  logErr("ChangeFMLeader_2 tmpindex:%d\n", tmpindex);
   if (family[index].fmmemberindex[tmpindex].onlineflag > 0) {
     char tmpbuf[256];
     sprintf(tmpbuf, "您已经退出家族了～\n族长职位已让给%s，辛苦你了！",
@@ -3872,7 +3872,7 @@ void FMPK_LoadList() {
       break;
     buf[strlen(buf) + 1] = 0;
     memcpy(FMPK_List[i].Data, buf, strlen(buf) + 1);
-    log("庄园PK列表[%d]:%d,%s\n", i, FMPK_List[i].pkflg, FMPK_List[i].Data);
+    logErr("庄园PK列表[%d]:%d,%s\n", i, FMPK_List[i].pkflg, FMPK_List[i].Data);
   }
   fclose(fp);
 }
@@ -3917,11 +3917,11 @@ int readOneFamilyFromTi(int ti) {
   if (stat(filename, &s) < 0)
     return 0;
   if (!(s.st_mode & S_IFREG)) {
-    log("%s is not a regular file\n", filename);
+    logErr("%s is not a regular file\n", filename);
     return 0;
   }
   if (readOneFamily(filename, ti) != 1) {
-    log("cannot open file %s %s\n", filename, strerror(errno));
+    logErr("cannot open file %s %s\n", filename, strerror(errno));
     return 0;
   }
   return 1;
@@ -3998,12 +3998,9 @@ void load_fm_pk_list() {
   int i;
   const char *filename = "data/family/fm_pk_list.txt";
   FILE *fp;
-  printf("Start to create %s\n", filename);
   if (!(fp = fopen(filename, "r"))) {
-    printf("Failed to create %s\n", filename);
     return;
   }
-  printf("Failed to create %s\n", filename);
   for (i = 0; i < FMPKLIST_MAXNUM; i++) {
     char buf[256];
     if (fscanf(fp, "%s", buf) == EOF)

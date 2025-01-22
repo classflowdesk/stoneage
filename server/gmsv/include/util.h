@@ -29,11 +29,6 @@ typedef struct tagPOINT {
 
 typedef enum { CHAR, SHORT, INT, DOUBLE } CTYPE;
 
-void chop(char *src);
-void dchop(char *src, char *del);
-#define chomp(src) dchop(src, "\n");
-void chompex(char *buf);
-void pohcd(char *src, char *del);
 BOOL strtolchecknum(char *arg, void *number, int base, CTYPE type);
 int strcmptail(const char *s1, const char *s2);
 int textToInt(const char *str);
@@ -60,8 +55,6 @@ int rgetFileName(const char *dirname, const STRING64 *string, const int size);
 void makeRandomString(char *cand, char *out, int len);
 BOOL checkStringsUnique(char **strings, int num, int verbose);
 
-char *makeEscapeString(char *src, char *dest, int sizeofdest);
-char *makeStringFromEscaped(char *src);
 BOOL PointInRect(RECT *rect, POINT *p);
 BOOL CoordinateInRect(RECT *rect, int x, int y);
 int clipRect(RECT *rect1, RECT *rect2, RECT *ret);

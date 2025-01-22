@@ -88,7 +88,7 @@ static int reallocDB(void) {
   new_dbsize = dbsize + DBINIT_SIZE;
   newbuf = (DBEntry *)calloc(1, new_dbsize * sizeof(DBEntry));
   if (newbuf == NULL) {
-    log("重新分配数据: 内存不足!!! 新数据大小: %d\n", new_dbsize);
+    logErr("重新分配数据: 内存不足!!! 新数据大小: %d\n", new_dbsize);
     return -1;
   }
   memset(newbuf, 0, new_dbsize * sizeof(DBEntry));
@@ -102,7 +102,7 @@ static int reallocDB(void) {
   dbsize = new_dbsize;
   gDBEntry = newbuf;
 
-  log("重新分配数据: 新数据大小:%d 旧地址: %x 新地址:%x\n", new_dbsize,
+  logErr("重新分配数据: 新数据大小:%d 旧地址: %x 新地址:%x\n", new_dbsize,
       (unsigned int)previous, (unsigned int)newbuf);
 
   return 0;
@@ -122,14 +122,14 @@ static int dbAllocNode() {
       return dbent_finder;
     }
   }
-  log("数据进入队列失败. 重新分配中....\n");
+  logErr("数据进入队列失败. 重新分配中....\n");
   if (reallocDB() < 0) {
-    log("重新分配失败\n");
+    logErr("重新分配失败\n");
   } else {
     // return dbAllocNode( type );
     //  Spock 2000/10/13
     gDBEntry[dbent_finder].use = 1;
-    log("数据探测=%d\n", dbent_finder);
+    logErr("数据探测=%d\n", dbent_finder);
     return dbent_finder;
     // Spock end
   }
@@ -149,13 +149,13 @@ static void dbReleaseNode(int index) {
 
 void dbShowLink(int topind) {
   int cur = topind;
-  log("开始从 %d 链接数据\n", cur);
+  logErr("开始从 %d 链接数据\n", cur);
   while (cur >= 0) {
     if (gDBEntry[cur].use == 0) {
-      log("dbShowLink: use is 0! key:%s\n", gDBEntry[cur].key);
+      logErr("dbShowLink: use is 0! key:%s\n", gDBEntry[cur].key);
       return;
     }
-    log("%s %i\n", gDBEntry[cur].key, gDBEntry[cur].ivalue);
+    logErr("%s %i\n", gDBEntry[cur].key, gDBEntry[cur].ivalue);
     cur = gDBEntry[cur].next;
   }
 }
@@ -168,7 +168,7 @@ static int reallocHash(int dbi) {
   new_hashsize = dbt[dbi].hashsize + HASH_SIZE;
   newbuf = (HashEntry *)calloc(1, new_hashsize * sizeof(HashEntry));
   if (newbuf == NULL) {
-    log("重新分配无用信息: 内存不足!!! 新无用信息大小: %d\n", new_hashsize);
+    logErr("重新分配无用信息: 内存不足!!! 新无用信息大小: %d\n", new_hashsize);
     return -1;
   }
 
@@ -185,7 +185,7 @@ static int reallocHash(int dbi) {
   dbt[dbi].hashsize = new_hashsize;
   dbt[dbi].hashtable = newbuf;
 
-  log("重新分配无用信息: 新无用信息大小:%d 旧地址: %x 新地址:%x\n",
+  logErr("重新分配无用信息: 新无用信息大小:%d 旧地址: %x 新地址:%x\n",
       new_hashsize, (unsigned int)previous, (unsigned int)newbuf);
 
   return 0;
@@ -204,7 +204,7 @@ static int tableGetEntry(int dbi, char *k) {
     }
     hashkey = hash[hashkey].next;
     if (hashkey <= 0) {
-      // log("err not found hash[%x] -%s!\n", hashkey, k)
+      // logErr("err not found hash[%x] -%s!\n", hashkey, k)
       return -1;
     }
   }
@@ -235,9 +235,9 @@ static int tableInsertNode(int dbi, char *k, int dbind) {
       }
     }
     if (hashnext < HASH_PRIME) {
-      log("tableInsertNode: hashentry array full. reallocating....\n");
+      logErr("tableInsertNode: hashentry array full. reallocating....\n");
       if (reallocHash(dbi) < 0) {
-        log("tableInsertNode: reallocation fail\n");
+        logErr("tableInsertNode: reallocation fail\n");
         return -1;
       } else {
         hash = dbt[dbi].hashtable;
@@ -275,11 +275,11 @@ static int dbExtractNodeByKey(int dbi, char *k) {
   int hash_index = tableGetEntry(dbi, k);
 
   if (hash_index < 0) {
-    log("dbExtractNodeByKey: tableGetEntry fail, key:%s\n", k);
+    logErr("dbExtractNodeByKey: tableGetEntry fail, key:%s\n", k);
     return -1;
   }
   if (dbt[dbi].hashtable[hash_index].dbind < 0) {
-    log("dbExtractNodeByKey: invalid dbind in hash, key:%s\n", k);
+    logErr("dbExtractNodeByKey: invalid dbind in hash, key:%s\n", k);
     return -1;
   }
   dbReleaseNode(dbt[dbi].hashtable[hash_index].dbind);
@@ -333,7 +333,7 @@ static int dbGetTableIndex(char *tname, DBTYPE type) {
       snprintf(dbt[i].name, sizeof(dbt[i].name), "%s", tname);
       // Spock 2000/10/16
       if (reallocHash(i) < 0) {
-        log("重新分配无用信息失败\n");
+        logErr("重新分配无用信息失败\n");
         return -2;
       }
       dbt[i].ent_finder = HASH_PRIME;
@@ -343,7 +343,7 @@ static int dbGetTableIndex(char *tname, DBTYPE type) {
       //  Spock +1 2000/10/16
       topind = dbAllocNode();
       if (topind < 0) {
-        log("数据分配节点失败\n");
+        logErr("数据分配节点失败\n");
         return -2;
       }
       gDBEntry[topind].ivalue = 0x7fffffff;
@@ -356,7 +356,7 @@ static int dbGetTableIndex(char *tname, DBTYPE type) {
       return i;
     }
   }
-  log("dbGetTableIndex: table full. now tables are:\n");
+  logErr("dbGetTableIndex: table full. now tables are:\n");
   dbShowAllTable();
   return -1;
 }
@@ -366,22 +366,22 @@ int dbUpdateEntryInt(const char *table, const char *key, const int value,
   int dbi = dbGetTableIndex(table, DB_INT_SORTED);
   int dbind, newpos;
   if (strlen(key) >= KEY_MAX) {
-    log("dbUpdateEntryInt: key is too long, key:%s\n", key);
+    logErr("dbUpdateEntryInt: key is too long, key:%s\n", key);
     return -1;
   }
   if (strlen(info) >= CHARVALUE_MAX) {
-    log("dbUpdateEntryInt: charvalue is too long, charvalue:%s\n", info);
+    logErr("dbUpdateEntryInt: charvalue is too long, charvalue:%s\n", info);
     return -1;
   }
   if (dbi < 0) {
-    log("dbUpdateEntryInt: dbGetTableIndex fail\n");
+    logErr("dbUpdateEntryInt: dbGetTableIndex fail\n");
     return -1;
   }
   const int hash_index = tableGetEntry(dbi, key);
   if (hash_index < 0) {
     dbind = dbAllocNode();
     if (dbind < 0) {
-      log("dbUpdateEntryInt: dbAllocNode fail\n");
+      logErr("dbUpdateEntryInt: dbAllocNode fail\n");
       return -1;
     }
     gDBEntry[dbind].ivalue = value;
@@ -389,12 +389,12 @@ int dbUpdateEntryInt(const char *table, const char *key, const int value,
     strcpy(gDBEntry[dbind].charvalue, info);
     if (dbInsertNodeByIValue(dbt[dbi].toplinkindex, dbind) < 0) {
       gDBEntry[dbind].use = 0;
-      log("dbUpdateEntryInt: dbInsertNodeByIValue fail\n");
+      logErr("dbUpdateEntryInt: dbInsertNodeByIValue fail\n");
       return -1;
     }
     if (tableInsertNode(dbi, key, dbind) < 0) {
       dbReleaseNode(dbind);
-      log("dbUpdateEntryInt: tableInsertNode fail\n");
+      logErr("dbUpdateEntryInt: tableInsertNode fail\n");
       return -1;
     }
   } else {
@@ -444,21 +444,21 @@ int dbDeleteEntryInt(const char *table, const char *key) {
   int dbi = dbGetTableIndex(table, DB_INT_SORTED);
   int r;
   if (strlen(key) >= KEY_MAX) {
-    log("dbDeleteEntryInt: key is too long, key:%s\n", key);
+    logErr("dbDeleteEntryInt: key is too long, key:%s\n", key);
     return -1;
   }
   if (dbi < 0) {
-    log("dbDeleteEntryInt: dbGetTableIndex failed for %s\n", table);
+    logErr("dbDeleteEntryInt: dbGetTableIndex failed for %s\n", table);
     return -1;
   }
   r = dbExtractNodeByKey(dbi, key);
   if (r < 0) {
-    log("dbDeleteEntryInt: dbExtractNodeByKey failed for %s in %s\n", key,
+    logErr("dbDeleteEntryInt: dbExtractNodeByKey failed for %s in %s\n", key,
         table);
     return -1;
   }
   dbt[dbi].updated = 1;
-  log("删除人物 %s 来自表 %s\n", key, table);
+  logErr("删除人物 %s 来自表 %s\n", key, table);
   return 0;
 }
 
@@ -467,7 +467,7 @@ static void dbShowAllTable(void) {
 
   for (i = 0; i < MAXTABLE; i++) {
     if (dbt[i].use) {
-      log("%d Name:%s Use:%d Type:%d\n", i, dbt[i].name, dbt[i].num,
+      logErr("%d Name:%s Use:%d Type:%d\n", i, dbt[i].name, dbt[i].num,
           dbt[i].type);
     }
   }
@@ -476,12 +476,12 @@ static void dbShowAllTable(void) {
 int dbGetEntryInt(const char *table, const char *key, int *output) {
   int dbi = dbGetTableIndex(table, DB_INT_SORTED);
   if (dbi < 0) {
-    log("dbGetEntryInt: dbGetTableIndex fail\n");
+    logErr("dbGetEntryInt: dbGetTableIndex fail\n");
     return -1;
   }
   // Spock 2000/10/19
   if (strlen(key) >= KEY_MAX) {
-    log("dbGetEntryInt: key is too long, key:%s\n", key);
+    logErr("dbGetEntryInt: key is too long, key:%s\n", key);
     return -1;
   }
   const int hash_index = tableGetEntry(dbi, key);
@@ -489,7 +489,7 @@ int dbGetEntryInt(const char *table, const char *key, int *output) {
     return -1;
   const int entry_index = dbt[dbi].hashtable[hash_index].dbind;
   if (entry_index < 0) {
-    log("dbGetEntryInt: Invalid dbind in hashtable of %s\n", table);
+    logErr("dbGetEntryInt: Invalid dbind in hashtable of %s\n", table);
     return -1;
   }
   *output = gDBEntry[entry_index].ivalue;
@@ -502,11 +502,11 @@ int dbGetEntryRank(char *table, char *key, int *rank_out, int *count_out) {
   int now_score = 0x7fffffff;
   int r = -1, i = 0;
   if (strlen(key) >= KEY_MAX) {
-    log("dbGetEntryRank: key is too long, key:%s\n", key);
+    logErr("dbGetEntryRank: key is too long, key:%s\n", key);
     return -1;
   }
   if (dbi < 0) {
-    log("dbGetEntryRank: dbGetTableIndex fail\n");
+    logErr("dbGetEntryRank: dbGetTableIndex fail\n");
     return -1;
   }
   cur = gDBEntry[dbt[dbi].toplinkindex].next;
@@ -590,7 +590,7 @@ int dbFlush(const char *dir) {
       continue;
     // Spock 2000/10/23
     if (dbt[i].updated == 0) {
-      log("dbFlush: table %s not updated\n", dbt[i].name);
+      logErr("dbFlush: table %s not updated\n", dbt[i].name);
       continue;
     }
     // Spock end
@@ -603,7 +603,7 @@ int dbFlush(const char *dir) {
 
     fp = fopen(filename, "w");
     if (fp == NULL) {
-      log("cannot open file: %s %s\n", filename, strerror(errno));
+      logErr("cannot open file: %s %s\n", filename, strerror(errno));
       continue;
     }
 
@@ -637,16 +637,16 @@ int dbRead(const char *dir) {
   char tmp[1024];
   snprintf(tmp, sizeof(tmp), "%s/int", dir);
   if (mkdir(tmp, 0755) == 0) {
-    log("创建目录 %s\n", tmp);
+    logErr("创建目录 %s\n", tmp);
   }
   snprintf(tmp, sizeof(tmp), "%s/string", dir);
   if (mkdir(tmp, 0755) == 0) {
-    log("创建目录 %s\n", tmp);
+    logErr("创建目录 %s\n", tmp);
   }
   snprintf(dirname, sizeof(dirname), "%s/int", dir);
   d = opendir(dirname);
   if (d == NULL) {
-    log("不能打开文件 %s\n", dirname);
+    logErr("不能打开文件 %s\n", dirname);
     return -1;
   }
   while (1) {
@@ -658,7 +658,7 @@ int dbRead(const char *dir) {
       FILE *fp;
       struct stat s;
       snprintf(filename, sizeof(filename), "%s/%s", dirname, de->d_name);
-      log("读取数据:%s\n", filename);
+      logErr("读取数据:%s\n", filename);
       if (stat(filename, &s) < 0) {
         continue;
       }
@@ -668,7 +668,7 @@ int dbRead(const char *dir) {
 
       fp = fopen(filename, "r");
       if (fp == NULL) {
-        log("不能打开文件 %s %s\n", filename, strerror(errno));
+        logErr("不能打开文件 %s %s\n", filename, strerror(errno));
         continue;
       }
       while (1) {
@@ -692,7 +692,7 @@ int dbRead(const char *dir) {
   snprintf(dirname, sizeof(dirname), "%s/string", dir);
   d = opendir(dirname);
   if (d == NULL) {
-    log("不能打开文件 %s\n", dirname);
+    logErr("不能打开文件 %s\n", dirname);
     return -1;
   }
   while (1) {
@@ -704,7 +704,7 @@ int dbRead(const char *dir) {
       FILE *fp;
       struct stat s;
       snprintf(filename, sizeof(filename), "%s/%s", dirname, de->d_name);
-      log("读取数据:%s\n", filename);
+      logErr("读取数据:%s\n", filename);
 
       if (stat(filename, &s) < 0) {
         continue;
@@ -714,7 +714,7 @@ int dbRead(const char *dir) {
       }
       fp = fopen(filename, "r");
       if (fp == NULL) {
-        log("不能打开文件 %s %s\n", filename, strerror(errno));
+        logErr("不能打开文件 %s %s\n", filename, strerror(errno));
         continue;
       }
       while (1) {
@@ -771,15 +771,15 @@ int dbGetEntryCountRange(const char *table, const int count_start,
 int dbUpdateEntryString(const char *table, const char *key, const char *value) {
   const int dbi = dbGetTableIndex(table, DB_STRING);
   if (strlen(key) >= KEY_MAX) {
-    log("dbUpdateEntryString: key is too long, key:%s\n", key);
+    logErr("dbUpdateEntryString: key is too long, key:%s\n", key);
     return -1;
   }
   if (strlen(value) >= CHARVALUE_MAX) {
-    log("dbUpdateEntryString: charvalue is too long, charvalue:%s\n", value);
+    logErr("dbUpdateEntryString: charvalue is too long, charvalue:%s\n", value);
     return -1;
   }
   if (dbi < 0) {
-    log("dbUpdateEntryString: dbGetTableIndex fail, table:%s\n", table);
+    logErr("dbUpdateEntryString: dbGetTableIndex fail, table:%s\n", table);
     return -1;
   }
   const int hash_index = tableGetEntry(dbi, key);
@@ -787,19 +787,19 @@ int dbUpdateEntryString(const char *table, const char *key, const char *value) {
   if (hash_index < 0) {
     dbind = dbAllocNode();
     if (dbind < 0) {
-      log("dbUpdateEntryString: dbAllocNode failed.\n");
+      logErr("dbUpdateEntryString: dbAllocNode failed.\n");
       return -1;
     }
     strcpy(gDBEntry[dbind].key, key);
     strcpy(gDBEntry[dbind].charvalue, value);
     if (dbAppendNode(dbt[dbi].toplinkindex, dbind) < 0) {
       gDBEntry[dbind].use = 0;
-      log("dbUpdateEntryString: dbAppendNode fail\n");
+      logErr("dbUpdateEntryString: dbAppendNode fail\n");
       return -1;
     }
     if (tableInsertNode(dbi, key, dbind) < 0) {
       dbReleaseNode(dbind);
-      log("dbUpdateEntryString: tableInsertNode fail\n");
+      logErr("dbUpdateEntryString: tableInsertNode fail\n");
       return -1;
     }
   } else {
@@ -815,22 +815,22 @@ int dbGetEntryString(const char *table, const char *key, char *output,
   int dbi = dbGetTableIndex(table, DB_STRING);
   // Spock 2000/10/23
   if (strlen(key) >= KEY_MAX) {
-    log("dbGetEntryString: key is too long, key:%s\n", key);
+    logErr("dbGetEntryString: key is too long, key:%s\n", key);
     return -1;
   }
   if (dbi < 0) {
-    log("dbGetEntryString: dbGetTableIndex fail\n");
+    logErr("dbGetEntryString: dbGetTableIndex fail\n");
     return -1;
   }
   // Spock 2000/10/19
   const int hash_index = tableGetEntry(dbi, key);
   if (hash_index < 0) {
-    log("err hash index < 0.\n");
+    logErr("err hash index < 0.\n");
     return -1;
   }
   const int entry_index = dbt[dbi].hashtable[hash_index].dbind;
   if (entry_index < 0) {
-    log("error entry index < 0.\n");
+    logErr("error entry index < 0.\n");
     return -1;
   }
   snprintf(output, outlen, "%s", gDBEntry[entry_index].charvalue);
@@ -840,20 +840,20 @@ int dbGetEntryString(const char *table, const char *key, char *output,
 int dbDeleteEntryString(const char *table, const char *key) {
   int dbi = dbGetTableIndex(table, DB_STRING);
   if (strlen(key) >= KEY_MAX) {
-    log("dbDeleteEntryString: key is too long, key:%s\n", key);
+    logErr("dbDeleteEntryString: key is too long, key:%s\n", key);
     return -1;
   }
   if (dbi < 0) {
-    log("dbDeleteEntryString: dbGetTableIndex fail\n");
+    logErr("dbDeleteEntryString: dbGetTableIndex fail\n");
     return -1;
   }
   int r = dbExtractNodeByKey(dbi, key);
   if (r < 0) {
-    log("dbDeleteEntryString: dbExtractNodeByKey failed for %s in %s\n", key,
+    logErr("dbDeleteEntryString: dbExtractNodeByKey failed for %s in %s\n", key,
         table);
     return -1;
   }
   dbt[dbi].updated = 1;
-  log("删除人物 %s 来自表 %s\n", key, table);
+  logErr("删除人物 %s 来自表 %s\n", key, table);
   return 0;
 }

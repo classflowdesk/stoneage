@@ -1,6 +1,7 @@
 #ifndef __GMSV_SERVER_H__
 #define __GMSV_SERVER_H__
 //
+#include "common.h"
 #include "version.h"
 //
 #include "server_util.h"

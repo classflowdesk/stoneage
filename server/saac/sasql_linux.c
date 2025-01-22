@@ -2,7 +2,6 @@
 #include "version.h"
 
 #ifdef _SASQL // 新添加
-#include "md5.h"
 #include "main.h"
 #include "sasql.h"
 #include "util.h"
@@ -593,7 +592,7 @@ char *sasql_OnlineCost(char *id, char *costpasswd, int fmindex, char *fmname) {
                 "`check`=0  where CostPasswd=BINARY'%s'",
                 id, costpasswd);
         if (!sasql_mysql_query(sqlstr)) {
-          log("充值卡号%s已充值！\n", costpasswd);
+          logErr("充值卡号%s已充值！\n", costpasswd);
         }
         addFmPayPoint(fmindex, fmname, payval);
         sprintf(token,
@@ -719,7 +718,7 @@ char *sasql_OnlineBuy(char *id, char *costpasswd) {
                 "`check`=0  where CostPasswd=BINARY'%s'",
                 id, costpasswd);
         if (!sasql_mysql_query(sqlstr)) {
-          log("提货卡号%s已提取！\n", costpasswd);
+          logErr("提货卡号%s已提取！\n", costpasswd);
         }
         sprintf(token, "%c|%s", costpasswd[0], coststr);
 

@@ -40,8 +40,8 @@ static void makeCharPoolItemFileName(char *id, char *output, int outputlen);
     if (id[0]) {                                                               \
       snprintf(body, sizeof(body), "%s.log.%d", id, get_rotate_count());       \
       makeDirFilename(fn, sizeof(fn), logdir, getHash(id), body);              \
-      LOGBASE(fn, "%u ", (unsigned int)time(NULL));                            \
-      LOGBASE(fn, format, ##args);                                             \
+      logFile(fn, "%u ", (unsigned int)time(NULL));                            \
+      logFile(fn, format, ##args);                                             \
     }                                                                          \
   }
 
@@ -91,7 +91,7 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
     SaacServer_ACCharLoad_send(ti, FAILED, "locked", mesgid);
 #endif
     DeleteMemLock(getHash(id) & 0xff, id, &process); // 如果AP无锁则AC解锁
-    log("\n (%s) AC同一星系重覆登入，踢人!! ", id);
+    logErr("\n (%s) AC同一星系重覆登入，踢人!! ", id);
     SaacServer_ACKick_recv(ti, id, 1, -1); // 踢人
 
     checkGSUCheck(id);
@@ -100,7 +100,7 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
 
   char_index = getCharIndexByName(id, charname);
 #ifdef _NewSave
-  // log("\n档案装载序号:%d 账号:%s 名字:%s\n", char_index, id, charname);
+  // logErr("\n档案装载序号:%d 账号:%s 名字:%s\n", char_index, id, charname);
 #endif
 
   if (char_index < 0) {
@@ -184,7 +184,7 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
       fprintf(fp, "%s\n", charinfo);
       fclose(fp);
     }
-    log("err add batpetstring.txt:%s[%s] !\n", id, charname);
+    logErr("err add batpetstring.txt:%s[%s] !\n", id, charname);
   }
 
   if (unlock) {
@@ -197,13 +197,13 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
     if ((ret = lockUser(getGSName(ti), id, "0", 0, result, sizeof(result),
                         retdata, sizeof(retdata), "0", "0")) < 0) {
 #endif
-      log("解锁:%s 失败!!\n", id);
+      logErr("解锁:%s 失败!!\n", id);
     }
   }
   // Nuke *1 add escape
   if (makeSaveCharString(savebuf, sizeof(savebuf), charname, opt, charinfo) <
       0) {
-    log("\n AC存档:太长  ");
+    logErr("\n AC存档:太长  ");
     SaacServer_ACCharSave_send(ti, FAILED, "too long", mesgid);
     // Spock fixed 2000/11/1
     return ret;
@@ -218,7 +218,7 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
   if (char_index < 0) {
     int blankind = findBlankCharIndex(id);
     if (blankind < 0) {
-      log("\n ACCharSave:char full  ");
+      logErr("\n ACCharSave:char full  ");
       SaacServer_ACCharSave_send(ti, FAILED, "char full", mesgid);
       return ret;
     } else {
@@ -226,9 +226,9 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
     }
   }
 
-  log("账号:[%s] 人物:[%s]\n", id, charname);
+  logErr("账号:[%s] 人物:[%s]\n", id, charname);
   if (saveCharOne(id, char_index, savebuf) < 0) {
-    log("\n ACCharSave:disk I/O error or a bug  ");
+    logErr("\n ACCharSave:disk I/O error or a bug  ");
     SaacServer_ACCharSave_send(ti, FAILED, "disk I/O error or a bug", mesgid);
     return ret;
   }
@@ -277,7 +277,7 @@ void charListCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
           fclose(fp_old);
           rename(fn_old, fn_new); // 搬移
           // filecopy( fn_old, fn_new); // 复制
-          log(" 移档_%s ", fn_new);
+          logErr(" 移档_%s ", fn_new);
         }
       } else {
         fclose(fp_new);
@@ -294,7 +294,7 @@ void charListCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
         fclose(fp_old);
         rename(fn_old, fn_new); // 搬移
         // filecopy( fn_old, fn_new); // 复制
-        log(" 移档_%s ", fn_new);
+        logErr(" 移档_%s ", fn_new);
       }
     } else {
       fclose(fp_new);
@@ -311,7 +311,7 @@ void charListCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
         fclose(fp_old);
         rename(fn_old, fn_new); // 搬移
         // filecopy( fn_old, fn_new); // 复制
-        log(" 移档_%s ", fn_new);
+        logErr(" 移档_%s ", fn_new);
       }
     } else {
       fclose(fp_new);
@@ -365,15 +365,15 @@ void charDeleteCallback(int ti, int auth, char *c0, char *c1, char *c2,
 #ifdef _FMVER21
         if (ChangeFMLeader(index, fmname, fmindex) >= 0) {
           if (ACDelFM(index, fmname, fmindex) >= 0)
-            log("删除家族成员:%d 家族名:%s 家族索引:%d 人物:%s, 账号:%s, "
+            logErr("删除家族成员:%d 家族名:%s 家族索引:%d 人物:%s, 账号:%s, "
                 "家族人物索引:%d\n",
                 index, fmname, fmindex, charname, id, fmchar_index);
         }
-        log("ChangeFMLeader_3 index:%d fmname:%s fmindex:%d\n", index, fmname,
+        logErr("ChangeFMLeader_3 index:%d fmname:%s fmindex:%d\n", index, fmname,
             fmindex);
 #else
         if (ACDelFM(index, fmname, fmindex) >= 0)
-          log("删除家族成员:%d 家族名:%s 家族索引:%d 人物:%s, 账号:%s, "
+          logErr("删除家族成员:%d 家族名:%s 家族索引:%d 人物:%s, 账号:%s, "
               "家族人物索引:%d\n",
               index, fmname, fmindex, charname, id, fmchar_index);
 #endif
@@ -381,13 +381,13 @@ void charDeleteCallback(int ti, int auth, char *c0, char *c1, char *c2,
 #ifdef _FMVER21
         if (ACMemberLeaveFM(index, fmname, fmindex, charname, 0, 0,
                             fmchar_index) >= 0)
-          log("ACMemberLeaveFM index:%d 家族名:%s 家族索引:%d 人物:%s, "
+          logErr("ACMemberLeaveFM index:%d 家族名:%s 家族索引:%d 人物:%s, "
               "账号:%s, 家族人物索引:%d\n",
               index, fmname, fmindex, charname, id, fmchar_index);
 #else
         if (ACMemberLeaveFM(index, fmname, fmindex, charname, 0, fmchar_index) >=
             0)
-          log("ACMemberLeaveFM index:%d 家族名:%s 家族索引:%d 人物:%s, "
+          logErr("ACMemberLeaveFM index:%d 家族名:%s 家族索引:%d 人物:%s, "
               "账号:%s, 家族人物索引:%d\n",
               index, fmname, fmindex, charname, id, fmchar_index);
 #endif
@@ -400,7 +400,7 @@ void charDeleteCallback(int ti, int auth, char *c0, char *c1, char *c2,
   now = localtime(&timenow);
   sprintf(logfile, "log/chardel/%04d%02d%02d.log", now->tm_year + 1900,
           now->tm_mon + 1, now->tm_mday);
-  LOGBASE(logfile,
+  logFile(logfile,
           "%04d/%02d/%02d %02d:%02d:%02d id:[%s] char:[%s] index:[%d]\n",
           now->tm_year + 1900, now->tm_mon + 1, now->tm_mday, now->tm_hour,
           now->tm_min, now->tm_sec, id, charname, char_index);
@@ -592,7 +592,7 @@ int saveCharOne(char *id, int num, char *input) {
   makeCharFileName(id, fn, sizeof(fn), num);
   fp = fopen(fn, "w");
   if (fp == NULL) {
-    log("save error 01: %d", errno); // Change add errno
+    logErr("save error 01: %d", errno); // Change add errno
     return -1;
   }
   // Won 修正 hp 为负的人
@@ -616,7 +616,7 @@ int saveCharOne(char *id, int num, char *input) {
 #endif
   fprintf(fp, "%s", input);
   fclose(fp);
-  log("写入 %s 档案文件:%s\n", id, fn);
+  logErr("写入 %s 档案文件:%s\n", id, fn);
   chmod(fn, 0777);
   return 0;
 }
@@ -718,7 +718,7 @@ int lockUser(char *gmsvname, char *id, char *passwd, int lock, char *result,
     if (isLocked(id)) {
       snprintf(result, resultlen, FAILED);
       snprintf(retdata, retdatalen, "already locked");
-      log("写入内存信息: 用户:%x/%s 已经同意锁定 !!\n", getHash(id), id);
+      logErr("写入内存信息: 用户:%x/%s 已经同意锁定 !!\n", getHash(id), id);
       return -1;
     } else {
 #ifdef _LOCK_ADD_NAME
@@ -734,7 +734,7 @@ int lockUser(char *gmsvname, char *id, char *passwd, int lock, char *result,
     }
   } else {
     if (!isLocked(id)) {
-      log("删除内存信息: 用户:%x/%s 没有锁定!!\n", getHash(id), id);
+      logErr("删除内存信息: 用户:%x/%s 没有锁定!!\n", getHash(id), id);
     }
     if (DeleteMemLock(getHash(id) & 0xff, id, &ret)) {
       snprintf(result, resultlen, SUCCESSFUL);
@@ -744,7 +744,7 @@ int lockUser(char *gmsvname, char *id, char *passwd, int lock, char *result,
       snprintf(result, resultlen, FAILED);
       snprintf(retdata, retdatalen, "不能移除锁定");
 
-      log("不能解锁 %x:%s !\n", getHash(id), id);
+      logErr("不能解锁 %x:%s !\n", getHash(id), id);
       return ret;
     }
   }
@@ -798,7 +798,7 @@ int InsertCharPoolItem(char *id, char *input, int sizes) {
   if (fp == NULL) {
     fp = fopen(fn, "w");
     if (fp == NULL) {
-      log("保存 %s 错误.\n", fn);
+      logErr("保存 %s 错误.\n", fn);
       return -1;
     }
   }
@@ -806,7 +806,7 @@ int InsertCharPoolItem(char *id, char *input, int sizes) {
   fprintf(fp, "%s", input);
   fclose(fp);
 
-  log("添加 %s 物品仓库文件:%s\n", id, fn);
+  logErr("添加 %s 物品仓库文件:%s\n", id, fn);
   return sizes;
 }
 
@@ -822,14 +822,14 @@ int saveCharPoolItem(char *id, char *input, int sizes) {
 
   fp = fopen(fn, "w");
   if (fp == NULL) {
-    log("保存 %s 错误.\n", fn);
+    logErr("保存 %s 错误.\n", fn);
     return -1;
   }
 
   fprintf(fp, "%s", input);
   fclose(fp);
 
-  log("写入 %s 道具档案文件:%s\n", id, fn);
+  logErr("写入 %s 道具档案文件:%s\n", id, fn);
   return sizes;
 }
 
@@ -870,7 +870,7 @@ int checkCharPoolItem(char *id) {
   fp = fopen(fn, "r");
   if (fp == NULL) {
     if (saveCharPoolItem(id, "", 0) < 0) {
-      log("\n 无法建立档案:%s 物品仓库文件!!", id);
+      logErr("\n 无法建立档案:%s 物品仓库文件!!", id);
       return -1;
     }
   } else {
@@ -912,7 +912,7 @@ int InsertCharPoolPet(char *id, char *input, int sizes) {
   if (fp == NULL) {
     fp = fopen(fn, "w");
     if (fp == NULL) {
-      log("保存 %s 错误.\n", fn);
+      logErr("保存 %s 错误.\n", fn);
       return -1;
     }
   }
@@ -920,7 +920,7 @@ int InsertCharPoolPet(char *id, char *input, int sizes) {
   fprintf(fp, "%s", input);
   fclose(fp);
 
-  log("添加 %s 宠物仓库文件:%s\n", id, fn);
+  logErr("添加 %s 宠物仓库文件:%s\n", id, fn);
   return sizes;
 }
 
@@ -936,14 +936,14 @@ int saveCharPoolPet(char *id, char *input, int sizes) {
 
   fp = fopen(fn, "w");
   if (fp == NULL) {
-    log("保存 %s 错误.\n", fn);
+    logErr("保存 %s 错误.\n", fn);
     return -1;
   }
 
   fprintf(fp, "%s", input);
   fclose(fp);
 
-  log("写入 %s 宠物档案文件:%s\n", id, fn);
+  logErr("写入 %s 宠物档案文件:%s\n", id, fn);
   return sizes;
 }
 
@@ -985,7 +985,7 @@ int checkCharPoolPet(char *id) {
   fp = fopen(fn, "r");
   if (fp == NULL) {
     if (saveCharPoolPet(id, "", 0) < 0) {
-      log("\n 无法建立档案:%s 宠物仓库文件!!", id);
+      logErr("\n 无法建立档案:%s 宠物仓库文件!!", id);
       return -1;
     }
   } else {

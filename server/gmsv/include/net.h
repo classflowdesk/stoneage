@@ -2,7 +2,6 @@
 #define __NET_H__
 
 #include "common.h"
-#include "linux_platform.h"
 
 #undef EXTERN
 #ifdef __NET_C__
@@ -15,7 +14,7 @@
 
 typedef enum {
   NULLCONNECT,
-  NOTLOGIN,         /*  ����̼��ƻ���ئ��  */
+  NOTLOGIN,
   LOGIN,            /*  ����̼�            */
   WHILELOGIN,       /*  ����̼��ƻ�����    */
   WHILECREATE,      /*  ���Ȼ�����          */

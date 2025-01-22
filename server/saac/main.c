@@ -3,6 +3,8 @@
 #include "main.h"
 #include "db.h"
 #include "mail.h"
+#include "lock.h"
+#include <getopt.h>
 #include "saac_server.h"
 #include "util.h"
 
@@ -13,13 +15,11 @@
 #include "recv.h"
 #endif
 #include "char.h"
-#include "md5.h"
 
 #ifdef _SASQL
 #include "sasql.h"
 #endif
 #include "copyright.h"
-#include "lock.h"
 
 #define BACKLOGNUM 5
 int worksockfd;
@@ -133,8 +133,8 @@ void checkMissionTimelimit(void);
 
 void sighandle(int a) {
   if (a == SIGUSR1)
-    log("sigusr1信号!\n");
-  log("得到一个信号! 异常中断......\n");
+    logErr("sigusr1信号!\n");
+  logErr("得到一个信号! 异常中断......\n");
   writeFamily(familydir);
   writeFMPoint(fmpointdir);
   writeFMSMemo(fmsmemodir);
@@ -162,14 +162,14 @@ void sigusr1(int a) {
     switch (key[0]) {
     case 'P': // unlock player
       if (DeleteMemLock(getHash(&key[1]) & 0xff, &key[1], &i)) {
-        log("ADM: memunlock: %s success.\n", key);
+        logErr("ADM: memunlock: %s success.\n", key);
       } else {
-        log("ADM: memunlock: %s failed.\n", key);
+        logErr("ADM: memunlock: %s failed.\n", key);
       }
       break;
     case 'S': // unlock server
       DeleteMemLockServer(&key[1]);
-      log("ADM: memunlock: %s\n", key);
+      logErr("ADM: memunlock: %s\n", key);
       break;
     case 'C': // check player lock
       GetMemLockState(getHash(&key[1]) & 0xff, &key[1], buf);
@@ -178,20 +178,20 @@ void sigusr1(int a) {
       break;
 #ifdef _SEND_EFFECT // WON ADD 送下雪、下雨等特效
     case 'E':
-      log("\nAC 向 GS 发送下雪特效!!\n");
+      logErr("\nAC 向 GS 发送下雪特效!!\n");
       SendEffect(&key[1]);
       break;
 #endif
     case 'L': // Robin 列出所有Server连线
-      log("\nList All Server Conncet!!!!!\n");
+      logErr("\nList All Server Conncet!!!!!\n");
       for (i = 0; i < MAXCONNECTION; i++)
         if (gs[i].use)
-          log("\n gs[%d] fd:%d name:%s ", i, gs[i].fd, gs[i].name);
+          logErr("\n gs[%d] fd:%d name:%s ", i, gs[i].fd, gs[i].name);
       break;
     }
-    log(" sigusr1_over_1 ");
+    logErr(" sigusr1_over_1 ");
     fclose(f);
-    log(" sigusr1_over_2 ");
+    logErr(" sigusr1_over_2 ");
   }
 }
 
@@ -209,16 +209,16 @@ int login_game_server(const int ti, const char *svname, const char *svpas,
 {
 #if _ATTESTAION_ID == 1
   if (id != _ATTESTAION_ID) {
-    log("服务端版本错误\n");
+    logErr("服务端版本错误\n");
     snprintf(result, resultlen, "失败");
     snprintf(retdata, retdatalen, "版本错误");
     return 0;
   }
 #endif
   if (strcmp(svpas, svpass) == 0) {
-    log("服务器密码正确 %s\n", svname);
+    logErr("服务器密码正确 %s\n", svname);
   } else {
-    log("服务器密码错误 %s\n", svname);
+    logErr("服务器密码错误 %s\n", svname);
     snprintf(result, resultlen, "失败");
     snprintf(retdata, retdatalen, "密码错误");
     return 0;
@@ -275,108 +275,108 @@ static int readConfig(char *path) {
     easyGetTokenFromString(buf, 2, param, sizeof(param));
     if (strcmp(command, "port") == 0) {
       port = atoi(param);
-      log("端口:%d\n", port);
+      logErr("端口:%d\n", port);
     } else if (strcmp(command, "logdir") == 0) {
       snprintf(logdir, sizeof(logdir), param);
-      log("日志目录:%s\n", logdir);
+      logErr("日志目录:%s\n", logdir);
     } else if (strcmp(command, "chardir") == 0) {
       snprintf(chardir, sizeof(chardir), param);
-      log("档案目录:%s\n", chardir);
+      logErr("档案目录:%s\n", chardir);
 #ifdef _SLEEP_CHAR
       snprintf(sleepchardir, sizeof(sleepchardir), "%s_sleep", chardir);
-      log("睡眠目录:%s\n", sleepchardir);
+      logErr("睡眠目录:%s\n", sleepchardir);
 #endif
     }
 #ifdef _IP_VIP
     else if (strcmp(command, "ip1") == 0) {
       snprintf(myip[0], sizeof(myip[0]), param);
-      log("IP1:%s\n", param);
+      logErr("IP1:%s\n", param);
     } else if (strcmp(command, "ip2") == 0) {
       snprintf(myip[1], sizeof(myip[1]), param);
-      log("IP2:%s\n", param);
+      logErr("IP2:%s\n", param);
     } else if (strcmp(command, "ip3") == 0) {
       snprintf(myip[2], sizeof(myip[2]), param);
-      log("IP3:%s\n", param);
+      logErr("IP3:%s\n", param);
     } else if (strcmp(command, "ip4") == 0) {
       snprintf(myip[3], sizeof(myip[3]), param);
-      log("IP4:%s\n", param);
+      logErr("IP4:%s\n", param);
     } else if (strcmp(command, "ip5") == 0) {
       snprintf(myip[4], sizeof(myip[4]), param);
-      log("IP5:%s\n", param);
+      logErr("IP5:%s\n", param);
     }
 #endif
     else if (strcmp(command, "pass") == 0) {
       snprintf(svpass, sizeof(svpass), param);
-      log("密码:%s\n", param);
+      logErr("密码:%s\n", param);
     } else if (strcmp(command, "dbdir") == 0) {
       snprintf(dbdir, sizeof(dbdir), param);
-      log("数据目录:%s\n", dbdir);
+      logErr("数据目录:%s\n", dbdir);
     } else if (strcmp(command, "rotate_interval") == 0) {
       log_rotate_interval = atoi(param);
-      log("日志循环间隔:%d\n", log_rotate_interval);
+      logErr("日志循环间隔:%d\n", log_rotate_interval);
     } else if (strcmp(command, "maildir") == 0) {
       snprintf(maildir, sizeof(maildir), param);
-      log("邮件目录:%s\n", maildir);
+      logErr("邮件目录:%s\n", maildir);
     }
 #ifdef _FAMILY
     else if (strcmp(command, "familydir") == 0) {
       snprintf(familydir, sizeof(familydir), param);
-      log("家族目录:%s\n", familydir);
+      logErr("家族目录:%s\n", familydir);
     } else if (strcmp(command, "fmpointdir") == 0) {
       snprintf(fmpointdir, sizeof(fmpointdir), param);
-      log("庄园表列:%s\n", fmpointdir);
+      logErr("庄园表列:%s\n", fmpointdir);
     } else if (strcmp(command, "fmsmemodir") == 0) {
       snprintf(fmsmemodir, sizeof(fmsmemodir), param);
-      log("家族备份:%s\n", fmsmemodir);
+      logErr("家族备份:%s\n", fmsmemodir);
     }
 #endif
     else if (strcmp(command, "Total_Charlist") == 0) {
       Total_Charlist = atoi(param);
-      log("更新人物点数间隔:%d秒\n", Total_Charlist);
+      logErr("更新人物点数间隔:%d秒\n", Total_Charlist);
     } else if (strcmp(command, "Expired_mail") == 0) {
       Expired_mail = atoi(param);
-      log("更新过期邮件间隔:%d秒\n", Expired_mail);
+      logErr("更新过期邮件间隔:%d秒\n", Expired_mail);
     } else if (strcmp(command, "Del_Family_or_Member") == 0) {
       Del_Family_or_Member = atoi(param);
-      log("删除家族成员间隔:%d秒\n", Del_Family_or_Member);
+      logErr("删除家族成员间隔:%d秒\n", Del_Family_or_Member);
     } else if (strcmp(command, "Write_Family") == 0) {
       Write_Family = atoi(param);
-      log("更新家族信息间隔:%d秒\n", Write_Family);
+      logErr("更新家族信息间隔:%d秒\n", Write_Family);
     } else if (strcmp(command, "SameIpMun") == 0) {
       sameipmun = atoi(param);
       if (sameipmun > 0) {
-        log("同IP允许同时登陆:%d次\n", sameipmun);
+        logErr("同IP允许同时登陆:%d次\n", sameipmun);
       } else {
-        log("同IP允许同时登陆:无限制\n");
+        logErr("同IP允许同时登陆:无限制\n");
       }
     } else if (strcmp(command, "CPUUSE") == 0) {
       cpuuse = atoi(param);
-      log("CPU使用频率:%d秒\n", cpuuse);
+      logErr("CPU使用频率:%d秒\n", cpuuse);
     }
 #ifdef _AUTO_BACKUP
     else if (strcmp(command, "AUTOBACKUPDAY") == 0) {
       autobackupday = atoi(param);
-      log("每隔%d天备份一次数据！\n", autobackupday);
+      logErr("每隔%d天备份一次数据！\n", autobackupday);
     } else if (strcmp(command, "AUTOBACKUPHOUR") == 0) {
       autobackuphour = atoi(param);
-      log("每次在%d点进行备份！\n", autobackuphour);
+      logErr("每次在%d点进行备份！\n", autobackuphour);
     }
 #endif
 #ifdef _LOTTERY_SYSTEM
     else if (strcmp(command, "LOTTERYSYSTEM") == 0) {
       lotterysystem = atoi(param);
-      log("每隔%d天开一次奖！\n", lotterysystem);
+      logErr("每隔%d天开一次奖！\n", lotterysystem);
     }
 #endif
 #ifdef _SAVE_ZIP
     else if (strcmp(command, "savezip") == 0) {
       SAVEZIP = atoi(param);
-      log("是否自动备份:%s\n", SAVEZIP > 0 ? "是" : "否");
+      logErr("是否自动备份:%s\n", SAVEZIP > 0 ? "是" : "否");
     }
 #endif
     else if (strcmp(command, "servid") == 0) {
       servid = atoi(param);
-      log("服务器ID！\n", servid);
+      logErr("服务器ID！\n", servid);
     }
   }
 
@@ -519,7 +519,7 @@ static void parseOpts(int argc, char **argv) {
       nice(atoi(optarg));
       break;
     default:
-      log("不能读懂选项 %c\n", c);
+      logErr("不能读懂选项 %c\n", c);
       exit(0);
     }
   }
@@ -568,7 +568,7 @@ void sigshutdown(int number) {
   signal(SIGSEGV, SIG_IGN);
   signal(SIGPIPE, SIG_IGN);
   signal(SIGTERM, SIG_IGN);
-  log("得到一个信号! 异常中断......\n");
+  logErr("得到一个信号! 异常中断......\n");
   writeFamily(familydir);
   writeFMPoint(fmpointdir);
   writeFMSMemo(fmsmemodir);
@@ -615,8 +615,6 @@ int main(int argc, char **argv) {
       cpuid(0,eax,ebx,ecx,edx);
       printf("%08x %08lx %08lx %08lx %08lx\n",0,eax,ebx,ecx,edx);
   */
-
-  const char* fm_pk = "data/family/fm_pk_list.txt";
   // 给出一个随机数种子. 产生随机数。
   srand((int)time(0));
   parseOpts(argc, argv);
@@ -635,7 +633,7 @@ int main(int argc, char **argv) {
   UNlockM_Init();
   if (readConfig("acserv.cf") < 0) {
     printf("Unable to find acserv.cf\n");
-    log("无法在当前目录里读取 acserv.cf .\n");
+    logErr("无法在当前目录里读取 acserv.cf .\n");
     exit(1);
   }
 
@@ -647,28 +645,28 @@ int main(int argc, char **argv) {
   sasql_online(NULL, NULL, NULL, NULL, 3);
 #endif
 #endif
-  log("读取数据目录\n");
+  logErr("读取数据目录\n");
   dbRead(dbdir);
 #ifdef _FAMILY
-  log("读取家族庄园\n");
+  logErr("读取家族庄园\n");
   readFMSMemo(fmsmemodir);
-  log("读取家族留言\n");
+  logErr("读取家族留言\n");
   readFMPoint(fmpointdir);
-  log("读取家族目录\n");
+  logErr("读取家族目录\n");
   readFamily(familydir);
 #endif
-  log("准备档案目录\n");
+  logErr("准备档案目录\n");
   PrepareDirectories(chardir);
-  log("准备日志目录\n");
+  logErr("准备日志目录\n");
   PrepareDirectories(logdir);
-  log("准备邮件目录\n");
+  logErr("准备邮件目录\n");
   PrepareDirectories(maildir);
 #ifdef _SLEEP_CHAR
   PrepareDirectories(sleepchardir);
-  log("准备睡眠档案目录\n");
+  logErr("准备睡眠档案目录\n");
 #endif
   if (readMail(maildir) < 0) {
-    log("不能初始化邮件\n");
+    logErr("不能初始化邮件\n");
     exit(1);
   }
   /* TCPSTRUCT */
@@ -676,44 +674,39 @@ int main(int argc, char **argv) {
     int tcpr;
     if ((tcpr = tcpstruct_init(NULL, port, 0, CHARDATASIZE * 16 * MAXCONNECTION,
                                1 /* DEBUG */)) < 0) {
-      log("不能监听TCP端口，错误代码: %d, 请稍等...\n", tcpr);
+      logErr("不能监听TCP端口，错误代码: %d, 请稍等...\n", tcpr);
       sleep(1);
     } else {
       break;
     }
   } while(1);
-  printf("IS_FILE: %d %d %d\n", isFile(fm_pk_list), CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
-  int ret = InitWorkSpace(&gSaacWorkSpace, tcpstruct_write, CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
-  if (ret == 0) {
-    log("InitWorkSpace Succeed.\n");
-  } else {
-    log("InitWorkSpace Failed.\n");
-  }
+  printf("Init WorkSpace: %d %d\n", CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
+  InitWorkSpace(&gSaacWorkSpace, tcpstruct_write, CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
 
 #ifdef _AC_SEND_FM_PK // WON ADD 庄园对战列表储存在AC
-  log("Init FM PK...\n");
+  logErr("Init FM PK...");
   load_fm_pk_list();
-  log("Succeed.\n");
+  logErr("Succeed.\n");
 #endif
 
 #ifdef _ACFMPK_LIST
-  log("Load FM PK...\n");
+  logErr("Load FM PK...");
   FMPK_LoadList();
-  log("Succeed.\n");
+  logErr("Succeed.\n");
 #endif
 #ifdef _ALLDOMAN
-  log("Load HeroList...\n");
+  logErr("Load HeroList...");
   LOAD_herolist(); // Syu ADD 排行榜NPC
-  log("Succeed.\n");
+  logErr("Succeed.\n");
 #endif
 
 #ifdef _ANGEL_SUMMON
-  log("Load Mission Table...\n");
+  logErr("Load Mission Table...");
   initMissionTable();
-  log("Succeed.\n");
+  logErr("Succeed.\n");
 #endif
-  log("\n服务端版本: <%s>\n", SERVER_VERSION);
-  log("\n开始工作.....\n");
+  logErr("\n服务端版本: <%s>\n", SERVER_VERSION);
+  logErr("\n开始工作.....\n");
 
   int itime = 0;
   while (1) {
@@ -788,12 +781,12 @@ int main(int argc, char **argv) {
         char *c = ctime(&main_loop_time);
         if (c) {
           struct timeval st, et;
-          log("\nTIME:%s\n", c);
+          logErr("\nTIME:%s\n", c);
           gettimeofday(&st, NULL);
           dbFlush(dbdir);
           gettimeofday(&et, NULL);
-          log("Flushed db(%fsec)\n", time_diff(et, st));
-          log("档案表列总数:%d NG:%d\n", total_ok_charlist, total_ng_charlist);
+          logErr("Flushed db(%fsec)\n", time_diff(et, st));
+          logErr("档案表列总数:%d NG:%d\n", total_ok_charlist, total_ng_charlist);
         }
       }
       // Nuke **1 1012
@@ -804,7 +797,7 @@ int main(int argc, char **argv) {
         gettimeofday(&st, NULL);
         expireMail();
         gettimeofday(&et, NULL);
-        log("过期邮件(%fsec)\n", time_diff(et, st));
+        logErr("过期邮件(%fsec)\n", time_diff(et, st));
       }
 #ifdef _FAMILY
 #ifdef _DEATH_FAMILY_LOGIN_CHECK
@@ -818,7 +811,7 @@ int main(int argc, char **argv) {
         time(&t1);
         delovertimeFMMem(t1);
         gettimeofday(&et, NULL);
-        log("Delete Family or Member (%fsec)\n", time_diff(et, st));
+        logErr("Delete Family or Member (%fsec)\n", time_diff(et, st));
       }
 #endif
       if (counter5 > Write_Family) // 300( -> 60)
@@ -830,14 +823,14 @@ int main(int argc, char **argv) {
         writeFMPoint(fmpointdir);
         writeFMSMemo(fmsmemodir);
         gettimeofday(&et, NULL);
-        log("记录家族(%fsec)\n", time_diff(et, st));
+        logErr("记录家族(%fsec)\n", time_diff(et, st));
       }
 #endif
     }
 
     newti = tcpstruct_accept1();
     if (newti >= 0) {
-      log("同意: %d\n", newti);
+      logErr("同意: %d\n", newti);
       gs[newti].use = 1;
     }
 
@@ -870,7 +863,7 @@ int main(int argc, char **argv) {
           logerr(token);
           logout_game_server(i);
         } else if (l < 0) {
-          log("关闭:%d 服务器名:%s\n", i, gs[i].name);
+          logErr("关闭:%d 服务器名:%s\n", i, gs[i].name);
           logout_game_server(i);
         } else if (l == 0) {
           ;
@@ -880,9 +873,6 @@ int main(int argc, char **argv) {
   }
 
   return 0;
-}
-double time_diff(struct timeval t1, struct timeval t2) {
-  return ((t1.tv_sec - t2.tv_sec) + (t1.tv_usec - t2.tv_usec) / (double)1E6);
 }
 
 int get_rotate_count(void) {
@@ -1074,13 +1064,13 @@ int tcpstruct_accept(int *tis, int ticount) {
         }
       }
       if (num >= 5) {
-        log("拒绝: %d IP:[%s] 没有登记\n", newsockfd, tempIp);
+        logErr("拒绝: %d IP:[%s] 没有登记\n", newsockfd, tempIp);
         tcpstruct_close(mainsockfd);
         continue;
       }
-      log("接受: %d IP:[%s]\n", newsockfd, tempIp);
+      logErr("接受: %d IP:[%s]\n", newsockfd, tempIp);
 #else
-      log("接受: %d\n", newsockfd);
+      logErr("接受: %d\n", newsockfd);
 #endif
       if (newsockfd < 0) {
         unregMemBuf(newcon);
@@ -1239,7 +1229,7 @@ static int appendMemBufList(int top, char *data, int len) {
   int data_topaddr = 0;
 
   if (len >= fr) {
-    log("appendMemBufList() len:%d / fr:%d err !! \n", len, fr);
+    logErr("appendMemBufList() len:%d / fr:%d err !! \n", len, fr);
     return -1;
   }
   data[len] = 0;
@@ -1260,7 +1250,7 @@ static int appendMemBufList(int top, char *data, int len) {
           fprintf(fp, "find newmb == TCPSTRUCT_EMBFULL err data:%s !!\n", data);
           fclose(fp);
         }
-        log("find newmb == TCPSTRUCT_EMBFULL err data:%s !!\n", data);
+        logErr("find newmb == TCPSTRUCT_EMBFULL err data:%s !!\n", data);
       }
       mb[top].next = newmb;
       top = mb[top].next;
@@ -1425,28 +1415,28 @@ void checkGSUCheck(char *id) {
     return;
   memset(gname, 0, sizeof(gname));
   if (LockNode_getGname((getHash(id) & 0xff), id, gname) <= 0) {
-    log("无法从游戏中找到账号:%x/%s !!\n", getHash(id), id);
+    logErr("无法从游戏中找到账号:%x/%s !!\n", getHash(id), id);
     return;
   }
-  log("\n");
+  logErr("\n");
   for (i = 0; i < MAXCONNECTION; i++) {
     if (gs[i].name[0] && strcmp(gs[i].name, gname) == 0) {
-      log("发送解锁检查[%s] 到 %d.%x/%s 服务器:%d !!\n", id, i, getHash(id),
+      logErr("发送解锁检查[%s] 到 %d.%x/%s 服务器:%d !!\n", id, i, getHash(id),
           gname, gs[i].fd);
       SaacServer_ACUCheck_send(gs[i].fd, id);
       return;
     }
   }
-  //  log("Can't find gname:%s sending err !!\n", gname);
+  //  logErr("Can't find gname:%s sending err !!\n", gname);
 
   int ret = -1;
   if (!isLocked(id)) {
-    log("删除内存信息: 用户:%x/%s 没有锁定!!\n", getHash(id), id);
+    logErr("删除内存信息: 用户:%x/%s 没有锁定!!\n", getHash(id), id);
   }
   if (DeleteMemLock(getHash(id) & 0xff, id, &ret)) {
 
   } else {
-    log("不能解锁 %x:%s !\n", getHash(id), id);
+    logErr("不能解锁 %x:%s !\n", getHash(id), id);
   }
 }
 
@@ -1455,9 +1445,9 @@ void set_nodelay(int sock) {
   int result =
       setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
   if (result < 0) {
-    log("不能设置延迟.\n");
+    logErr("不能设置延迟.\n");
   } else {
-    log("设置延迟: fd:%d\n", sock);
+    logErr("设置延迟: fd:%d\n", sock);
   }
 }
 
@@ -1487,10 +1477,10 @@ static int initMissionTable(void) {
   memset(missiontable, 0, sizeof(missiontable));
   fp = fopen(MISSIONFILE, "r");
   if (!fp) {
-    log("\n加载精灵召唤错误!!!! \n");
+    logErr("\n加载精灵召唤错误!!!! \n");
     // return false;
   }
-  log("\n加载精灵召唤...");
+  logErr("\n加载精灵召唤...");
   while (1) {
     //
     if (fgets(onedata, sizeof(onedata), fp) == NULL)
@@ -1521,7 +1511,7 @@ static int initMissionTable(void) {
     if (buf[0] == '\0')
       continue;
     missiontable[index].limittime = atoi(buf);
-    log("%d=%s,%s,%d,%d,%d,%d \n", index, missiontable[index].angelinfo,
+    logErr("%d=%s,%s,%d,%d,%d,%d \n", index, missiontable[index].angelinfo,
         missiontable[index].heroinfo, missiontable[index].mission,
         missiontable[index].flag, missiontable[index].time,
         missiontable[index].limittime);
@@ -1530,7 +1520,7 @@ static int initMissionTable(void) {
       break;
   }
   fclose(fp);
-  log("..成功! \n");
+  logErr("..成功! \n");
   return TRUE;
 }
 
@@ -1541,10 +1531,10 @@ int saveMissionTable(void) {
 
   fp = fopen(MISSIONFILE, "w");
   if (!fp) {
-    log("\n打开精灵召唤错误!!!! \n");
+    logErr("\n打开精灵召唤错误!!!! \n");
     // return false;
   }
-  log("\n保存精灵召唤...");
+  logErr("\n保存精灵召唤...");
   for (index = 0; index < MISSTION_TABLE_SIZE; index++) {
 
     if (missiontable[index].angelinfo[0] == '\0')
@@ -1556,14 +1546,14 @@ int saveMissionTable(void) {
     fputs(onedata, fp);
   }
   fclose(fp);
-  log("..成功! \n");
+  logErr("..成功! \n");
   return TRUE;
 }
 
 void delMissionTableOnedata(int index) {
   int gi;
 
-  log("\n删除精灵召唤:%d:%s:%s \n", index, missiontable[index].angelinfo,
+  logErr("\n删除精灵召唤:%d:%s:%s \n", index, missiontable[index].angelinfo,
       missiontable[index].heroinfo);
 
   if (index < 0 || index >= MISSTION_TABLE_SIZE)
@@ -1593,7 +1583,7 @@ void checkMissionTimelimit(void) {
   if (sys_time < lastcheck + 5 * 60)
     return;
 
-  log("\n检查精灵召唤时间限制:%d \n", (int)sys_time);
+  logErr("\n检查精灵召唤时间限制:%d \n", (int)sys_time);
   for (index = 0; index < MISSTION_TABLE_SIZE; index++) {
     if (missiontable[index].flag == MISSION_NONE) {
       continue;
@@ -1613,7 +1603,7 @@ void checkMissionTimelimit(void) {
       char buf[1024];
       int gi;
       // 改TIMEOVER
-      log("精灵召唤及领奖时间过:%d.", index);
+      logErr("精灵召唤及领奖时间过:%d.", index);
       missiontable[index].flag = MISSION_TIMEOVER;
       missiontable[index].time = time(NULL);
       missiontable[index].limittime = BOUNDSTIME;
@@ -1633,7 +1623,7 @@ void checkMissionTimelimit(void) {
     // 资料保留时间(BOUNDSTIME小时)
     else if (missiontable[index].flag == MISSION_TIMEOVER &&
              sys_time > missiontable[index].time + BOUNDSTIME * 60 * 60) {
-      log("保留时间过:%d.", index);
+      logErr("保留时间过:%d.", index);
       delMissionTableOnedata(index); // 删
     }
   }
@@ -1678,9 +1668,9 @@ void savezipfile(void) {
     return; // 文件存在
   sprintf(buf, "zip -q -r %d-%d-%d.zip char char_sleep data db "
           "lock log mail pklist race&", y, m, d);
-  log("备份档案...");
+  logErr("备份档案...");
   system(buf); // 执行shell命令.
-  log("成功!\n");
+  logErr("成功!\n");
   return;
 }
 #endif

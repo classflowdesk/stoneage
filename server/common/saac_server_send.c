@@ -1243,7 +1243,7 @@ void SaacServer_ACCharLoad_send(int fd, char *result, char *data, int id)
   if (strstr(result, "successful") != NULL && strlen(data) > CharDataLens) {
     CharDataLens = strlen(data);
     // andy_log
-    log("最大数据长度:%d\n", CharDataLens);
+    logErr("最大数据长度:%d\n", CharDataLens);
   }
 
   CreateHeader(ws->work, "ACCharLoad");

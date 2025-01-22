@@ -1,7 +1,6 @@
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
-#include "std_c.h"
 #include "correct_bug.h"
 #include "common.h"
 #include "longzoro/version.h"

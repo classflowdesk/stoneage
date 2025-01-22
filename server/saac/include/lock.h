@@ -1,6 +1,7 @@
-#ifndef _LOCK_H_
-#define _LOCK_H_
+#ifndef __LOCK_H__
+#define __LOCK_H__
 
+#include "common.h"
 #include "version.h"
 
 typedef struct tagLockNode {

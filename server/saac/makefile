@@ -22,7 +22,7 @@ endif
 
 SRC=main.c char.c db.c mail.c acfamily.c lock.c $(SQLSRC)
 OBJ=$(SRC:.c=.o)
-COMMON_LIB=../common/libcommon.a
+COMMON_LIB=../common/libserverutil.a ../common/libutil.a
 SERVER_LIB=../common/libsaacserver.a
 
 ${TARGET}: $(OBJ)

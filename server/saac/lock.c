@@ -2,6 +2,7 @@
 #include "lock.h"
 #include "char.h"
 #include "sasql.h"
+#include "common.h"
 
 LockNode **userlock;
 
@@ -20,14 +21,14 @@ void Lock_Init(void) {
     memset(userlock[i]->name, 0, sizeof(userlock[i]->name));
 #endif
   }
-  log("存贮器初始化");
+  logErr("存贮器初始化");
 }
 
 LockNode *Creat_newNodes(void) {
   LockNode *newlock_node = NULL;
   newlock_node = (LockNode *)calloc(1, sizeof(LockNode));
   if (newlock_node == NULL) {
-    log("err Can't calloc:%d lock nodes !!\n", sizeof(LockNode));
+    logErr("err Can't calloc:%d lock nodes !!\n", sizeof(LockNode));
     return 0;
   }
   newlock_node->use = 0;
@@ -51,10 +52,10 @@ int InsertMemLock(int entry, char *cdkey, char *passwd, char *server,
   int j;
   LockNode *lock_node = userlock[entry];
 #ifdef _LOCK_ADD_NAME
-  log("进入游戏:目录:char/0x%x 账号:%s 名称:%s 服务器:%s\n", entry, cdkey, name,
+  logErr("进入游戏:目录:char/0x%x 账号:%s 名称:%s 服务器:%s\n", entry, cdkey, name,
       server);
 #else
-  log("进入游戏:目录:%x 账号:%s 服务器:%s\n", entry, cdkey, server);
+  logErr("进入游戏:目录:%x 账号:%s 服务器:%s\n", entry, cdkey, server);
 #endif
 
   while ((lock_node != NULL) && (lock_node->use != 0))
@@ -63,7 +64,7 @@ int InsertMemLock(int entry, char *cdkey, char *passwd, char *server,
   if (lock_node == NULL) {
     LockNode *fhead = NULL;
     LockNode *p = userlock[entry];
-    log("Add more lock nodes.\n");
+    logErr("Add more lock nodes.\n");
     while (p->next != NULL)
       p = p->next;
     fhead = p;
@@ -97,7 +98,7 @@ int InsertMemLock(int entry, char *cdkey, char *passwd, char *server,
 int DeleteMemLock(int entry, char *cdkey, int *process) {
   LockNode *lock_node = userlock[entry];
 
-  log("删除内存信息 位置=%x 账号=%s ..", entry, cdkey);
+  logErr("删除内存信息 位置=%x 账号=%s ..", entry, cdkey);
 
   while (lock_node != NULL) {
     if (lock_node->use != 0) {
@@ -114,13 +115,13 @@ int DeleteMemLock(int entry, char *cdkey, int *process) {
     memset(lock_node->name, 0, sizeof(lock_node->name));
 #endif
     *process = lock_node->process;
-    log("删除成功\n");
+    logErr("删除成功\n");
 #ifdef _SQL_BACKGROUND
     sasql_online(cdkey, NULL, NULL, NULL, 0);
 #endif
     return 1;
   }
-  log("删除失败!!\n");
+  logErr("删除失败!!\n");
   return 0;
 }
 
@@ -146,7 +147,7 @@ int isMemLocked(int entry, char *cdkey) {
     if (lock_node->use != 0) {
       if (strcmp(lock_node->cdkey, cdkey) == 0) {
         if (!strcmp(lock_node->server, "星系移民"))
-          log("星系移民中");
+          logErr("星系移民中");
         break;
       }
     }

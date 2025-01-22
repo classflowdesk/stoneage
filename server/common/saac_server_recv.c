@@ -100,11 +100,9 @@ void SaacServer_ACCharSave_recv(int ti, char *id, char *charname, char *opt,
   ret = charSave(ti, id, charname, opt, charinfo, unlock, mesgid);
 #endif
   snprintf(process, sizeof(process), "%d", ret);
-  //	log( "unlock:%d, process:%s\n", unlock, process);
   if (unlock) {
     dummyCallback(ti, 0, id, "dummy", charname, process, "", mesgid, 0);
   }
-  // log("玩家已保存保存\n");
 }
 
 void SaacServer_ACCharList_recv(int ti, char *id, char *pas, char *ip,
@@ -113,8 +111,6 @@ void SaacServer_ACCharList_recv(int ti, char *id, char *pas, char *ip,
     return;
   static int process = 0;
   char buf[10];
-
-  // log(" get_charlist ");
 
   process++;
   if (process > MAX_PROCESS)
@@ -185,7 +181,7 @@ void SaacServer_ACCharList_recv(int ti, char *id, char *pas, char *ip,
   }
 #endif
   charListCallback(ti, 0, id, pas, "", buf, "0", mesgid, 0, charlistflg);
-  log("档案列表: %s\n", id);
+  logOut("档案列表: %s\n", id);
 }
 
 void SaacServer_ACCharDelete_recv(int ti, char *id, char *pas, char *charname,
@@ -203,7 +199,7 @@ void SaacServer_ACCharDelete_recv(int ti, char *id, char *pas, char *charname,
 #endif
   // Nuke
   charDeleteCallback(ti, 0, id, pas, charname, "0", "", mesgid, 0);
-  log("档案删除: 附加作业 %s %s\n", id, pas);
+  logOut("档案删除: 附加作业 %s %s\n", id, pas);
 }
 
 void SaacServer_ACLock_recv(int ti, char *id, int lock, int mesgid) {
@@ -212,7 +208,7 @@ void SaacServer_ACLock_recv(int ti, char *id, int lock, int mesgid) {
     return;
   }
   // Arminius 7.25 test unlock
-  log("ACLock recv:%d\n", lock);
+  logOut("ACLock recv:%d\n", lock);
   if (lock == 2) {
     char buf[4096];
     if (GetMemLockState(getHash(id) & 0xff, id, buf)) {
@@ -220,7 +216,7 @@ void SaacServer_ACLock_recv(int ti, char *id, int lock, int mesgid) {
     } else {
       sprintf(retdata, "USRUNLOCKED:%s", buf);
     }
-    log(retdata);
+    logOut(retdata);
   } else if (lock == 3) {
     int proc;
     if (DeleteMemLock(getHash(id) & 0xff, id, &proc)) {
@@ -228,7 +224,7 @@ void SaacServer_ACLock_recv(int ti, char *id, int lock, int mesgid) {
     } else {
       sprintf(retdata, "GMUNLOCKFAIL");
     }
-    log(retdata);
+    logOut(retdata);
   } else if (lock == 4) {
     DeleteMemLockServer(id);
     sprintf(retdata, "GMUNLOCKALL");
@@ -240,9 +236,9 @@ void SaacServer_ACLock_recv(int ti, char *id, int lock, int mesgid) {
     if (lockUser(getGSName(ti), id, "0", lock, result, sizeof(result), retdata,
                  sizeof(retdata), "0", "0") < 0) {
 #endif
-      log("锁定用户: %s 失败\n", id);
+      logOut("锁定用户: %s 失败\n", id);
     } else {
-      log("锁定用户: %s 成功\n", id);
+      logOut("锁定用户: %s 成功\n", id);
     }
   }
   // Spock end
@@ -251,15 +247,15 @@ void SaacServer_ACLock_recv(int ti, char *id, int lock, int mesgid) {
 
 void SaacServer_ACUCheck_recv(int ti, char *id, int status) {
   if (!is_game_server_login(ti)) {
-    log("服务器发现账号:%s status:%d\n", id, status);
+    logOut("服务器发现账号:%s status:%d\n", id, status);
     return;
   }
 
   if (status == 0) {
-    log("用户 %s 在 %s 并未锁定！\n", id, getGSName(ti));
+    logOut("用户 %s 在 %s 并未锁定！\n", id, getGSName(ti));
     SaacServer_ACKick_recv(ti, id, 6, -1);
   } else {
-    log("用户 %s 在 %s 已锁定！\n", id, getGSName(ti));
+    logOut("用户 %s 在 %s 已锁定！\n", id, getGSName(ti));
 #ifdef _WAEI_KICK
     SaacServer_ACKick_recv(ti, id, 1, -1);
 #endif
@@ -270,7 +266,7 @@ void SaacServer_DBUpdateEntryString_recv(int fd, char *table, char *key,
                                          char *value, int msgid, int msgid2) {
   const int r = dbUpdateEntryString(table, key, value);
   if (r != 0) {
-    log("failed: DBUpdateEntryString err !!\n");
+    logOut("failed: DBUpdateEntryString err !!\n");
   }
 }
 
@@ -946,14 +942,14 @@ void SaacServer_ACreLoadFmData_recv(int fd, int type, int data) {
   extern gmsv gs[MAXCONNECTION];
   switch (type) {
   case 1:
-    log("reload FM_DATA:%d !\n", data);
+    logOut("reload FM_DATA:%d !\n", data);
     readOneFamilyFromTi(data);
     break;
   case 2: {
     char data[15000];
     readFMPoint(fmpointdir);
     if (ACFMPointList(data) >= 0) {
-      log("reload FM_POINT !\n");
+      logOut("reload FM_POINT !\n");
       for (i = 0; i < MAXCONNECTION; i++) {
         if (gs[i].use && gs[i].name[0])
           SaacServer_ACFMPointList_send(i, SUCCESSFUL, data);
@@ -963,7 +959,7 @@ void SaacServer_ACreLoadFmData_recv(int fd, int type, int data) {
   case 3: // fmpk_list
   {
     int j = 0;
-    log("reload FMPK_LIST !\n");
+    logOut("reload FMPK_LIST !\n");
     FMPK_InitList();
     FMPK_LoadList();
     for (j = 0; j < FMPKLIST_MAXNUM; j++) {
@@ -995,7 +991,7 @@ void SaacServer_ACSendFmPk_recv(int fd, int fmpks_pos, int userindex, int flg,
       FMPK_SetData(fmpks_pos - 1, flg, buf, strlen(buf)) != 1) {
     if (userindex != -1)
       SaacServer_ACSendFmPk_send(fd, userindex, 0);
-    log("err ACSendFmPk_send(%d, %d)\n", userindex, 0);
+    logOut("err ACSendFmPk_send(%d, %d)\n", userindex, 0);
     return;
   }
   FMPK_BackUpList();
@@ -1011,7 +1007,7 @@ void SaacServer_ACSendFmPk_recv(int fd, int fmpks_pos, int userindex, int flg,
 #else
 void SaacServer_ACLoadFmPk_recv(int fd, int fmpks_pos) {
   if (fmpks_pos > MAX_FMPOINT) {
-    log("\n fmpks_pos(%d) too big", fmpks_pos);
+    logOut("\n fmpks_pos(%d) too big", fmpks_pos);
   }
   SaacServer_ACLoadFmPk_send(fd, fm_pk_list[fmpks_pos - 1]);
 }
@@ -1020,7 +1016,7 @@ void SaacServer_ACSendFmPk_recv(int fd, int fmpks_pos, char *data) {
   int i = 0;
 
   if ((fmpks_pos > MAX_FMPOINT) || (fmpks_pos < 1)) {
-    log("\n fmpks_pos(%d) err !!", fmpks_pos);
+    logOut("\n fmpks_pos(%d) err !!", fmpks_pos);
   }
   sprintf(fm_pk_list[fmpks_pos - 1], "%d|%s", fmpks_pos, data);
 
@@ -1119,9 +1115,9 @@ void SaacServer_ACKick_recv(int ti, char *id, int lock, int mesgid) {
 #endif
 
     if (strcmp(result, SUCCESSFUL) == 0) {
-      log("解锁账号 %s 成功！\n", id);
+      logOut("解锁账号 %s 成功！\n", id);
     } else {
-      log("解锁账号 %s 失败！\n", id);
+      logOut("解锁账号 %s 失败！\n", id);
       return;
     }
 
@@ -1162,7 +1158,7 @@ void SaacServer_ACCharInsertPoolItem_recv(int fd, char *cdkey, int userindex,
     return;
   }
   if (InsertCharPoolItem(cdkey, Pooldataarg, strlen(Pooldataarg)) <= 0) {
-    log("\n InsertPoolItem( %s) err!!\n", cdkey);
+    logOut("\n InsertPoolItem( %s) err!!\n", cdkey);
     SaacServer_ACCharSavePoolItem_send(fd, FAILED, Pooldataarg, clifdid);
   }
 }
@@ -1202,7 +1198,7 @@ void SaacServer_ACCharInsertPoolPet_recv(int fd, char *cdkey, int userindex,
     return;
   }
   if (InsertCharPoolPet(cdkey, Pooldataarg, strlen(Pooldataarg)) <= 0) {
-    log("\n InsertPoolPet( %s) err!!\n", cdkey);
+    logOut("\n InsertPoolPet( %s) err!!\n", cdkey);
     SaacServer_ACCharSavePoolPet_send(fd, FAILED, Pooldataarg, clifdid);
   }
 }
@@ -1239,13 +1235,11 @@ void SaacServer_ACCharGetPoolPet_recv(int fd, char *cdkey, int userindex,
 void LOAD_herolist() {
   FILE *fdb;
   int i, linenum = 0;
-
   char filename[256], token[512];
-
   snprintf(filename, sizeof(filename), "%s/%s", "db/herolist",
            "db_herolist.txt");
   if (!(fdb = fopen(filename, "r+"))) {
-    log("\nSyu log open db_herolist.txt error!!");
+    logOut("\nSyu log open db_herolist.txt error!!");
     return;
   } else {
     char *addr;
@@ -1272,7 +1266,7 @@ void SAVE_herolist(int fd) {
   snprintf(filename, sizeof(filename), "%s/%s", "db/herolist",
            "db_herolist.txt");
   if (!(fdb = fopen(filename, "w"))) {
-    log("\nSyu log open db_herolist.txt error!!");
+    logOut("\nSyu log open db_herolist.txt error!!");
     return;
   } else {
     char tmp[256];
@@ -1294,7 +1288,7 @@ void Send_A_herolist(int fd) {
   snprintf(filename, sizeof(filename), "%s/%s", "db/herolist",
            "db_herolist.txt");
   if (!(fdb = fopen(filename, "r+"))) {
-    log("\n Syu log open db_herolist.txt error!!");
+    logOut("\n Syu log open db_herolist.txt error!!");
     return;
   } else {
     char token[100 * 100];
@@ -1325,7 +1319,7 @@ void Send_S_herolist(char *ocdkey, char *oname, char *ncdkey, char *nname,
     if (gs[i].use && gs[i].name[0]) {
       SaacServer_S_UpdataStele_send(i, ocdkey, oname, ncdkey, nname, title,
                                     level, trns, floor);
-      log("\nSyu log AC Send Single to Gmsv ");
+      logOut("\nSyu log AC Send Single to Gmsv ");
     }
   }
 }
@@ -1395,7 +1389,7 @@ int UNlockM_UnlockPlayer(void) {
   if ((++UnlockClock) < 60 != 0)
     return 0;
 
-  // log(" UNlockM_UnlockPlayer ");
+  // logOut(" UNlockM_UnlockPlayer ");
 
   UnlockClock = 0;
   for (i = 0; i < MAXUNlockM; i++) {
@@ -1404,14 +1398,14 @@ int UNlockM_UnlockPlayer(void) {
     if (UNlockM[i].time >= time(NULL))
       continue;
     if (isLocked(UNlockM[i].PlayerId)) {
-      log("等待解锁玩家: %s 还需锁定!!\n", UNlockM[i].PlayerId);
+      logOut("等待解锁玩家: %s 还需锁定!!\n", UNlockM[i].PlayerId);
     } else {
-      log("等待解锁玩家: %s 已经解锁!!\n", UNlockM[i].PlayerId);
+      logOut("等待解锁玩家: %s 已经解锁!!\n", UNlockM[i].PlayerId);
     }
     reset_UNlockMPlayer(i);
     nums++;
   }
-  // log( "等待解锁玩家: 总计 %d 个用户解锁 !!\n", nums);
+  // logOut( "等待解锁玩家: 总计 %d 个用户解锁 !!\n", nums);
   return nums;
 }
 
@@ -1459,7 +1453,7 @@ void SaacServer_ACMissionTable_recv(int fd, int num, int type, char *data,
   } else if (type == 2) { // add data
     int empty = -1;
 
-    log("\n增加精灵召唤任务:%s \n", data);
+    logOut("\n增加精灵召唤任务:%s \n", data);
     for (i = 0; i < MISSTION_TABLE_SIZE; i++) {
       if (missiontable[i].angelinfo[0] == '\0') {
         empty = i;
@@ -1512,7 +1506,7 @@ void SaacServer_ACMissionTable_recv(int fd, int num, int type, char *data,
     char angelinfo[64];
     int limittime = 0;
 
-    log("\n增加精灵召唤任务:%s:%d \n", data, num);
+    logOut("\n增加精灵召唤任务:%s:%d \n", data, num);
 
     if (num == MISSION_DOING) {
       easyGetTokenFromBuf(data, "|", 1, buf, sizeof(buf));
@@ -1651,16 +1645,16 @@ void SaacServer_LockLogin_recv(int fd, char *id, char *ip, int flag) {
   case 0:
     if (strlen(id) > 0) {
       if (sasql_del_lock(id)) {
-        log("成功解除锁定账号:%s\n", id);
+        logOut("成功解除锁定账号:%s\n", id);
       } else {
-        log("失败！解除锁定账号:%s\n", id);
+        logOut("失败！解除锁定账号:%s\n", id);
       }
     }
     if (strlen(ip) > 0) {
       if (sasql_del_lock(ip)) {
-        log("成功解除锁定IP:%s\n", ip);
+        logOut("成功解除锁定IP:%s\n", ip);
       } else {
-        log("失败！解除锁定IP:%s\n", ip);
+        logOut("失败！解除锁定IP:%s\n", ip);
       }
     }
     break;
@@ -1668,23 +1662,23 @@ void SaacServer_LockLogin_recv(int fd, char *id, char *ip, int flag) {
     if (strlen(id) > 0) {
       if (!sasql_chehk_lock(id)) {
         if (sasql_add_lock(id)) {
-          log("成功锁定账号:%s\n", id);
+          logOut("成功锁定账号:%s\n", id);
         } else {
-          log("失败！锁定账号:%s\n", id);
+          logOut("失败！锁定账号:%s\n", id);
         }
       } else {
-        log("账号%s已被锁定过！\n", id);
+        logOut("账号%s已被锁定过！\n", id);
       }
     }
     if (strlen(ip) > 0) {
       if (!sasql_chehk_lock(ip)) {
         if (sasql_add_lock(ip)) {
-          log("成功锁定IP:%s\n", ip);
+          logOut("成功锁定IP:%s\n", ip);
         } else {
-          log("失败！锁定IP:%s\n", ip);
+          logOut("失败！锁定IP:%s\n", ip);
         }
       } else {
-        log("IP%s已被锁定过！\n", id);
+        logOut("IP%s已被锁定过！\n", id);
       }
     }
     break;

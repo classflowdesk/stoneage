@@ -1,30 +1,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <linux/if.h>
-#include <linux/ioctl.h>
-#include <linux/sockios.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <netdb.h>
-#include <sys/socket.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <dirent.h>
-
-#include <errno.h>
-#include <getopt.h>
-#include <malloc.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "common.h"
 #include "version.h"
 
 
@@ -37,27 +14,9 @@
 #define SA_NODEFER  0x40000000
 #define SA_NOMASK  SA_NODEFER
 
-#define CHARDATASIZE ( 1024 * 1024 )
+#define CHARDATASIZE (1024*1024)
 
 char *chartime();
-#define LOGBASE( filename , format , args...)\
-{\
-    FILE *f;\
-    f = fopen( filename , "a" );\
-    if( f != NULL ){\
-        fprintf( f , format , ## args);\
-        fclose(f);\
-    } else{ fprintf( stderr,"fuckup! log fail!:%s:%s\n", filename,strerror(errno));}\
-}
-
-// Spock 2000/10/27
-#define log(format, args...)    \
-{\
-    fprintf( stderr, format, ##args );\
-}
-// Spock end
-#define SUCCESSFUL "successful"
-#define FAILED "failed"
 
 #define MAXCONNECTION 15
 #define USERID_MAX 32

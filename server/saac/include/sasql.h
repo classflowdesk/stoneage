@@ -1,12 +1,10 @@
 #ifndef _SASQL_H_
 #define _SASQL_H_
 
+#include "common.h"
 #include "version.h"
-#ifdef _SASQL
 
-#define BOOL int
-#define FALSE 0
-#define TRUE 1
+#ifdef _SASQL
 
 void sasql_close( void );
 BOOL sasql_init( void );
@@ -45,12 +43,12 @@ BOOL sasql_add_FormulateAutoPk( char *ID, int point );
 #ifdef _OLDPS_TO_MD5PS
 void sasql_OldpsToMd5ps();
 #endif
+
 #ifdef _CHARADATA_SAVE_SQL
+
 void sasql_charadata_Save(char *id, char* table, char *data, int saveindex, int flag);
 
-
-
-enum{
+enum {
 	INSERT,
 	SELECT,
 	UPDATE,
@@ -59,11 +57,5 @@ enum{
 
 #endif
 
-
-
-
-
-
 #endif
-
 
