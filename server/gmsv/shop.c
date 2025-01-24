@@ -1,6 +1,6 @@
 #include "version.h"
 #include "autil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "buf.h"
 #include "shop.h"
 
@@ -42,18 +42,18 @@ void WriteShopData(char *data,int id)
 }
 
 
-void lssproto_upshopdata_recv(int fd,char shop[5][1024])
+void GmsvServer_upshopdata_recv(int fd,char shop[5][1024])
 {
 	int i=0;
 	for(i;i<5;i++){
 		if(*gShopData[i].shopMd5){
 			if(strcmp(gShopData[i].shopMd5,shop[i]) || !shop[i]){
 				if(gShopData[i].shopData){
-					lssproto_UpShopData_send(fd,gShopData[i].shopData,gShopData[i].shopMd5,i);
+					GmsvServer_UpShopData_send(fd,gShopData[i].shopData,gShopData[i].shopMd5,i);
 				}
 			}
 		}
 	}
-	lssproto_ShopOK_send(fd);
+	GmsvServer_ShopOK_send(fd);
 }
 

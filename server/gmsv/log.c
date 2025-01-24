@@ -1,11 +1,13 @@
 #include "version.h"
+//
+#include "util.h"
+//
 #include "log.h"
 #include "char_base.h"
 #include "handletime.h"
 #include "net.h"
-#include "util.h"
 
-struct tagLogconf {
+struct tagLogConf {
   char *label;
   char *entry;
   char filename[256];
@@ -80,7 +82,7 @@ void LogSaacHelper(LOG_TYPE log_type, const char *format, ...) {
   } else {
     char token[1024];
     sprintf(token, format, __VA_ARGS_);
-    saacproto_OtherSaacLink_send(osfd, LogConf[log_type].filename, token);
+    SaacClient_OtherSaacLink_send(osfd, LogConf[log_type].filename, token);
   }
 #endif
 }

@@ -1,7 +1,7 @@
 #include "version.h"
 #include "npc_charm.h"
 #include "char.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npcutil.h"
 #include "object.h"
 
@@ -139,7 +139,7 @@ static void NPC_Charm_selectWindow(int meindex, int toindex, int num) {
 
   makeEscapeString(token, escapedname, sizeof(escapedname));
   /*-���ƥ˪������--*/
-  lssproto_WN_send(fd, windowtype, buttontype, windowno,
+  GmsvServer_WN_send(fd, windowtype, buttontype, windowno,
                    CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX), escapedname);
 }
 

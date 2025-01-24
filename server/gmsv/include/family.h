@@ -219,7 +219,7 @@ extern ManorSchedule_t ManorSchedule[MANORNUM];
 #define MAXFAMILYLIST 128*1024
 extern char    familyListBuf[MAXFAMILYLIST];
 
-void JoinMemberIndex( int charaindex, int fmindexi);
+void JoinMemberIndex( int char_index, int fmindexi);
 
 int	channelMember[FAMILY_MAXNUM][FAMILY_MAXCHANNEL][FAMILY_MAXMEMBER];
 int	familyMemberIndex[FAMILY_MAXNUM][FAMILY_MAXMEMBER];

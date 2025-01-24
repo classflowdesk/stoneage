@@ -1,14 +1,14 @@
 #include "version.h"
-#include "linux_platform.h"
-#include <errno.h>
+//
+#include "gmsv_server.h"
+#include "util.h"
+//
 #include "readmap.h"
 #include "autil.h"
 #include "buf.h"
 #include "char.h"
 #include "config_file.h"
-#include "lssproto_serv.h"
 #include "object.h"
-#include "util.h"
 #define MAP_MAGIC "LS2MAP"
 #ifdef _MO_LNS_MAPSUOXU
 static int fbmap[10000];
@@ -127,7 +127,7 @@ BOOL MAP_readMapConfFile(char *filename) {
   MAP_imagedatanum = maximagenumber + 1;
   MAP_imagedata = allocateMemory(sizeof(MAP_ImageData) * MAP_imagedatanum);
   if (MAP_imagedata == NULL) {
-    fprint("�޷������ͼ���ݴ�С=%d\n", MAP_imagedatanum);
+    fprint("map image data is NULL, data num=%d\n", MAP_imagedatanum);
     return FALSE;
   }
 
@@ -257,9 +257,7 @@ BOOL MAP_readBattleMapConfFile(char *filename) {
       iRet = sscanf(line + 1, "%d %d %d", &iPre[0], &iPre[1], &iPre[2]);
       BattleMapNo[0] = BattleMapNo[1] = BattleMapNo[2] = iPre[0];
       if (iRet < 1) {
-        print("!!!!!���� �޷���ȡս����ͼ(%s)( line %d "
-              ")\n",
-              filename, linenum);
+        print("(%s)( line %d )\n", filename, linenum);
       }
       for (i = 0; i < iRet; i++) {
         BattleMapNo[i] = iPre[i];
@@ -827,10 +825,10 @@ char *MAP_getdataFromRECT(int floor, RECT *seekr, RECT *realr) {
         int o = GET_OBJINDEX(object);
         if (OBJECT_getType(o) == OBJTYPE_CHARA) {
           int etype;
-          int charaindex = OBJECT_getIndex(o);
-          if (!CHAR_CHECKINDEX(charaindex))
+          int char_index = OBJECT_getIndex(o);
+          if (!CHAR_CHECKINDEX(char_index))
             continue;
-          etype = CHAR_getWorkInt(charaindex, CHAR_WORKEVENTTYPE);
+          etype = CHAR_getWorkInt(char_index, CHAR_WORKEVENTTYPE);
           if (etype != CHAR_EVENT_NONE) {
             MAP_workdatabuffer[databufferindex++] = etype;
             found = TRUE;
@@ -918,10 +916,10 @@ char *MAP_getChecksumFromRECT(int floor, RECT *seekr, RECT *realr, int *tilesum,
         int o = GET_OBJINDEX(object);
         if (OBJECT_getType(o) == OBJTYPE_CHARA) {
           int etype;
-          int charaindex = OBJECT_getIndex(o);
-          if (!CHAR_CHECKINDEX(charaindex))
+          int char_index = OBJECT_getIndex(o);
+          if (!CHAR_CHECKINDEX(char_index))
             continue;
-          etype = CHAR_getWorkInt(charaindex, CHAR_WORKEVENTTYPE);
+          etype = CHAR_getWorkInt(char_index, CHAR_WORKEVENTTYPE);
           if (etype != CHAR_EVENT_NONE) {
             eventbuf[databufferindex] = (unsigned short)etype;
             break;
@@ -1374,7 +1372,7 @@ void MAP_sendAroundMapdata(int fl, int fromx, int fromy) {
             if (CHAR_getInt(index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
               int fd = getfdFromCharaIndex(index);
               if (fd != -1) {
-                lssproto_M_send(fd, fl, ret.x, ret.y, ret.x + ret.width,
+                GmsvServer_M_send(fd, fl, ret.x, ret.y, ret.x + ret.width,
                                 ret.y + ret.height, mapdata);
               }
             }
@@ -1463,7 +1461,7 @@ int MAP_intPlayerMap(void) {
   return TRUE;
 }
 
-int MAP_savePlayerMap(int charaindex, int ff, int fx, int fy, int tile,
+int MAP_savePlayerMap(int char_index, int ff, int fx, int fy, int tile,
                       int obj) {
   int floorindex, xsiz, ysiz;
   floorindex = MAP_getfloorIndex(ff);
@@ -1483,9 +1481,9 @@ int MAP_savePlayerMap(int charaindex, int ff, int fx, int fy, int tile,
   int i;
   for (i = 0; i < Player_Diy_Map_NUM; i++) {
     if (PlayerDiyMap[i].ff == ff) {
-      if (strcmp(CHAR_getChar(charaindex, CHAR_CDKEY), PlayerDiyMap[i].cdkey) !=
+      if (strcmp(CHAR_getChar(char_index, CHAR_CDKEY), PlayerDiyMap[i].cdkey) !=
           0) {
-        CHAR_talkToCli(charaindex, -1,
+        CHAR_talkToCli(char_index, -1,
                        "�õ�ͼ��������ģ����޷��ڴ�DIY.."
                        ".",
                        CHAR_COLORRED);

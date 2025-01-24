@@ -13,8 +13,8 @@
 #include "battle.h"
 #include "log.h"
 #include "config_file.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "family.h"
 #include "buf.h"
 #ifdef _CHAR_PROFESSION
@@ -41,11 +41,11 @@ int *piOccChannelMember = NULL;
 #endif
 
 #ifdef _TALK_ACTION
-void TalkAction(int charaindex, char *message);
+void TalkAction(int char_index, char *message);
 #endif
 
 #ifdef _GM_ITEM
-static BOOL player_useChatMagic( int charaindex, char* data, BOOL isDebug);
+static BOOL player_useChatMagic( int char_index, char* data, BOOL isDebug);
 #endif
 
 /*------------------------------------------------------------
@@ -472,7 +472,7 @@ BOOL MAGIC_addLUAListFunction(lua_State *L, const char *luafuncname, const char 
 	return TRUE;
 }
 
-BOOL MAGIC_getLUAListFunction( char *luafuncname, int gmlevel, int charaindex, char *data )
+BOOL MAGIC_getLUAListFunction( char *luafuncname, int gmlevel, int char_index, char *data )
 {
 	MAGIC_LuaFunc *luaFunc = &MAGIC_luaFunc;
 
@@ -480,7 +480,7 @@ BOOL MAGIC_getLUAListFunction( char *luafuncname, int gmlevel, int charaindex, c
   	if(strcmp(luaFunc->luafuncname, luafuncname) == 0){
   		if( gmlevel >= luaFunc->gmlevel ){
 	  		lua_getglobal( luaFunc->lua, luaFunc->luafunctable);
-				return RunUseChatMagic(charaindex, data, luaFunc->lua);
+				return RunUseChatMagic(char_index, data, luaFunc->lua);
 			}else{
 				return FALSE;
 			}
@@ -493,13 +493,13 @@ BOOL MAGIC_getLUAListFunction( char *luafuncname, int gmlevel, int charaindex, c
 /*------------------------------------------------------------
  * 民乓永玄  芊
  * 娄醒
- *  charaindex      int     平乓仿奶件犯永弁旦
+ *  char_index      int     平乓仿奶件犯永弁旦
  *  message         char*   丢永本□斥
  *  isDebug         BOOL    犯田永弘民乓永玄  芊井升丹井
  * 忒曰袄
  *  卅仄
  ------------------------------------------------------------*/
-static BOOL CHAR_useChatMagic( int charaindex, char* data, BOOL isDebug)
+static BOOL CHAR_useChatMagic( int char_index, char* data, BOOL isDebug)
 {
 	char    magicname[256];
 	int     ret;
@@ -512,22 +512,22 @@ static BOOL CHAR_useChatMagic( int charaindex, char* data, BOOL isDebug)
 	extern struct GMINFO gminfo[GMMAXNUM];
 #else
 #endif
-	char *p = CHAR_getChar( charaindex, CHAR_CDKEY);
+	char *p = CHAR_getChar( char_index, CHAR_CDKEY);
 	if( !p ) {
 		fprint( "err nothing cdkey\n");
 		return FALSE;
 	}
 
 	if( getChatMagicCDKeyCheck() == 1 ){ //第一次确认GM帐号
-		if( CHAR_getWorkInt( charaindex, CHAR_WORKFLG) & WORKFLG_DEBUGMODE ) {
-			gmLevel = CHAR_getWorkInt( charaindex, CHAR_WORKGMLEVEL);
+		if( CHAR_getWorkInt( char_index, CHAR_WORKFLG) & WORKFLG_DEBUGMODE ) {
+			gmLevel = CHAR_getWorkInt( char_index, CHAR_WORKGMLEVEL);
 		}else{
 
 #ifdef _GMRELOAD
 			for (i = 0; i < GMMAXNUM; i++){
 				if (strcmp( p, gminfo[i].cdkey) == 0){
 					gmLevel = gminfo[i].level;
-					CHAR_setWorkInt( charaindex, CHAR_WORKGMLEVEL, gmLevel);
+					CHAR_setWorkInt( char_index, CHAR_WORKGMLEVEL, gmLevel);
 					break;
 				}
 			}
@@ -546,7 +546,7 @@ static BOOL CHAR_useChatMagic( int charaindex, char* data, BOOL isDebug)
 		}
 	}else {
 		gmLevel = 3;
-		CHAR_setWorkInt( charaindex, CHAR_WORKGMLEVEL, gmLevel);
+		CHAR_setWorkInt( char_index, CHAR_WORKGMLEVEL, gmLevel);
 	}
 		ret = getStringFromIndexWithDelim( data, " ", 1, magicname,  sizeof( magicname));
 	if( ret == FALSE)return FALSE;
@@ -557,18 +557,18 @@ static BOOL CHAR_useChatMagic( int charaindex, char* data, BOOL isDebug)
 	
 	func = CHAR_getChatMagicFuncPointer(magicname,isDebug);
 	if( func ){
-		LogGM( CHAR_getUseName( charaindex), CHAR_getChar( charaindex, CHAR_CDKEY), data, 
-			CHAR_getInt( charaindex, CHAR_FLOOR), CHAR_getInt( charaindex, CHAR_X),
-			CHAR_getInt( charaindex, CHAR_Y) );
-		func( charaindex, data + strlen( magicname)+1);
+		LogGM( CHAR_getUseName( char_index), CHAR_getChar( char_index, CHAR_CDKEY), data, 
+			CHAR_getInt( char_index, CHAR_FLOOR), CHAR_getInt( char_index, CHAR_X),
+			CHAR_getInt( char_index, CHAR_Y) );
+		func( char_index, data + strlen( magicname)+1);
 		return TRUE;
 	}else{
 #ifdef _ALLBLUES_LUA_1_2 
 		if(isDebug == TRUE){
-			if(MAGIC_getLUAListFunction(magicname, gmLevel, charaindex, data + strlen( magicname)+1)==TRUE){
-				LogGM( CHAR_getUseName( charaindex), CHAR_getChar( charaindex, CHAR_CDKEY), data, 
-					CHAR_getInt( charaindex, CHAR_FLOOR), CHAR_getInt( charaindex, CHAR_X),
-					CHAR_getInt( charaindex, CHAR_Y) );
+			if(MAGIC_getLUAListFunction(magicname, gmLevel, char_index, data + strlen( magicname)+1)==TRUE){
+				LogGM( CHAR_getUseName( char_index), CHAR_getChar( char_index, CHAR_CDKEY), data, 
+					CHAR_getInt( char_index, CHAR_FLOOR), CHAR_getInt( char_index, CHAR_X),
+					CHAR_getInt( char_index, CHAR_Y) );
 				return TRUE;
 			}
 		}
@@ -850,7 +850,7 @@ void OneByOneTkChannel ( int fd , char *tmp1 , char *tmp2 , int color )
 			&& CHAR_getInt( myindex, CHAR_LV) >= getAllServLevel()){
 				if(CHAR_getInt(myindex, CHAR_FAME)>=getAllServSend()){
 					sprintf(token, "[星球%s] %s 说：%s", getGameservername(), CHAR_getChar( myindex , CHAR_NAME), tmp2);
-					saacproto_AllServSend_send(token);
+					SaacClient_AllServSend_send(token);
 					
 					CHAR_setInt(myindex,CHAR_FAME, CHAR_getInt(myindex,CHAR_FAME) - getAllServSend());
 
@@ -897,9 +897,9 @@ void OneByOneTkChannel ( int fd , char *tmp1 , char *tmp2 , int color )
 		CHAR_talkToCli( IndexList[0] , -1, buf , color);
 #else
 		snprintf(buf,sizeof(buf) - 1,"P|M|你告诉%s：%s",tmp1,tmp2);
-		lssproto_TK_send(fd,CHAR_getWorkInt(myindex,CHAR_WORKOBJINDEX),buf,color);
+		GmsvServer_TK_send(fd,CHAR_getWorkInt(myindex,CHAR_WORKOBJINDEX),buf,color);
 		snprintf(buf,sizeof(buf) - 1,"P|M|%s告诉你：%s",CHAR_getChar(myindex,CHAR_NAME),tmp2);
-		lssproto_TK_send(getfdFromCharaIndex(IndexList[0]),CHAR_getWorkInt(IndexList[0],CHAR_WORKOBJINDEX),buf,color);
+		GmsvServer_TK_send(getfdFromCharaIndex(IndexList[0]),CHAR_getWorkInt(IndexList[0],CHAR_WORKOBJINDEX),buf,color);
 #endif
 		TalkCount ++ ; 
 	}else if ( IndexCount > 1 && IndexCount < 10 ) {
@@ -929,9 +929,9 @@ void OneByOneTkChannel ( int fd , char *tmp1 , char *tmp2 , int color )
 				CHAR_talkToCli( IndexList[ target ] , -1, buf , color);
 #else
 				snprintf(buf,sizeof(buf) - 1,"P|M|你告诉%s：%s",tmp1,addr);
-				lssproto_TK_send(fd,CHAR_getWorkInt(myindex,CHAR_WORKOBJINDEX),buf,color);
+				GmsvServer_TK_send(fd,CHAR_getWorkInt(myindex,CHAR_WORKOBJINDEX),buf,color);
 				snprintf(buf,sizeof(buf) - 1,"P|M|%s告诉你：%s",CHAR_getChar(myindex,CHAR_NAME),addr);
-				lssproto_TK_send(getfdFromCharaIndex(IndexList[target]),CHAR_getWorkInt(IndexList[target],CHAR_WORKOBJINDEX),buf,color);
+				GmsvServer_TK_send(getfdFromCharaIndex(IndexList[target]),CHAR_getWorkInt(IndexList[target],CHAR_WORKOBJINDEX),buf,color);
 #endif
 				TalkCount ++ ;
 			}
@@ -959,7 +959,7 @@ void OneByOneTkChannel ( int fd , char *tmp1 , char *tmp2 , int color )
 					CHAR_getChar ( IndexList[ i ] , CHAR_NAME ) , 
 					CHAR_getChar ( IndexList[ i ] , CHAR_OWNTITLE )  
 					 ) ; 
-				lssproto_TK_send(fd,CHAR_getWorkInt(myindex,CHAR_WORKOBJINDEX),buf,color);
+				GmsvServer_TK_send(fd,CHAR_getWorkInt(myindex,CHAR_WORKOBJINDEX),buf,color);
 #endif
 			}
 #ifndef _CHANNEL_MODIFY
@@ -967,7 +967,7 @@ void OneByOneTkChannel ( int fd , char *tmp1 , char *tmp2 , int color )
 			CHAR_talkToCli ( myindex , -1 , buf , color ) ; 
 #else
 			snprintf( buf , sizeof( buf)-1, "P|TE|%s" , tmp2 ) ; 
-			lssproto_TK_send(fd,CHAR_getWorkInt(myindex,CHAR_WORKOBJINDEX),buf,color);
+			GmsvServer_TK_send(fd,CHAR_getWorkInt(myindex,CHAR_WORKOBJINDEX),buf,color);
 #endif
 		}
 	}else if ( IndexCount == 0 ) {
@@ -1059,7 +1059,7 @@ void CHAR_Talk( int fd, int index,char* message,int color, int area )
 	getStringFromIndexWithDelim(messageeraseescape, " ", 1, token, sizeof(token));
 	if(atoi(token)>1 && atoi(token)<200){
 		getStringFromIndexWithDelim(messageeraseescape, " ", 2, buff, sizeof(buff));
-	    		lssproto_WN_send( getfdFromCharaIndex(index), atoi(token), 
+	    		GmsvServer_WN_send( getfdFromCharaIndex(index), atoi(token), 
 							WINDOW_BUTTONTYPE_OKCANCEL,
 							-1,
 							-1,
@@ -1067,7 +1067,7 @@ void CHAR_Talk( int fd, int index,char* message,int color, int area )
 	}
 	if(atoi(token)== 0){
 		getStringFromIndexWithDelim(messageeraseescape, " ", 2, buff, sizeof(buff));
-		lssproto_C_send(getfdFromCharaIndex(index), buff);
+		GmsvServer_C_send(getfdFromCharaIndex(index), buff);
 	}
 }		
 #endif	
@@ -1131,22 +1131,22 @@ void CHAR_Talk( int fd, int index,char* message,int color, int area )
 			  if( CHAR_getCharUse(i) != FALSE ) {
 					if(strcmp(CHAR_getChar(i, CHAR_NAME), name)==0){
 						int	i;
-						int itemindex;
+						int item_index;
 						for( i = CHAR_STARTITEMARRAY; i < CheckCharMaxItem(index); i ++ ) {
-						  itemindex = CHAR_getItemIndex(index, i);
-						  if(strcmp(ITEM_getChar( itemindex, ITEM_USEFUNC), "ITEM_TALKIP")==0){
+						  item_index = CHAR_getItemIndex(index, i);
+						  if(strcmp(ITEM_getChar( item_index, ITEM_USEFUNC), "ITEM_TALKIP")==0){
 						  	char buf[256];
 						  	
-						  	int itemmaxuse = ITEM_getInt( itemindex, ITEM_DAMAGEBREAK);
+						  	int itemmaxuse = ITEM_getInt( item_index, ITEM_DAMAGEBREAK);
 						  	itemmaxuse--;
-								ITEM_setInt( itemindex, ITEM_DAMAGEBREAK, itemmaxuse);
+								ITEM_setInt( item_index, ITEM_DAMAGEBREAK, itemmaxuse);
 								if( itemmaxuse < 1 )	{
-									sprintf( buf, "道具 %s消失了。", ITEM_getChar( itemindex, ITEM_NAME) );
+									sprintf( buf, "道具 %s消失了。", ITEM_getChar( item_index, ITEM_NAME) );
 									CHAR_talkToCli(index, -1, buf, CHAR_COLORYELLOW);
 									CHAR_DelItem( index, i);
 								}else{
-									sprintf( buf, "%s，可使用次数剩余%d次。", ITEM_getChar( itemindex, ITEM_NAME), itemmaxuse);
-									ITEM_setChar( itemindex, ITEM_EFFECTSTRING, buf);
+									sprintf( buf, "%s，可使用次数剩余%d次。", ITEM_getChar( item_index, ITEM_NAME), itemmaxuse);
+									ITEM_setChar( item_index, ITEM_EFFECTSTRING, buf);
 									CHAR_sendItemDataOne( index, i);
 								}
 								
@@ -1272,7 +1272,7 @@ void CHAR_Talk( int fd, int index,char* message,int color, int area )
 					char escapebuf[2048];
 					//snprintf(buf,sizeof(buf) - 1,"P|O|[职]%s",messageeraseescape);
 					snprintf(buf,sizeof(buf) - 1,"P|O|[职]%s", makeEscapeString( messageeraseescape, escapebuf, sizeof(escapebuf)) );
-					lssproto_TK_send(getfdFromCharaIndex(TalkTo),CHAR_getWorkInt(TalkTo,CHAR_WORKOBJINDEX),buf,color);
+					GmsvServer_TK_send(getfdFromCharaIndex(TalkTo),CHAR_getWorkInt(TalkTo,CHAR_WORKOBJINDEX),buf,color);
 				}
 			}
 		}
@@ -1448,13 +1448,13 @@ void CHAR_Talk( int fd, int index,char* message,int color, int area )
 			CHAR_talkToCli( index, -1, token, CHAR_COLORRED );
 			return;
 		}
-		int itemindex = CHAR_getItemIndex( index, suit-1);
-		if( !ITEM_CHECKINDEX( itemindex) ){
+		int item_index = CHAR_getItemIndex( index, suit-1);
+		if( !ITEM_CHECKINDEX( item_index) ){
 			CHAR_talkToCli( index, -1, "你输入的位置上没有套装装备！", CHAR_COLORRED );
 			return;
 		}
 		int i, num=0;
-		int defCode = ITEM_getInt( itemindex, ITEM_SUITCODE);
+		int defCode = ITEM_getInt( item_index, ITEM_SUITCODE);
 	
 		for( i=0; i<CHAR_STARTITEMARRAY; i++){
 			int itemidx = CHAR_getItemIndex( index, i );
@@ -1464,7 +1464,7 @@ void CHAR_Talk( int fd, int index,char* message,int color, int area )
 		}
 		if(num>=5){
 			int ff=0, fx=0, fy=0;
-			char* arg = ITEM_getChar(itemindex, ITEM_ARGUMENT );
+			char* arg = ITEM_getChar(item_index, ITEM_ARGUMENT );
 			if( sscanf( arg, "%d %d %d", &ff, &fx, &fy) == 3 ){
 				if( ITEM_WarpForAny(index, ff, fx, fy, 0) == FALSE )return;
 			}
@@ -1586,7 +1586,7 @@ void CHAR_Talk( int fd, int index,char* message,int color, int area )
 			{
 				char buf[512];
 				sprintf(buf, "[族长广播]%s: %s", CHAR_getChar( index, CHAR_NAME ), messageeraseescape);
-				saacproto_ACFMAnnounce_send( acfd, 
+				SaacClient_ACFMAnnounce_send( acfd, 
 					CHAR_getChar( index, CHAR_FMNAME), 
 					CHAR_getInt( index, CHAR_FMINDEX),
 					CHAR_getWorkInt( index, CHAR_WORKFMINDEXI),
@@ -1672,7 +1672,7 @@ void CHAR_Talk( int fd, int index,char* message,int color, int area )
 }
 
 #ifdef _FONT_SIZE
-BOOL CHAR_talkToCliExt( int talkedcharaindex,int talkcharaindex,
+BOOL CHAR_talkToCliExt( int talkedchar_index,int talkchar_index,
 					 char* message, CHAR_COLOR color, int fontsize )
 {
 	static char    lastbuf[2048];
@@ -1681,16 +1681,16 @@ BOOL CHAR_talkToCliExt( int talkedcharaindex,int talkcharaindex,
 	int fd;
 	int     talkchar=-1;
 
-  if ( !CHAR_CHECKINDEX( talkedcharaindex ) )
+  if ( !CHAR_CHECKINDEX( talkedchar_index ) )
     return FALSE;
-	if( CHAR_getInt( talkedcharaindex,CHAR_WHICHTYPE ) != CHAR_TYPEPLAYER){
+	if( CHAR_getInt( talkedchar_index,CHAR_WHICHTYPE ) != CHAR_TYPEPLAYER){
 //		print("err CHAR_talkToCli CHAR_WHICHTYPE != CHAR_TYPEPLAYER\n");
 		return FALSE;
 	}
 	
-	fd = getfdFromCharaIndex( talkedcharaindex );	
+	fd = getfdFromCharaIndex( talkedchar_index );	
 	if( fd == -1 ){
-//		print("err CHAR_talkToCli can't get fd from:%d \n", talkedcharaindex);
+//		print("err CHAR_talkToCli can't get fd from:%d \n", talkedchar_index);
 		return FALSE;    
 	}
 
@@ -1700,29 +1700,29 @@ BOOL CHAR_talkToCliExt( int talkedcharaindex,int talkcharaindex,
 	}
 #ifndef _CHANNEL_MODIFY
 	snprintf( lastbuf, sizeof(lastbuf), "P|%s|%d",
-			makeEscapeString( CHAR_appendNameAndTitle(talkcharaindex, message, mesgbuf,sizeof(mesgbuf)),
+			makeEscapeString( CHAR_appendNameAndTitle(talkchar_index, message, mesgbuf,sizeof(mesgbuf)),
 			escapebuf,sizeof(escapebuf) ), fontsize);
 #else
 	snprintf( lastbuf, sizeof(lastbuf), "P|P|%s|%d",
-			makeEscapeString( CHAR_appendNameAndTitle(talkcharaindex, message, mesgbuf,sizeof(mesgbuf)),
+			makeEscapeString( CHAR_appendNameAndTitle(talkchar_index, message, mesgbuf,sizeof(mesgbuf)),
 			escapebuf,sizeof(escapebuf) ), fontsize);
 #endif
-	if( talkcharaindex == -1 )
+	if( talkchar_index == -1 )
 		talkchar = -1;
 	else
-		talkchar = CHAR_getWorkInt(talkcharaindex,CHAR_WORKOBJINDEX);
-	lssproto_TK_send( fd, talkchar, lastbuf, color);
+		talkchar = CHAR_getWorkInt(talkchar_index,CHAR_WORKOBJINDEX);
+	GmsvServer_TK_send( fd, talkchar, lastbuf, color);
 	return TRUE;
 }
-BOOL CHAR_talkToCli( int talkedcharaindex,int talkcharaindex,
+BOOL CHAR_talkToCli( int talkedchar_index,int talkchar_index,
 					 char* message, CHAR_COLOR color )
 {
-	return CHAR_talkToCliExt( talkedcharaindex, talkcharaindex,
+	return CHAR_talkToCliExt( talkedchar_index, talkchar_index,
 					 message, color, 0 );
 
 }
 #else
-BOOL CHAR_talkToCli( int talkedcharaindex,int talkcharaindex,
+BOOL CHAR_talkToCli( int talkedchar_index,int talkchar_index,
 					 char* message, CHAR_COLOR color )
 {
 	static char    lastbuf[2048];
@@ -1731,16 +1731,16 @@ BOOL CHAR_talkToCli( int talkedcharaindex,int talkcharaindex,
 	int fd;
 	int     talkchar=-1;
 
-  if ( !CHAR_CHECKINDEX( talkedcharaindex ) )
+  if ( !CHAR_CHECKINDEX( talkedchar_index ) )
     return FALSE;
-	if( CHAR_getInt( talkedcharaindex,CHAR_WHICHTYPE ) != CHAR_TYPEPLAYER){
+	if( CHAR_getInt( talkedchar_index,CHAR_WHICHTYPE ) != CHAR_TYPEPLAYER){
 //		print("err CHAR_talkToCli CHAR_WHICHTYPE != CHAR_TYPEPLAYER\n");
 		return FALSE;
 	}
 	
-	fd = getfdFromCharaIndex( talkedcharaindex );	
+	fd = getfdFromCharaIndex( talkedchar_index );	
 	if( fd == -1 ){
-//		print("err CHAR_talkToCli can't get fd from:%d \n", talkedcharaindex);
+//		print("err CHAR_talkToCli can't get fd from:%d \n", talkedchar_index);
 		return FALSE;    
 	}
 
@@ -1753,13 +1753,13 @@ BOOL CHAR_talkToCli( int talkedcharaindex,int talkcharaindex,
 #else
 	snprintf( lastbuf, sizeof(lastbuf), "P|P|%s",
 #endif
-			makeEscapeString( CHAR_appendNameAndTitle(talkcharaindex, message, mesgbuf,sizeof(mesgbuf)),
+			makeEscapeString( CHAR_appendNameAndTitle(talkchar_index, message, mesgbuf,sizeof(mesgbuf)),
 			escapebuf,sizeof(escapebuf) ));
-	if( talkcharaindex == -1 )
+	if( talkchar_index == -1 )
 		talkchar = -1;
 	else
-		talkchar = CHAR_getWorkInt(talkcharaindex,CHAR_WORKOBJINDEX);
-	lssproto_TK_send( fd, talkchar, lastbuf, color);
+		talkchar = CHAR_getWorkInt(talkchar_index,CHAR_WORKOBJINDEX);
+	GmsvServer_TK_send( fd, talkchar, lastbuf, color);
 	return TRUE;
 }
 #endif // _FONT_SIZE
@@ -1810,7 +1810,7 @@ int InitOccChannel(void)
 #endif
 #endif
 #ifdef _TALK_ACTION
-void TalkAction(int charaindex, char *message)
+void TalkAction(int char_index, char *message)
 {
 	int i;
 	typedef struct{
@@ -1829,13 +1829,13 @@ void TalkAction(int charaindex, char *message)
 			break;
 			
 	if(i<13){
-		CHAR_setWorkInt( charaindex, CHAR_WORKACTION, TlakAction[i].action );
-		CHAR_sendWatchEvent(CHAR_getWorkInt( charaindex, CHAR_WORKOBJINDEX),	TlakAction[i].action, NULL, 0, TRUE);
+		CHAR_setWorkInt( char_index, CHAR_WORKACTION, TlakAction[i].action );
+		CHAR_sendWatchEvent(CHAR_getWorkInt( char_index, CHAR_WORKOBJINDEX),	TlakAction[i].action, NULL, 0, TRUE);
 	}
 }
 #endif
 #ifdef _GM_ITEM
-static BOOL player_useChatMagic( int charaindex, char* data, BOOL isDebug)
+static BOOL player_useChatMagic( int char_index, char* data, BOOL isDebug)
 {
 	char    magicname[256];
 	int     ret;
@@ -1848,10 +1848,10 @@ static BOOL player_useChatMagic( int charaindex, char* data, BOOL isDebug)
 	func = CHAR_getChatMagicFuncPointer(magicname,isDebug);
 	
 	if( func ){
-		LogGM( CHAR_getUseName( charaindex), CHAR_getChar( charaindex, CHAR_CDKEY), data, 
-			CHAR_getInt( charaindex, CHAR_FLOOR), CHAR_getInt( charaindex, CHAR_X),
-			CHAR_getInt( charaindex, CHAR_Y) );
-		func( charaindex, data + strlen( magicname)+1);
+		LogGM( CHAR_getUseName( char_index), CHAR_getChar( char_index, CHAR_CDKEY), data, 
+			CHAR_getInt( char_index, CHAR_FLOOR), CHAR_getInt( char_index, CHAR_X),
+			CHAR_getInt( char_index, CHAR_Y) );
+		func( char_index, data + strlen( magicname)+1);
 		return TRUE;
 	}else{
 		return FALSE;

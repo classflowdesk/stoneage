@@ -12,7 +12,7 @@ int NPC_getManorsmanListIndex( int ID);
 void NPC_ManorSavePKSchedule(int meindex, int toindex, int flg);
 #else
 void NPC_ManorSavePKSchedule(int meindex, int toindex, int flg,int setTime,struct tm tm1);
-void NPC_ManorAddToSchedule(int meindex,int charaindex, int dueltime);
+void NPC_ManorAddToSchedule(int meindex,int char_index, int dueltime);
 #endif
 
 #endif 

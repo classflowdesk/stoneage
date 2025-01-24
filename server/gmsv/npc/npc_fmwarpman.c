@@ -5,8 +5,8 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "npc_fmwarpman.h"
 #include "npc_scheduleman.h"
 #include "readmap.h"
@@ -318,7 +318,7 @@ void NPC_FMWarpManLoop(int meindex)
 #endif
 				// 流浪家族pk 过声望
 				if (winflag == 1){	 		 
-					saacproto_ACFixFMPK_send(acfd,
+					SaacClient_ACFixFMPK_send(acfd,
 						fmpks[fmpks_pos].host_name,
 						fmpks[fmpks_pos].host_index + 1,
 						fmpks[fmpks_pos].host_index,
@@ -326,7 +326,7 @@ void NPC_FMWarpManLoop(int meindex)
 						fmpks[fmpks_pos].guest_index + 1,
 						fmpks[fmpks_pos].guest_index);
 				} else {			 
-					saacproto_ACFixFMPK_send(acfd,
+					SaacClient_ACFixFMPK_send(acfd,
 						fmpks[fmpks_pos].guest_name,
 						fmpks[fmpks_pos].guest_index + 1,
 						fmpks[fmpks_pos].guest_index,
@@ -349,7 +349,7 @@ void NPC_FMWarpManLoop(int meindex)
 						sprintf( token, " (%d:%d) %d/%d/%d",
 							tm1.tm_hour, tm1.tm_min,
 							tm1.tm_year+1900, tm1.tm_mon+1, tm1.tm_mday);
-						saacproto_ACFixFMPoint_send(acfd, 
+						SaacClient_ACFixFMPoint_send(acfd, 
 							fmpks[fmpks_pos].host_name,
 							fmpks[fmpks_pos].host_index + 1,
 							fmpks[fmpks_pos].host_index,
@@ -437,7 +437,7 @@ void NPC_FMWarpManLoop(int meindex)
 				       	 break;
 				    }
 #endif
-						saacproto_ACFixFMPoint_send(acfd, 
+						SaacClient_ACFixFMPoint_send(acfd, 
 							fmpks[fmpks_pos].guest_name,
 							fmpks[fmpks_pos].guest_index + 1,
 							fmpks[fmpks_pos].guest_index,
@@ -480,7 +480,7 @@ void NPC_FMWarpManLoop(int meindex)
 					}
 #ifdef _FM_POINT_PK
 						if(fmid>=0 && fmid<MANORNUM){
-							saacproto_ACFixFMPoint_send(acfd, 
+							SaacClient_ACFixFMPoint_send(acfd, 
 							fmpks[fmpks_pos].host_name,
 							fmpks[fmpks_pos].host_index + 1,
 							fmpks[fmpks_pos].host_index,
@@ -537,7 +537,7 @@ void NPC_FMWarpManLoop(int meindex)
 							tm1.tm_hour, tm1.tm_min,
 							tm1.tm_year+1900, tm1.tm_mon+1, tm1.tm_mday);
 					fmpks[fmpks_pos + 1].flag = FMPKS_FLAG_MANOR_BATTLEEND;
-					saacproto_ACFixFMPoint_send(acfd, 
+					SaacClient_ACFixFMPoint_send(acfd, 
 							fmpks[fmpks_pos].host_name,
 							fmpks[fmpks_pos].host_index + 1,
 							fmpks[fmpks_pos].host_index,
@@ -713,7 +713,7 @@ void NPC_FMWarpManWindowTalked( int meindex, int talkerindex,
 							"\n谢谢您的合作！"
 							"\n距离对战时间还剩下：%4d分钟",
 							clock);
-						lssproto_WN_send(fd, 
+						GmsvServer_WN_send(fd, 
 			         	WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK,
 								-1, -1,
 								makeEscapeString(tmpbuf, buff2, sizeof(buff2)));
@@ -769,7 +769,7 @@ void NPC_ERR_FMDiSP(int meindex,int talker,int errNO)
 				 fd = getfdFromCharaIndex( otherindex);
 
 				/*-仇仇匹霜耨允月--*/
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 							WINDOW_BUTTONTYPE_OK,
 							CHAR_WINDOWTYPE_WINDOWWARPMAN_ERR, 
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -788,7 +788,7 @@ void NPC_ERR_FMDiSP(int meindex,int talker,int errNO)
 		}
 
 		/*-仇仇匹霜耨允月--*/
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK,
 						CHAR_WINDOWTYPE_WINDOWWARPMAN_ERR, 
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -827,7 +827,7 @@ static void NPC_FMWarpMan_selectWindow( int meindex, int toindex, int num,int se
 	{
 		char	tmpbuf[256];
 		sprintf(tmpbuf, "\n你还没有正式加入家族，所以不能进场！");
-		lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK, -1, -1,
 			makeEscapeString(tmpbuf, token, sizeof(token)));
 		return;
@@ -854,7 +854,7 @@ static void NPC_FMWarpMan_selectWindow( int meindex, int toindex, int num,int se
 				if (fmpks[fmpks_pos].flag != FMPKS_FLAG_SCHEDULED)
 					
 				{
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK, -1, -1,
 						makeEscapeString("\n这场战斗对方好像还没同意呢！\n下次请记得先邀约对方後再来登记吧～", token, sizeof(token)));
 					return;
@@ -867,7 +867,7 @@ static void NPC_FMWarpMan_selectWindow( int meindex, int toindex, int num,int se
 				{	
 					char	tmpbuf[256];
 					sprintf(tmpbuf, "\n你还没有正式加入%s家族，所以不能进场！", fmpks[fmpks_pos].host_name);
-					lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK, -1, -1,
 						makeEscapeString(tmpbuf, token, sizeof(token)));
 					return;
@@ -875,7 +875,7 @@ static void NPC_FMWarpMan_selectWindow( int meindex, int toindex, int num,int se
 				//andy_add 2003/06/17
 				CHECK_FMPknumInFloor( meindex);
 				if (CHAR_getWorkInt(meindex, NPC_WORK_FMNUMI) > (fmpks[fmpks_pos].max_player - 1)){
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK, -1, -1, makeEscapeString("\n已经不能再进去罗～！\n家族进场人数已经到达设定上限了！", token, sizeof(token)));
 					return;
 				}
@@ -890,7 +890,7 @@ static void NPC_FMWarpMan_selectWindow( int meindex, int toindex, int num,int se
 				if (fmpks[fmpks_pos].flag != FMPKS_FLAG_SCHEDULED)
 					
 				{
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK, -1, -1,
 						makeEscapeString("\n这场战斗你好像还没同意呢！\n下次请记得提早来跟我确认～", token, sizeof(token)));
 					return;
@@ -903,7 +903,7 @@ static void NPC_FMWarpMan_selectWindow( int meindex, int toindex, int num,int se
 				{
 					char	tmpbuf[256];
 					sprintf(tmpbuf, "\n你还没有正式加入%s家族，所以不能进场！", fmpks[fmpks_pos].guest_name);
-					lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK, -1, -1,
 						makeEscapeString(tmpbuf, token, sizeof(token)));
 					return;
@@ -911,7 +911,7 @@ static void NPC_FMWarpMan_selectWindow( int meindex, int toindex, int num,int se
 				//andy_add 2003/06/17
 				CHECK_FMPknumInFloor( meindex);
 				if( CHAR_getWorkInt( meindex, NPC_WORK_FMNUMII) > (fmpks[fmpks_pos].max_player - 1)){
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK, -1, -1,
 						makeEscapeString("已经不能再进去罗～！\n家族进场人数已经到达设定上限了！", token, sizeof(token)));
 					return;
@@ -1027,7 +1027,7 @@ static void NPC_FMWarpMan_selectWindow( int meindex, int toindex, int num,int se
 		CONNECT_set_first_warp(fd, FALSE);
 	}
 	/*-仇仇匹霜耨允月--*/
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_YESNO,
 		CHAR_WINDOWTYPE_WINDOWWARPMAN_MAIN, 
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

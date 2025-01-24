@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "readmap.h"
 // Arminius 8.4 manor
 #include "family.h"
@@ -99,7 +99,7 @@ static void NPC_SignBoard_Window( int meindex, int toindex, int num,int select)
 	sprintf(token, "　　　　　　＜　看板　＞\n%s",npcarg);
 	
 	/*--霜耨--*/
-	lssproto_WN_send( fd,WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd,WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK,
 					CHAR_WINDOWTYPE_WINDOWPETSHOP_START,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

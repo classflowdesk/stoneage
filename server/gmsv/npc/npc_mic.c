@@ -7,8 +7,8 @@
 #include "char.h"
 #include "npcutil.h"
 #include "npc_mic.h"
-#include "saacproto_cli.h"
-#include "lssproto_serv.h"
+#include "saac_client.h"
+#include "gmsv_server.h"
 #include "battle.h"
 
 enum {
@@ -107,7 +107,7 @@ void NPC_MicTalked( int meindex , int talkerindex , char *msg ,int color )
 				CHAR_getWorkInt( talkerindex, CHAR_WORKFMINDEXI), buf);
 			
 			sprintf(message, "[族长广播]%s", buf);
-			saacproto_ACFMAnnounce_send( acfd, 
+			SaacClient_ACFMAnnounce_send( acfd, 
 						CHAR_getChar( talkerindex, CHAR_FMNAME), 
 						CHAR_getInt( talkerindex, CHAR_FMINDEX),
 						CHAR_getWorkInt( talkerindex, CHAR_WORKFMINDEXI),
@@ -150,7 +150,7 @@ void NPC_MicTalked( int meindex , int talkerindex , char *msg ,int color )
 				{
 					int fd = getfdFromCharaIndex( i);
 					if( fd != -1 ) {
-						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 										WINDOW_BUTTONTYPE_OK, 
 										CHAR_WINDOWTYPE_MICMESSAGE,
 										CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

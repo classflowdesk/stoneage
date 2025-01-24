@@ -7,7 +7,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #ifdef _NEW_ITEM_
 extern int CheckCharMaxItem(int charindex);
 #endif
@@ -322,13 +322,13 @@ static int addLUAListFunction(lua_State *L)
 
 static int UpdataItemOne(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
-	const int itemindex = luaL_checkint(L, 2);
+	const int char_index = luaL_checkint(L, 1);
+	const int item_index = luaL_checkint(L, 2);
 
 	int i;
-	for( i = 0; i < CheckCharMaxItem(charaindex) ; i++ ){
-		if(itemindex == CHAR_getItemIndex( charaindex , i )){
-			CHAR_sendItemDataOne( charaindex, i);
+	for( i = 0; i < CheckCharMaxItem(char_index) ; i++ ){
+		if(item_index == CHAR_getItemIndex( char_index , i )){
+			CHAR_sendItemDataOne( char_index, i);
 			break;
 		}
 	}
@@ -338,10 +338,10 @@ static int UpdataItemOne(lua_State *L)
 
 static int UpdataHaveItemOne(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
-	const int haveitemindex = luaL_checkint(L, 2);
+	const int char_index = luaL_checkint(L, 1);
+	const int haveitem_index = luaL_checkint(L, 2);
 
-	CHAR_sendItemDataOne( charaindex, haveitemindex);
+	CHAR_sendItemDataOne( char_index, haveitem_index);
 
 	return 1;
 }

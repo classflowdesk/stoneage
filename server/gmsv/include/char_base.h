@@ -1798,8 +1798,8 @@ typedef struct tagChar
 
 #define    CHAR_CHECKINDEX( index)  _CHAR_CHECKINDEX( __FILE__, __LINE__, index)
 INLINE BOOL _CHAR_CHECKINDEX( char *file, int line, int index);
-#define    CHAR_CHECKITEMINDEX( charaindex, iindex) _CHAR_CHECKITEMINDEX( __FILE__, __LINE__, charaindex, iindex)
-INLINE BOOL _CHAR_CHECKITEMINDEX( char *file, int line, int charaindex, int iindex );
+#define    CHAR_CHECKITEMINDEX( char_index, iindex) _CHAR_CHECKITEMINDEX( __FILE__, __LINE__, char_index, iindex)
+INLINE BOOL _CHAR_CHECKITEMINDEX( char *file, int line, int char_index, int iindex );
 #define    CHAR_CHECKPETINDEX( petindex) _CHAR_CHECKPETINDEX( __FILE__, __LINE__, petindex )
 INLINE BOOL _CHAR_CHECKPETINDEX( char *file, int line, int petindex );
 #define    CHAR_CHECKPOOLPETINDEX( petindex) _CHAR_CHECKPOOLPETINDEX( __FILE__, __LINE__, petindex )
@@ -1833,7 +1833,7 @@ INLINE char * _CHAR_getWorkChar( char *file, int line, int index, CHAR_WORKDATAC
 INLINE BOOL _CHAR_setWorkChar( char *file, int line, int index, CHAR_WORKDATACHAR element, const char * new);
 
 #define    CHAR_getItemIndex( index, iindex) _CHAR_getItemIndex( __FILE__, __LINE__, index, iindex)
-INLINE int _CHAR_getItemIndex( char *file, int line, int charaindex, int ti);
+INLINE int _CHAR_getItemIndex( char *file, int line, int char_index, int ti);
 #define    CHAR_setItemIndex( index, iindex,id) _CHAR_setItemIndex( __FILE__, __LINE__, index, iindex, id)
 INLINE int _CHAR_setItemIndex( char *file, int line, int index ,int iindex,int id );
 #define    CHAR_getPoolItemIndex( index, iindex) _CHAR_getPoolItemIndex( __FILE__, __LINE__, index, iindex)
@@ -1850,20 +1850,20 @@ INLINE int CHAR_getOthersMaxNum( void );
 INLINE BOOL CHAR_getCharUse( int index );
 INLINE CHAR_HaveSkill* CHAR_getCharHaveSkill( int index,int sindex );
 INLINE int CHAR_getCharHaveTitle( int index,int tindex );
-INLINE int CHAR_setCharHaveTitle( int charaindex,int tindex, int new );
-INLINE int CHAR_getCharPet( int charaindex,int petindex );
-INLINE int CHAR_setCharPet( int charaindex,int petindex, int new );
-INLINE int CHAR_getCharPoolPet( int charaindex,int petindex );
-INLINE int CHAR_setCharPoolPet( int charaindex,int petindex, int new );
-int CHAR_getCharPetElement( int charaindex );
+INLINE int CHAR_setCharHaveTitle( int char_index,int tindex, int new );
+INLINE int CHAR_getCharPet( int char_index,int petindex );
+INLINE int CHAR_setCharPet( int char_index,int petindex, int new );
+INLINE int CHAR_getCharPoolPet( int char_index,int petindex );
+INLINE int CHAR_setCharPoolPet( int char_index,int petindex, int new );
+int CHAR_getCharPetElement( int char_index );
 #ifdef _PETFOLLOW_NEW_
-int CHAR_getCharPetElementOld( int charaindex );
+int CHAR_getCharPetElementOld( int char_index );
 #endif
-int CHAR_getCharPoolPetElement( int charaindex );
-int CHAR_getCharPoolItemIndexElement( int charaindex );
-int CHAR_getEmptyCharPoolItemIndexNum( int charaindex);
+int CHAR_getCharPoolPetElement( int char_index );
+int CHAR_getCharPoolItemIndexElement( int char_index );
+int CHAR_getEmptyCharPoolItemIndexNum( int char_index);
 #ifdef _CHAR_POOLPET
-int CHAR_getCharDepotPetElement( int charaindex );
+int CHAR_getCharDepotPetElement( int char_index );
 #endif
 #define    CHAR_getIntPSkill( index, skillti, ti) _CHAR_getIntPSkill( __FILE__, __LINE__, index, skillti, ti)
 INLINE int _CHAR_getIntPSkill( char *file, int line, int index, int skillti, SKILL_DATAINT ti);
@@ -1875,14 +1875,14 @@ INLINE void _CHAR_setIntPSkill( char *file, int line, int index, int skillti, SK
 extern Char *CHAR_chara;
 
 
-INLINE int CHAR_getCharMakeSequenceNumber( int charaindex );
-void CHAR_constructFunctable( int charaindex );
-void* CHAR_getFunctionPointer( int charaindex, int functype );
+INLINE int CHAR_getCharMakeSequenceNumber( int char_index );
+void CHAR_constructFunctable( int char_index );
+void* CHAR_getFunctionPointer( int char_index, int functype );
 #ifdef _ALLBLUES_LUA
 
-INLINE BOOL CHAR_setLUAFunction( int charaindex, int functype, lua_State *L, const char *luafunctable );
-INLINE BOOL CHAR_delLUAFunction( int charaindex, int functype);
-INLINE lua_State *CHAR_getLUAFunction( int charaindex, int functype);
+INLINE BOOL CHAR_setLUAFunction( int char_index, int functype, lua_State *L, const char *luafunctable );
+INLINE BOOL CHAR_delLUAFunction( int char_index, int functype);
+INLINE lua_State *CHAR_getLUAFunction( int char_index, int functype);
 #endif
 BOOL CHAR_initCharArray( int pnum,  int petnum,int onum );
 BOOL CHAR_endCharArray( void );
@@ -1904,12 +1904,12 @@ INLINE int _CHAR_setPetSkill( char *file, int line, int petindex,int havepetskil
 INLINE int _CHAR_getPetSkill( char *file, int line, int petindex,int havepetskillindex );
 #define SETFLG(a,b,c,d,e,f,g,h) (((a)<<0)+((b)<<1)+((c)<<2)+((d)<<3)+((e)<<4)+((f)<<5)+((g)<<6)+((h)<<7))
 
-INLINE int CHAR_AddMaxExp( int charaindex, int addexp);
-INLINE int CHAR_setMaxExpFromLevel( int charaindex, int level);
-INLINE int CHAR_setMaxExp( int charaindex, unsigned long int Setexp);
+INLINE int CHAR_AddMaxExp( int char_index, int addexp);
+INLINE int CHAR_setMaxExpFromLevel( int char_index, int level);
+INLINE int CHAR_setMaxExp( int char_index, unsigned long int Setexp);
 #ifdef _NEWOPEN_MAXEXP
-INLINE int CHAR_ChangeExp( int charaindex );
-INLINE int CHAR_HandleExp( int charaindex );
+INLINE int CHAR_ChangeExp( int char_index );
+INLINE int CHAR_HandleExp( int char_index );
 
 #endif
 
@@ -1950,7 +1950,7 @@ void CHAR_earnFame(int index, int fame);
 // CoolFish: 2001/10/11
 #ifdef _UNIQUE_P_I
 void CHAR_setPetUniCode(int petindex);
-void ITEM_setItemUniCode(int itemindex);
+void ITEM_setItemUniCode(int item_index);
 void Check_P_I_UniCode(int charindex);
 #endif
 
@@ -2070,9 +2070,9 @@ int CHAR_OldFusion_init();
 #endif
 
 #ifdef _PET_EVOLUTION
-int EVOLUTION_getPetTable( int charaindex, int petindex1, int petindex2);
-int EVOLUTION_getPropertyTable( int charaindex, int petindex1, int petindex2);
-int EVOLUTION_getFusionTable( int charaindex, int px, int py);
+int EVOLUTION_getPetTable( int char_index, int petindex1, int petindex2);
+int EVOLUTION_getPropertyTable( int char_index, int petindex1, int petindex2);
+int EVOLUTION_getFusionTable( int char_index, int px, int py);
 int EVOLUTION_getPetFusionCode( int petid);
 #endif
 
@@ -2080,7 +2080,7 @@ int EVOLUTION_getPetFusionCode( int petid);
 int CHAR_getSexInt( int baseNo );
 #endif
 #ifdef _TYPE_TOXICATION
-BOOL CHAR_CanCureFlg( int charaindex, char *arg);
+BOOL CHAR_CanCureFlg( int char_index, char *arg);
 #endif
 
 BOOL CHAR_getCharOnArrayPercentage( int mode, int *max, int *min, int *cnt);
@@ -2090,16 +2090,16 @@ BOOL CHAR_getCharOnArrayPercentage( int mode, int *max, int *min, int *cnt);
 #define CHAR_DelItem( index, ti) _CHAR_DelItem(__FILE__, __LINE__, index, ti, 1, 1)
 #define CHAR_DelPileItemMess( index, ti, num, flg) _CHAR_DelItem(__FILE__, __LINE__, index, ti, num, flg)
 
-#define CHAR_AddPileItem(index, itemindex) _CHAR_AddPileItem(__FILE__, __LINE__, index, itemindex)
-INLINE int _CHAR_AddPileItem(char *file, int line, int charaindex, int itemindex);
+#define CHAR_AddPileItem(index, item_index) _CHAR_AddPileItem(__FILE__, __LINE__, index, item_index)
+INLINE int _CHAR_AddPileItem(char *file, int line, int char_index, int item_index);
 
-INLINE int _CHAR_DelItem(char *file, int line, int charaindex, int ti, int num, int flg);
+INLINE int _CHAR_DelItem(char *file, int line, int char_index, int ti, int num, int flg);
 
 #define  CHAR_AddGold( index, ti) _CHAR_AddGold( __FILE__, __LINE__, index, ti)
-INLINE int _CHAR_AddGold( char *file, int line, int charaindex, int gold);
+INLINE int _CHAR_AddGold( char *file, int line, int char_index, int gold);
 #define  CHAR_DelGold( index, ti) _CHAR_DelGold( __FILE__, __LINE__, index, ti)
-INLINE int _CHAR_DelGold( char *file, int line, int charaindex, int gold);
-int CHAR_getMaxHaveGold( int charaindex);
+INLINE int _CHAR_DelGold( char *file, int line, int char_index, int gold);
+int CHAR_getMaxHaveGold( int char_index);
 
 
 #ifdef _CHAR_PROFESSION // WON ADD 人物职业
@@ -2108,12 +2108,12 @@ int CHAR_getCharSkill( int index, int sindex );
 int CHAR_setCharSkill( int index, int sindex, int new );
 #define CHAR_CHECK_PROFESSION_SKILLINDEX(skillindex) _CHAR_CHECK_PROFESSION_SKILLINDEX(__FILE__, __LINE__, skillindex)
 INLINE BOOL _CHAR_CHECK_PROFESSION_SKILLINDEX( char *file, int line, int skillindex );
-#define  PROFESSION_SKILL_getSkill( charaindex, skillindex) _PROFESSION_SKILL_getSkill(__FILE__, __LINE__, charaindex, skillindex)
-INLINE int _PROFESSION_SKILL_getSkill( char *file, int line, int charaindex, int skillindex );
-#define  PROFESSION_SKILL_setSkill( charaindex, skillindex, n) _PROFESSION_SKILL_setSkill(__FILE__, __LINE__, charaindex, skillindex, n)
-INLINE int _PROFESSION_SKILL_setSkill( char *file, int line, int charaindex,int skillindex, int new );
-#define PROFESSION_SKILL_getSkillElement(charaindex) _PROFESSION_SKILL_getSkillElement(__FILE__, __LINE__, charaindex)
-int _PROFESSION_SKILL_getSkillElement( char *file, int line, int charaindex );
+#define  PROFESSION_SKILL_getSkill( char_index, skillindex) _PROFESSION_SKILL_getSkill(__FILE__, __LINE__, char_index, skillindex)
+INLINE int _PROFESSION_SKILL_getSkill( char *file, int line, int char_index, int skillindex );
+#define  PROFESSION_SKILL_setSkill( char_index, skillindex, n) _PROFESSION_SKILL_setSkill(__FILE__, __LINE__, char_index, skillindex, n)
+INLINE int _PROFESSION_SKILL_setSkill( char *file, int line, int char_index,int skillindex, int new );
+#define PROFESSION_SKILL_getSkillElement(char_index) _PROFESSION_SKILL_getSkillElement(__FILE__, __LINE__, char_index)
+int _PROFESSION_SKILL_getSkillElement( char *file, int line, int char_index );
 
 #endif
 
@@ -2132,18 +2132,18 @@ INLINE int _CHAR_getDepotItemIndex( char *file, int line, int index ,int iindex)
 INLINE int _CHAR_setDepotItemIndex( char *file, int line, int index ,int iindex,int id );
 
 void CHAR_removeHaveDepotItem( Char* ch);
-void CHAR_removeDepotItem( int charaindex);
+void CHAR_removeDepotItem( int char_index);
 
-char *CHAR_makeDepotItemFromCharIndex( int charaindex);
-BOOL CHAR_makeDepotItemStringToChar( int charaindex, char* data);
+char *CHAR_makeDepotItemFromCharIndex( int char_index);
+BOOL CHAR_makeDepotItemStringToChar( int char_index, char* data);
 
-BOOL CHAR_SaveDepotItem( int charaindex);
-BOOL CHAR_GetDepotItem( int meindex, int charaindex);
-void CHAR_ShowMyDepotItems( int charaindex);
+BOOL CHAR_SaveDepotItem( int char_index);
+BOOL CHAR_GetDepotItem( int meindex, int char_index);
+void CHAR_ShowMyDepotItems( int char_index);
 
-int CHAR_findEmptyDepotItem( int charaindex);
-int CHAR_getfindEmptyDepotItem( int charaindex);
-BOOL CHAR_CheckDepotItem( int charaindex);
+int CHAR_findEmptyDepotItem( int char_index);
+int CHAR_getfindEmptyDepotItem( int char_index);
+BOOL CHAR_CheckDepotItem( int char_index);
 #endif
 
 #ifdef _CHAR_POOLPET
@@ -2154,18 +2154,18 @@ INLINE int _CHAR_getDepotPetIndex( char *file, int line, int index ,int iindex);
 INLINE int _CHAR_setDepotPetIndex( char *file, int line, int index ,int iindex,int id );
 
 void CHAR_removeHaveDepotPet( Char* ch);
-void CHAR_removeDepotPet( int charaindex);
+void CHAR_removeDepotPet( int char_index);
 
-char *CHAR_makeDepotPetFromCharIndex( int charaindex);
-BOOL CHAR_makeDepotPetStringToChar( int charaindex, char* data);
+char *CHAR_makeDepotPetFromCharIndex( int char_index);
+BOOL CHAR_makeDepotPetStringToChar( int char_index, char* data);
 
-BOOL CHAR_SaveDepotPet( int charaindex);
-BOOL CHAR_GetDepotPet( int meindex, int charaindex);
-void CHAR_ShowMyDepotPets( int charaindex);
+BOOL CHAR_SaveDepotPet( int char_index);
+BOOL CHAR_GetDepotPet( int meindex, int char_index);
+void CHAR_ShowMyDepotPets( int char_index);
 
-int CHAR_findEmptyDepotPet( int charaindex);
-int CHAR_getfindEmptyDepotPet( int charaindex);
-BOOL CHAR_CheckDepotPet( int charaindex);
+int CHAR_findEmptyDepotPet( int char_index);
+int CHAR_getfindEmptyDepotPet( int char_index);
+BOOL CHAR_CheckDepotPet( int char_index);
 #endif
 
 #ifdef _RIDE_CF
@@ -2207,15 +2207,15 @@ typedef enum
 #endif
 
 #ifdef _MO_LNS_CHARSUOXU
-int CHAR_getEmptyItemBoxNum(int charaindex);
-int CHAR_getEmptyPetBoxNum(int charaindex);
-int CHAR_getPlayerPetNum(int charaindex,int petid);
-int CHAR_getPlayerItemNum(int charaindex,int itemid,BOOL IsContainEquip,BOOL IsContainPile);
+int CHAR_getEmptyItemBoxNum(int char_index);
+int CHAR_getEmptyPetBoxNum(int char_index);
+int CHAR_getPlayerPetNum(int char_index,int petid);
+int CHAR_getPlayerItemNum(int char_index,int itemid,BOOL IsContainEquip,BOOL IsContainPile);
 #endif
 int CHAR_CheckLearnCode(int charindex, int ridno);
 #ifdef _NEW_TITLE
-void CHAR_SetNewTitleUse(int charaindex,int id);
-void CHAR_CancelNewTitle(int charaindex);
+void CHAR_SetNewTitleUse(int char_index,int id);
+void CHAR_CancelNewTitle(int char_index);
 #endif
 #endif
 

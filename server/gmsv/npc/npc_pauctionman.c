@@ -6,8 +6,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "npc_pauctionman.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "readmap.h"
 #include "battle.h"
 #include "log.h"
@@ -240,28 +240,28 @@ static void NPC_Pauction_selectWindow( int meindex, int toindex, int seqno, int 
 				snprintf( category, sizeof( category), "W%d",id);
 				CHAR_sendStatusString( toindex, category );
 			}else{
-        int itemindex = CHAR_getItemIndex(toindex, id);
+        int item_index = CHAR_getItemIndex(toindex, id);
         
-        if( !ITEM_CHECKINDEX(itemindex)){
+        if( !ITEM_CHECKINDEX(item_index)){
 			  	sprintf(token, "你并没有你要委托的物品~");
 					break;
 			  }
 			  
-			  if(ITEM_getInt( itemindex, ITEM_USEPILENUMS)>1){
+			  if(ITEM_getInt( item_index, ITEM_USEPILENUMS)>1){
 			  	sprintf(token, "叠加物品无法拍卖~");
 					break;
 			  }
 			  
-			  sprintf(info, "%s|%d|%d|%s|", ITEM_getChar(itemindex, ITEM_NAME), 
-			  																							ITEM_getInt(itemindex, ITEM_BASEIMAGENUMBER), 
+			  sprintf(info, "%s|%d|%d|%s|", ITEM_getChar(item_index, ITEM_NAME), 
+			  																							ITEM_getInt(item_index, ITEM_BASEIMAGENUMBER), 
 #ifdef _ITEM_COLOER
-																											ITEM_getInt( itemindex, ITEM_COLOER),
+																											ITEM_getInt( item_index, ITEM_COLOER),
 #else
 																											CHAR_COLORWHITE,
 #endif
-																						  				ITEM_getChar(itemindex, ITEM_EFFECTSTRING));															
+																						  				ITEM_getChar(item_index, ITEM_EFFECTSTRING));															
         
-        string = ITEM_makeStringFromItemIndex(itemindex, 0);
+        string = ITEM_makeStringFromItemIndex(item_index, 0);
         if( string == "\0" ){
 			  	sprintf(token, "委托物品失败,请与管理员联系~");
 			  	break;
@@ -344,8 +344,8 @@ static void NPC_Pauction_selectWindow( int meindex, int toindex, int seqno, int 
 					sprintf(token, "成功取回你的宠物!");
 					break;
 				}else if(type == 2){
-		    	int emptyitemindexinchara = CHAR_findEmptyItemBox( toindex );
-					if( emptyitemindexinchara < 0 ){
+		    	int emptyitem_indexinchara = CHAR_findEmptyItemBox( toindex );
+					if( emptyitem_indexinchara < 0 ){
 						sprintf(token, "很抱歉,你身上物品已满,请空出一个物品栏位!");
 						break;
 					}
@@ -353,15 +353,15 @@ static void NPC_Pauction_selectWindow( int meindex, int toindex, int seqno, int 
           BOOL ret = ITEM_makeExistItemsFromStringToArg( string, &itmone, 0);
 
           if( ret == TRUE ){
-              int itemindex = ITEM_initExistItemsOne( &itmone );
-              if( itemindex == -1 ){
+              int item_index = ITEM_initExistItemsOne( &itmone );
+              if( item_index == -1 ){
               	sprintf(token, "取回物品失败!");
     						break;
               }else{
-					    	CHAR_setItemIndex( toindex, emptyitemindexinchara, itemindex );
-					    	ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
-					    	ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX,toindex);
-					    	CHAR_sendItemDataOne( toindex, emptyitemindexinchara);
+					    	CHAR_setItemIndex( toindex, emptyitem_indexinchara, item_index );
+					    	ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX,-1);
+					    	ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX,toindex);
+					    	CHAR_sendItemDataOne( toindex, emptyitem_indexinchara);
 					    	sasql_delPauctionBuy(atoi(data), CHAR_getChar(toindex, CHAR_CDKEY));
 					    }
           }
@@ -419,8 +419,8 @@ static void NPC_Pauction_selectWindow( int meindex, int toindex, int seqno, int 
 					sprintf(token, "数据库操作错误,请与管理员联系!");
 				}
     	}else if(type == 2){
-		    int emptyitemindexinchara = CHAR_findEmptyItemBox( toindex );
-				if( emptyitemindexinchara < 0 ){
+		    int emptyitem_indexinchara = CHAR_findEmptyItemBox( toindex );
+				if( emptyitem_indexinchara < 0 ){
 					sprintf(token, "很抱歉,你身上物品已满,请空出一个物品栏位!");
 					break;
 				}
@@ -430,15 +430,15 @@ static void NPC_Pauction_selectWindow( int meindex, int toindex, int seqno, int 
           BOOL ret = ITEM_makeExistItemsFromStringToArg( string, &itmone, 0);
 
           if( ret == TRUE ){
-              int itemindex = ITEM_initExistItemsOne( &itmone );
-              if( itemindex == -1 ){
+              int item_index = ITEM_initExistItemsOne( &itmone );
+              if( item_index == -1 ){
               	sprintf(token, "取回物品失败!");
     						break;
               }else{
-					    	CHAR_setItemIndex( toindex, emptyitemindexinchara, itemindex );
-					    	ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
-					    	ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX,toindex);
-					    	CHAR_sendItemDataOne( toindex, emptyitemindexinchara);
+					    	CHAR_setItemIndex( toindex, emptyitem_indexinchara, item_index );
+					    	ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX,-1);
+					    	ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX,toindex);
+					    	CHAR_sendItemDataOne( toindex, emptyitem_indexinchara);
 					    	sasql_delPauctionBuy(atoi(data), "");
 					    }
           }
@@ -458,7 +458,7 @@ static void NPC_Pauction_selectWindow( int meindex, int toindex, int seqno, int 
 		break;
 	}
 
-	lssproto_WN_send( fd, windowtype, buttontype, windowno,
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), makeEscapeString(token, buf, sizeof( buf) ));
 }
 

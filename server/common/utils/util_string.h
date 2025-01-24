@@ -3,7 +3,14 @@
 
 #include "common.h"
 
-void easyGetTokenFromString(char *src, int count, char *output, int len);
+void easyGetTokenFromString(const char *src, const int count, char *output,
+                            const int len);
+BOOL GeneralSplitImpl(const char *src, const char *delim, const int index,
+                      char *buf, const int buflen, const char *file,
+                      const int line);
+#define getStringFromIndexWithDelim(src, delim, index, buf, buflen)            \
+  GenerealSplitImpl(src, delim, index, buf, buflen, __FILE__, __LINE__)
+
 char *makeStringFromEscaped(char *src);
 char *makeEscapeString(const char *src, char *dst, const int dst_len);
 int getHash(const char *s);
@@ -22,6 +29,10 @@ int hashpjw(const char *s);
 
 int easyGetTokenFromBuf(const char *src, const char *delim, const int count,
                         char *output, const int len);
+
+void util_strncpysafe1(char *dst, const int dst_len, const char *src,
+                       const int copy_bytes);
+void util_strncpysafe2(char *dst, const int dst_len, const char *src);
 
 double time_diff(struct timeval t1, struct timeval t2);
 unsigned time_diff_us(struct timeval t1, struct timeval t2);

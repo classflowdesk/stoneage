@@ -5,8 +5,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "config_file.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "npc_bankman.h"
 #include "family.h"
 #include "autil.h"
@@ -106,7 +106,7 @@ static void NPC_Bankman_selectWindow( int meindex, int toindex, int num)
 	
 	fd = getfdFromCharaIndex( toindex);
 	if( fd != -1 ) {
-		lssproto_WN_send( fd, w.windowtype, 
+		GmsvServer_WN_send( fd, w.windowtype, 
 						w.buttontype,
 						w.windowno+100,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -175,13 +175,13 @@ void NPC_BankmanWindowTalked( int meindex, int talkerindex,
 		if( newwin == 5 )	{
 			if( CHAR_getInt( talkerindex, CHAR_FMINDEX ) < 1 && 
 			    CHAR_getInt( talkerindex, CHAR_BANKGOLD) < 1 )
-			    	lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+			    	GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 			    		WINDOW_BUTTONTYPE_OK, -1, -1,
 			    		makeEscapeString("\n您的资格不符合！"
 			    				 "\n请先加入家族！", buff, sizeof(buff)));
 			else {
 				sprintf(buf, "B|G|%d", CHAR_getInt( talkerindex, CHAR_BANKGOLD) );
-				lssproto_FM_send( fd, buf );
+				GmsvServer_FM_send( fd, buf );
 			}
 			return;
 		}
@@ -189,14 +189,14 @@ void NPC_BankmanWindowTalked( int meindex, int talkerindex,
 		if( newwin == 6 )
 		{
 			if( CHAR_getInt( talkerindex, CHAR_FMINDEX ) > 0 )
-				saacproto_ACGetFMData_send( acfd, CHAR_getChar( talkerindex, CHAR_FMNAME),
+				SaacClient_ACGetFMData_send( acfd, CHAR_getChar( talkerindex, CHAR_FMNAME),
 								CHAR_getInt( talkerindex, CHAR_FMINDEX ),
 								CHAR_getWorkInt( talkerindex, CHAR_WORKFMINDEXI ),
 								1,
 								CONNECT_getFdid(fd)
 								);
 			else
-			    	lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+			    	GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 			    		WINDOW_BUTTONTYPE_OK, -1, -1,
 			    		makeEscapeString("\n您的资格不符合！"
 			    				 "\n请先加入家族！", buff, sizeof(buff)));
@@ -206,7 +206,7 @@ void NPC_BankmanWindowTalked( int meindex, int talkerindex,
 		if( newwin == 7 )
 		{
 			if( CHAR_getInt( talkerindex, CHAR_FMINDEX ) == -1 ) {
-			    	lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+			    	GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 			    		WINDOW_BUTTONTYPE_OK, -1, -1,
 			    		makeEscapeString("\n您的资格不符合！"
 			    				 "\n请先加入家族！", buff, sizeof(buff)));
@@ -224,7 +224,7 @@ void NPC_BankmanWindowTalked( int meindex, int talkerindex,
 			return;
 		}
 		if( fd != -1 ) {
-			lssproto_WN_send( fd, w.windowtype, 
+			GmsvServer_WN_send( fd, w.windowtype, 
 							w.buttontype,
 							w.windowno+100,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

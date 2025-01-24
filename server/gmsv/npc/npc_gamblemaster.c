@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "handletime.h"
 #include "readmap.h"
 #include "log.h"
@@ -263,7 +263,7 @@ void NPC_GambleRoulette_selectWindow(int meindex,int toindex,int num,int select)
 	break;
 	}
 
-	lssproto_WN_send( fd, windowtype, buttontype, windowno, 
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno, 
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 }
 

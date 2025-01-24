@@ -5,7 +5,7 @@
 #include "npc_janken.h"
 #include "npcutil.h"
 #include "char.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "buf.h"
 #include "function.h"
 #include "readmap.h"
@@ -181,7 +181,7 @@ static void NPC_Janken_selectWindow( int meindex, int talker, int num)
 
 //	makeEscapeString( token, escapedname, sizeof(escapedname));
 	/*-仇仇匹霜耨允月--*/
-	lssproto_WN_send( fd, windowtype, 
+	GmsvServer_WN_send( fd, windowtype, 
 					buttontype, 
 					windowno,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -322,7 +322,7 @@ void NPC_JnakenJudge(int meindex,int talker,int sel)
 	}
 	
 	//霜耨
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
 					WINDOW_BUTTONTYPE_OK, 
 					CHAR_WINDOWTYPE_JANKEN_END,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -373,7 +373,7 @@ BOOL NPC_JankenEntryItemCheck(int talker,char *buf)
 	int id=0;
 	BOOL flg = FALSE;
 	int i;
-	int itemindex;
+	int item_index;
 	int itemno;
 	int kosuu;
 	int cnt=0;
@@ -393,9 +393,9 @@ BOOL NPC_JankenEntryItemCheck(int talker,char *buf)
 			kosuu = atoi(buf3);
 		
 			for( i=0 ; i < CheckCharMaxItem(talker);i++ ){
-				itemindex = CHAR_getItemIndex( talker , i );
-				if( ITEM_CHECKINDEX(itemindex) ){
-					id = ITEM_getInt(itemindex ,ITEM_ID );
+				item_index = CHAR_getItemIndex( talker , i );
+				if( ITEM_CHECKINDEX(item_index) ){
+					id = ITEM_getInt(item_index ,ITEM_ID );
 					if(itemno == id){
 						cnt++;
 						if(cnt == kosuu){
@@ -417,9 +417,9 @@ BOOL NPC_JankenEntryItemCheck(int talker,char *buf)
 #else
 			for( i = 0; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
-				itemindex = CHAR_getItemIndex( talker , i );
-				if( ITEM_CHECKINDEX(itemindex) ){
-					id = ITEM_getInt(itemindex ,ITEM_ID );
+				item_index = CHAR_getItemIndex( talker , i );
+				if( ITEM_CHECKINDEX(item_index) ){
+					id = ITEM_getInt(item_index ,ITEM_ID );
 					if(itemno == id){
 						flg = TRUE;
 						break;
@@ -444,7 +444,7 @@ BOOL NPC_JankenEntryItemDel(int talker,char *buf)
 	int i = 1, j = 1,k = 1;
 	char buff3[128];
 	char buf2[32];
-	int itemindex;
+	int item_index;
 
 	while(getStringFromIndexWithDelim(buf , "," , k, buff3, sizeof(buff3)) !=FALSE ){
 		k++;
@@ -458,26 +458,26 @@ BOOL NPC_JankenEntryItemDel(int talker,char *buf)
 			getStringFromIndexWithDelim(buff3,"*",2,buf2,sizeof(buf2));
 			kosuu = atoi(buf2);
 				for( i =0 ; i < CheckCharMaxItem(talker) ; i++ ){
-				itemindex = CHAR_getItemIndex( talker , i );
-				if( ITEM_CHECKINDEX(itemindex) ){
-					id=ITEM_getInt(itemindex ,ITEM_ID );
+				item_index = CHAR_getItemIndex( talker , i );
+				if( ITEM_CHECKINDEX(item_index) ){
+					id=ITEM_getInt(item_index ,ITEM_ID );
 					if(itemno==id){
 						cnt++;
 						LogItem(
 							CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 							CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+							ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 							"QuizDelItem(猜谜->交出道具)",
 							CHAR_getInt( talker, CHAR_FLOOR),
 							CHAR_getInt( talker, CHAR_X ),
  							CHAR_getInt( talker, CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 						);
 						CHAR_DelItem( talker, i);
 						if(cnt == kosuu){
@@ -493,25 +493,25 @@ BOOL NPC_JankenEntryItemDel(int talker,char *buf)
 #else
 			for( j = 0; j < CHAR_MAXITEMHAVE; j ++ ) {
 #endif
-				itemindex = CHAR_getItemIndex( talker ,j);
+				item_index = CHAR_getItemIndex( talker ,j);
 
-				if( ITEM_CHECKINDEX(itemindex) ){
-					if( atoi( buff3) == ITEM_getInt(itemindex,ITEM_ID)){
+				if( ITEM_CHECKINDEX(item_index) ){
+					if( atoi( buff3) == ITEM_getInt(item_index,ITEM_ID)){
 						LogItem(
 							CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 							CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+							ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 							"QuizDelItem(猜谜->交出道具)",
 							CHAR_getInt( talker,CHAR_FLOOR),
 							CHAR_getInt( talker,CHAR_X ),
 							CHAR_getInt( talker,CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 						);
 						CHAR_DelItem( talker, j);
 					}

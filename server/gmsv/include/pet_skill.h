@@ -66,8 +66,8 @@ INLINE char* PETSKILL_getChar( int index, PETSKILL_DATACHAR element);
 INLINE BOOL PETSKILL_setChar( int index ,PETSKILL_DATACHAR element, char* new );
 int PETSKILL_getPetskillNum( void);
 
-#define		PETSKILL_GetArray( charaindex, havepetskill)	_PETSKILL_GetArray( __FILE__, __LINE__, charaindex, havepetskill)
-int _PETSKILL_GetArray( char *file, int line, int charaindex, int havepetskill );
+#define		PETSKILL_GetArray( char_index, havepetskill)	_PETSKILL_GetArray( __FILE__, __LINE__, char_index, havepetskill)
+int _PETSKILL_GetArray( char *file, int line, int char_index, int havepetskill );
 
 BOOL PETSKILL_initPetskill( char *filename);
 BOOL PETSKILL_reinitPetskill( void );
@@ -75,7 +75,7 @@ int PETSKILL_getPetskillArray( int petskillid);
 PETSKILL_CALLFUNC PETSKILL_getPetskillFuncPointer(char* name);
 
 int PETSKILL_Use(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -83,13 +83,13 @@ int PETSKILL_Use(
 );
 
 int PETSKILL_ContinuationAttack(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
 );
 int PETSKILL_ChargeAttack(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -108,7 +108,7 @@ int PETSKILL_ChargeAttack(
 //  檗  -- 职谛毛潮曰卅互日  猾
 //
 int PETSKILL_Guardian(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -117,7 +117,7 @@ int PETSKILL_Guardian(
 //**********************************************************************
 
 int PETSKILL_PowerBalance(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -128,7 +128,7 @@ int PETSKILL_PowerBalance(
 //  檗  -- 雄  分互荚  今木月割  互嫖中
 //
 int PETSKILL_Mighty(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -142,7 +142,7 @@ int PETSKILL_Mighty(
 //  檗  -- 旦  □正旦唱橘  猾
 //
 int PETSKILL_StatusChange(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -157,7 +157,7 @@ int PETSKILL_StatusChange(
 // 檗  -- 骚橘  猾
 //
 int PETSKILL_NormalAttack(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -167,7 +167,7 @@ int PETSKILL_NormalAttack(
 
 #ifdef _INVERSION_PETSKILL
 int PETSKILL_Inversion(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -177,7 +177,7 @@ int PETSKILL_Inversion(
 
 #ifdef _MASSAGE_PETSKILL
 int PETSKILL_Massage(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -187,7 +187,7 @@ int PETSKILL_Massage(
 
 #ifdef _PETOUT_PETSKILL
 int PETSKILL_Petout(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -203,7 +203,7 @@ int PETSKILL_Petout(
 // 檗  -- 骚橘  豢
 //
 int PETSKILL_NormalGuard(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -216,7 +216,7 @@ int PETSKILL_NormalGuard(
 // 檗  -- 谨窗(窒手仄卅中)
 //
 int PETSKILL_None(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -229,7 +229,7 @@ int PETSKILL_None(
 // 檗  -- 哗萄域葱(怅木化ㄠ正□件  卞锹澎及    井日  猾)
 //
 int PETSKILL_EarthRound(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int array,
 	char *data
@@ -242,7 +242,7 @@ int PETSKILL_EarthRound(
 // 檗  -- 布□玉皮伊奶弁
 //
 int PETSKILL_GuardBreak(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int array,
 	char *data
@@ -251,7 +251,7 @@ int PETSKILL_GuardBreak(
 ///////////////////////////////////////////
 #ifdef _SKILL_GUARDBREAK2//破除防御2 vincent add 2002/05/20
 int PETSKILL_GuardBreak2(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int array,
 	char *data
@@ -264,7 +264,7 @@ int PETSKILL_GuardBreak2(
 // 檗  --     木
 //
 int PETSKILL_Abduct(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int array,
 	char *data
@@ -275,7 +275,7 @@ int PETSKILL_Abduct(
 //*******************************************************
 // 檗  --   戈
 int PETSKILL_Steal(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int array,
 	char *data
@@ -284,7 +284,7 @@ int PETSKILL_Steal(
 //*******************************************************
 #ifdef _BATTLESTEAL_FIX
 int PETSKILL_StealMoney(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int array,
 	char *data
@@ -315,7 +315,7 @@ int PETSKILL_Fixitem(
 // 檗  -- 失奶  丞宁岳
 //
 int PETSKILL_Merge(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int array,
 	char *data
@@ -328,7 +328,7 @@ int PETSKILL_Merge(
 // 檗  -- 用□布□玉
 //
 int PETSKILL_NoGuard(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int array,
 	char *data
@@ -342,7 +342,7 @@ int PETSKILL_NoGuard(
 // Terry add 2001/11/05
 #ifdef _ATTACK_MAGIC
 int PETSKILL_AttackMagic(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -356,7 +356,7 @@ int PETSKILL_Vary( int cindex, int tindex, int id, char* data);
 #ifdef _SKILL_WILDVIOLENT_ATT
 //vincent add 2002/05/16
 int PETSKILL_WildViolentAttack(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -366,7 +366,7 @@ int PETSKILL_WildViolentAttack(
 #ifdef _SKILL_SPEEDY_ATT
 //vincent add 2002/05/16
 int PETSKILL_SpeedyAttack(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -376,7 +376,7 @@ int PETSKILL_SpeedyAttack(
 #ifdef _SKILL_SACRIFICE
 //vincent add 2002/05/30
 int PETSKILL_Sacrifice(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -386,7 +386,7 @@ int PETSKILL_Sacrifice(
 #ifdef _SKILL_REFRESH
 //vincent add 2002/08/08
 int PETSKILL_Refresh(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -395,7 +395,7 @@ int PETSKILL_Refresh(
 
 #ifdef _SKILL_WEAKEN  //vincent宠技:虚弱
 int PETSKILL_Weaken(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -404,7 +404,7 @@ int PETSKILL_Weaken(
 
 #ifdef _SKILL_DEEPPOISON  //vincent宠技:剧毒
 int PETSKILL_Deeppoison(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -413,7 +413,7 @@ int PETSKILL_Deeppoison(
 
 #ifdef _SKILL_BARRIER  //vincent宠技:魔障
 int PETSKILL_Barrier(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -422,7 +422,7 @@ int PETSKILL_Barrier(
 
 #ifdef _SKILL_NOCAST  //vincent宠技:沉默
 int PETSKILL_Nocast(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -431,7 +431,7 @@ int PETSKILL_Nocast(
 
 #ifdef _SKILL_ROAR //vincent宠技:大吼
 int PETSKILL_Roar(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int array,
 	char *data
@@ -439,158 +439,158 @@ int PETSKILL_Roar(
 #endif
 
 #ifdef _PSKILL_FALLGROUND
-int PETSKILL_FallGround( int charaindex, int toNo, int array, char *data );
+int PETSKILL_FallGround( int char_index, int toNo, int array, char *data );
 #endif
 #ifdef _PETSKILL_EXPLODE
-int PETSKILL_Explode( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Explode( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PRO_BATTLEENEMYSKILL
-int ENEMYSKILL_ReLife( int enemyindex, int toNo, int array, char *data );
-int ENEMYSKILL_ReHP( int enemyindex, int toNo, int array, char *data );
+int ENEMYSKILL_ReLife( int enemy_index, int toNo, int array, char *data );
+int ENEMYSKILL_ReHP( int enemy_index, int toNo, int array, char *data );
 
-int ENEMYSKILL_EnemyHelp( int enemyindex, int toNo, int array, char *data );
+int ENEMYSKILL_EnemyHelp( int enemy_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _SKILL_DAMAGETOHP
-int PETSKILL_DamageToHp( int charaindex, int toNo, int array, char *data );
+int PETSKILL_DamageToHp( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_TIMID
-int PETSKILL_BattleTimid( int charaindex, int toNo, int array, char *data );
+int PETSKILL_BattleTimid( int char_index, int toNo, int array, char *data );
 #endif
 #ifdef _PETSKILL_2TIMID
-int PETSKILL_2BattleTimid( int charaindex, int toNo, int array, char *data );
+int PETSKILL_2BattleTimid( int char_index, int toNo, int array, char *data );
 #endif
 #ifdef _PETSKILL_ANTINTER
-int PETSKILL_AntInter(int charaindex, int toindex, int array, char* data);		// 宠物技能战斗模组
+int PETSKILL_AntInter(int char_index, int toindex, int array, char* data);		// 宠物技能战斗模组
 #endif
 
 #ifdef _RESURRECTION_PETSKILL
-int PETSKILL_Resurrection( int charaindex, int toNo, int array, char* data);
+int PETSKILL_Resurrection( int char_index, int toNo, int array, char* data);
 #endif
 #ifdef _LOSTLOST_PETSKILL
-int PETSKILL_Lostlost( int charaindex, int toNo, int array, char* data);
+int PETSKILL_Lostlost( int char_index, int toNo, int array, char* data);
 #endif
 
 
 #ifdef _PETSKILL_PROPERTY
-int PETSKILL_BattleProperty( int charaindex, int toNo, int array, char *data );
+int PETSKILL_BattleProperty( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_TEAR
-int PETSKILL_BattleTearDamage( int charaindex, int toNo, int array, char *data );
+int PETSKILL_BattleTearDamage( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _BATTLE_LIGHTTAKE
-int PETSKILL_Lighttakeed( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Lighttakeed( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _BATTLE_ATTCRAZED
-int PETSKILL_AttackCrazed( int charaindex, int toNo, int array, char *data );
+int PETSKILL_AttackCrazed( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _SHOOTCHESTNUT	// Syu ADD 宠技：丢栗子
-int PETSKILL_AttackShoot( int charaindex, int toNo, int array, char *data );
+int PETSKILL_AttackShoot( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _Skill_MPDAMAGE
-int PETSKILL_MpDamage( int charaindex, int toNo, int array, char *data );
+int PETSKILL_MpDamage( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_SETDUCK
-int PETSKILL_SetDuck( int charaindex, int toNo, int array, char *data );
+int PETSKILL_SetDuck( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _MAGICPET_SKILL
-int PETSKILL_SetMagicPet( int charaindex, int toNo, int array, char *data );
+int PETSKILL_SetMagicPet( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _SKILL_TOOTH
-int PETSKILL_ToothCrushe( int charaindex, int toNo, int array, char *data );
+int PETSKILL_ToothCrushe( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PSKILL_MODIFY
-int PETSKILL_Modifyattack( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Modifyattack( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PSKILL_MDFYATTACK
-int PETSKILL_Mdfyattack( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Mdfyattack( int char_index, int toNo, int array, char *data );
 #endif
 
 
 #ifdef _MAGIC_SUPERWALL
-int	PETSKILL_MagicStatusChange( int charaindex, int toindex, int array, char *data );
+int	PETSKILL_MagicStatusChange( int char_index, int toindex, int array, char *data );
 #endif
 
 #ifdef _PET_SKILL_SARS				// WON ADD 毒煞蔓延
-int PETSKILL_Sars( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Sars( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _SONIC_ATTACK				// WON ADD 音波攻击
-int PETSKILL_Sonic( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Sonic( int char_index, int toNo, int array, char *data );
 #endif
 #ifdef _PETSKILL_REGRET
-int PETSKILL_Regret( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Regret( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_GYRATE
-int PETSKILL_Gyrate( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Gyrate( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_ACUPUNCTURE //针刺外皮
-int PETSKILL_Acupuncture( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Acupuncture( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_RETRACE
-int PETSKILL_Retrace( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Retrace( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_HECTOR
-int PETSKILL_Hector( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Hector( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_FIREKILL
-int PETSKILL_Firekill( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Firekill( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_DAMAGETOHP   //暗月狂狼(嗜血技的变体)
-int PETSKILL_DamageToHp2( int charaindex, int toNo, int array, char *data );
+int PETSKILL_DamageToHp2( int char_index, int toNo, int array, char *data );
 #endif
 
 #ifdef _PETSKILL_BECOMEFOX
-int PETSKILL_BecomeFox( int charaindex, int toNo, int array, char* data);
+int PETSKILL_BecomeFox( int char_index, int toNo, int array, char* data);
 #endif
 
 #ifdef _PETSKILL_BECOMEPIG
-int PETSKILL_BecomePig( int charaindex, int toNo, int array, char* data);
+int PETSKILL_BecomePig( int char_index, int toNo, int array, char* data);
 #endif
 
 #ifdef _PETSKILL_SHOWMERCY
-int PETSKILL_ShowMercy(int charaindex, int toNo, int array, char* data);
+int PETSKILL_ShowMercy(int char_index, int toNo, int array, char* data);
 #endif
 
 #ifdef _PETSKILL_COMBINED
-int PETSKILL_Combined(int charaindex, int toNo, int array, char* data);
+int PETSKILL_Combined(int char_index, int toNo, int array, char* data);
 #endif
 
 #ifdef _PETSKILL_LER
-int PETSKILL_BatFly(int charaindex, int toNo, int array, char* data);					// 雷尔技 - 群蝠四窜
-int PETSKILL_DivideAttack(int charaindex, int toNo, int array, char* data);		// 雷尔技 - 分身地裂
+int PETSKILL_BatFly(int char_index, int toNo, int array, char* data);					// 雷尔技 - 群蝠四窜
+int PETSKILL_DivideAttack(int char_index, int toNo, int array, char* data);		// 雷尔技 - 分身地裂
 #endif
 
 #ifdef _PETSKILL_BATTLE_MODEL
-int PETSKILL_BattleModel(int charaindex, int toindex, int array, char* data);		// 宠物技能战斗模组
+int PETSKILL_BattleModel(int char_index, int toindex, int array, char* data);		// 宠物技能战斗模组
 #endif
 
 #ifdef _STRENGTH_PETSKILL
-int PETSKILL_Strength( int charaindex, int toNo, int array, char *data );
+int PETSKILL_Strength( int char_index, int toNo, int array, char *data );
 #endif
 #ifdef _GRAPPLING_PETSKILL
-int PETSKILL_Grappling( int charaindex, int toNo, int array, char* data);
+int PETSKILL_Grappling( int char_index, int toNo, int array, char* data);
 #endif
 #ifdef _PETSKILL_PASSIVE_PET_MATCH1		//宠物单人组合被动技能
-int PETSKILL_PASSIVE_PET_MATCH1( int charaindex, int toNo, int array, char *data );
+int PETSKILL_PASSIVE_PET_MATCH1( int char_index, int toNo, int array, char *data );
 #endif
 
 #endif

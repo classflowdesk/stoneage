@@ -5,8 +5,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "config_file.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "npc_riderman.h"
 #include "family.h"
 #include "log.h"
@@ -131,7 +131,7 @@ static void NPC_Riderman_selectWindow( int meindex, int toindex, int num)
 	
 	fd = getfdFromCharaIndex( toindex);
 	if( fd != -1 ) {
-		lssproto_WN_send( fd, w.windowtype, 
+		GmsvServer_WN_send( fd, w.windowtype, 
 						w.buttontype,
 						w.windowno+100,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -195,7 +195,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			charImg = CHAR_getInt( talkerindex, CHAR_BASEBASEIMAGENUMBER);
 			if( CHAR_getInt( talkerindex, CHAR_LEARNRIDE ) >= 40 )
 			{
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n你已经学会初级班了呀。\n不需要再学了。",
 							buf, sizeof(buf)));
@@ -207,7 +207,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 				char buf2[512];
 				
 				sprintf( buf2, "\n很抱歉喔！你的学费不足！\n学习骑乘宠物初级班需要%d石币。", w.takegold);
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( buf2, buf, sizeof(buf)));
 				return;
@@ -219,8 +219,8 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			CHAR_send_P_StatusString( talkerindex, CHAR_P_STRING_LEARNRIDE );
 			
 			//sprintf( buf, "R|L|1" );
-			//lssproto_FM_send( fd, buf );
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+			//GmsvServer_FM_send( fd, buf );
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString(
 						"\n\n恭喜你！你已经完成骑乘初级班了。\n可以骑乘 Lv40 以下的宠物，\n请小心骑乘喔！",
@@ -242,7 +242,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 					strcpy(fmname, token);
 					getStringFromIndexWithDelim(fmpointlist.pointlistarray[i], "|", 8, token, sizeof(token));
 					fmindexi = atoi(token);
-					saacproto_ACFixFMData_send( acfd, fmname, fmindex, fmindexi,
+					SaacClient_ACFixFMData_send( acfd, fmname, fmindex, fmindexi,
 						FM_FIX_FMGOLD, buf2 , "",
 						CHAR_getWorkInt(meindex, CHAR_WORKFMCHARINDEX),
 						CONNECT_getFdid(fd) );
@@ -265,7 +265,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			charImg = CHAR_getInt( talkerindex, CHAR_BASEBASEIMAGENUMBER);
 			if( CHAR_getInt( talkerindex, CHAR_LEARNRIDE ) >= 80 )
 			{
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n你已经学会中级班了呀。\n不需要再学了。",
 							buf, sizeof(buf)));
@@ -273,7 +273,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			}
 			else if( CHAR_getInt( talkerindex, CHAR_LEARNRIDE ) < 40 )
 			{
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n你必须先学过初级班才能来中级班唷。",
 							buf, sizeof(buf)));
@@ -285,7 +285,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 				char buf2[512];
 				
 				sprintf( buf2, "\n很抱歉喔！你的学费不足！\n学习骑乘宠物中级班需要%d石币", w.takegold);
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( buf2, buf, sizeof(buf)));
 				return;
@@ -297,8 +297,8 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			CHAR_send_P_StatusString( talkerindex, CHAR_P_STRING_LEARNRIDE );
 			
 			//sprintf( buf, "R|L|1" );
-			//lssproto_FM_send( fd, buf );
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+			//GmsvServer_FM_send( fd, buf );
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n恭喜你！你已经完成骑乘中级班了。\n可以骑乘 Lv80 以下的宠物，\n请小心骑乘喔！",
 							buf, sizeof(buf)));
@@ -319,7 +319,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 					strcpy(fmname, token);
 					getStringFromIndexWithDelim(fmpointlist.pointlistarray[i], "|", 8, token, sizeof(token));
 					fmindexi = atoi(token);
-					saacproto_ACFixFMData_send( acfd, fmname, fmindex, fmindexi,
+					SaacClient_ACFixFMData_send( acfd, fmname, fmindex, fmindexi,
 						FM_FIX_FMGOLD, buf2 , "",
 						CHAR_getWorkInt(meindex, CHAR_WORKFMCHARINDEX),
 						CONNECT_getFdid(fd) );
@@ -342,7 +342,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			charImg = CHAR_getInt( talkerindex, CHAR_BASEBASEIMAGENUMBER);
 			if( CHAR_getInt( talkerindex, CHAR_LEARNRIDE ) >= 120 )
 			{
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n你已经学会高级班了呀。\n不需要再学了。",
 							buf, sizeof(buf)));
@@ -350,7 +350,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			}
 			else if( CHAR_getInt( talkerindex, CHAR_LEARNRIDE ) < 80 )
 			{
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n你必须先学过中级班才能来高级班唷。",
 							buf, sizeof(buf)));
@@ -362,7 +362,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 				char buf2[512];
 				
 				sprintf( buf2, "\n很抱歉喔！你的学费不足！\n学习骑乘宠物高级班需要%d石币", w.takegold);
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( buf2, buf, sizeof(buf)));
 				return;
@@ -374,8 +374,8 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			CHAR_send_P_StatusString( talkerindex, CHAR_P_STRING_LEARNRIDE );
 			
 			//sprintf( buf, "R|L|1" );
-			//lssproto_FM_send( fd, buf );
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+			//GmsvServer_FM_send( fd, buf );
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n恭喜你！你已经完成骑乘高级班了。\n可以骑乘 Lv120 以下的宠物，\n请小心骑乘喔！",
 							buf, sizeof(buf)));						
@@ -396,7 +396,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 					strcpy(fmname, token);
 					getStringFromIndexWithDelim(fmpointlist.pointlistarray[i], "|", 8, token, sizeof(token));
 					fmindexi = atoi(token);
-					saacproto_ACFixFMData_send( acfd, fmname, fmindex, fmindexi,
+					SaacClient_ACFixFMData_send( acfd, fmname, fmindex, fmindexi,
 						FM_FIX_FMGOLD, buf2 , "",
 						CHAR_getWorkInt(meindex, CHAR_WORKFMCHARINDEX),
 						CONNECT_getFdid(fd) );
@@ -418,7 +418,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			charImg = CHAR_getInt( talkerindex, CHAR_BASEBASEIMAGENUMBER);
 			if( CHAR_getInt( talkerindex, CHAR_LEARNRIDE ) > 200 )
 			{
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n你已经学会特级班了呀。\n不需要再学了。",
 							buf, sizeof(buf)));
@@ -426,7 +426,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			}
 			else if( CHAR_getInt( talkerindex, CHAR_LEARNRIDE ) < 120 )
 			{
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n你必须先学过高级班才能来特级班唷。",
 							buf, sizeof(buf)));
@@ -438,7 +438,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 				char buf2[512];
 				
 				sprintf( buf2, "\n很抱歉喔！你的学费不足！\n学习骑乘宠物特级班需要%d石币", w.takegold);
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( buf2, buf, sizeof(buf)));
 				return;
@@ -450,8 +450,8 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 			CHAR_send_P_StatusString( talkerindex, CHAR_P_STRING_LEARNRIDE );
 			
 			//sprintf( buf, "R|L|1" );
-			//lssproto_FM_send( fd, buf );
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+			//GmsvServer_FM_send( fd, buf );
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n\n恭喜你！你已经完成骑乘特级班了。\n可以骑乘所有等级的宠物，\n请小心骑乘喔！",
 							buf, sizeof(buf)));
@@ -472,7 +472,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 					strcpy(fmname, token);
 					getStringFromIndexWithDelim(fmpointlist.pointlistarray[i], "|", 8, token, sizeof(token));
 					fmindexi = atoi(token);
-					saacproto_ACFixFMData_send( acfd, fmname, fmindex, fmindexi,
+					SaacClient_ACFixFMData_send( acfd, fmname, fmindex, fmindexi,
 						FM_FIX_FMGOLD, buf2 , "",
 						CHAR_getWorkInt(meindex, CHAR_WORKFMCHARINDEX),
 						CONNECT_getFdid(fd) );
@@ -489,7 +489,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 		if( newwin == 5 )
 		{
 
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SHOWRIDEPET,
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SHOWRIDEPET,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					"" );						
 			return;
@@ -503,7 +503,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 
 		//fd = getfdFromCharaIndex( talkerindex);
 		if( fd != -1 ) {
-			lssproto_WN_send( fd, w.windowtype, 
+			GmsvServer_WN_send( fd, w.windowtype, 
 							w.buttontype,
 							w.windowno+100,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -517,7 +517,7 @@ void NPC_RidermanWindowTalked( int meindex, int talkerindex,
 /* 
  * 
  * 娄醒“
- *		meindex		int		仇及NPC及charaindex
+ *		meindex		int		仇及NPC及char_index
  *		
  */
 static BOOL NPC_Riderman_readData( int meindex, int windowno, BOOL chkflg)

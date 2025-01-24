@@ -7,7 +7,7 @@ export SHELL=/bin/sh
 INCFLAGS=-I.
 CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 SAAC_CFLAGS=$(CFLAGS) -I../saac/include
-GMSV_CFLAGS=$(CFLAGS) -I../gmsv/include -I../gmsv/lua
+GMSV_CFLAGS=$(CFLAGS) -I../gmsv/include -I../lua
 
 LIBUTIL=libutil.a
 LIBSERVERUTIL=libserverutil.a

@@ -44,10 +44,10 @@ BOOL PETMAIL_deleteOffmsg( int offmsgindex);
 void PETMAIL_proc( void );
 BOOL storePetmail( void);
 BOOL PETMAIL_sendPetMail( int cindex, int aindex, 
-					int havepetindex, int haveitemindex, char* text , int color );
+					int havepetindex, int haveitem_index, char* text , int color );
 
 #ifdef _PETMAIL_DEFNUMS
-void CHAR_AutoPickupMailPet( int charaindex, int petindex );
+void CHAR_AutoPickupMailPet( int char_index, int petindex );
 #endif
 int PETMAIL_getPetMailTotalnums( void);
 void PETMAIL_delPetMailTotalnums( int numflg);

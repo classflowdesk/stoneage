@@ -1,4 +1,6 @@
 #include "version.h"
+//
+#include "saac_client.h"
 // CoolFish: 2001/10/12  _UNIQUE_P_I
 #include "pet.h"
 #include "anim_tbl.h"
@@ -13,7 +15,6 @@
 #include "net.h"
 #include "npccreate.h"
 #include "pet_skill.h"
-#include "saacproto_cli.h"
 #include "title.h"
 // CoolFish: 2001/10/29
 #include "log.h"
@@ -856,7 +857,7 @@ int EVOLUTION_getPetFusionCode(int petid) {
   return ENEMYTEMP_getInt(petarray, E_T_FUSIONCODE);
 }
 
-int EVOLUTION_getPetTable(int charaindex, int petindex1, int petindex2) {
+int EVOLUTION_getPetTable(int char_index, int petindex1, int petindex2) {
   int table1, table2;
 
   if (!CHAR_CHECKINDEX(petindex1))
@@ -874,7 +875,7 @@ int EVOLUTION_getPetTable(int charaindex, int petindex1, int petindex2) {
   return PetTable[table1][table2];
 }
 
-int EVOLUTION_getPropertyTable(int charaindex, int petindex1, int petindex2) {
+int EVOLUTION_getPropertyTable(int char_index, int petindex1, int petindex2) {
   int i, k1 = 0, k2 = 0;
   int table1, table2;
   int Property1[4] = {-1, -1, -1, -1};
@@ -917,7 +918,7 @@ int EVOLUTION_getPropertyTable(int charaindex, int petindex1, int petindex2) {
   return PropertyTable[table1][table2];
 }
 
-int EVOLUTION_getFusionTable(int charaindex, int px, int py) {
+int EVOLUTION_getFusionTable(int char_index, int px, int py) {
   if (px >= MAXFTABLE_X || px < 0)
     return -1;
   if (py >= MAXFTABLE_Y || py < 0)
@@ -1455,8 +1456,8 @@ INLINE BOOL CHAR_CHECKCHARFUNCTABLEINDEX(int index) {
   return TRUE;
 }
 
-INLINE BOOL _CHAR_CHECKITEMINDEX(char *file, int line, int charaindex, int ti) {
-  if (0 <= ti && ti < CheckCharMaxItem(charaindex))
+INLINE BOOL _CHAR_CHECKITEMINDEX(char *file, int line, int char_index, int ti) {
+  if (0 <= ti && ti < CheckCharMaxItem(char_index))
     return TRUE;
   return FALSE;
 }
@@ -1745,16 +1746,16 @@ INLINE BOOL _CHAR_setFlg(char *file, int line, int index, CHAR_DATACHAR element,
     return FALSE;
 }
 
-INLINE int _CHAR_getItemIndex(char *file, int line, int charaindex, int ti) {
-  if (!CHAR_CHECKINDEX(charaindex)) {
+INLINE int _CHAR_getItemIndex(char *file, int line, int char_index, int ti) {
+  if (!CHAR_CHECKINDEX(char_index)) {
     print("err %s:%d from %s:%d\n", __FILE__, __LINE__, file, line);
     return -1;
   }
-  if (!CHAR_CHECKITEMINDEX(charaindex, ti)) {
+  if (!CHAR_CHECKITEMINDEX(char_index, ti)) {
     print("err %s:%d from %s:%d \n", __FILE__, __LINE__, file, line);
     return -1;
   }
-  return CHAR_chara[charaindex].indexOfExistItems[ti];
+  return CHAR_chara[char_index].indexOfExistItems[ti];
 }
 
 INLINE int _CHAR_setItemIndex(char *file, int line, int index, int iindex,
@@ -1929,43 +1930,43 @@ int CHAR_setCharSkill(int index, int sindex, int new) {
 }
 #endif
 
-INLINE int CHAR_getCharHaveTitle(int charaindex, int tindex) {
-  if (!CHAR_CHECKINDEX(charaindex))
+INLINE int CHAR_getCharHaveTitle(int char_index, int tindex) {
+  if (!CHAR_CHECKINDEX(char_index))
     return 0;
   if (!CHAR_CHECKTITLEINDEX(tindex))
     return 0;
-  return CHAR_chara[charaindex].indexOfHaveTitle[tindex];
+  return CHAR_chara[char_index].indexOfHaveTitle[tindex];
 }
 
-INLINE int CHAR_setCharHaveTitle(int charaindex, int tindex, int new) {
+INLINE int CHAR_setCharHaveTitle(int char_index, int tindex, int new) {
   int ret;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return 0;
   if (!CHAR_CHECKTITLEINDEX(tindex))
     return 0;
   if (new != -1)
     if (TITLE_getTitleIndex(new) == -1)
       return 0;
-  ret = CHAR_getCharHaveTitle(charaindex, tindex);
-  CHAR_chara[charaindex].indexOfHaveTitle[tindex] = new;
+  ret = CHAR_getCharHaveTitle(char_index, tindex);
+  CHAR_chara[char_index].indexOfHaveTitle[tindex] = new;
   return ret;
 }
 
-INLINE int CHAR_getCharPet(int charaindex, int petindex) {
-  if (!CHAR_CHECKINDEX(charaindex))
+INLINE int CHAR_getCharPet(int char_index, int petindex) {
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
   if (!CHAR_CHECKPETINDEX(petindex))
     return -1;
-  return CHAR_chara[charaindex].unionTable.indexOfPet[petindex];
+  return CHAR_chara[char_index].unionTable.indexOfPet[petindex];
 }
 
-INLINE int CHAR_setCharPet(int charaindex, int petindex, int new) {
+INLINE int CHAR_setCharPet(int char_index, int petindex, int new) {
   int ret;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
   if (!CHAR_CHECKPETINDEX(petindex))
     return -1;
-  ret = CHAR_getCharPet(charaindex, petindex);
+  ret = CHAR_getCharPet(char_index, petindex);
 
 // CoolFish: 2001/10/12
 #ifdef _UNIQUE_P_I
@@ -1973,43 +1974,43 @@ INLINE int CHAR_setCharPet(int charaindex, int petindex, int new) {
     CHAR_setPetUniCode(new);
 #endif
 
-  CHAR_chara[charaindex].unionTable.indexOfPet[petindex] = new;
+  CHAR_chara[char_index].unionTable.indexOfPet[petindex] = new;
   return ret;
 }
 
-INLINE int CHAR_getCharPoolPet(int charaindex, int petindex) {
-  if (!CHAR_CHECKINDEX(charaindex))
+INLINE int CHAR_getCharPoolPet(int char_index, int petindex) {
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
   if (!CHAR_CHECKPOOLPETINDEX(petindex))
     return -1;
-  return CHAR_chara[charaindex].indexOfPoolPet[petindex];
+  return CHAR_chara[char_index].indexOfPoolPet[petindex];
 }
 
-INLINE int CHAR_setCharPoolPet(int charaindex, int petindex, int new) {
+INLINE int CHAR_setCharPoolPet(int char_index, int petindex, int new) {
   int ret;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
   if (!CHAR_CHECKPOOLPETINDEX(petindex))
     return -1;
-  ret = CHAR_getCharPoolPet(charaindex, petindex);
+  ret = CHAR_getCharPoolPet(char_index, petindex);
 
-  CHAR_chara[charaindex].indexOfPoolPet[petindex] = new;
+  CHAR_chara[char_index].indexOfPoolPet[petindex] = new;
   return ret;
 }
 #ifdef _PETFOLLOW_NEW_
-int CHAR_getCharPetElement(int charaindex) {
+int CHAR_getCharPetElement(int char_index) {
   int i, j, k;
   i = 0;
   j = 0;
   k = 0;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
   for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-    if (CHAR_getCharPet(charaindex, i) > -1)
+    if (CHAR_getCharPet(char_index, i) > -1)
       j++;
   }
   for (i = 0; i < 5; i++) {
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKPETFOLLOW + i) > 0)
+    if (CHAR_getWorkInt(char_index, CHAR_WORKPETFOLLOW + i) > 0)
       k++;
   }
 
@@ -2017,62 +2018,62 @@ int CHAR_getCharPetElement(int charaindex) {
     return -1;
 
   for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-    if (CHAR_getCharPet(charaindex, i) == -1)
+    if (CHAR_getCharPet(char_index, i) == -1)
       break;
   }
 
   return (i == CHAR_MAXPETHAVE ? -1 : i);
 }
 
-int CHAR_getCharPetElementOld(int charaindex) {
+int CHAR_getCharPetElementOld(int char_index) {
   int i;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
   for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-    if (CHAR_getCharPet(charaindex, i) == -1)
+    if (CHAR_getCharPet(char_index, i) == -1)
       break;
   }
   return (i == CHAR_MAXPETHAVE ? -1 : i);
 }
 #else
-int CHAR_getCharPetElement(int charaindex) {
+int CHAR_getCharPetElement(int char_index) {
   int i;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
   for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-    if (CHAR_getCharPet(charaindex, i) == -1)
+    if (CHAR_getCharPet(char_index, i) == -1)
       break;
   }
   return (i == CHAR_MAXPETHAVE ? -1 : i);
 }
 #endif
 
-int CHAR_getCharPoolPetElement(int charaindex) {
+int CHAR_getCharPoolPetElement(int char_index) {
   int i;
   int limit;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
 
   // andy_reEdit 2003/09/18
-  limit = (CHAR_getInt(charaindex, CHAR_TRANSMIGRATION) * 2) + 5;
+  limit = (CHAR_getInt(char_index, CHAR_TRANSMIGRATION) * 2) + 5;
   limit = min(limit, CHAR_MAXPOOLPETHAVE);
   for (i = 0; i < limit; i++) {
-    if (CHAR_getCharPoolPet(charaindex, i) == -1)
+    if (CHAR_getCharPoolPet(char_index, i) == -1)
       break;
   }
   return (i == limit ? -1 : i);
 }
 
-int CHAR_getCharPoolItemIndexElement(int charaindex) {
+int CHAR_getCharPoolItemIndexElement(int char_index) {
   int i;
   int limit;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
   // andy_reEdit 2003/09/18
-  limit = (CHAR_getInt(charaindex, CHAR_TRANSMIGRATION) * 4) + 10;
+  limit = (CHAR_getInt(char_index, CHAR_TRANSMIGRATION) * 4) + 10;
   limit = min(limit, CHAR_MAXPOOLITEMHAVE);
   for (i = 0; i < limit; i++) {
-    if (CHAR_getPoolItemIndex(charaindex, i) == -1)
+    if (CHAR_getPoolItemIndex(char_index, i) == -1)
       break;
   }
   // Robin fix
@@ -2080,17 +2081,17 @@ int CHAR_getCharPoolItemIndexElement(int charaindex) {
   return (i >= limit ? -1 : i);
 }
 
-int CHAR_getEmptyCharPoolItemIndexNum(int charaindex) {
+int CHAR_getEmptyCharPoolItemIndexNum(int char_index) {
   int i, cnt = 0;
   int limit;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return 0;
   // andy_reEdit 2003/09/18
-  limit = (CHAR_getInt(charaindex, CHAR_TRANSMIGRATION) * 4) + 10;
+  limit = (CHAR_getInt(char_index, CHAR_TRANSMIGRATION) * 4) + 10;
   limit = min(limit, CHAR_MAXPOOLITEMHAVE);
 
   for (i = 0; i < limit; i++) {
-    if (CHAR_getPoolItemIndex(charaindex, i) == -1)
+    if (CHAR_getPoolItemIndex(char_index, i) == -1)
       cnt++;
   }
   return cnt;
@@ -2138,78 +2139,78 @@ int _CHAR_getPetSkillElement(char *file, int line, int petindex) {
   return (i == CHAR_MAXPETSKILLHAVE ? -1 : i);
 }
 
-INLINE int CHAR_getCharMakeSequenceNumber(int charaindex) {
-  if (!CHAR_CHECKINDEX(charaindex))
+INLINE int CHAR_getCharMakeSequenceNumber(int char_index) {
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
-  return CHAR_chara[charaindex].CharMakeSequenceNumber;
+  return CHAR_chara[char_index].CharMakeSequenceNumber;
 }
 
-void CHAR_constructFunctable(int charaindex) {
+void CHAR_constructFunctable(int char_index) {
   int i;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return;
   for (i = CHAR_FIRSTFUNCTION; i < CHAR_LASTFUNCTION; i++)
-    CHAR_chara[charaindex].functable[i - CHAR_FIRSTFUNCTION] =
-        getFunctionPointerFromName(CHAR_getCharfunctable(charaindex, i));
+    CHAR_chara[char_index].functable[i - CHAR_FIRSTFUNCTION] =
+        getFunctionPointerFromName(CHAR_getCharfunctable(char_index, i));
 }
 
-void *CHAR_getFunctionPointer(int charaindex, int functype) {
-  if (!CHAR_CHECKINDEX(charaindex))
+void *CHAR_getFunctionPointer(int char_index, int functype) {
+  if (!CHAR_CHECKINDEX(char_index))
     return (void *)NULL;
   if (functype < CHAR_FIRSTFUNCTION || functype >= CHAR_LASTFUNCTION)
     return (void *)NULL;
 
-  return CHAR_chara[charaindex].functable[functype];
+  return CHAR_chara[char_index].functable[functype];
 }
 
 #ifdef _ALLBLUES_LUA
-INLINE BOOL CHAR_setLUAFunction(int charaindex, int functype, lua_State *L,
+INLINE BOOL CHAR_setLUAFunction(int char_index, int functype, lua_State *L,
                                 const char *luafunctable) {
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
   if (functype < CHAR_FIRSTFUNCTION || functype >= CHAR_LASTFUNCTION) {
     return FALSE;
   }
 
-  CHAR_chara[charaindex].lua[functype] = L;
-  CHAR_chara[charaindex].luafunctable[functype] =
+  CHAR_chara[char_index].lua[functype] = L;
+  CHAR_chara[char_index].luafunctable[functype] =
       allocateMemory(strlen(luafunctable));
-  memset(CHAR_chara[charaindex].luafunctable[functype], 0,
+  memset(CHAR_chara[char_index].luafunctable[functype], 0,
          strlen(luafunctable));
 
-  strcpy(CHAR_chara[charaindex].luafunctable[functype], luafunctable);
+  strcpy(CHAR_chara[char_index].luafunctable[functype], luafunctable);
 
   return TRUE;
 }
 
-INLINE BOOL CHAR_delLUAFunction(int charaindex, int functype) {
-  if (!CHAR_CHECKINDEX(charaindex))
+INLINE BOOL CHAR_delLUAFunction(int char_index, int functype) {
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
   if (functype < CHAR_FIRSTFUNCTION || functype >= CHAR_LASTFUNCTION) {
     return FALSE;
   }
 
-  CHAR_chara[charaindex].lua[functype] = NULL;
-  freeMemory(CHAR_chara[charaindex].luafunctable[functype]);
+  CHAR_chara[char_index].lua[functype] = NULL;
+  freeMemory(CHAR_chara[char_index].luafunctable[functype]);
 
   return TRUE;
 }
 
-INLINE lua_State *CHAR_getLUAFunction(int charaindex, int functype) {
+INLINE lua_State *CHAR_getLUAFunction(int char_index, int functype) {
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return NULL;
 
   if (functype < CHAR_FIRSTFUNCTION || functype >= CHAR_LASTFUNCTION)
     return NULL;
 
-  if (CHAR_chara[charaindex].lua[functype] == NULL) {
+  if (CHAR_chara[char_index].lua[functype] == NULL) {
     return NULL;
   }
 
-  lua_getglobal(CHAR_chara[charaindex].lua[functype],
-                CHAR_chara[charaindex].luafunctable[functype]);
-  return CHAR_chara[charaindex].lua[functype];
+  lua_getglobal(CHAR_chara[char_index].lua[functype],
+                CHAR_chara[char_index].luafunctable[functype]);
+  return CHAR_chara[char_index].lua[functype];
 }
 #endif
 
@@ -2349,9 +2350,9 @@ void CHAR_removeHaveItem(Char *ch) {
     return;
   int itemMax = CheckCharMaxItemChar(ch);
   for (i = 0; i < itemMax; i++) {
-    int itemindex = ch->indexOfExistItems[i];
+    int item_index = ch->indexOfExistItems[i];
     ch->indexOfExistItems[i] = -1;
-    ITEM_endExistItemsOne(itemindex);
+    ITEM_endExistItemsOne(item_index);
   }
 }
 
@@ -2360,9 +2361,9 @@ void CHAR_removeHavePoolItem(Char *ch) {
   if (ch == NULL)
     return;
   for (i = 0; i < CHAR_MAXPOOLITEMHAVE; i++) {
-    int itemindex = ch->indexOfExistPoolItems[i];
+    int item_index = ch->indexOfExistPoolItems[i];
     ch->indexOfExistPoolItems[i] = -1;
-    ITEM_endExistItemsOne(itemindex);
+    ITEM_endExistItemsOne(item_index);
   }
 }
 
@@ -2753,13 +2754,13 @@ BOOL CHAR_makeCharFromStringToArg(char *data, Char *one) {
     }
     if (strncmp(firstToken, ITEMRESERVESTRING, strlen(ITEMRESERVESTRING)) ==
         0) {
-      int itemindex;
+      int item_index;
       if (strcmp(secondToken, "0") == 0)
         goto NEXT;
-      itemindex = atoi(firstToken + strlen(ITEMRESERVESTRING));
+      item_index = atoi(firstToken + strlen(ITEMRESERVESTRING));
       int itemMax = CheckCharMaxItemChar(one);
-      if (itemindex < 0 || itemMax <= itemindex ||
-          one->indexOfExistItems[itemindex] != -1) {
+      if (item_index < 0 || itemMax <= item_index ||
+          one->indexOfExistItems[item_index] != -1) {
         ;
       } else {
         ITEM_Item itmone;
@@ -2768,14 +2769,14 @@ BOOL CHAR_makeCharFromStringToArg(char *data, Char *one) {
         ret = ITEM_makeExistItemsFromStringToArg(secondToken, &itmone, 0);
 
         if (ret == TRUE) {
-          int existitemindex;
-          existitemindex = ITEM_initExistItemsOne(&itmone);
-          one->indexOfExistItems[itemindex] = existitemindex;
+          int existitem_index;
+          existitem_index = ITEM_initExistItemsOne(&itmone);
+          one->indexOfExistItems[item_index] = existitem_index;
 #ifdef _ITEM_USE_TIME
-          if (ITEM_getInt(existitemindex, ITEM_USETIME) > 0) {
-            if (ITEM_getInt(existitemindex, ITEM_USETIME) < (int)time(NULL)) {
-              ITEM_endExistItemsOne(existitemindex);
-              one->indexOfExistItems[itemindex] = -1;
+          if (ITEM_getInt(existitem_index, ITEM_USETIME) > 0) {
+            if (ITEM_getInt(existitem_index, ITEM_USETIME) < (int)time(NULL)) {
+              ITEM_endExistItemsOne(existitem_index);
+              one->indexOfExistItems[item_index] = -1;
             }
           }
 #endif
@@ -2785,12 +2786,12 @@ BOOL CHAR_makeCharFromStringToArg(char *data, Char *one) {
     }
     if (strncmp(firstToken, POOLITEMRESERVESTRING,
                 strlen(POOLITEMRESERVESTRING)) == 0) {
-      int itemindex;
+      int item_index;
       if (strcmp(secondToken, "0") == 0)
         goto NEXT;
-      itemindex = atoi(firstToken + strlen(POOLITEMRESERVESTRING));
-      if (itemindex < 0 || CHAR_MAXPOOLITEMHAVE <= itemindex ||
-          one->indexOfExistPoolItems[itemindex] != -1) {
+      item_index = atoi(firstToken + strlen(POOLITEMRESERVESTRING));
+      if (item_index < 0 || CHAR_MAXPOOLITEMHAVE <= item_index ||
+          one->indexOfExistPoolItems[item_index] != -1) {
         ;
       } else {
         ITEM_Item itmone;
@@ -2798,9 +2799,9 @@ BOOL CHAR_makeCharFromStringToArg(char *data, Char *one) {
         ret = ITEM_makeExistItemsFromStringToArg(secondToken, &itmone, 0);
 
         if (ret == TRUE) {
-          int existitemindex;
-          existitemindex = ITEM_initExistItemsOne(&itmone);
-          one->indexOfExistPoolItems[itemindex] = existitemindex;
+          int existitem_index;
+          existitem_index = ITEM_initExistItemsOne(&itmone);
+          one->indexOfExistPoolItems[item_index] = existitem_index;
         }
       }
       goto NEXT;
@@ -3086,10 +3087,10 @@ int CHAR_makePetFromStringToArg(char *src, Char *ch, int ti) {
 #ifdef _PET_ITEM
         if (strncmp(petfirstToken, PETITEMRESERVESTRING,
                     strlen(PETITEMRESERVESTRING)) == 0) {
-          int itemindex;
-          itemindex = atoi(petfirstToken + strlen(PETITEMRESERVESTRING));
-          if (itemindex < 0 || CHAR_MAXPETITEMHAVE <= itemindex ||
-              ch->indexOfExistItems[itemindex] != -1) {
+          int item_index;
+          item_index = atoi(petfirstToken + strlen(PETITEMRESERVESTRING));
+          if (item_index < 0 || CHAR_MAXPETITEMHAVE <= item_index ||
+              ch->indexOfExistItems[item_index] != -1) {
             ;
           } else {
             ITEM_Item itmone;
@@ -3098,9 +3099,9 @@ int CHAR_makePetFromStringToArg(char *src, Char *ch, int ti) {
             ret =
                 ITEM_makeExistItemsFromStringToArg(petsecondToken, &itmone, 1);
             if (ret == TRUE) {
-              int existitemindex;
-              existitemindex = ITEM_initExistItemsOne(&itmone);
-              ch->indexOfExistItems[itemindex] = existitemindex;
+              int existitem_index;
+              existitem_index = ITEM_initExistItemsOne(&itmone);
+              ch->indexOfExistItems[item_index] = existitem_index;
               found = TRUE;
             }
           }
@@ -3180,9 +3181,9 @@ void CHAR_setPetUniCode(int petindex) {
   }
 }
 
-void ITEM_setItemUniCode(int itemindex) {
-  if (strcmp(ITEM_getChar(itemindex, ITEM_UNIQUECODE), "") == 0 ||
-      strstr(ITEM_getChar(itemindex, ITEM_UNIQUECODE), "_") != NULL) {
+void ITEM_setItemUniCode(int item_index) {
+  if (strcmp(ITEM_getChar(item_index, ITEM_UNIQUECODE), "") == 0 ||
+      strstr(ITEM_getChar(item_index, ITEM_UNIQUECODE), "_") != NULL) {
     char itembuf[256];
     time_t t1;
     time(&t1);
@@ -3193,48 +3194,48 @@ void ITEM_setItemUniCode(int itemindex) {
     unique_i++;
     if (unique_i >= MAX_UNIQUE_P_I)
       unique_i = 0;
-    ITEM_setChar(itemindex, ITEM_UNIQUECODE, itembuf);
+    ITEM_setChar(item_index, ITEM_UNIQUECODE, itembuf);
   }
 }
 
-void CHAR_DetainSameItem(int charaindex, int itemindex) {
-  ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, 100000);
-  ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
+void CHAR_DetainSameItem(int char_index, int item_index) {
+  ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, 100000);
+  ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
 
   LogItem(
-      CHAR_getChar(charaindex, CHAR_NAME), CHAR_getChar(charaindex, CHAR_CDKEY),
+      CHAR_getChar(char_index, CHAR_NAME), CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD 在item的log中增加item名称
-      itemindex,
+      item_index,
 #else
-      ITEM_getInt(itemindex, ITEM_ID),
+      ITEM_getInt(item_index, ITEM_ID),
 #endif
-      "SysDeleteSame(系统删除重覆道具)", CHAR_getInt(charaindex, CHAR_FLOOR),
-      CHAR_getInt(charaindex, CHAR_X), CHAR_getInt(charaindex, CHAR_Y),
-      ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-      ITEM_getChar(itemindex, ITEM_NAME), ITEM_getInt(itemindex, ITEM_ID));
-  //  ITEM_endExistItemsOne( itemindex);
+      "SysDeleteSame(系统删除重覆道具)", CHAR_getInt(char_index, CHAR_FLOOR),
+      CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
+      ITEM_getChar(item_index, ITEM_UNIQUECODE),
+      ITEM_getChar(item_index, ITEM_NAME), ITEM_getInt(item_index, ITEM_ID));
+  //  ITEM_endExistItemsOne( item_index);
 }
 
-void CHAR_DetainSamePet(int charaindex, int petindex) {
+void CHAR_DetainSamePet(int char_index, int petindex) {
   CHAR_setWorkInt(petindex, CHAR_WORKPLAYERINDEX, 100000);
   CHAR_setChar(petindex, CHAR_OWNERCDKEY, "SYS");
   CHAR_setChar(petindex, CHAR_OWNERCHARANAME, "SYS");
   CHAR_complianceParameter(petindex);
-  LogPet(CHAR_getChar(charaindex, CHAR_NAME),
-         CHAR_getChar(charaindex, CHAR_CDKEY),
+  LogPet(CHAR_getChar(char_index, CHAR_NAME),
+         CHAR_getChar(char_index, CHAR_CDKEY),
          CHAR_getChar(petindex, CHAR_NAME), CHAR_getInt(petindex, CHAR_LV),
-         "SysDeleteSame(删除重覆宠物)", CHAR_getInt(charaindex, CHAR_FLOOR),
-         CHAR_getInt(charaindex, CHAR_X), CHAR_getInt(charaindex, CHAR_Y),
+         "SysDeleteSame(删除重覆宠物)", CHAR_getInt(char_index, CHAR_FLOOR),
+         CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
          CHAR_getChar(petindex, CHAR_UNIQUECODE) // shan 2001/12/14
   );
   //  CHAR_endCharOneArray( petindex );
 }
 
-void CHAR_DetainSameUCodePet(int charaindex, int petindex, int Ti) {
+void CHAR_DetainSameUCodePet(int char_index, int petindex, int Ti) {
   if (Ti == -1) {
     int i;
     for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-      int pindex = CHAR_getCharPet(charaindex, i);
+      int pindex = CHAR_getCharPet(char_index, i);
       if (!CHAR_CHECKINDEX(pindex))
         continue;
       if (pindex == petindex)
@@ -3242,18 +3243,18 @@ void CHAR_DetainSameUCodePet(int charaindex, int petindex, int Ti) {
     }
     if (i >= CHAR_MAXPETHAVE)
       return;
-    CHAR_setCharPet(charaindex, i, -1);
+    CHAR_setCharPet(char_index, i, -1);
   } else {
-    CHAR_setCharPet(charaindex, Ti, -1);
+    CHAR_setCharPet(char_index, Ti, -1);
   }
-  CHAR_DetainSamePet(charaindex, petindex);
+  CHAR_DetainSamePet(char_index, petindex);
 }
 
-void CHAR_DetainSameUCodePoolPet(int charaindex, int petindex, int Ti) {
+void CHAR_DetainSameUCodePoolPet(int char_index, int petindex, int Ti) {
   if (Ti == -1) {
     int i;
     for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-      int pindex = CHAR_getCharPet(charaindex, i);
+      int pindex = CHAR_getCharPet(char_index, i);
       if (!CHAR_CHECKINDEX(pindex))
         continue;
       if (pindex == petindex)
@@ -3261,49 +3262,49 @@ void CHAR_DetainSameUCodePoolPet(int charaindex, int petindex, int Ti) {
     }
     if (i >= CHAR_MAXPETHAVE)
       return;
-    CHAR_setCharPoolPet(charaindex, i, -1);
+    CHAR_setCharPoolPet(char_index, i, -1);
   } else {
-    CHAR_setCharPoolPet(charaindex, Ti, -1);
+    CHAR_setCharPoolPet(char_index, Ti, -1);
   }
-  CHAR_DetainSamePet(charaindex, petindex);
+  CHAR_DetainSamePet(char_index, petindex);
 }
 
-void CHAR_DetainSameUCodeItem(int charaindex, int itemindex, int Ti) {
+void CHAR_DetainSameUCodeItem(int char_index, int item_index, int Ti) {
   if (Ti == -1) {
     int i;
-    for (i = 0; i < CheckCharMaxItem(charaindex); i++) {
-      int iindex = CHAR_getItemIndex(charaindex, i);
+    for (i = 0; i < CheckCharMaxItem(char_index); i++) {
+      int iindex = CHAR_getItemIndex(char_index, i);
       if (!ITEM_CHECKINDEX(iindex))
         continue;
-      if (iindex == itemindex)
+      if (iindex == item_index)
         break;
     }
-    if (i >= CheckCharMaxItem(charaindex))
+    if (i >= CheckCharMaxItem(char_index))
       return;
-    CHAR_setItemIndex(charaindex, i, -1);
+    CHAR_setItemIndex(char_index, i, -1);
   } else {
-    CHAR_setItemIndex(charaindex, Ti, -1);
+    CHAR_setItemIndex(char_index, Ti, -1);
   }
-  CHAR_DetainSameItem(charaindex, itemindex);
+  CHAR_DetainSameItem(char_index, item_index);
 }
 
-void CHAR_DetainSameUCodePoolItem(int charaindex, int itemindex, int Ti) {
+void CHAR_DetainSameUCodePoolItem(int char_index, int item_index, int Ti) {
   if (Ti == -1) {
     int i;
     for (i = 0; i < CHAR_MAXPOOLITEMHAVE; i++) {
-      int iindex = CHAR_getPoolItemIndex(charaindex, i);
+      int iindex = CHAR_getPoolItemIndex(char_index, i);
       if (!ITEM_CHECKINDEX(iindex))
         continue;
-      if (iindex == itemindex)
+      if (iindex == item_index)
         break;
     }
     if (i >= CHAR_MAXPOOLITEMHAVE)
       return;
-    CHAR_setPoolItemIndex(charaindex, i, -1);
+    CHAR_setPoolItemIndex(char_index, i, -1);
   } else {
-    CHAR_setPoolItemIndex(charaindex, Ti, -1);
+    CHAR_setPoolItemIndex(char_index, Ti, -1);
   }
-  CHAR_DetainSameItem(charaindex, itemindex);
+  CHAR_DetainSameItem(char_index, item_index);
 }
 #endif
 
@@ -3344,15 +3345,15 @@ int IsFemale(int charindex) {
 }
 
 #ifdef _TYPE_TOXICATION
-BOOL CHAR_CanCureFlg(int charaindex, char *arg) {
-  int fd = getfdFromCharaIndex(charaindex);
-  if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) != CHAR_TYPEPLAYER)
+BOOL CHAR_CanCureFlg(int char_index, char *arg) {
+  int fd = getfdFromCharaIndex(char_index);
+  if (CHAR_getInt(char_index, CHAR_WHICHTYPE) != CHAR_TYPEPLAYER)
     return TRUE;
   if (getToxication(fd) == 1) {
     if (strstr(arg, "FALSE") == 0) {
       char buf[256];
       sprintf(buf, "因中毒无法补%s。", arg);
-      CHAR_talkToCli(charaindex, -1, buf, CHAR_COLORYELLOW);
+      CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
     }
     return FALSE;
   }
@@ -3360,42 +3361,42 @@ BOOL CHAR_CanCureFlg(int charaindex, char *arg) {
 }
 #endif
 
-INLINE int CHAR_AddMaxExp(int charaindex, int addexp) {
-  int Myexp = CHAR_getInt(charaindex, CHAR_EXP);
+INLINE int CHAR_AddMaxExp(int char_index, int addexp) {
+  int Myexp = CHAR_getInt(char_index, CHAR_EXP);
   Myexp = min(Myexp + addexp, 1224160000);
-  CHAR_setInt(charaindex, CHAR_EXP, Myexp);
+  CHAR_setInt(char_index, CHAR_EXP, Myexp);
   return addexp;
 }
 
-INLINE int CHAR_setMaxExpFromLevel(int charaindex, int level) {
+INLINE int CHAR_setMaxExpFromLevel(int char_index, int level) {
 #ifdef _NEWOPEN_MAXEXP
-  CHAR_setInt(charaindex, CHAR_EXP, 0);
+  CHAR_setInt(char_index, CHAR_EXP, 0);
   return 0;
 #else
   int LVexp;
-  if ((LVexp = CHAR_GetLevelExp(charaindex, level + 1)) < 0)
+  if ((LVexp = CHAR_GetLevelExp(char_index, level + 1)) < 0)
     return -1;
-  CHAR_setInt(charaindex, CHAR_EXP, LVexp);
+  CHAR_setInt(char_index, CHAR_EXP, LVexp);
   return LVexp;
 #endif
 }
 
-INLINE int CHAR_setMaxExp(int charaindex, unsigned long int Setexp) {
-  if (!CHAR_CHECKINDEX(charaindex))
+INLINE int CHAR_setMaxExp(int char_index, unsigned long int Setexp) {
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
-  CHAR_setInt(charaindex, CHAR_EXP, Setexp);
+  CHAR_setInt(char_index, CHAR_EXP, Setexp);
   return Setexp;
 }
 #ifdef _NEWOPEN_MAXEXP
-INLINE int CHAR_ChangeExp(int charaindex) {
+INLINE int CHAR_ChangeExp(int char_index) {
   int level, defexp, Myexp;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
 
-  level = CHAR_getInt(charaindex, CHAR_LV);
+  level = CHAR_getInt(char_index, CHAR_LV);
   if ((defexp = CHAR_GetOldLevelExp(level)) < 0)
     return -1;
-  Myexp = CHAR_getInt(charaindex, CHAR_OLDEXP);
+  Myexp = CHAR_getInt(char_index, CHAR_OLDEXP);
 
   if (Myexp > CHAR_GetOldLevelExp(level + 1)) {
     Myexp = 0;
@@ -3405,57 +3406,57 @@ INLINE int CHAR_ChangeExp(int charaindex) {
   if (Myexp < 0)
     Myexp = 0;
 
-  CHAR_setInt(charaindex, CHAR_EXP, Myexp);
-  CHAR_setInt(charaindex, CHAR_OLDEXP, 0);
+  CHAR_setInt(char_index, CHAR_EXP, Myexp);
+  CHAR_setInt(char_index, CHAR_OLDEXP, 0);
 
-  CHAR_send_P_StatusString(charaindex, CHAR_P_STRING_EXP | CHAR_P_STRING_LV);
+  CHAR_send_P_StatusString(char_index, CHAR_P_STRING_EXP | CHAR_P_STRING_LV);
   return Myexp;
 }
 
-INLINE int CHAR_HandleExp(int charaindex) {
+INLINE int CHAR_HandleExp(int char_index) {
   int needexp, level, Myexp;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
-  level = CHAR_getInt(charaindex, CHAR_LV);
-  Myexp = CHAR_getInt(charaindex, CHAR_EXP);
-  if ((needexp = CHAR_GetLevelExp(charaindex, level + 1)) == -1)
+  level = CHAR_getInt(char_index, CHAR_LV);
+  Myexp = CHAR_getInt(char_index, CHAR_EXP);
+  if ((needexp = CHAR_GetLevelExp(char_index, level + 1)) == -1)
     return -1;
   Myexp = Myexp - needexp;
   if (Myexp > 0) {
-    CHAR_earnFame(charaindex, needexp / 20000);
+    CHAR_earnFame(char_index, needexp / 20000);
   }
   if (Myexp < 0)
     Myexp = 0;
-  CHAR_setInt(charaindex, CHAR_EXP, Myexp);
+  CHAR_setInt(char_index, CHAR_EXP, Myexp);
   return Myexp;
 }
 #endif
 
-INLINE int _CHAR_AddPileItem(char *file, int line, int charaindex,
-                             int itemindex) {
+INLINE int _CHAR_AddPileItem(char *file, int line, int char_index,
+                             int item_index) {
 #ifdef _ITEM_PILENUMS
   int itempile, mypile, surplus, ret = -1;
 
-  surplus = CHAR_findSurplusItemBox(charaindex);
-  itempile = ITEM_getInt(itemindex, ITEM_USEPILENUMS);
-  mypile = CHAR_getMyMaxPilenum(charaindex);
+  surplus = CHAR_findSurplusItemBox(char_index);
+  itempile = ITEM_getInt(item_index, ITEM_USEPILENUMS);
+  mypile = CHAR_getMyMaxPilenum(char_index);
 
   if (itempile > (surplus * mypile) || itempile <= 0) {
     return -1;
   }
 
   if (mypile >= itempile) {
-    ret = CHAR_addItemSpecificItemIndex(charaindex, itemindex);
-    if (ret < 0 || ret >= CheckCharMaxItem(charaindex)) {
-      ITEM_endExistItemsOne(itemindex);
+    ret = CHAR_addItemSpecificItemIndex(char_index, item_index);
+    if (ret < 0 || ret >= CheckCharMaxItem(char_index)) {
+      ITEM_endExistItemsOne(item_index);
       return -1;
     }
-    CHAR_sendItemDataOne(charaindex, ret);
+    CHAR_sendItemDataOne(char_index, ret);
   } else {
     int newindex[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
     int i, ti = 0, ItemID, MaxPile;
     MaxPile = itempile;
-    ItemID = ITEM_getInt(itemindex, ITEM_ID);
+    ItemID = ITEM_getInt(item_index, ITEM_ID);
     while (MaxPile > 0) {
       if (ti >= 10)
         return -1;
@@ -3473,54 +3474,54 @@ INLINE int _CHAR_AddPileItem(char *file, int line, int charaindex,
     for (i = 0; i < 10; i++) {
       if (newindex[i] == -1)
         break;
-      ret = CHAR_addItemSpecificItemIndex(charaindex, newindex[i]);
-      if (ret < 0 || ret >= CheckCharMaxItem(charaindex)) {
+      ret = CHAR_addItemSpecificItemIndex(char_index, newindex[i]);
+      if (ret < 0 || ret >= CheckCharMaxItem(char_index)) {
         ITEM_endExistItemsOne(newindex[i]);
         return -1;
       }
-      CHAR_sendItemDataOne(charaindex, ret);
+      CHAR_sendItemDataOne(char_index, ret);
     }
-    ITEM_endExistItemsOne(itemindex);
+    ITEM_endExistItemsOne(item_index);
   }
   return ret;
 #endif
 }
 
-INLINE int _CHAR_DelItem(char *file, int line, int charaindex, int ti, int num,
+INLINE int _CHAR_DelItem(char *file, int line, int char_index, int ti, int num,
                          int flg) {
   //  char token[256];
   int pilenum;
-  int itemindex = CHAR_getItemIndex(charaindex, ti);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, ti);
+  if (!ITEM_CHECKINDEX(item_index))
     return 0;
 #ifdef _ITEM_PILENUMS
-  pilenum = ITEM_getInt(itemindex, ITEM_USEPILENUMS);
+  pilenum = ITEM_getInt(item_index, ITEM_USEPILENUMS);
   if (pilenum < num)
     return FALSE;
   pilenum = pilenum - num;
-  ITEM_setInt(itemindex, ITEM_USEPILENUMS, pilenum);
+  ITEM_setInt(item_index, ITEM_USEPILENUMS, pilenum);
   if (pilenum <= 0) {
 #endif
     /*
         if( flg == 1 ){
-          sprintf( token, "交出%s。", ITEM_getChar( itemindex, ITEM_NAME));
-          CHAR_talkToCli( charaindex, -1, token, CHAR_COLORYELLOW);
+          sprintf( token, "交出%s。", ITEM_getChar( item_index, ITEM_NAME));
+          CHAR_talkToCli( char_index, -1, token, CHAR_COLORYELLOW);
         }
     */
-    CHAR_setItemIndex(charaindex, ti, -1);
-    ITEM_endExistItemsOne(itemindex);
+    CHAR_setItemIndex(char_index, ti, -1);
+    ITEM_endExistItemsOne(item_index);
 #ifdef _ITEM_PILENUMS
   }
 #endif
-  CHAR_sendItemDataOne(charaindex, ti);
+  CHAR_sendItemDataOne(char_index, ti);
 
   return 1;
 }
 
-int CHAR_getMaxHaveGold(int charaindex) {
+int CHAR_getMaxHaveGold(int char_index) {
   int MaxGold;
 #ifdef _FIX_MAX_GOLD // WON ADD 增加人物金钱上限
-  int trans = CHAR_getInt(charaindex, CHAR_TRANSMIGRATION);
+  int trans = CHAR_getInt(char_index, CHAR_TRANSMIGRATION);
   switch (trans) {
   case 0:
     MaxGold = 1000000;
@@ -3548,62 +3549,62 @@ int CHAR_getMaxHaveGold(int charaindex) {
   return MaxGold;
 }
 
-INLINE int _CHAR_AddGold(char *file, int line, int charaindex, int gold) {
+INLINE int _CHAR_AddGold(char *file, int line, int char_index, int gold) {
   char token[256];
   int MyGold, MaxGold;
 
-  MaxGold = CHAR_getMaxHaveGold(charaindex);
-  MyGold = CHAR_getInt(charaindex, CHAR_GOLD);
+  MaxGold = CHAR_getMaxHaveGold(char_index);
+  MyGold = CHAR_getInt(char_index, CHAR_GOLD);
   MyGold = (MyGold > MaxGold) ? MaxGold : MyGold;
   gold = (gold > MaxGold) ? MaxGold : gold;
   sprintf(token, "得到%d石币", gold);
-  CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
+  CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
   MyGold += gold;
 
   if (MyGold > MaxGold) {
     int reGolds = 0;
-    int MyGBGold = CHAR_getInt(charaindex, CHAR_PERSONAGOLD);
+    int MyGBGold = CHAR_getInt(char_index, CHAR_PERSONAGOLD);
     reGolds = MyGold - MaxGold;
     MyGBGold += reGolds;
     MyGBGold =
         (MyGBGold > CHAR_MAXPERSONAGOLD) ? CHAR_MAXPERSONAGOLD : MyGBGold;
-    CHAR_setInt(charaindex, CHAR_PERSONAGOLD, MyGBGold);
+    CHAR_setInt(char_index, CHAR_PERSONAGOLD, MyGBGold);
     sprintf(token, "存款：%d ，银行剩余：%d 。", reGolds,
-            CHAR_getInt(charaindex, CHAR_PERSONAGOLD));
-    CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-    LogBankStone(CHAR_getChar(charaindex, CHAR_NAME),
-                 CHAR_getChar(charaindex, CHAR_CDKEY), charaindex, reGolds,
-                 "GB_Bank_save(宝箱)", CHAR_getInt(charaindex, CHAR_FLOOR),
-                 CHAR_getInt(charaindex, CHAR_X),
-                 CHAR_getInt(charaindex, CHAR_Y),
-                 CHAR_getInt(charaindex, CHAR_GOLD),
-                 CHAR_getInt(charaindex, CHAR_PERSONAGOLD));
+            CHAR_getInt(char_index, CHAR_PERSONAGOLD));
+    CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
+    LogBankStone(CHAR_getChar(char_index, CHAR_NAME),
+                 CHAR_getChar(char_index, CHAR_CDKEY), char_index, reGolds,
+                 "GB_Bank_save(宝箱)", CHAR_getInt(char_index, CHAR_FLOOR),
+                 CHAR_getInt(char_index, CHAR_X),
+                 CHAR_getInt(char_index, CHAR_Y),
+                 CHAR_getInt(char_index, CHAR_GOLD),
+                 CHAR_getInt(char_index, CHAR_PERSONAGOLD));
     MyGold = MaxGold;
   }
-  CHAR_setInt(charaindex, CHAR_GOLD, MyGold);
-  CHAR_send_P_StatusString(charaindex, CHAR_P_STRING_GOLD);
+  CHAR_setInt(char_index, CHAR_GOLD, MyGold);
+  CHAR_send_P_StatusString(char_index, CHAR_P_STRING_GOLD);
 
   return 1;
 }
 
-INLINE int _CHAR_DelGold(char *file, int line, int charaindex, int gold) {
+INLINE int _CHAR_DelGold(char *file, int line, int char_index, int gold) {
   char token[256];
   int MyGold, MaxGold;
 
-  MaxGold = CHAR_getMaxHaveGold(charaindex);
-  MyGold = CHAR_getInt(charaindex, CHAR_GOLD);
+  MaxGold = CHAR_getMaxHaveGold(char_index);
+  MyGold = CHAR_getInt(char_index, CHAR_GOLD);
   MyGold = (MyGold > MaxGold) ? MaxGold : MyGold;
   gold = (gold > MaxGold) ? MaxGold : gold;
 
   if (MyGold < gold) {
     sprintf(token, "没有足够的石币！(%d石币)", gold);
-    CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
+    CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
     return 0;
   }
   MyGold -= gold;
   MyGold = (MyGold < 0) ? 0 : MyGold;
-  CHAR_setInt(charaindex, CHAR_GOLD, MyGold);
-  CHAR_send_P_StatusString(charaindex, CHAR_P_STRING_GOLD);
+  CHAR_setInt(char_index, CHAR_GOLD, MyGold);
+  CHAR_send_P_StatusString(char_index, CHAR_P_STRING_GOLD);
   return 1;
 }
 
@@ -3655,46 +3656,46 @@ void CHAR_removeHaveDepotItem(Char *ch) {
   ch->indexOfExistDepotItems = NULL;
 }
 
-void CHAR_removeDepotItem(int charaindex) {
-  int i, itemindex;
+void CHAR_removeDepotItem(int char_index) {
+  int i, item_index;
   Char *ch = NULL;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return;
-  if (!CHAR_CheckDepotItem(charaindex))
+  if (!CHAR_CheckDepotItem(char_index))
     return; // 仓库未存在
-  ch = CHAR_getCharPointer(charaindex);
+  ch = CHAR_getCharPointer(char_index);
   if (ch == NULL) {
-    print("removeDepotItem err ch == NULL :%d\n", charaindex);
+    print("removeDepotItem err ch == NULL :%d\n", char_index);
     return;
   }
 
   for (i = 0; i < CHAR_MAXDEPOTITEMHAVE; i++) {
-    itemindex = CHAR_getDepotItemIndex(charaindex, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = CHAR_getDepotItemIndex(char_index, i);
+    if (!ITEM_CHECKINDEX(item_index))
       continue;
-    ITEM_endExistItemsOne(itemindex);
+    ITEM_endExistItemsOne(item_index);
   }
   CHAR_removeHaveDepotItem(ch);
 }
 
-char *CHAR_makeDepotItemFromCharIndex(int charaindex) {
+char *CHAR_makeDepotItemFromCharIndex(int char_index) {
   char linedata[2048];
   char *itemstring = "\0";
-  int i, itemindex, strlength = 0;
+  int i, item_index, strlength = 0;
   Char *ch = NULL;
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return "\0";
-  ch = CHAR_getCharPointer(charaindex);
+  ch = CHAR_getCharPointer(char_index);
   if (ch == NULL) {
-    print("makeDepotItem err ch == NULL :%d\n", charaindex);
+    print("makeDepotItem err ch == NULL :%d\n", char_index);
     return "\0";
   }
 
   memset(CHAR_dataString, 0, sizeof(CHAR_dataString));
   for (i = 0; i < CHAR_MAXDEPOTITEMHAVE; i++) {
-    itemindex = ch->indexOfExistDepotItems[i];
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = ch->indexOfExistDepotItems[i];
+    if (!ITEM_CHECKINDEX(item_index))
       continue;
     itemstring = ITEM_makeStringFromItemIndex(ch->indexOfExistDepotItems[i], 0);
     if (itemstring == "\0")
@@ -3713,19 +3714,19 @@ char *CHAR_makeDepotItemFromCharIndex(int charaindex) {
   return CHAR_dataString;
 }
 
-BOOL CHAR_makeDepotItemStringToChar(int charaindex, char *data) {
-  int readindex = 1, itemindex;
+BOOL CHAR_makeDepotItemStringToChar(int char_index, char *data) {
+  int readindex = 1, item_index;
   Char *ch = NULL;
   BOOL ret;
   char firstToken[256], secondToken[4096], linebuf[4096];
 
   if (data[0] == '\0')
     return -1;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
-  ch = CHAR_getCharPointer(charaindex);
+  ch = CHAR_getCharPointer(char_index);
   if (ch == NULL) {
-    print("makeDepotItem err ch == NULL :%d\n", charaindex);
+    print("makeDepotItem err ch == NULL :%d\n", char_index);
     return FALSE;
   }
 
@@ -3750,17 +3751,17 @@ BOOL CHAR_makeDepotItemStringToChar(int charaindex, char *data) {
                 strlen(DEPOTITEMRESERVESTRING)) == 0) {
       if (strcmp(secondToken, "0") == 0)
         goto NEXT;
-      itemindex = atoi(firstToken + strlen(DEPOTITEMRESERVESTRING));
-      if (itemindex < 0 || CHAR_MAXDEPOTITEMHAVE <= itemindex ||
-          ch->indexOfExistDepotItems[itemindex] != -1) {
+      item_index = atoi(firstToken + strlen(DEPOTITEMRESERVESTRING));
+      if (item_index < 0 || CHAR_MAXDEPOTITEMHAVE <= item_index ||
+          ch->indexOfExistDepotItems[item_index] != -1) {
         ;
       } else {
         ITEM_Item itmone;
         ret = ITEM_makeExistItemsFromStringToArg(secondToken, &itmone, 0);
         if (ret == TRUE) {
-          int existitemindex;
-          existitemindex = ITEM_initExistItemsOne(&itmone);
-          ch->indexOfExistDepotItems[itemindex] = existitemindex;
+          int existitem_index;
+          existitem_index = ITEM_initExistItemsOne(&itmone);
+          ch->indexOfExistDepotItems[item_index] = existitem_index;
         }
       }
       goto NEXT;
@@ -3772,90 +3773,90 @@ BOOL CHAR_makeDepotItemStringToChar(int charaindex, char *data) {
   return TRUE;
 }
 
-void CHAR_ShowMyDepotItems(int charaindex) {
-  int i, itemindex;
+void CHAR_ShowMyDepotItems(int char_index) {
+  int i, item_index;
 
   print("\nShowMyDepotItems:\n");
-  if (!CHAR_CheckDepotItem(charaindex))
+  if (!CHAR_CheckDepotItem(char_index))
     return;
   for (i = 0; i < CHAR_MAXDEPOTITEMHAVE; i++) {
-    itemindex = CHAR_getDepotItemIndex(charaindex, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = CHAR_getDepotItemIndex(char_index, i);
+    if (!ITEM_CHECKINDEX(item_index))
       continue;
-    print("DEPOT%d: %d-%s\n", i, itemindex, ITEM_getChar(itemindex, ITEM_NAME));
+    print("DEPOT%d: %d-%s\n", i, item_index, ITEM_getChar(item_index, ITEM_NAME));
   }
 }
 
-int CHAR_getfindEmptyDepotItem(int charaindex) {
-  int i, itemindex, cnt = 0;
-  if (!CHAR_CheckDepotItem(charaindex))
+int CHAR_getfindEmptyDepotItem(int char_index) {
+  int i, item_index, cnt = 0;
+  if (!CHAR_CheckDepotItem(char_index))
     return cnt;
   for (i = 0; i < /*60*/ CHAR_MAXDEPOTITEMHAVE; i++) {
-    itemindex = CHAR_getDepotItemIndex(charaindex, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = CHAR_getDepotItemIndex(char_index, i);
+    if (!ITEM_CHECKINDEX(item_index))
       cnt++;
   }
   return cnt;
 }
 
-int CHAR_findEmptyDepotItem(int charaindex) {
-  int i, itemindex;
-  if (!CHAR_CheckDepotItem(charaindex))
+int CHAR_findEmptyDepotItem(int char_index) {
+  int i, item_index;
+  if (!CHAR_CheckDepotItem(char_index))
     return -1;
   for (i = 0; i < CHAR_MAXDEPOTITEMHAVE; i++) {
-    itemindex = CHAR_getDepotItemIndex(charaindex, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = CHAR_getDepotItemIndex(char_index, i);
+    if (!ITEM_CHECKINDEX(item_index))
       return i;
   }
   return -1;
 }
 
-BOOL CHAR_SaveDepotItem(int charaindex) {
+BOOL CHAR_SaveDepotItem(int char_index) {
   char *databuf = "\0";
   char *CdKey = "\0";
   int fd;
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
-  fd = getfdFromCharaIndex(charaindex);
-  if (!CHAR_CheckDepotItem(charaindex))
+  fd = getfdFromCharaIndex(char_index);
+  if (!CHAR_CheckDepotItem(char_index))
     return FALSE; // 仓库未存在
-  if ((CdKey = CHAR_getChar(charaindex, CHAR_CDKEY)) == "\0")
+  if ((CdKey = CHAR_getChar(char_index, CHAR_CDKEY)) == "\0")
     return FALSE;
-  if ((databuf = CHAR_makeDepotItemFromCharIndex(charaindex)) == "\0") {
-    CHAR_removeDepotItem(charaindex);
+  if ((databuf = CHAR_makeDepotItemFromCharIndex(char_index)) == "\0") {
+    CHAR_removeDepotItem(char_index);
     return FALSE;
   }
-  saacproto_ACCharSavePoolItem_send(acfd, charaindex, CONNECT_getFdid(fd),
+  SaacClient_ACCharSavePoolItem_send(acfd, char_index, CONNECT_getFdid(fd),
                                     CdKey, databuf);
-  CHAR_removeDepotItem(charaindex);
+  CHAR_removeDepotItem(char_index);
 
   return TRUE;
 }
 
-BOOL CHAR_GetDepotItem(int meindex, int charaindex) {
+BOOL CHAR_GetDepotItem(int meindex, int char_index) {
   char *CdKey = "\0";
   int fd;
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
-  fd = getfdFromCharaIndex(charaindex);
-  if (CHAR_CheckDepotItem(charaindex))
+  fd = getfdFromCharaIndex(char_index);
+  if (CHAR_CheckDepotItem(char_index))
     return FALSE; // 仓库已存在
-  if ((CdKey = CHAR_getChar(charaindex, CHAR_CDKEY)) == "\0")
+  if ((CdKey = CHAR_getChar(char_index, CHAR_CDKEY)) == "\0")
     return FALSE;
 
   // 向AC要仓库资料
-  saacproto_ACCharGetPoolItem_send(acfd, meindex, charaindex,
+  SaacClient_ACCharGetPoolItem_send(acfd, meindex, char_index,
                                    CONNECT_getFdid(fd), CdKey);
   return TRUE;
 }
 
-BOOL CHAR_CheckDepotItem(int charaindex) {
+BOOL CHAR_CheckDepotItem(int char_index) {
   Char *ch = NULL;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
-  if ((ch = CHAR_getCharPointer(charaindex)) == NULL)
+  if ((ch = CHAR_getCharPointer(char_index)) == NULL)
     return FALSE;
   if (ch->indexOfExistDepotItems == NULL)
     return FALSE;
@@ -3911,21 +3912,21 @@ void CHAR_removeHaveDepotPet(Char *ch) {
   ch->indexOfExistDepotPets = NULL;
 }
 
-void CHAR_removeDepotPet(int charaindex) {
+void CHAR_removeDepotPet(int char_index) {
   int i, petindex;
   Char *ch = NULL;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return;
-  if (!CHAR_CheckDepotPet(charaindex))
+  if (!CHAR_CheckDepotPet(char_index))
     return; // 仓库未存在
-  ch = CHAR_getCharPointer(charaindex);
+  ch = CHAR_getCharPointer(char_index);
   if (ch == NULL) {
-    print("removeDepotPet err ch == NULL :%d\n", charaindex);
+    print("removeDepotPet err ch == NULL :%d\n", char_index);
     return;
   }
 
   for (i = 0; i < CHAR_MAXDEPOTPETHAVE; i++) {
-    petindex = CHAR_getDepotPetIndex(charaindex, i);
+    petindex = CHAR_getDepotPetIndex(char_index, i);
     if (!CHAR_CHECKINDEX(petindex))
       continue;
     CHAR_endCharOneArray(petindex);
@@ -3933,17 +3934,17 @@ void CHAR_removeDepotPet(int charaindex) {
   CHAR_removeHaveDepotPet(ch);
 }
 
-char *CHAR_makeDepotPetFromCharIndex(int charaindex) {
+char *CHAR_makeDepotPetFromCharIndex(int char_index) {
   char linedata[1024 * 8];
   char *petstring = "\0";
   int i, petindex, strlength = 0;
   Char *ch = NULL;
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return "\0";
-  ch = CHAR_getCharPointer(charaindex);
+  ch = CHAR_getCharPointer(char_index);
   if (ch == NULL) {
-    print("makeDepotPet err ch == NULL :%d\n", charaindex);
+    print("makeDepotPet err ch == NULL :%d\n", char_index);
     return "\0";
   }
 
@@ -3969,7 +3970,7 @@ char *CHAR_makeDepotPetFromCharIndex(int charaindex) {
   return CHAR_dataString;
 }
 
-BOOL CHAR_makeDepotPetStringToChar(int charaindex, char *data) {
+BOOL CHAR_makeDepotPetStringToChar(int char_index, char *data) {
   int readindex = 1, petindex;
   Char *ch = NULL;
   BOOL ret;
@@ -3977,11 +3978,11 @@ BOOL CHAR_makeDepotPetStringToChar(int charaindex, char *data) {
 
   if (data[0] == '\0')
     return -1;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
-  ch = CHAR_getCharPointer(charaindex);
+  ch = CHAR_getCharPointer(char_index);
   if (ch == NULL) {
-    print("makeDepotPet err ch == NULL :%d\n", charaindex);
+    print("makeDepotPet err ch == NULL :%d\n", char_index);
     return FALSE;
   }
 
@@ -4017,7 +4018,7 @@ BOOL CHAR_makeDepotPetStringToChar(int charaindex, char *data) {
           int existpetindex;
           existpetindex = PET_initCharOneArray(&petone);
           ch->indexOfExistDepotPets[petindex] = existpetindex;
-          CHAR_setWorkInt(existpetindex, CHAR_WORKPLAYERINDEX, charaindex);
+          CHAR_setWorkInt(existpetindex, CHAR_WORKPLAYERINDEX, char_index);
           CHAR_complianceParameter(existpetindex);
         }
       }
@@ -4030,14 +4031,14 @@ BOOL CHAR_makeDepotPetStringToChar(int charaindex, char *data) {
   return TRUE;
 }
 
-void CHAR_ShowMyDepotPets(int charaindex) {
+void CHAR_ShowMyDepotPets(int char_index) {
   int i, petindex;
 
   print("\nShowMyDepotPets:\n");
-  if (!CHAR_CheckDepotPet(charaindex))
+  if (!CHAR_CheckDepotPet(char_index))
     return;
   for (i = 0; i < CHAR_MAXDEPOTPETHAVE; i++) {
-    petindex = CHAR_getDepotPetIndex(charaindex, i);
+    petindex = CHAR_getDepotPetIndex(char_index, i);
     if (!CHAR_CHECKINDEX(petindex))
       continue;
     print("DEPOTPET%d: %d-%s\n", i, petindex,
@@ -4045,76 +4046,75 @@ void CHAR_ShowMyDepotPets(int charaindex) {
   }
 }
 
-int CHAR_getfindEmptyDepotPet(int charaindex) {
+int CHAR_getfindEmptyDepotPet(int char_index) {
   int i, petindex, cnt = 0;
-  if (!CHAR_CheckDepotPet(charaindex))
+  if (!CHAR_CheckDepotPet(char_index))
     return cnt;
   for (i = 0; i < CHAR_MAXDEPOTPETHAVE; i++) {
-    petindex = CHAR_getDepotPetIndex(charaindex, i);
+    petindex = CHAR_getDepotPetIndex(char_index, i);
     if (!CHAR_CHECKINDEX(petindex))
       cnt++;
   }
   return cnt;
 }
 
-int CHAR_findEmptyDepotPet(int charaindex) {
+int CHAR_findEmptyDepotPet(int char_index) {
   int i, petindex;
-  if (!CHAR_CheckDepotPet(charaindex))
+  if (!CHAR_CheckDepotPet(char_index))
     return -1;
   for (i = 0; i < CHAR_MAXDEPOTPETHAVE; i++) {
-    petindex = CHAR_getDepotPetIndex(charaindex, i);
+    petindex = CHAR_getDepotPetIndex(char_index, i);
     if (!CHAR_CHECKINDEX(petindex))
       return i;
   }
   return -1;
 }
 
-BOOL CHAR_SaveDepotPet(int charaindex) {
+BOOL CHAR_SaveDepotPet(int char_index) {
   char *databuf = "\0";
   char *CdKey = "\0";
   int fd;
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
-  fd = getfdFromCharaIndex(charaindex);
-  if (!CHAR_CheckDepotPet(charaindex))
+  fd = getfdFromCharaIndex(char_index);
+  if (!CHAR_CheckDepotPet(char_index))
     return FALSE; // 仓库未存在
-  if ((CdKey = CHAR_getChar(charaindex, CHAR_CDKEY)) == "\0")
+  if ((CdKey = CHAR_getChar(char_index, CHAR_CDKEY)) == "\0")
     return FALSE;
-  if ((databuf = CHAR_makeDepotPetFromCharIndex(charaindex)) == "\0") {
-    CHAR_removeDepotPet(charaindex);
+  if ((databuf = CHAR_makeDepotPetFromCharIndex(char_index)) == "\0") {
+    CHAR_removeDepotPet(char_index);
     return FALSE;
   }
-  saacproto_ACCharSavePoolPet_send(acfd, charaindex, CONNECT_getFdid(fd), CdKey,
+  SaacClient_ACCharSavePoolPet_send(acfd, char_index, CONNECT_getFdid(fd), CdKey,
                                    databuf);
-  CHAR_removeDepotPet(charaindex);
+  CHAR_removeDepotPet(char_index);
 
   return TRUE;
 }
 
-BOOL CHAR_GetDepotPet(int meindex, int charaindex) {
+BOOL CHAR_GetDepotPet(int meindex, int char_index) {
   char *CdKey = "\0";
   int fd;
-
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
-  fd = getfdFromCharaIndex(charaindex);
-  if (CHAR_CheckDepotPet(charaindex))
+  fd = getfdFromCharaIndex(char_index);
+  if (CHAR_CheckDepotPet(char_index))
     return FALSE; // 仓库已存在
-  if ((CdKey = CHAR_getChar(charaindex, CHAR_CDKEY)) == "\0")
+  if ((CdKey = CHAR_getChar(char_index, CHAR_CDKEY)) == "\0")
     return FALSE;
 
   // 向AC要仓库资料
-  saacproto_ACCharGetPoolPet_send(acfd, meindex, charaindex,
+  SaacClient_ACCharGetPoolPet_send(acfd, meindex, char_index,
                                   CONNECT_getFdid(fd), CdKey);
   return TRUE;
 }
 
-BOOL CHAR_CheckDepotPet(int charaindex) {
+BOOL CHAR_CheckDepotPet(int char_index) {
   Char *ch = NULL;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
-  if ((ch = CHAR_getCharPointer(charaindex)) == NULL)
+  if ((ch = CHAR_getCharPointer(char_index)) == NULL)
     return FALSE;
   if (ch->indexOfExistDepotPets == NULL)
     return FALSE;
@@ -4181,18 +4181,18 @@ int CHAR_getStreetVendor(int charindex, int index, int set) {
 #endif
 
 #ifdef _CHAR_POOLPET
-int CHAR_getCharDepotPetElement(int charaindex) {
+int CHAR_getCharDepotPetElement(int char_index) {
   int i;
   int limit;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
 
   // andy_reEdit 2003/09/18
-  // limit = (CHAR_getInt(charaindex,CHAR_TRANSMIGRATION)*2)+5;
+  // limit = (CHAR_getInt(char_index,CHAR_TRANSMIGRATION)*2)+5;
   // limit = min( limit, CHAR_MAXPOOLPETHAVE);
   limit = CHAR_MAXDEPOTPETHAVE;
   for (i = 0; i < limit; i++) {
-    if (CHAR_getDepotPetIndex(charaindex, i) == -1)
+    if (CHAR_getDepotPetIndex(char_index, i) == -1)
       break;
   }
   return (i == limit ? -1 : i);
@@ -4510,15 +4510,15 @@ int CheckCharMaxItemChar(Char *ch) {
 #endif
 
 #ifdef _MO_LNS_CHARSUOXU
-int CHAR_getEmptyPetBoxNum(int charaindex) {
-  if (!CHAR_CHECKINDEX(charaindex))
+int CHAR_getEmptyPetBoxNum(int char_index) {
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
 
   int i = 0;
   int EmptyNum = 0;
 
   for (; i < CHAR_MAXPETHAVE; i++) {
-    if (CHAR_getCharPet(charaindex, i) == -1)
+    if (CHAR_getCharPet(char_index, i) == -1)
       continue;
     EmptyNum++;
   }
@@ -4526,62 +4526,61 @@ int CHAR_getEmptyPetBoxNum(int charaindex) {
   return EmptyNum;
 }
 
-int CHAR_getEmptyItemBoxNum(int charaindex) {
-  if (!CHAR_CHECKINDEX(charaindex))
+int CHAR_getEmptyItemBoxNum(int char_index) {
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
 
   int i = CHAR_STARTITEMARRAY;
   int EmptyNum = 0;
-  int itemNum = CheckCharMaxItem(charaindex);
+  int itemNum = CheckCharMaxItem(char_index);
   for (; i < itemNum; i++) {
-    if (CHAR_getItemIndex(charaindex, i) != -1)
+    if (CHAR_getItemIndex(char_index, i) != -1)
       continue;
     EmptyNum++;
   }
 
   return EmptyNum;
 }
-int CHAR_getPlayerPetNum(int charaindex, int petid) {
-  if (!CHAR_CHECKINDEX(charaindex))
+int CHAR_getPlayerPetNum(int char_index, int petid) {
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
 
   int i = 0;
   int EmptyNum = 0;
 
   for (; i < CHAR_MAXPETHAVE; i++) {
-    if (CHAR_getCharPet(charaindex, i) == -1)
+    if (CHAR_getCharPet(char_index, i) == -1)
       continue;
 
-    if (CHAR_getInt(CHAR_getCharPet(charaindex, i), CHAR_PETID) == petid)
+    if (CHAR_getInt(CHAR_getCharPet(char_index, i), CHAR_PETID) == petid)
       EmptyNum++;
   }
 
   return EmptyNum;
 }
 
-int CHAR_getPlayerItemNum(int charaindex, int itemid, BOOL IsContainEquip,
+int CHAR_getPlayerItemNum(int char_index, int itemid, BOOL IsContainEquip,
                           BOOL IsContainPile) {
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
-
   int i = 0;
   int EmptyNum = 0;
-  int itemindex = 0;
+  int item_index = 0;
   if (IsContainEquip)
     i = 0;
   else
     i = CHAR_STARTITEMARRAY;
-  int itemMax = CheckCharMaxItem(charaindex);
+  int itemMax = CheckCharMaxItem(char_index);
   for (; i < itemMax; i++) {
-    itemindex = CHAR_getItemIndex(charaindex, i);
-    if (itemindex == -1)
+    item_index = CHAR_getItemIndex(char_index, i);
+    if (item_index == -1)
       continue;
     if (!IsContainPile) {
-      if (ITEM_getInt(itemindex, ITEM_ID) == itemid)
+      if (ITEM_getInt(item_index, ITEM_ID) == itemid)
         EmptyNum++;
     } else {
-      if (ITEM_getInt(itemindex, ITEM_ID) == itemid)
-        EmptyNum += ITEM_getInt(itemindex, ITEM_USEPILENUMS);
+      if (ITEM_getInt(item_index, ITEM_ID) == itemid)
+        EmptyNum += ITEM_getInt(item_index, ITEM_USEPILENUMS);
     }
   }
 
@@ -4617,61 +4616,55 @@ int CHAR_CheckLearnCode(int charindex, int ridno) {
       }
     }
   }
-
   return -1;
 }
 
 #ifdef _NEW_TITLE
-void CHAR_SetNewTitleUse(int charaindex, int id) {
+void CHAR_SetNewTitleUse(int char_index, int id) {
 #ifdef _CHAR_TITLE_STR_
   char data[256];
   int titleindex;
-  titleindex = GetCharNewTitleNo(charaindex, id);
+  titleindex = GetCharNewTitleNo(char_index, id);
   if (titleindex) {
-    CHAR_setInt(charaindex, CHAR_TITLE_, titleindex);
+    CHAR_setInt(char_index, CHAR_TITLE_, titleindex);
     sprintf(data, "%d|0#@#@#@#@", titleindex);
-    int fd = getfdFromCharaIndex(charaindex);
-    lssproto_CharTitle_send(fd, data);
+    int fd = getfdFromCharaIndex(char_index);
+    GmsvServer_CharTitle_send(fd, data);
     CHAR_sendCToArroundCharacter(
-        CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX));
+        CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
   }
 #else
   char data[256];
-  int tudang = GetCharNewTitleNo(charaindex, id);
+  int tudang = GetCharNewTitleNo(char_index, id);
   if (tudang) {
-    CHAR_setInt(charaindex, CHAR_TITLE_DEFAULT, tudang);
-
-    sprintf(data, "4|%d", CHAR_getInt(charaindex, CHAR_TITLE_DEFAULT));
-    lssproto_CHAREFFECT_send(getfdFromCharaIndex(charaindex), data);
-
+    CHAR_setInt(char_index, CHAR_TITLE_DEFAULT, tudang);
+    sprintf(data, "4|%d", CHAR_getInt(char_index, CHAR_TITLE_DEFAULT));
+    GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(char_index), data);
     char data[126];
     sprintf(data, "%d|0#@#@#@#@", tudang);
-    int fd = getfdFromCharaIndex(charaindex);
-    lssproto_CharTitle_send(fd, data);
+    int fd = getfdFromCharaIndex(char_index);
+    GmsvServer_CharTitle_send(fd, data);
   }
 #endif
 }
 
-void CHAR_CancelNewTitle(int charaindex) {
+void CHAR_CancelNewTitle(int char_index) {
 #ifdef _CHAR_TITLE_STR_
-  CHAR_setInt(charaindex, CHAR_TITLE_DEFAULT, 0);
-  CHAR_setInt(charaindex, CHAR_TITLE_, 0);
-  CHAR_sendCToArroundCharacter(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX));
+  CHAR_setInt(char_index, CHAR_TITLE_DEFAULT, 0);
+  CHAR_setInt(char_index, CHAR_TITLE_, 0);
+  CHAR_sendCToArroundCharacter(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
   char data[126];
   sprintf(data, "0|0#@#@#@#@");
-  int fd = getfdFromCharaIndex(charaindex);
-  lssproto_CharTitle_send(fd, data);
-
-//  lssproto_CHAREFFECT_send(getfdFromCharaIndex(charaindex), "");
-//  print("CHAR_CancelNewTitle已发送");
+  int fd = getfdFromCharaIndex(char_index);
+  GmsvServer_CharTitle_send(fd, data);
 #else
   char data[256];
-  CHAR_setInt(charaindex, CHAR_TITLE_DEFAULT, 0);
-  sprintf(data, "4|%d", CHAR_getInt(charaindex, CHAR_TITLE_DEFAULT));
-  lssproto_CHAREFFECT_send(getfdFromCharaIndex(charaindex), data);
+  CHAR_setInt(char_index, CHAR_TITLE_DEFAULT, 0);
+  sprintf(data, "4|%d", CHAR_getInt(char_index, CHAR_TITLE_DEFAULT));
+  GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(char_index), data);
   sprintf(data, "%d|0#@#@#@#@", 0);
-  int fd = getfdFromCharaIndex(charaindex);
-  lssproto_CharTitle_send(fd, data);
+  int fd = getfdFromCharaIndex(char_index);
+  GmsvServer_CharTitle_send(fd, data);
 #endif
 }
 #endif

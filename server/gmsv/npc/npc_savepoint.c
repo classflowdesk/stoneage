@@ -9,7 +9,7 @@
 #include "title.h"
 #include "char_data.h"
 #include "readmap.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "log.h"
 #include "config_file.h"
 #define RANGE 2
@@ -464,7 +464,7 @@ void NPC_MessageDisp(int meindex,int talker,int MesNo)
 		break;
 
 	}
-		lssproto_WN_send( fd, windowtype, 
+		GmsvServer_WN_send( fd, windowtype, 
 						buttontype, 
 						windowno,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -476,7 +476,7 @@ void NPC_MessageDisp(int meindex,int talker,int MesNo)
 BOOL NPC_SavePointItemDelete(int meindex,int talker,int itemNo,int kosuu)
 {
 	int i;
-	int itemindex;
+	int item_index;
 	int id;
 	int cnt=0;
 	
@@ -487,9 +487,9 @@ BOOL NPC_SavePointItemDelete(int meindex,int talker,int itemNo,int kosuu)
 	for( i = CHAR_STARTITEMARRAY; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
 
-		itemindex=CHAR_getItemIndex( talker , i );
-		if( ITEM_CHECKINDEX(itemindex) ){
-			id=ITEM_getInt(itemindex ,ITEM_ID );
+		item_index=CHAR_getItemIndex( talker , i );
+		if( ITEM_CHECKINDEX(item_index) ){
+			id=ITEM_getInt(item_index ,ITEM_ID );
 			if(itemNo==id){
 				cnt++;
 				{
@@ -497,17 +497,17 @@ BOOL NPC_SavePointItemDelete(int meindex,int talker,int itemNo,int kosuu)
 					CHAR_getChar( talker, CHAR_NAME ),
 					CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-					itemindex,
+					item_index,
 #else
-	       			ITEM_getInt( itemindex, ITEM_ID ),
+	       			ITEM_getInt( item_index, ITEM_ID ),
 #endif
 					"SP_DelItem(交给记录点记录的道具)",
 					CHAR_getInt( talker,CHAR_FLOOR),
 					CHAR_getInt( talker,CHAR_X ),
 					CHAR_getInt( talker,CHAR_Y ),
-					ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-					ITEM_getChar( itemindex, ITEM_NAME),
-					ITEM_getInt( itemindex, ITEM_ID)
+					ITEM_getChar( item_index, ITEM_UNIQUECODE),
+					ITEM_getChar( item_index, ITEM_NAME),
+					ITEM_getInt( item_index, ITEM_ID)
 				);
 				}
 
@@ -529,7 +529,7 @@ BOOL NPC_SavePointItemDelete(int meindex,int talker,int itemNo,int kosuu)
 BOOL NPC_SavePointItemCheck(int meindex,int talker,int itemno,int kosuu)
 {
 	int i;
-	int itemindex;
+	int item_index;
 	int id;
 	int cnt=0;
 #ifdef _NEW_ITEM_
@@ -540,9 +540,9 @@ BOOL NPC_SavePointItemCheck(int meindex,int talker,int itemno,int kosuu)
 #endif
 	
 
-		itemindex=CHAR_getItemIndex( talker , i );
-		if( ITEM_CHECKINDEX(itemindex) ){
-			id=ITEM_getInt(itemindex ,ITEM_ID );
+		item_index=CHAR_getItemIndex( talker , i );
+		if( ITEM_CHECKINDEX(item_index) ){
+			id=ITEM_getInt(item_index ,ITEM_ID );
 			if(itemno==id){
 				cnt++;
 				if(cnt==kosuu){

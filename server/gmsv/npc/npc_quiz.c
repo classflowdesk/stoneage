@@ -5,7 +5,7 @@
 #include "npc_quiz.h"
 #include "npcutil.h"
 #include "char.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "buf.h"
 #include "function.h"
 #include "readmap.h"
@@ -351,7 +351,7 @@ static void NPC_Quiz_selectWindow( int meindex, int talker, int num)
 				
 #if 0
 				/*-³ð³ðÆ¥ËªññÔÊÔÂ--*/
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK,
 						CHAR_WINDOWTYPE_QUIZ_START,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -526,7 +526,7 @@ static void NPC_Quiz_selectWindow( int meindex, int talker, int num)
 	}
 	 
 	/*-³ð³ðÆ¥ËªññÔÊÔÂ--*/
-	lssproto_WN_send( fd, messagetype, 
+	GmsvServer_WN_send( fd, messagetype, 
 					buttontype, 
 					windowno,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -663,7 +663,7 @@ BOOL NPC_QuizAddItem(int talker,char *buf)
 	int i=1;
 	int ret;
 	char buf2[16];
-	int itemindex;
+	int item_index;
 	char token[512];
 	
 	/*--…ÍÐÑ²ÙˆVÎçØÆ»¯Ê§ÄÌ·ºØ©»¥É¬ÀÃ½ñÄ¾»¯ÖÐÔÂèëÄþ·´·Â¼þÄ¸Ø©Æ¥¼»ÉÙ--*/
@@ -681,21 +681,21 @@ BOOL NPC_QuizAddItem(int talker,char *buf)
 		getStringFromIndexWithDelim(buf , "." , i, buf2, sizeof(buf2));
 	}
 
-	itemindex = ITEM_makeItemAndRegist(atoi(buf2));
+	item_index = ITEM_makeItemAndRegist(atoi(buf2));
 
-	if(itemindex == -1) return FALSE;
+	if(item_index == -1) return FALSE;
 	/*Ê§ÄÌ·ºØ©¼°Ü°µÑ(ÛQÌÎÊ§ÄÌ·ºØ©„Æ±åÖÐÄ¾»¯ØÆÒýµ¤©k*/
-	ret = CHAR_addItemSpecificItemIndex( talker, itemindex);
+	ret = CHAR_addItemSpecificItemIndex( talker, item_index);
 	if( !CHAR_CHECKITEMINDEX( talker, ret) ){
-		print( "npc_quiz.c: additem error itemindex[%d]\n", itemindex);
-		ITEM_endExistItemsOne( itemindex);
+		print( "npc_quiz.c: additem error item_index[%d]\n", item_index);
+		ITEM_endExistItemsOne( item_index);
 	
 		CHAR_talkToCli( talker, -1, "µÀ¾ßÀ¸ÒÑÂú", CHAR_COLORWHITE);
 			
 		return FALSE;
 	}
 
-	if(itemindex != -1) {
+	if(item_index != -1) {
 		/*
 		LogItem(
 			CHAR_getChar( talker, CHAR_NAME ),
@@ -704,14 +704,14 @@ BOOL NPC_QuizAddItem(int talker,char *buf)
 			CHAR_getInt( talker, CHAR_FLOOR),
 			CHAR_getInt( talker, CHAR_X ),
 			CHAR_getInt( talker, CHAR_Y ),
-			ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-			ITEM_getChar( itemindex, ITEM_NAME),
-			ITEM_getInt( itemindex, ITEM_ID)
+			ITEM_getChar( item_index, ITEM_UNIQUECODE),
+			ITEM_getChar( item_index, ITEM_NAME),
+			ITEM_getInt( item_index, ITEM_ID)
 		);
 		*/
 	}
 	
-	sprintf(token,"ÄÃµ½%s¡£", ITEM_getChar( itemindex, ITEM_NAME));
+	sprintf(token,"ÄÃµ½%s¡£", ITEM_getChar( item_index, ITEM_NAME));
 	CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 
 
@@ -1171,7 +1171,7 @@ int *NPC_GetQuestion(int meindex)
 BOOL NPC_QuizItemFullCheck(int meindex,int talker)
 {
 	int i;
-	int itemindex;
+	int item_index;
 	char argstr[NPC_UTIL_GETARGSTR_BUFSIZE];
 	char buf2[32];
 
@@ -1179,8 +1179,8 @@ BOOL NPC_QuizItemFullCheck(int meindex,int talker)
 	/*--ÃñÄáÓÀÛÍ …íñ²±åòå–c¤¸ÔÂ¾®¨”-*/
 	int itemMax =  CheckCharMaxItem(talker);
 	for( i = CHAR_STARTITEMARRAY ; i < itemMax ; i++ ) {
-		itemindex = CHAR_getItemIndex( talker , i );
-		if( !ITEM_CHECKINDEX( itemindex) ) {
+		item_index = CHAR_getItemIndex( talker , i );
+		if( !ITEM_CHECKINDEX( item_index) ) {
 		 	return TRUE;
 		 }
 	}
@@ -1263,7 +1263,7 @@ BOOL NPC_EntryItemDel(int talker,char *buf)
 	int i = 1, j = 1,k = 1;
 	char buff3[128];
 	char buf2[32];
-	int itemindex;
+	int item_index;
 
 
 	while(getStringFromIndexWithDelim(buf , "," , k, buff3, sizeof(buff3)) !=FALSE ){
@@ -1279,9 +1279,9 @@ BOOL NPC_EntryItemDel(int talker,char *buf)
 			kosuu = atoi(buf2);
 				int itemMax =  CheckCharMaxItem(talker);
 				for( i =0 ; i < itemMax ; i++ ){
-				itemindex = CHAR_getItemIndex( talker , i );
-				if( ITEM_CHECKINDEX(itemindex) ){
-					id=ITEM_getInt(itemindex ,ITEM_ID );
+				item_index = CHAR_getItemIndex( talker , i );
+				if( ITEM_CHECKINDEX(item_index) ){
+					id=ITEM_getInt(item_index ,ITEM_ID );
 					if(itemno==id){
 						cnt++;
 						/*
@@ -1292,9 +1292,9 @@ BOOL NPC_EntryItemDel(int talker,char *buf)
 							CHAR_getInt( talker, CHAR_FLOOR),
 							CHAR_getInt( talker, CHAR_X ),
  							CHAR_getInt( talker, CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 						);
 						*/
 						CHAR_DelItem( talker, i);
@@ -1308,10 +1308,10 @@ BOOL NPC_EntryItemDel(int talker,char *buf)
 			/*--¼»ÊÏ·Ö?Ä¯¼°Ê§ÄÌ·ºØ©Ã«¼»Çë---*/
 			int itemMax =  CheckCharMaxItem(talker);
 			for( j = 0 ;  j < itemMax ; j++){
-				itemindex = CHAR_getItemIndex( talker ,j);
+				item_index = CHAR_getItemIndex( talker ,j);
 
-				if( ITEM_CHECKINDEX(itemindex) ){
-					if( atoi( buff3) == ITEM_getInt(itemindex,ITEM_ID)){
+				if( ITEM_CHECKINDEX(item_index) ){
+					if( atoi( buff3) == ITEM_getInt(item_index,ITEM_ID)){
 						/*
 						LogItem(
 							CHAR_getChar( talker, CHAR_NAME ),
@@ -1320,9 +1320,9 @@ BOOL NPC_EntryItemDel(int talker,char *buf)
 							CHAR_getInt( talker,CHAR_FLOOR),
 							CHAR_getInt( talker,CHAR_X ),
 							CHAR_getInt( talker,CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 						);
 						*/
 						CHAR_DelItem( talker, j);
@@ -1346,7 +1346,7 @@ BOOL NPC_EntryItemCheck(int talker,char *buf)
 	int id=0;
 	BOOL flg = FALSE;
 	int i;
-	int itemindex;
+	int item_index;
 	int itemno;
 	int kosuu;
 	int cnt=0;
@@ -1366,9 +1366,9 @@ BOOL NPC_EntryItemCheck(int talker,char *buf)
 			kosuu = atoi(buf3);
 			int itemMax =  CheckCharMaxItem(talker);
 			for( i=0 ; i < itemMax;i++ ){
-				itemindex = CHAR_getItemIndex( talker , i );
-				if( ITEM_CHECKINDEX(itemindex) ){
-					id = ITEM_getInt(itemindex ,ITEM_ID );
+				item_index = CHAR_getItemIndex( talker , i );
+				if( ITEM_CHECKINDEX(item_index) ){
+					id = ITEM_getInt(item_index ,ITEM_ID );
 					if(itemno == id){
 						cnt++;
 						if(cnt == kosuu){
@@ -1387,9 +1387,9 @@ BOOL NPC_EntryItemCheck(int talker,char *buf)
 			int maxitem;
 			maxitem = CheckCharMaxItem(talker);
 			for( i=0 ; i < maxitem;i++ ){
-				itemindex = CHAR_getItemIndex( talker , i );
-				if( ITEM_CHECKINDEX(itemindex) ){
-					id = ITEM_getInt(itemindex ,ITEM_ID );
+				item_index = CHAR_getItemIndex( talker , i );
+				if( ITEM_CHECKINDEX(item_index) ){
+					id = ITEM_getInt(item_index ,ITEM_ID );
 					if(itemno == id){
 						flg = TRUE;
 						break;

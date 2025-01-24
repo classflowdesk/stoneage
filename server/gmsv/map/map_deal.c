@@ -1,13 +1,12 @@
 #include "version.h"
-
+//
+#include "gmsv_server.h"
+//
 #include "anim_tbl.h"
 #include "char.h"
-#include "lssproto_serv.h"
 #include "map_util.h"
 #include "net.h"
 #include "readmap.h"
-
-#define SPR_kmydamY CG_HIT_MARK_10 // anim_tbl.h
 
 BOOL MAP_walkAbleFromPoint(int ff, int fx, int fy, BOOL isfly) {
   int map[2];
@@ -86,7 +85,7 @@ static void MAP_dealprepostevent(int index, BOOL mode) {
     int damage;
     damage = MAP_getImageInt(map[i], mode ? MAP_INTODAMAGE : MAP_OUTOFDAMAGE);
     if (damage != 0) {
-      int opt[2] = {SPR_kmydamY, -damage};
+      int opt[2] = {CG_HIT_MARK_10, -damage};
       damaged = TRUE;
       CHAR_setInt(index, CHAR_HP, CHAR_getInt(index, CHAR_HP) + damage);
       CHAR_complianceParameter(index);
@@ -121,7 +120,7 @@ BOOL MAP_sendArroundCharNeedFD(int fd, int char_index) {
     if (stringdata == NULL)
       return FALSE;
 
-    lssproto_MC_send(fd, fl, retr.x, retr.y, retr.x + retr.width,
+    GmsvServer_MC_send(fd, fl, retr.x, retr.y, retr.x + retr.width,
                      retr.y + retr.height, tilesum, objsum, eventsum,
                      stringdata);
   }
@@ -130,7 +129,7 @@ BOOL MAP_sendArroundCharNeedFD(int fd, int char_index) {
   if (stringdata == NULL)
     return FALSE;
 
-  lssproto_M_send(fd, fl, retr.x, retr.y, retr.x + retr.width,
+  GmsvServer_M_send(fd, fl, retr.x, retr.y, retr.x + retr.width,
                   retr.y + retr.height, stringdata);
 #endif
   return TRUE;

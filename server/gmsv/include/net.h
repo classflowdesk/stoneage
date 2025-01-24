@@ -84,10 +84,10 @@ BOOL DelTimer_net(int ID);
 
 /* CA , CD */
 void CAcheck(void);
-void CAflush(int charaindex);
+void CAflush(int char_index);
 void CAsend(int fd);
 void CDcheck(void);
-void CDflush(int charaindex);
+void CDflush(int char_index);
 void CDsend(int fd);
 BOOL CONNECT_appendCAbuf(int fd, char *data, int size);
 BOOL CONNECT_appendCDbuf(int fd, char *data, int size);
@@ -113,8 +113,8 @@ int GetShutdown(void);
 /* ������ƻ��������� */
 int getfdFromCdkey(const char *cdkey);
 int getfdFromCdkeyWithLogin(const char *cdkey);
-int getfdFromCharaIndex(int charaindex);
-int getcdkeyFromCharaIndex(int charaindex, char *out, int outlen);
+int getfdFromCharaIndex(int char_index);
+int getcdkeyFromCharaIndex(int char_index, char *out, int outlen);
 int getCharindexFromFdid(int fdid);
 int getFdidFromCharaIndex(int charind);
 int getfdFromFdid(int fdid);
@@ -151,14 +151,14 @@ void CONNECT_setCharname(int fd, char *in);
 int CONNECT_getFdid(int fd);
 int CONNECT_getCtype(int fd);
 void CONNECT_setCtype(int fd, int a);
-void CONNECT_setDuelcharaindex(int fd, int i, int a);
-int CONNECT_getDuelcharaindex(int fd, int i);
-void CONNECT_setBattlecharaindex(int fd, int i, int a);
-int CONNECT_getBattlecharaindex(int fd, int i);
-void CONNECT_setJoinpartycharaindex(int fd, int i, int a);
-int CONNECT_getJoinpartycharaindex(int fd, int i);
-void CONNECT_setTradecardcharaindex(int fd, int i, int a);
-int CONNECT_getTradecardcharaindex(int fd, int i);
+void CONNECT_setDuelchar_index(int fd, int i, int a);
+int CONNECT_getDuelchar_index(int fd, int i);
+void CONNECT_setBattlechar_index(int fd, int i, int a);
+int CONNECT_getBattlechar_index(int fd, int i);
+void CONNECT_setJoinpartychar_index(int fd, int i, int a);
+int CONNECT_getJoinpartychar_index(int fd, int i);
+void CONNECT_setTradecardchar_index(int fd, int i, int a);
+int CONNECT_getTradecardchar_index(int fd, int i);
 /* MT����������Ѩ�ͷ� */
 #define CONNECT_endOne_debug(a) CONNECT_endOne((a), __LINE__)
 
@@ -175,7 +175,7 @@ BOOL CONNECT_acfdInitWB(int fd);
 #ifdef _BATTLE_TIMESPEED
 // void setDefBTime( int fd, unsigned int times);
 // unsigned int getDefBTime( int fd);
-BOOL CheckDefBTime(int charaindex, int fd, unsigned int lowTime,
+BOOL CheckDefBTime(int char_index, int fd, unsigned int lowTime,
                    unsigned int battletime, unsigned int addTime);
 #endif
 
@@ -213,7 +213,7 @@ int CONNECT_get_confirm(int fd);
 void CONNECT_set_confirm(int fd, BOOL b);
 // end
 
-void CONNECT_setTradecharaindex(int fd, int i, int a);
+void CONNECT_setTradechar_index(int fd, int i, int a);
 
 void CONNECT_setLastrecvtime(int fd, struct timeval *a);
 void CONNECT_getLastrecvtime(int fd, struct timeval *a);

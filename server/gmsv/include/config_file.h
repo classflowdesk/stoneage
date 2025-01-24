@@ -12,7 +12,7 @@
 
 // Arminius 7.12 login announce
 extern char announcetext[8192];
-void AnnounceToPlayer(int charaindex);
+void AnnounceToPlayer(int char_index);
 // Robin 0720
 void AnnounceToPlayerWN(int fd);
 void LoadAnnounce(void);

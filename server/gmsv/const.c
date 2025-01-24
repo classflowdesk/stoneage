@@ -195,7 +195,7 @@ lua_const M_Lua_RegConstList[] = {
 #endif
   {"对像_任务链%",     sizeof("对像_任务链%"), LUA_DATALINE0 + CHAR_MISSIONTRAIN_NUM},
   {"对像_任务链时间%", sizeof("对像_任务链时间%"), LUA_DATALINE0 + CHAR_MISSIONTRAIN_TIME},
-  {"对像_环数%", sizeof("对像_环数%"), LUA_DATALINE0 + CHAR_MISSIONTRAIN_NUM}, // 跑环数
+  {"对像_环数%",       sizeof("对像_环数%"), LUA_DATALINE0 + CHAR_MISSIONTRAIN_NUM}, // 跑环数
   {"对像_进化%",       sizeof("对像_进化%"), LUA_DATALINE0 + CHAR_EVOLVE},
   {"对像_在线时间%",   sizeof("对像_在线时间%"), LUA_DATALINE0 + CHAR_ONLINE_TIME},
   {"对像_楼层时间%",   sizeof("对像_楼层时间%"), LUA_DATALINE0 + CHAR_FLOORDIFI_TIME},
@@ -777,14 +777,14 @@ lua_const M_Lua_RegConstList[] = {
   {"更新3_形象%", sizeof("更新3_形象%"), CHAR_P_STRING_BASEBASEIMAGENUMBER},
   {"更新3_天行者模式%", sizeof("更新3_天行者模式%"), CHAR_P_STRING_SKYWALKER},
   {"更新3_调试模式%", sizeof("更新3_调试模式%"), CHAR_P_STRING_DEBUGMODE},
-  {"精灵_名%", sizeof("精灵_名%"), LUA_DATALINE1 + MAGIC_NAME},
-  {"精灵_描述%", sizeof("精灵_描述%"), LUA_DATALINE1 + MAGIC_COMMENT},
-  {"精灵_函数名%", sizeof("精灵_函数名%"), LUA_DATALINE1 + MAGIC_FUNCNAME},
-  {"精灵_选项%", sizeof("精灵_选项%"), LUA_DATALINE1 + MAGIC_OPTION},
-  {"精灵_ID%", sizeof("精灵_ID%"), LUA_DATALINE0 + MAGIC_ID},
-  {"精灵_FIELD%", sizeof("精灵_FIELD%"), LUA_DATALINE0 + MAGIC_FIELD},
-  {"精灵_目标%", sizeof("精灵_目标%"), LUA_DATALINE0 + MAGIC_TARGET},
-  {"精灵_死目标%", sizeof("精灵_死目标%"), LUA_DATALINE0 + MAGIC_TARGET_DEADFLG},
+  {"精灵_名%", sizeof("精灵_名%"), LUA_DATALINE1 + MAGIC_NAME},
+  {"精灵_描述%", sizeof("精灵_描述%"), LUA_DATALINE1 + MAGIC_COMMENT},
+  {"精灵_函数名%", sizeof("精灵_函数名%"), LUA_DATALINE1 + MAGIC_FUNCNAME},
+  {"精灵_选项%", sizeof("精灵_选项%"), LUA_DATALINE1 + MAGIC_OPTION},
+  {"精灵_ID%", sizeof("精灵_ID%"), LUA_DATALINE0 + MAGIC_ID},
+  {"精灵_FIELD%", sizeof("精灵_FIELD%"), LUA_DATALINE0 + MAGIC_FIELD},
+  {"精灵_目标%", sizeof("精灵_目标%"), LUA_DATALINE0 + MAGIC_TARGET},
+  {"精灵_死目标%", sizeof("精灵_死目标%"), LUA_DATALINE0 + MAGIC_TARGET_DEADFLG},
   {"精灵_IDX%", sizeof("精灵_IDX%"), LUA_DATALINE0 + MAGIC_IDX},
   {NULL, 0, 0},
 };

@@ -254,7 +254,7 @@ int BATTLE_StatusAttackCheck(
   int attackindex,
   int defindex,
   int status,
-  //BATTLE_ST_POISON,      1 "��",
+  //BATTLE_ST_POISON,     1 "��",
   //BATTLE_ST_PARALYSIS,  2 "��",
   //BATTLE_ST_SLEEP,      3 "��",
   //BATTLE_ST_STONE,      4 "ʯ",
@@ -270,12 +270,12 @@ int BATTLE_Combo( int battleindex, int *pAttackList, int defNo );
 
 int BATTLE_EarthRoundHide( int battleindex, int attackNo );
 
-int BATTLE_GetDamageReact( int charaindex );
+int BATTLE_GetDamageReact( int char_index );
 
-void  BATTLE_talkToCli( int charaindex, char *pszBuffer, int color );
+void  BATTLE_talkToCli( int char_index, char *pszBuffer, int color );
 
 #ifdef _PETSKILL_SETDUCK
-BOOL BATTLE_CheckMySkillDuck( int charaindex );
+BOOL BATTLE_CheckMySkillDuck( int char_index );
 #endif
 
 BOOL BATTLE_LostEscape( int battleindex, int attackNo );
@@ -296,7 +296,7 @@ int BATTLE_S_PetOut( int battleindex, int attackNo, int petNo );
 #ifdef _PETSKILL_LER
 void BATTLE_BatFly(int battleindex,int attackNo,int myside);
 void BATTLE_DivideAttack(int battleindex,int attackNo,int myside);
-void BATTLE_LerChange(int battleindex,int charaindex,int no);
+void BATTLE_LerChange(int battleindex,int char_index,int no);
 #endif
 
 #ifdef _PETSKILL_BATTLE_MODEL
@@ -307,9 +307,9 @@ void BATTLE_BattleModel(int battleindex,int attackNo,int myside);
 #define  ATTACKSIDE  1
 #define DEFFENCESIDE  2
 
-float BATTLE_adjustRidePet3A( int charaindex, int petindex, int workindex, int action );
+float BATTLE_adjustRidePet3A( int char_index, int petindex, int workindex, int action );
 
-int BATTLE_getRidePet( int charaindex );
+int BATTLE_getRidePet( int char_index );
 
 #ifdef _PSKILL_FALLGROUND  //������
 int BATTLE_S_FallGround( int battleindex, int attackNo, int defNo, int skill_type );
@@ -337,8 +337,8 @@ int PETSKILL_SetMagicPet_Battle( int battleindex, int attackNo, int toNo, int ma
 #endif
 
 #ifdef _TAKE_ITEMDAMAGE
-int BATTLE_ItemCrushCheck( int charaindex , int flg);
-int BATTLE_ItemCrush( int charaindex, int ItemEquip, int Damages, int flg);
+int BATTLE_ItemCrushCheck( int char_index , int flg);
+int BATTLE_ItemCrush( int char_index, int ItemEquip, int Damages, int flg);
 #endif
 
 #ifdef _PRO_BATTLEENEMYSKILL
@@ -351,11 +351,11 @@ int BATTLE_E_ENEMYHELP( int battleindex, int attackNo, int defNo, int skill_type
 
 
 #ifdef _PREVENT_TEAMATTACK
-int BATTLE_CheckSameSide( int charaindex, int toNo);
+int BATTLE_CheckSameSide( int char_index, int toNo);
 #endif
 
 #ifdef _USER_CHARLOOPS
-int CHAR_BattleStayLoop( int charaindex);//ԭ������
+int CHAR_BattleStayLoop( int char_index);//ԭ������
 #endif
 
 #ifdef _PETSKILL_PROPERTY
@@ -370,16 +370,16 @@ int  OFFLINE_MultiRessurect( int battleindex, int attackNo, int toNo, int HP, in
 #endif
 
 #ifdef _PROFESSION_SKILL      // WON ADD ����ְҵ����
-int battle_profession_attack_fun(int battleindex, int attackNo, int defNo, int charaindex);
-int battle_profession_attack_magic_fun(int battleindex, int attackNo, int defNo, int charaindex);
-int battle_profession_assist_fun(int battleindex, int attackNo, int defNo, int charaindex);
-int battle_profession_status_chang_fun(int battleindex, int attackNo, int defNo, int charaindex);
-int BATTLE_check_profession_duck( int charaindex, int per );
+int battle_profession_attack_fun(int battleindex, int attackNo, int defNo, int char_index);
+int battle_profession_attack_magic_fun(int battleindex, int attackNo, int defNo, int char_index);
+int battle_profession_assist_fun(int battleindex, int attackNo, int defNo, int char_index);
+int battle_profession_status_chang_fun(int battleindex, int attackNo, int defNo, int char_index);
+int BATTLE_check_profession_duck( int char_index, int per );
 int BATTLE_PROFESSION_ATK_PET_DamageSub( int attackindex, int defindex, int *pDamage, int *pPetDamage, int *pRefrect, int skill_level );
-int PROFESSION_BATTLE_StatusAttackCheck( int charaindex, int toindex, int status, int Success );
+int PROFESSION_BATTLE_StatusAttackCheck( int char_index, int toindex, int status, int Success );
 int BATTLE_PROFESSION_CONVOLUTE_GET_DAMAGE( int attackindex, int defindex, int skill_level ); 
 int BATTLE_PROFESSION_THROUGH_ATTACK_GET_DAMAGE( int attackindex, int defindex );
-int BATTLE_PROFESSION_RANG_ATTACK_DAMAGE( int charaindex, int attackNo, int defNo, int skill_type, int status, int turn, int perStatus, int effect, int img1, int img2 );
+int BATTLE_PROFESSION_RANG_ATTACK_DAMAGE( int char_index, int attackNo, int defNo, int skill_type, int status, int turn, int perStatus, int effect, int img1, int img2 );
 
 #endif
 

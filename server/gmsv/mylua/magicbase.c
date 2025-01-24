@@ -7,7 +7,7 @@
 #include "lualib.h"
 #include "mylua/ablua.h"
 #include "magic_base.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #ifdef _ALLBLUES_LUA_1_2
 #include "mylua/mylua.h"
 extern MY_Lua MYLua;

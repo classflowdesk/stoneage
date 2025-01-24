@@ -68,11 +68,11 @@ const char *NPC_Lua_CallFunc(const char *_FuncName, char *_RetBuff, size_t _n, i
 int NPC_Lua_getBattleFieldNo(int _Floor, int _X, int _Y);
 
 //获取宠物
-int NPC_GivePet(int charaindex, int lv, int enemyid);
+int NPC_GivePet(int char_index, int lv, int enemyid);
 //获取道具
-int NPC_GiveItem(int charaindex, int itemid);
+int NPC_GiveItem(int char_index, int itemid);
 //删除宠物
-int NPC_DelPet(int charaindex, int petsel);
+int NPC_DelPet(int char_index, int petsel);
 
 //回调函数
 BOOL NPC_Lua_InitCallBack(int _meindex);
@@ -85,7 +85,7 @@ int NPC_Lua_LoopCallBack(int _meindex);
 void NPC_Lua_TalkedCallBack(int _meindex, int _tomeindex,const char *_messageeraseescape, int _color, int _channel);
 void NPC_Lua_OFFCallBack(int _meindex, int _desindex);
 void NPC_Lua_LookedCallBack(int _meindex, int _desindex);
-BOOL NPC_Lua_ItemPutCallBack(int _meindex, int _itemindex);
+BOOL NPC_Lua_ItemPutCallBack(int _meindex, int _item_index);
 void NPC_Lua_WindowTalkedCallBack(int _meindex, int _talkindex, int _seqno, int _select,const char *_data);
 #ifdef _USER_CHARLOOPS
 int NPC_Lua_CharLoopsCallBack( int _meindex);
@@ -99,29 +99,29 @@ NPC_Lua_PostAttackedCallBack
 NPC_Lua_SpecialTalkedCallBack
 */
 
-void NPC_Lua_ItemPerOverCallBack(int _itemindex, int _playindex);
-void NPC_Lua_ItemPostOverCallBack(int _itemindex, int _playindex);
+void NPC_Lua_ItemPerOverCallBack(int _item_index, int _playindex);
+void NPC_Lua_ItemPostOverCallBack(int _item_index, int _playindex);
 void NPC_Lua_ItemWatchCallBack(int _meindex, int _objindex, int _chac, int _x, int _y, int _dir, int *_watchopt, int _watchoptlen);
-void NPC_Lua_ItemUseCallBack(int _playindex, int _to_charindex, int _haveitemindex);
-void NPC_Lua_ItemAttachCallBack(int _playindex, int _itemindex);
-void NPC_Lua_ItemDetachCallBack(int _playindex, int _itemindex);
-void NPC_Lua_ItemDropCallBack(int _playindex, int _itemindex);
-void NPC_Lua_ItemPickUPCallBack(int _playindex, int _itemindex);
+void NPC_Lua_ItemUseCallBack(int _playindex, int _to_charindex, int _haveitem_index);
+void NPC_Lua_ItemAttachCallBack(int _playindex, int _item_index);
+void NPC_Lua_ItemDetachCallBack(int _playindex, int _item_index);
+void NPC_Lua_ItemDropCallBack(int _playindex, int _item_index);
+void NPC_Lua_ItemPickUPCallBack(int _playindex, int _item_index);
 #ifdef _Item_ReLifeAct
-void NPC_Lua_ItemDieReLifeCallBack(int _playindex, int _itemindex, int _haveitem);
+void NPC_Lua_ItemDieReLifeCallBack(int _playindex, int _item_index, int _haveitem);
 #endif
 
 void NPC_Lua_BattleWinCallBack(int _battleindex, int _createindex);
 void NPC_Lua_BattleEndCallBack(int _battleindex);
 #ifdef _MO_LNS_MYSQLSUOXU
 void NPC_Lua_SQLPushCallBack(char* _result,char* _filename,char* _function,int _npcindex,int _playerindex, char* _msg);
-void NPC_Lua_SQLPushAdvCallBack(int luaresult,int luaflg,int luaerrnono,char* luaerrstr,int luafileCount,int rowCount,int rowAt,char* row,char* _filename,char* _function,int npcindex,int charaindex,char* msg);
+void NPC_Lua_SQLPushAdvCallBack(int luaresult,int luaflg,int luaerrnono,char* luaerrstr,int luafileCount,int rowCount,int rowAt,char* row,char* _filename,char* _function,int npcindex,int char_index,char* msg);
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #endif //#ifndef __NPC_LUA_INTERFACE__
-void NPC_Lua_NEWSHOP_Recv(char* function, int charaindex);
+void NPC_Lua_NEWSHOP_Recv(char* function, int char_index);
 #ifdef _CHARSIGNDAY_
-void NPC_Lua_CharSignDay_Recv(char* function,int charaindex);
+void NPC_Lua_CharSignDay_Recv(char* function,int char_index);
 #endif
 
 

@@ -4,13 +4,13 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "pet_skill.h"
 #include "npc_eventaction.h"
 #include "readmap.h"
 #include "log.h"
 #include "family.h"
-#include "saacproto_cli.h"
+#include "saac_client.h"
 #ifdef _NEW_ITEM_
 extern int CheckCharMaxItem(int charindex);
 #endif
@@ -29,9 +29,9 @@ void NPC_ItemShop_Menu(int meindex,int talker);
 int NPC_GetLimtItemList(int talker,char *argstr,char *token2,int sell);
 
 void NPC_ItemShop_SellMain(int meindex,int talker,int select);
-int NPC_GetSellItemList(int itemindex,int flg,char *argstr,char *argtoken,int select,int sell);
+int NPC_GetSellItemList(int item_index,int flg,char *argstr,char *argtoken,int select,int sell);
 BOOL NPC_AddItemBuy(int meindex, int talker,int itemID,int kosuu,double rate,int iCostFame,int iChangeItemCost);
-int NPC_SellItemstrsStr(int itemindex,int flg,double rate,char *argtoken,int select,int sell);
+int NPC_SellItemstrsStr(int item_index,int flg,double rate,char *argtoken,int select,int sell);
 void NPC_LimitItemShop(int meindex,int talker,int select);
 void NPC_ExpressmanCheck(int meindex,int talker);
 
@@ -339,12 +339,12 @@ void NPC_ItemShop_BuyMain(int meindex,int talker,int before )
     }
 #ifdef _ADD_STATUS_2
 	sprintf(token,"FAME|%d",CHAR_getInt(talker,CHAR_FAME)/100);
-	lssproto_S2_send(fd,token);
+	GmsvServer_S2_send(fd,token);
 #endif
 	if(before != -1) {
 		sprintf(token,"0|0");
 
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMAIN, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMAIN, 
 				WINDOW_BUTTONTYPE_NONE, 
 				CHAR_WINDOWTYPE_WINDOWITEMSHOP_BUY_MSG,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -378,7 +378,7 @@ void NPC_ItemShop_BuyMain(int meindex,int talker,int before )
 		strncat( token, token2, sizeof( token));
 	}
 
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMAIN, 
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMAIN, 
 				WINDOW_BUTTONTYPE_NONE, 
 				CHAR_WINDOWTYPE_WINDOWITEMSHOP_BUY_MSG,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -505,7 +505,7 @@ BOOL NPC_SetNewItem(int meindex,int talker,char *data)
 	double rate = 1.0;
 	int gold = 0;		
 	int kosuucnt = 0;
-	int itemindex;
+	int item_index;
 
 	/*--忒匀化五凶犯□正毛本伊弁玄午蜊醒卞坌荸--*/
 	getStringFromIndexWithDelim( data, "|", 1, buf, sizeof( buf));
@@ -517,8 +517,8 @@ BOOL NPC_SetNewItem(int meindex,int talker,char *data)
 	
 	/*--蜊醒及民尼永弁  癫卞蝈    月井＂-*/
 	for( i = CHAR_STARTITEMARRAY ; i < CheckCharMaxItem(talker) ; i++ ) {
-		itemindex = CHAR_getItemIndex( talker , i );
-		if( !ITEM_CHECKINDEX( itemindex) ) {
+		item_index = CHAR_getItemIndex( talker , i );
+		if( !ITEM_CHECKINDEX( item_index) ) {
 			kosuucnt++;
 		}
 	}
@@ -620,7 +620,7 @@ BOOL NPC_SetNewItem(int meindex,int talker,char *data)
 BOOL NPC_AddItemBuy(int meindex, int talker,int itemID,int kosuu,double rate,int iCostFame,int iChangeItemCost)
 {
 
-	int itemindex;
+	int item_index;
 	int i;
 	int gold;
 	int ret;
@@ -648,13 +648,13 @@ BOOL NPC_AddItemBuy(int meindex, int talker,int itemID,int kosuu,double rate,int
 		print(" FamilyTaxError!");
 */
 	for(i = 0 ; i < kosuu ; i++){
-		itemindex = ITEM_makeItemAndRegist( itemID);
+		item_index = ITEM_makeItemAndRegist( itemID);
 		
-		if(itemindex == -1) return FALSE;
-		ret = CHAR_addItemSpecificItemIndex( talker, itemindex);
+		if(item_index == -1) return FALSE;
+		ret = CHAR_addItemSpecificItemIndex( talker, item_index);
 		if( ret < 0 || ret >= CheckCharMaxItem(talker) ) {
-			print( "npc_itemshop.c: additem error itemindex[%d]\n", itemindex);
-			ITEM_endExistItemsOne( itemindex);
+			print( "npc_itemshop.c: additem error item_index[%d]\n", item_index);
+			ITEM_endExistItemsOne( item_index);
 			return FALSE;
 		}
 		CHAR_sendItemDataOne( talker, ret);
@@ -672,7 +672,7 @@ BOOL NPC_AddItemBuy(int meindex, int talker,int itemID,int kosuu,double rate,int
 			int fd = getfdFromCharaIndex(talker);
 			char	buf[256];
 			sprintf(buf,"%d",CHAR_getInt(talker,CHAR_FAME));
-			saacproto_ACFixFMData_send(acfd,
+			SaacClient_ACFixFMData_send(acfd,
 				CHAR_getChar(talker,CHAR_FMNAME),
 				CHAR_getInt(talker,CHAR_FMINDEX),
 				CHAR_getWorkInt(talker,CHAR_WORKFMINDEXI),
@@ -715,7 +715,7 @@ void NPC_ItemShop_Menu(int meindex,int talker)
 	snprintf(token, sizeof(token),"%s|%s|%d",CHAR_getChar(meindex,CHAR_NAME),buff,CHAR_getInt(talker,CHAR_FAME)/100);
 #endif
 
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMENU, 
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMENU, 
 				WINDOW_BUTTONTYPE_NONE, 
 				CHAR_WINDOWTYPE_WINDOWITEMSHOP_STARTMSG,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -736,7 +736,7 @@ void NPC_ItemShop_SellMain(int meindex,int talker,int before)
 			char	buf[256];
 			sprintf( message, "为了确保你的物品安全，请输入你的安全密码进行解锁！\n");
 		
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT, 
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT, 
 							WINDOW_BUTTONTYPE_OKCANCEL,
 							CHAR_WINDOWTYPE_ITEM_PET_LOCKED,
 							-1,
@@ -755,12 +755,12 @@ void NPC_ItemShop_SellMain(int meindex,int talker,int before)
 
 #ifdef _ADD_STATUS_2
 	sprintf(token,"FAME|%d",CHAR_getInt(talker,CHAR_FAME)/100);
-	lssproto_S2_send(fd,token);
+	GmsvServer_S2_send(fd,token);
 #endif
 
 	if(before != -1) {
 		sprintf(token,"1|0");
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMAIN
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMAIN
 							+CHAR_getWorkInt(meindex,NPC_SHOP_WORK_NO), 
 					WINDOW_BUTTONTYPE_NONE, 
 					CHAR_WINDOWTYPE_WINDOWITEMSHOP_SELL_MSG,
@@ -793,7 +793,7 @@ void NPC_ItemShop_SellMain(int meindex,int talker,int before)
 		NPC_GetLimtItemList( talker,argstr, token2, -1);//详细玩家要卖出的道具资料
 		strncat( token, token2, sizeof( token));
 
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMAIN+
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_ITEMSHOPMAIN+
 					CHAR_getWorkInt(meindex,NPC_SHOP_WORK_NO), 
 					WINDOW_BUTTONTYPE_NONE, 
 					CHAR_WINDOWTYPE_WINDOWITEMSHOP_SELL_MSG,
@@ -811,7 +811,7 @@ int NPC_GetLimtItemList(int talker, char *argstr, char* token2,int sell)
 	int k = 0 , i = 1 , j = 0;
 	int imax;
 	int itemtype = 0;
-	int itemindex;
+	int item_index;
 	int okflg = 0;
 	char buf[256];
 	int flg=0;
@@ -829,9 +829,9 @@ int NPC_GetLimtItemList(int talker, char *argstr, char* token2,int sell)
 
 	for( ; i < imax ; i++ ){
 		okflg=0;
-		itemindex = CHAR_getItemIndex( talker , i );
+		item_index = CHAR_getItemIndex( talker , i );
 		
-		if( ITEM_CHECKINDEX( itemindex) ){
+		if( ITEM_CHECKINDEX( item_index) ){
 			if( NPC_Util_GetStrFromStrWithDelim( argstr,"LimitItemType", buff, sizeof( buff)) != NULL ){
 				k = 1;
 				while(getStringFromIndexWithDelim(buff , "," , k, token, sizeof(token)) != FALSE ){
@@ -846,33 +846,33 @@ int NPC_GetLimtItemList(int talker, char *argstr, char* token2,int sell)
 #endif
 						if(strcmp( TypeTable[ j].arg  , token) == 0 ) {
 							itemtype = TypeTable[ j].type;
-							if(ITEM_getInt(itemindex,ITEM_TYPE) == itemtype) {
-								cost = NPC_GetSellItemList(itemindex,0,argstr,token3,i,sell);
+							if(ITEM_getInt(item_index,ITEM_TYPE) == itemtype) {
+								cost = NPC_GetSellItemList(item_index,0,argstr,token3,i,sell);
 								if(cost != -1) return cost;
 								strncat( token2, token3, sizeof( token3));
 								okflg = 1;
 							}else if(itemtype == 30){
-								if( 8 <= ITEM_getInt(itemindex,ITEM_TYPE) 
-									&& (ITEM_getInt(itemindex,ITEM_TYPE) <= 15) ){
-									cost = NPC_GetSellItemList(itemindex,0,argstr,token3,i,sell);
+								if( 8 <= ITEM_getInt(item_index,ITEM_TYPE) 
+									&& (ITEM_getInt(item_index,ITEM_TYPE) <= 15) ){
+									cost = NPC_GetSellItemList(item_index,0,argstr,token3,i,sell);
 									if(cost != -1) return cost;
 									strncat(token2,token3,sizeof(token3));
 									okflg = 1;
 								}
 							}else if(itemtype == 40){
-								if(( 0 <= ITEM_getInt(itemindex,ITEM_TYPE) 
-									&& (ITEM_getInt(itemindex,ITEM_TYPE) <= 4)) 
-									|| (17 <= ITEM_getInt(itemindex,ITEM_TYPE) 
-									&& (ITEM_getInt(itemindex,ITEM_TYPE) <= 19))) {
-									cost = NPC_GetSellItemList(itemindex,0,argstr,token3,i,sell);
+								if(( 0 <= ITEM_getInt(item_index,ITEM_TYPE) 
+									&& (ITEM_getInt(item_index,ITEM_TYPE) <= 4)) 
+									|| (17 <= ITEM_getInt(item_index,ITEM_TYPE) 
+									&& (ITEM_getInt(item_index,ITEM_TYPE) <= 19))) {
+									cost = NPC_GetSellItemList(item_index,0,argstr,token3,i,sell);
 									if(cost != -1) return cost;
 									strncat(token2,token3,sizeof(token3));
 									okflg = 1;
 								}
 							}else if(itemtype == 50){
-								if( 5 <= ITEM_getInt(itemindex,ITEM_TYPE) 
-									&& (ITEM_getInt(itemindex,ITEM_TYPE) <= 7) ){
-									cost = NPC_GetSellItemList(itemindex,0,argstr,token3,i,sell);
+								if( 5 <= ITEM_getInt(item_index,ITEM_TYPE) 
+									&& (ITEM_getInt(item_index,ITEM_TYPE) <= 7) ){
+									cost = NPC_GetSellItemList(item_index,0,argstr,token3,i,sell);
 									if(cost != -1) return cost;
 									strncat(token2,token3,sizeof(token3));
 									okflg = 1;
@@ -890,8 +890,8 @@ int NPC_GetLimtItemList(int talker, char *argstr, char* token2,int sell)
 				while(getStringFromIndexWithDelim(buff , "," , k, token, sizeof(token)) != FALSE ){
 					k++;
 					if(strstr( token, "-")==NULL && strcmp(token,"") != 0) {
-						if(ITEM_getInt(itemindex,ITEM_ID) == atoi(token)) {
-							cost = NPC_GetSellItemList(itemindex,0,argstr,token3,i,sell);
+						if(ITEM_getInt(item_index,ITEM_ID) == atoi(token)) {
+							cost = NPC_GetSellItemList(item_index,0,argstr,token3,i,sell);
 							if(cost != -1) return cost;
 							strncat(token2,token3,sizeof(token3));
 							okflg=1;
@@ -914,8 +914,8 @@ int NPC_GetLimtItemList(int talker, char *argstr, char* token2,int sell)
 						}
 						
 						end++;
-						if( (start <= ITEM_getInt(itemindex,ITEM_ID)) && (ITEM_getInt(itemindex,ITEM_ID) < end) ){
-							cost = NPC_GetSellItemList(itemindex,0,argstr,token3,i,sell);
+						if( (start <= ITEM_getInt(item_index,ITEM_ID)) && (ITEM_getInt(item_index,ITEM_ID) < end) ){
+							cost = NPC_GetSellItemList(item_index,0,argstr,token3,i,sell);
 							if(cost != -1) return cost;
 							strncat(token2,token3,sizeof(token3));
 							okflg = 1;
@@ -925,7 +925,7 @@ int NPC_GetLimtItemList(int talker, char *argstr, char* token2,int sell)
 			}
 			
 			if(okflg == 0) {
-				cost = NPC_GetSellItemList(itemindex, 1, argstr, token3, i, sell);
+				cost = NPC_GetSellItemList(item_index, 1, argstr, token3, i, sell);
 				if(sell != -1) return -1;
 				strncat( token2, token3, sizeof( token3));
 			}
@@ -942,7 +942,7 @@ int NPC_GetLimtItemList(int talker, char *argstr, char* token2,int sell)
 	弁仿奶失件玄卞霜耨允月皿夫玄戊伙及综岳
 
  *----------------------------------------------------------*/
-int NPC_GetSellItemList(int itemindex,int flg, char *argstr,char *argtoken,int select,int sell)
+int NPC_GetSellItemList(int item_index,int flg, char *argstr,char *argtoken,int select,int sell)
 {
 	char buff[256];
 	double rate = 0.2;
@@ -961,8 +961,8 @@ int NPC_GetSellItemList(int itemindex,int flg, char *argstr,char *argtoken,int s
 		while(getStringFromIndexWithDelim(buff , "," , k, buff2, sizeof(buff2)) !=FALSE ){
 			k++;
 			if(strstr( buff2, "-") == NULL && strcmp(buff2,"") != 0) {
-				if(ITEM_getInt(itemindex,ITEM_ID) == atoi(buff2)){
-					cost = NPC_SellItemstrsStr( itemindex,0, rate, argtoken,select,sell);
+				if(ITEM_getInt(item_index,ITEM_ID) == atoi(buff2)){
+					cost = NPC_SellItemstrsStr( item_index,0, rate, argtoken,select,sell);
 					return cost;
 				}
 			}else if (strstr( buff2, "-") != NULL){
@@ -980,8 +980,8 @@ int NPC_GetSellItemList(int itemindex,int flg, char *argstr,char *argtoken,int s
 					end = work;
 				}
 				end++;
-				if( (start <= ITEM_getInt(itemindex,ITEM_ID)) && (ITEM_getInt(itemindex,ITEM_ID) < end)	){
-					cost = NPC_SellItemstrsStr( itemindex,0, rate, argtoken,select,sell);
+				if( (start <= ITEM_getInt(item_index,ITEM_ID)) && (ITEM_getInt(item_index,ITEM_ID) < end)	){
+					cost = NPC_SellItemstrsStr( item_index,0, rate, argtoken,select,sell);
 					return cost;
 				}
 			}
@@ -989,14 +989,14 @@ int NPC_GetSellItemList(int itemindex,int flg, char *argstr,char *argtoken,int s
 	}
 	if( NPC_Util_GetStrFromStrWithDelim( argstr,"sell_rate",buff, sizeof( buff)) != NULL ){
 		rate = atof(buff);
-		cost = NPC_SellItemstrsStr( itemindex, flg ,rate, argtoken,select,sell);
+		cost = NPC_SellItemstrsStr( item_index, flg ,rate, argtoken,select,sell);
 		return cost;
 	}
 
 	return cost;
 }
 
-int NPC_SellItemstrsStr(int itemindex,int flg,double rate,char *argtoken,int select,int sell)
+int NPC_SellItemstrsStr(int item_index,int flg,double rate,char *argtoken,int select,int sell)
 {
 	int cost;
 	char escapedname[256];
@@ -1004,14 +1004,14 @@ int NPC_SellItemstrsStr(int itemindex,int flg,double rate,char *argtoken,int sel
 	char *eff;
 	
 
-	cost = ITEM_getInt( itemindex, ITEM_COST);
+	cost = ITEM_getInt( item_index, ITEM_COST);
 	cost = (int)(cost * rate);
 
 	if(sell != -1) return cost;
 
-	strcpy( escapedname, ITEM_getChar( itemindex, ITEM_SECRETNAME));
+	strcpy( escapedname, ITEM_getChar( item_index, ITEM_SECRETNAME));
 	makeEscapeString( escapedname, name, sizeof( name));
-	eff=ITEM_getChar(itemindex, ITEM_EFFECTSTRING);
+	eff=ITEM_getChar(item_index, ITEM_EFFECTSTRING);
 	makeEscapeString( eff, escapedname, sizeof(escapedname));
 
 
@@ -1023,10 +1023,10 @@ int NPC_SellItemstrsStr(int itemindex,int flg,double rate,char *argtoken,int sel
 			"%s|%d|%d|%d|%s|%d|",
 #endif
 			name, flg, cost,
-			ITEM_getInt( itemindex, ITEM_BASEIMAGENUMBER),
+			ITEM_getInt( item_index, ITEM_BASEIMAGENUMBER),
 			escapedname, select
 #ifdef _ITEM_PILENUMS
-			,ITEM_getInt( itemindex, ITEM_USEPILENUMS)
+			,ITEM_getInt( item_index, ITEM_USEPILENUMS)
 #endif
 	);
 
@@ -1038,7 +1038,7 @@ BOOL NPC_SellNewItem(int meindex,int talker,char *data)
 {
 	char argstr[NPC_UTIL_GETARGSTR_BUFSIZE];
 	char token[256], token2[256];
-	int cost, k, select, itemindex;
+	int cost, k, select, item_index;
 	int MyGold, MaxGold, sellnum=1;
 
 	MaxGold = CHAR_getMaxHaveGold( talker);
@@ -1057,13 +1057,13 @@ BOOL NPC_SellNewItem(int meindex,int talker,char *data)
 
 	if( select < CHAR_STARTITEMARRAY || select >= CheckCharMaxItem(talker) ) return FALSE;
 	k = select;
-	itemindex = CHAR_getItemIndex( talker , k);
+	item_index = CHAR_getItemIndex( talker , k);
 
 	cost = NPC_GetLimtItemList( talker,argstr, token2,select);
-	if( cost == -1 || (cost*sellnum)+MyGold >= MaxGold || !ITEM_CHECKINDEX( itemindex) ){
+	if( cost == -1 || (cost*sellnum)+MyGold >= MaxGold || !ITEM_CHECKINDEX( item_index) ){
 		int fd = getfdFromCharaIndex( talker);
 		sprintf(token,"\n\n哎呀!对不起" "\n\n对不起啊 ! 可不可以再选一次呢？" );
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
 				WINDOW_BUTTONTYPE_OK, 
 				CHAR_WINDOWTYPE_WINDOWITEMSHOP_LIMIT,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1078,17 +1078,17 @@ BOOL NPC_SellNewItem(int meindex,int talker,char *data)
 			CHAR_getChar( talker, CHAR_NAME ),
 			CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-			itemindex,
+			item_index,
 #else
-	   		ITEM_getInt( itemindex, ITEM_ID ),
+	   		ITEM_getInt( item_index, ITEM_ID ),
 #endif
 			"Sell(卖道具)",
 			CHAR_getInt( talker,CHAR_FLOOR),
 			CHAR_getInt( talker,CHAR_X ),
 			CHAR_getInt( talker,CHAR_Y ),
-			ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-			ITEM_getChar( itemindex, ITEM_NAME),
-			ITEM_getInt( itemindex, ITEM_ID)
+			ITEM_getChar( item_index, ITEM_UNIQUECODE),
+			ITEM_getChar( item_index, ITEM_NAME),
+			ITEM_getInt( item_index, ITEM_ID)
 
 		);
 	}
@@ -1116,7 +1116,7 @@ void NPC_LimitItemShop(int meindex,int talker,int select)
 
 	if(NPC_Util_GetStrFromStrWithDelim( argstr, "sellonly_msg", buf, sizeof( buf))!=NULL){
 		sprintf(token,"\n\n%s", buf);
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
 				WINDOW_BUTTONTYPE_YESNO, 
 				CHAR_WINDOWTYPE_WINDOWITEMSHOP_LIMIT,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1144,7 +1144,7 @@ void NPC_ExpressmanCheck(int meindex,int talker)
 					"\n\n　　　　　＜  打工  ＞　　　"
 				  "\n\n　　　　  ＜交付行李＞"
 					,CHAR_getChar(meindex,CHAR_NAME),buf);
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
 			WINDOW_BUTTONTYPE_CANCEL, 
 			CHAR_WINDOWTYPE_WINDOWITEMSHOP_EXPRESS,
 			CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

@@ -123,7 +123,7 @@ int NPC_Lua_Create(const char *_DoFile, const char *_InitFuncName, char *_seek, 
 	
 	Char TM_char;
 	Object TM_obj;
-	int TM_charaindex;
+	int TM_char_index;
 	int TM_objindex;
 	int TM_seekint = 0;
 
@@ -185,46 +185,46 @@ int NPC_Lua_Create(const char *_DoFile, const char *_InitFuncName, char *_seek, 
 	TM_char.data[CHAR_NPCCREATEINDEX] = M_Create_Num++;
 	
 	//实例化TM_char （调用完之后NPC实体数据产生）
-	TM_charaindex = CHAR_initCharOneArray( &TM_char );
-	if( TM_charaindex == -1 )
+	TM_char_index = CHAR_initCharOneArray( &TM_char );
+	if( TM_char_index == -1 )
 	{
 		CHAR_endCharData( &TM_char );
 		LRetErrInt(M_Script_Lua, -3, "无法实例化NPC数据。");
 	}
 
-	CHAR_setInt(TM_charaindex, CHAR_INDEXOFEQTITLE, -1);
-	CHAR_setWorkInt( TM_charaindex, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_NONE);
+	CHAR_setInt(TM_char_index, CHAR_INDEXOFEQTITLE, -1);
+	CHAR_setWorkInt( TM_char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_NONE);
 
 	//地图标志？（目前不知道作用）
 	if(_IsFly == TRUE)
 	{
-		CHAR_setFlg(TM_charaindex, CHAR_ISFLYING, 1);
+		CHAR_setFlg(TM_char_index, CHAR_ISFLYING, 1);
 	}
 
 	TM_obj.type = OBJTYPE_CHARA;					//对象类型
-	TM_obj.index= TM_charaindex;					//对象对应的Char索引
-	TM_obj.x = CHAR_getInt(TM_charaindex, CHAR_X);		//对象所在地图的X坐标
-	TM_obj.y = CHAR_getInt(TM_charaindex, CHAR_Y);		//对象所在地图的Y坐标
-	TM_obj.floor = CHAR_getInt(TM_charaindex, CHAR_FLOOR);//对象所在地图
+	TM_obj.index= TM_char_index;					//对象对应的Char索引
+	TM_obj.x = CHAR_getInt(TM_char_index, CHAR_X);		//对象所在地图的X坐标
+	TM_obj.y = CHAR_getInt(TM_char_index, CHAR_Y);		//对象所在地图的Y坐标
+	TM_obj.floor = CHAR_getInt(TM_char_index, CHAR_FLOOR);//对象所在地图
 	TM_objindex = initObjectOne( &TM_obj );				//产生一个对象实例（调用完之后NPC实体产生）
 	if( TM_objindex == -1 )
 	{
-		CHAR_endCharOneArray( TM_charaindex );
+		CHAR_endCharOneArray( TM_char_index );
 		LRetErrInt(M_Script_Lua, -4, "无法实例化NPC对象。");
   }
 
-	CHAR_setWorkInt(TM_charaindex, CHAR_WORKOBJINDEX, TM_objindex);
+	CHAR_setWorkInt(TM_char_index, CHAR_WORKOBJINDEX, TM_objindex);
 
 #ifdef _ADD_ACTION
 	//这里设置NPC的动作
-	CHAR_setWorkInt(TM_charaindex, CHAR_WORKACTION, CHAR_getInt( TM_charaindex, CHAR_ACTIONSTYLE ) );
+	CHAR_setWorkInt(TM_char_index, CHAR_WORKACTION, CHAR_getInt( TM_char_index, CHAR_ACTIONSTYLE ) );
 
-	CHAR_sendWatchEvent(TM_objindex, CHAR_getWorkInt( TM_charaindex, CHAR_WORKACTION), NULL, 0, TRUE);
+	CHAR_sendWatchEvent(TM_objindex, CHAR_getWorkInt( TM_char_index, CHAR_WORKACTION), NULL, 0, TRUE);
 #else
 	CHAR_sendWatchEvent(TM_objindex , CHAR_ACTSTAND, NULL, 0, TRUE);
 #endif
-	CHAR_setWorkInt(TM_charaindex,CHAR_WORKNPCTYPE,2);
-	LRetInt(M_Script_Lua, TM_charaindex);
+	CHAR_setWorkInt(TM_char_index,CHAR_WORKNPCTYPE,2);
+	LRetInt(M_Script_Lua, TM_char_index);
 }
 
 //删除NPC 传入NPC唯一索引

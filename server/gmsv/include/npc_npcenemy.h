@@ -6,11 +6,11 @@ void NPC_NPCEnemyTalked( int meindex , int talkerindex , char *msg ,
 
 BOOL NPC_NPCEnemyInit( int meindex );
 int NPC_NPCEnemy_Dying( int battleindex, int meindex );
-int NPC_NPCEnemy_Encount( int meindex, int charaindex, int mode);
+int NPC_NPCEnemy_Encount( int meindex, int char_index, int mode);
 void NPC_NPCEnemyWatch( int meobjindex, int objindex, CHAR_ACTION act,
                     int x,int y,int dir, int* opt,int optlen );
 void NPC_NPCEnemyLoop( int meindex );
-BOOL NPC_NPCEnemy_BattleIn(  int meindex, int charaindex);
+BOOL NPC_NPCEnemy_BattleIn(  int meindex, int char_index);
 void NPC_NPCEnemyWindowTalked( int meindex, int talkerindex, int seqno, int select, char *data);
 
 #endif

@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_fmpkcallman.h"
 #include "family.h"
 #include "readmap.h"
@@ -124,7 +124,7 @@ static void NPC_FMPKCallMan_selectWindow( int meindex, int toindex,
 	   			"\n               《返回记录点》"
 	   			"\n                  《取消》",
 	   			buf);
-	   	lssproto_WN_send(fd, WINDOW_MESSAGETYPE_SELECT,
+	   	GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_SELECT,
 	   		WINDOW_BUTTONTYPE_NONE,
 	   		CHAR_WINDOWTYPE_FMPKCALLMAN_START,
 	   		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
@@ -143,7 +143,7 @@ static void NPC_FMPKCallMan_selectWindow( int meindex, int toindex,
 	   	      	 	return;
 	   	      if (strstr(buf, "%s") != NULL)
 	   	      	 sprintf(token, buf, CHAR_getChar(toindex, CHAR_FMNAME));
-	   	      lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	   	      GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 	   	         WINDOW_BUTTONTYPE_OK, -1, -1, token);
 	   	   }
 	   	   else
@@ -194,24 +194,24 @@ static void NPC_FMPKCallMan_selectWindow( int meindex, int toindex,
 							(fmpks[fmpk_pos].flag != FMPKS_FLAG_MANOR_PREPARE) )
 						{
                             sprintf(token,"你没有家族约战，请先约战吧。");
-	   						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	   						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 	   							WINDOW_BUTTONTYPE_OK, -1, -1, token);
 
 						}else if( now_time  < fmpks[fmpk_pos].dueltime ){
 	   	      		
 							sprintf(token,"请在对战前一小时再来召唤族员吧!");
-	   						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	   						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 	   							WINDOW_BUTTONTYPE_OK, -1, -1, token);
 
 						}else{
-	   						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	   						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 	   							WINDOW_BUTTONTYPE_YESNO,
 	   							CHAR_WINDOWTYPE_FMPKCALLMAN_CALL,
 	   							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 						}
 					}else{
                             sprintf(token,"你没有家族约战，请先约战吧。");
-                            lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+                            GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
                                      WINDOW_BUTTONTYPE_OK, -1, -1, token);
 					}
 			  }
@@ -221,7 +221,7 @@ static void NPC_FMPKCallMan_selectWindow( int meindex, int toindex,
 	   	   if (NPC_Util_GetStrFromStrWithDelim(npcarg, "NoLeaderMsg", buf,
 	   	         sizeof(buf)) == NULL)
 	   	      	 	return;
-	   	   lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	   	   GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 	   	      WINDOW_BUTTONTYPE_OK, -1, -1, buf);
 	   	}
 	   	break;
@@ -229,7 +229,7 @@ static void NPC_FMPKCallMan_selectWindow( int meindex, int toindex,
 	   	   if (NPC_Util_GetStrFromStrWithDelim(npcarg, "LeavepkMsg", buf,
 	   	         sizeof(buf)) == NULL)
 	   	      	 	return;
-	   	      lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	   	      GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 	   	         WINDOW_BUTTONTYPE_YESNO,
 	   	         CHAR_WINDOWTYPE_FMPKCALLMAN_LEAVE,
 	   	         CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), buf);
@@ -283,7 +283,7 @@ void NPC_FMPKCallManWindowTalked( int meindex, int talkerindex,
 	  case CHAR_WINDOWTYPE_FMPKCALLMAN_CALL:
 	  	if (select == WINDOW_BUTTONTYPE_YES)
 	  	{
-	  	   	lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+	  	   	GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 	  	   		WINDOW_BUTTONTYPE_OK, -1, -1,
 	  	   		makeEscapeString("\n召唤中・・・请稍候！\n＠＃＄％↑＆＊・・・", buf, sizeof(buf)));
 	  		NPC_CallFMMember(meindex,
@@ -312,26 +312,26 @@ void NPC_FMPKCallManWindowTalked( int meindex, int talkerindex,
 	  case CHAR_WINDOWTYPE_FMPKCALLMAN_LEAVE:
 	  	if (select == WINDOW_BUTTONTYPE_YES)
 	  	{
-	  		int spfl = 0, spx = 0, spy = 0, i = 0, itemindex = 0;
+	  		int spfl = 0, spx = 0, spy = 0, i = 0, item_index = 0;
 	  		if (CHAR_getWorkInt(talkerindex, CHAR_WORKBATTLEMODE)
 	  			!= BATTLE_CHARMODE_NONE)
 	  				return;
 	  		if (CHAR_getWorkInt(talkerindex, CHAR_WORKPARTYMODE)
 	  			!= CHAR_PARTY_NONE)
 	  		{
-	  			lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+	  			GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 	  				WINDOW_BUTTONTYPE_OK, -1, -1,
 	  				makeEscapeString("\n无法以团队方式离开唷！\n请先解散团队！", buf, sizeof(buf)));
 	  			return;
 	  		}
 	  		for (i = 0; i < CheckCharMaxItem(talkerindex); i++)
 	  		{
-	  			itemindex = CHAR_getItemIndex(talkerindex, i);
-	  			if (ITEM_CHECKINDEX(itemindex) == FALSE)	continue;
+	  			item_index = CHAR_getItemIndex(talkerindex, i);
+	  			if (ITEM_CHECKINDEX(item_index) == FALSE)	continue;
 
-	  			if (ITEM_getInt(itemindex, ITEM_DROPATLOGOUT) == TRUE)
+	  			if (ITEM_getInt(item_index, ITEM_DROPATLOGOUT) == TRUE)
 	  			{
-	  				lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+	  				GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 	  					WINDOW_BUTTONTYPE_OK, -1, -1,
 	  					makeEscapeString("\n您身上有贵重物品喔！\n为了避免在传送途中不小心损坏，\n请先将这类物品卸下，\n谢谢您的合作！", buf, sizeof(buf)));
 	  				return;
@@ -382,7 +382,7 @@ void NPC_CallFMMember(int meindex, int floor, int fmindex, char *fmname, int ind
 	            		checkflag = 1;
 	            }
 	            if (checkflag != 1)
-	            	lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+	            	GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 	            		WINDOW_BUTTONTYPE_YESNO, CHAR_WINDOWTYPE_FMPKCALLMAN_COME,
 	            		CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
 	            		makeEscapeString("\n家族已经在ＰＫ罗～要不要加入呢？\n不过若是在组队状态中，将会脱离团队唷！", buf, sizeof(buf)));

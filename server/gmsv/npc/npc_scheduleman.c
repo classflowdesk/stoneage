@@ -2,7 +2,7 @@
 #include <time.h>
 #include "char.h"
 #include "object.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npcutil.h"
 #include "handletime.h"
 #include "npc_scheduleman.h"
@@ -109,7 +109,7 @@ void NPC_SchedulemanTalked(int meindex, int talkerindex, char *msg, int color)
 
   CHAR_setWorkInt(talkerindex, CHAR_WORK_PAGE, 0);
   NPC_LIST_gendata(meindex, talkerindex, 0, buf, sizeof(buf));
-  lssproto_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULELIST,
+  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULELIST,
         		WINDOW_BUTTONTYPE_NEXT | WINDOW_BUTTONTYPE_CANCEL,
         		CHAR_WINDOWTYPE_SCHEDULEMAN_START,
 			CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -153,7 +153,7 @@ void NPC_SchedulemanWindowTalked(int meindex, int talkerindex,
       CHAR_setWorkInt(talkerindex, CHAR_WORK_PAGE, page);
       // Send WN
       NPC_LIST_gendata(meindex, talkerindex, page, buf, sizeof(buf));
-      lssproto_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULELIST,
+      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULELIST,
         		   buttontype,
         		   CHAR_WINDOWTYPE_SCHEDULEMAN_START,
 			   CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -208,7 +208,7 @@ void NPC_SchedulemanWindowTalked(int meindex, int talkerindex,
                 buttontype=0;
                 if (familyNumTotal>MAXFAMILYINONEWINDOW)
                   buttontype |= WINDOW_BUTTONTYPE_NEXT;
-                lssproto_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULESELECTFAMILY,
+                GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULESELECTFAMILY,
         			   buttontype,
         			   CHAR_WINDOWTYPE_SCHEDULEMAN_SELECT,
 				   CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -226,7 +226,7 @@ void NPC_SchedulemanWindowTalked(int meindex, int talkerindex,
                   // 送出细部调整的列表
                   CHAR_setWorkInt(talkerindex, CHAR_WORK_DUELTIME, dt);
                   NPC_DETAIL_gendata(meindex, buf, sizeof(buf), dt);
-                  lssproto_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULEDETAIL,
+                  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULEDETAIL,
         	  		   WINDOW_BUTTONTYPE_OK | WINDOW_BUTTONTYPE_CANCEL,
         	 		   CHAR_WINDOWTYPE_SCHEDULEMAN_DETAIL,
 				   CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -247,7 +247,7 @@ void NPC_SchedulemanWindowTalked(int meindex, int talkerindex,
 						"你的家族已经接受挑战。", CHAR_COLORWHITE);
                     // 重新送出 list
       				NPC_LIST_gendata(meindex, talkerindex, page, buf, sizeof(buf));
-					lssproto_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULELIST,
+					GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULELIST,
         			   buttontype,
         			   CHAR_WINDOWTYPE_SCHEDULEMAN_START,
 				    CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -265,7 +265,7 @@ void NPC_SchedulemanWindowTalked(int meindex, int talkerindex,
                   // 送出细部调整的列表
                   CHAR_setWorkInt(talkerindex, CHAR_WORK_DUELTIME, dt);
                   NPC_DETAIL_gendata(meindex, buf, sizeof(buf), dt);
-                  lssproto_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULEDETAIL,
+                  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULEDETAIL,
         	  		   WINDOW_BUTTONTYPE_OK | WINDOW_BUTTONTYPE_CANCEL,
         	 		   CHAR_WINDOWTYPE_SCHEDULEMAN_DETAIL,
 				   CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -314,7 +314,7 @@ void NPC_SchedulemanWindowTalked(int meindex, int talkerindex,
       CHAR_setWorkInt(talkerindex, CHAR_WORK_PAGE, page);
       // Send WN
       NPC_SELECT_gendata(meindex, talkerindex, page, buf, sizeof(buf));
-      lssproto_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULESELECTFAMILY,
+      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULESELECTFAMILY,
         		   buttontype,
         		   CHAR_WINDOWTYPE_SCHEDULEMAN_SELECT,
 			   CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -344,7 +344,7 @@ void NPC_SchedulemanWindowTalked(int meindex, int talkerindex,
                     strcpy(fmpks[fmpks_pos+i].guest_name, makeStringFromEscaped(token));
                     // 送出 detail 编辑窗
                     NPC_DETAIL_gendata(meindex, buf, sizeof(buf), dt);
-                    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULEDETAIL,
+                    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_PKSCHEDULEDETAIL,
         	  		   WINDOW_BUTTONTYPE_OK | WINDOW_BUTTONTYPE_CANCEL,
         	 		   CHAR_WINDOWTYPE_SCHEDULEMAN_DETAIL,
 				   CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),

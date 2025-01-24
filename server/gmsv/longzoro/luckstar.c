@@ -1,4 +1,3 @@
-#include <string.h>
 #include "version.h"
 #include "longzoro/luckstar.h"
 #include "char_base.h"
@@ -91,10 +90,10 @@ void LuckStar()
 //		char strGold[128]="";
 //		char strVippoint[128]="";
 		int luckid = rand() % lucknum;
-		int charaindex;
+		int char_index;
 		for(k=0;k<3;k++){
-			charaindex = rand() % CHAR_getPlayerMaxNum();
-			if(CHAR_CHECKINDEX(charaindex) == TRUE){
+			char_index = rand() % CHAR_getPlayerMaxNum();
+			if(CHAR_CHECKINDEX(char_index) == TRUE){
 				if(luckstar[luckid].pet > 0){
 					int	ret;
 					int	enemynum;
@@ -106,13 +105,13 @@ void LuckStar()
 						}
 					}
 					if( i != enemynum ){
-						ret = ENEMY_createPetFromEnemyIndex(charaindex, i);
+						ret = ENEMY_createPetFromEnemyIndex(char_index, i);
 						if( CHAR_CHECKINDEX( ret)){
 							snprintf( token,sizeof( token), "恭喜你，获得本次幸运赠送宠物 %s ！",ENEMY_getChar( i, ENEMY_NAME));
-							CHAR_talkToCli( charaindex, -1, token,  CHAR_COLORGREEN);
+							CHAR_talkToCli( char_index, -1, token,  CHAR_COLORGREEN);
 							int j;
 							for( j = 0; j < CHAR_MAXPETHAVE; j ++ ){
-								if( CHAR_getCharPet( charaindex, j ) == ret )break;
+								if( CHAR_getCharPet( char_index, j ) == ret )break;
 							}
 							if( j != CHAR_MAXPETHAVE ){
 								if( CHAR_CHECKINDEX( ret ) == TRUE ){
@@ -123,12 +122,12 @@ void LuckStar()
 								CHAR_setInt( ret, CHAR_HP, CHAR_getWorkInt( ret, CHAR_WORKMAXHP ));
 								CHAR_complianceParameter( ret );
 								snprintf( token, sizeof( token ), "K%d", j );
-								CHAR_sendStatusString( charaindex, token );
+								CHAR_sendStatusString( char_index, token );
 								snprintf( token, sizeof( token ), "W%d", j );
-								CHAR_sendStatusString( charaindex, token );
+								CHAR_sendStatusString( char_index, token );
 							}
 						}else{
-							CHAR_talkToCli( charaindex, -1, "很抱歉，由于你身上宠物已满，已错过这次幸运赠送宠物！",  CHAR_COLORYELLOW);
+							CHAR_talkToCli( char_index, -1, "很抱歉，由于你身上宠物已满，已错过这次幸运赠送宠物！",  CHAR_COLORYELLOW);
 						}
 						snprintf( strPet,sizeof( strPet), "宠物：%s", ENEMY_getChar( i, ENEMY_NAME));
 					}else{
@@ -136,41 +135,41 @@ void LuckStar()
 					}
 				}
 				if(luckstar[luckid].item > 0){
-					int itemindex = ITEM_makeItemAndRegist( luckstar[luckid].item );
-					if( ITEM_CHECKINDEX( itemindex) ){
-						int emptyitemindexinchara = CHAR_findEmptyItemBox( charaindex );
-						if( emptyitemindexinchara >= 0 ){
-							if( itemindex != -1 ){
-							  CHAR_setItemIndex( charaindex, emptyitemindexinchara, itemindex );
-							  ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
-							  ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX,charaindex);
-							  CHAR_sendItemDataOne( charaindex, emptyitemindexinchara);
+					int item_index = ITEM_makeItemAndRegist( luckstar[luckid].item );
+					if( ITEM_CHECKINDEX( item_index) ){
+						int emptyitem_indexinchara = CHAR_findEmptyItemBox( char_index );
+						if( emptyitem_indexinchara >= 0 ){
+							if( item_index != -1 ){
+							  CHAR_setItemIndex( char_index, emptyitem_indexinchara, item_index );
+							  ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX,-1);
+							  ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX,char_index);
+							  CHAR_sendItemDataOne( char_index, emptyitem_indexinchara);
 	
-								snprintf( token, sizeof( token), "恭喜你，获得本次幸运赠送物品 %s", ITEM_getChar( itemindex, ITEM_NAME));
-								CHAR_talkToCli( charaindex, -1,token, CHAR_COLORGREEN);
+								snprintf( token, sizeof( token), "恭喜你，获得本次幸运赠送物品 %s", ITEM_getChar( item_index, ITEM_NAME));
+								CHAR_talkToCli( char_index, -1,token, CHAR_COLORGREEN);
 							}
 						}else{
-							CHAR_talkToCli( charaindex, -1, "很抱歉，由于你身上物品已满，已错过这次幸运赠送物品！",  CHAR_COLORYELLOW);
+							CHAR_talkToCli( char_index, -1, "很抱歉，由于你身上物品已满，已错过这次幸运赠送物品！",  CHAR_COLORYELLOW);
 						}
-						snprintf( strItem,sizeof( strItem), "物品：%s", ITEM_getChar( itemindex, ITEM_NAME));
+						snprintf( strItem,sizeof( strItem), "物品：%s", ITEM_getChar( item_index, ITEM_NAME));
 					}else{
 						snprintf( strPet,sizeof( strPet), "物品：编号 %d 不存在", luckstar[luckid].item);
 					}
 				}
 /*
 				if(luckstar[luckid].gold > 0){
-					CHAR_setInt( charaindex , CHAR_GOLD , CHAR_getInt( charaindex , CHAR_GOLD ) + luckstar[luckid].gold);
-					CHAR_complianceParameter( charaindex );
-					CHAR_send_P_StatusString( charaindex , CHAR_P_STRING_GOLD);
+					CHAR_setInt( char_index , CHAR_GOLD , CHAR_getInt( char_index , CHAR_GOLD ) + luckstar[luckid].gold);
+					CHAR_complianceParameter( char_index );
+					CHAR_send_P_StatusString( char_index , CHAR_P_STRING_GOLD);
 					snprintf( strGold,sizeof( strGold), "石币：%d", luckstar[luckid].gold);
 					sprintf( token, "恭喜你，获得本次幸运赠送 %d 石币！", luckstar[luckid].gold);
-					CHAR_talkToCli( charaindex, -1,token, CHAR_COLORPURPLE );
+					CHAR_talkToCli( char_index, -1,token, CHAR_COLORPURPLE );
 				}
 				if(luckstar[luckid].vippoint > 0){
-					CHAR_setInt( charaindex , CHAR_AMPOINT , CHAR_getInt( charaindex , CHAR_AMPOINT ) + luckstar[luckid].vippoint);
+					CHAR_setInt( char_index , CHAR_AMPOINT , CHAR_getInt( char_index , CHAR_AMPOINT ) + luckstar[luckid].vippoint);
 					snprintf( strVippoint,sizeof( strVippoint), "积分点：%d", luckstar[luckid].vippoint);
 					sprintf( token, "恭喜你，获得本次幸运赠送 %d 积分点！", luckstar[luckid].vippoint);
-					CHAR_talkToCli( charaindex, -1,token, CHAR_COLORPURPLE );
+					CHAR_talkToCli( char_index, -1,token, CHAR_COLORPURPLE );
 				}
 */
 				break;
@@ -180,7 +179,7 @@ void LuckStar()
 		int playernum = CHAR_getPlayerMaxNum();
 
 		if(k < 3){
-			sprintf(token, "让我们一起祝贺 %s 成为本次幸运星玩家~获得以下奖品：", CHAR_getChar( charaindex, CHAR_NAME));
+			sprintf(token, "让我们一起祝贺 %s 成为本次幸运星玩家~获得以下奖品：", CHAR_getChar( char_index, CHAR_NAME));
 		}else{
 			sprintf(token, "很遗憾，本次幸运星未产生~祝愿您成为下一次幸运星获得者！");
 		}

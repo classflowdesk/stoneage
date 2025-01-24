@@ -4,8 +4,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "npc_transerman.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "readmap.h"
 #include "battle.h"
 #include "log.h"
@@ -213,7 +213,7 @@ static void NPC_MakePair_selectWindow( int meindex, int toindex, int num,int sel
 	case WINDOW_END:
 		break;
 	}
-	lssproto_WN_send( fd, windowtype, buttontype, windowno,
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 }
 
@@ -365,7 +365,7 @@ BOOL NPC_PairForage( int meindex, int toindex, char *arg, char *token)
 
 		name = CHAR_getChar( toindex, CHAR_NAME);
 		sprintf( buf, "%s：\n玩家%s\n%s", CHAR_getChar( meindex, CHAR_NAME),name, buf1);
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OKCANCEL, WINDOW_TALKPAIR,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OKCANCEL, WINDOW_TALKPAIR,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), buf);
 		break;
 	}
@@ -446,7 +446,7 @@ void NPC_PairUserAndWarp( int meindex, int toindex, int forindex, char *arg)
 	}
 
 	CHAR_JoinParty_Main( toindex, forindex);
-	//lssproto_PR_send( fd, 0, 1);
+	//GmsvServer_PR_send( fd, 0, 1);
 	{
 		int i;
 		for( i=0; i<MAXPAIRNUMS; i++)	{
@@ -475,9 +475,9 @@ int NPC_getPairCode( int toindex)
 	if( !CHAR_CHECKINDEX( toindex)) return-1;
 	for( i=0; i<15; i++)	{
 		char buf1[256];
-		int itemindex = CHAR_getItemIndex( toindex, i);
-		if( !ITEM_CHECKINDEX( itemindex) ) continue;
-		arg = ITEM_getChar(itemindex, ITEM_ARGUMENT );// 性别|个性编号|FLG
+		int item_index = CHAR_getItemIndex( toindex, i);
+		if( !ITEM_CHECKINDEX( item_index) ) continue;
+		arg = ITEM_getChar(item_index, ITEM_ARGUMENT );// 性别|个性编号|FLG
 		if( arg == "\0" )continue;
 		if( NPC_Util_GetStrFromStrWithDelim( arg, "PAIRCODE", buf1, sizeof( buf1) ) == NULL) continue;
 		code = atoi( buf1);

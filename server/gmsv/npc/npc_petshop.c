@@ -5,7 +5,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "pet_skill.h"
 #include "readmap.h"
 #include "battle.h"
@@ -40,7 +40,7 @@ NPC_PETSHOP_MSG		shopmsg[] = {
 };
 
 #define PETCOST	10
-int NPC_DepotPet_CheckRepeat( int charaindex);
+int NPC_DepotPet_CheckRepeat( int char_index);
 int NPC_DepotPet_CheckLevel(int meindex,int talker,int select,char *token);
 void NPC_PetDate(int meindex,int toindex,int select,char *token);
 void NPC_PetDate2(int meindex,int talker,int select,char *token);
@@ -64,7 +64,7 @@ void NPC_DepotPet_AskGet(int meindex,int talker,int select,char *token);
 //BOOL NPC_DepotPet_InsertPet( int meindex, int talkerindex, int num);
 //BOOL NPC_DepotPet_getPet( int meindex, int talkerindex, int num);
 #endif
-void NPC_DepotPet_CheckRepeat_del( int charaindex, int petindex);
+void NPC_DepotPet_CheckRepeat_del( int char_index, int petindex);
 
 //   仃  木嗯喊煌遥挚
 #define		NPC_GETPOOLCOST( talker)		( 50 + CHAR_getInt( talker, CHAR_LV)*4)
@@ -261,7 +261,7 @@ void NPC_PetShop_selectWindow( int meindex, int toindex, int num,int select)
 			char	buf[256];
 			sprintf( message, "为了确保你的物品安全，请输入你的安全密码进行解锁！\n");
 		
-			lssproto_WN_send( getfdFromCharaIndex(toindex), WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT, 
+			GmsvServer_WN_send( getfdFromCharaIndex(toindex), WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT, 
 							WINDOW_BUTTONTYPE_OKCANCEL,
 							CHAR_WINDOWTYPE_ITEM_PET_LOCKED,
 							-1,
@@ -456,7 +456,7 @@ void NPC_PetShop_selectWindow( int meindex, int toindex, int num,int select)
 	//makeEscapeString( token, escapedname, sizeof(escapedname));
 		
 	/*--霜耨--*/
-	lssproto_WN_send( fd, windowtype, 
+	GmsvServer_WN_send( fd, windowtype, 
 				buttontype, 
 				windowno,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -866,7 +866,7 @@ void NPC_PetDel(int meindex, int talker,int select,char* token)
         // CoolFish: Family 2001/6/14
 	if (CHAR_getInt(petindex, CHAR_PETFAMILY) == 1){	
 /*		char buf[1024];
-		lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
 		makeEscapeString("\n\n很抱歉～守护兽无法贩卖喔！\n请自己好好照顾！", buf, sizeof(buf)));
@@ -878,7 +878,7 @@ void NPC_PetDel(int meindex, int talker,int select,char* token)
         // Robin 0725
         if (CHAR_getInt( talker, CHAR_RIDEPET ) == petsel ){	
 /*        	char buf[1024];
-        	lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+        	GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
         		WINDOW_BUTTONTYPE_OK,
         		-1, -1,
         		makeEscapeString("\n\n骑乘中的宠物无法贩卖喔！", buf, sizeof(buf)));
@@ -892,7 +892,7 @@ void NPC_PetDel(int meindex, int talker,int select,char* token)
 	defpet=CHAR_getInt(talker,CHAR_DEFAULTPET);
 	if(defpet==petsel){
 		CHAR_setInt(talker,CHAR_DEFAULTPET,-1);
-		lssproto_KS_send( fd, -1, TRUE);
+		GmsvServer_KS_send( fd, -1, TRUE);
 	}
 
 #ifdef _PET_ITEM
@@ -940,7 +940,7 @@ void NPC_PetDel2( int meindex, int talker, int select, char *token)
         if (CHAR_getInt( talker, CHAR_RIDEPET ) == selectpet )
         {
 /*        	char buf[1024];
-        	lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+        	GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
         		WINDOW_BUTTONTYPE_OK,
         		-1, -1,
         		makeEscapeString("\n\n骑乘中的宠物无法寄放喔！", buf, sizeof(buf)));
@@ -959,7 +959,7 @@ void NPC_PetDel2( int meindex, int talker, int select, char *token)
 	// 爵  赏  迕矢永玄卅日］公木及瓒  毛壅允［
 	if( CHAR_getInt( talker, CHAR_DEFAULTPET) == selectpet) {
 		CHAR_setInt( talker, CHAR_DEFAULTPET, -1);
-		lssproto_KS_send( fd, -1, TRUE);
+		GmsvServer_KS_send( fd, -1, TRUE);
 	}
 	//   仃  木  卞］矢永玄及奶件犯永弁旦毛戊疋□
 	CHAR_setCharPoolPet( talker, emptyindex, petindex);
@@ -1175,7 +1175,7 @@ void NPC_PoolPetShop_DepotPet_Menu( int meindex, int talkerindex)
 			"          ＜＜＜取回宠物＞＞＞\n"
 		);
 
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
 						WINDOW_BUTTONTYPE_CANCEL,
 						CHAR_WINDOWTYPE_DEPOTPETSHOP_HANDLE,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1293,7 +1293,7 @@ void NPC_DepotPet_Add( int meindex, int talker, int select, char *token)
 	// 爵  赏  迕矢永玄卅日］公木及瓒  毛壅允［
 	if( CHAR_getInt( talker, CHAR_DEFAULTPET) == selectpet) {
 		CHAR_setInt( talker, CHAR_DEFAULTPET, -1);
-		lssproto_KS_send( fd, -1, TRUE);
+		GmsvServer_KS_send( fd, -1, TRUE);
 	}
 	//   仃  木  卞］矢永玄及奶件犯永弁旦毛戊疋□
 	CHAR_setDepotPetIndex( talker, emptyindex, petindex);
@@ -1457,7 +1457,7 @@ void NPC_DepotPet_AskGet(int meindex,int talker,int select,char *token)
 	sprintf(token,"\n领回[%s]", petname);
 }
 
-int NPC_DepotPet_CheckRepeat( int charaindex)
+int NPC_DepotPet_CheckRepeat( int char_index)
 {
 	int petindex1, petindex2;
 	int i, j, find, ret = FALSE;
@@ -1465,28 +1465,28 @@ int NPC_DepotPet_CheckRepeat( int charaindex)
 
 	for( i =0; i <(CHAR_MAXDEPOTPETHAVE-1); i++)
 	{
-		petindex1 = CHAR_getDepotPetIndex( charaindex, i);
+		petindex1 = CHAR_getDepotPetIndex( char_index, i);
 		if( !CHAR_CHECKINDEX( petindex1)) continue;
 		find = 0;
 		for( j =(i+1); j <CHAR_MAXDEPOTPETHAVE; j++)
 		{
-			petindex2 = CHAR_getDepotPetIndex( charaindex, j);
+			petindex2 = CHAR_getDepotPetIndex( char_index, j);
 			if( !CHAR_CHECKINDEX( petindex2)) continue;
 			if( petindex1 == petindex2 ) continue;
 			if( !strcmp( CHAR_getChar( petindex1, CHAR_UNIQUECODE),
 						CHAR_getChar( petindex2, CHAR_UNIQUECODE) ) )
 			{
 				print(" 在仓库找到非法宠了 ");
-				CHAR_setDepotPetIndex( charaindex, j, -1);
-				NPC_DepotPet_CheckRepeat_del( charaindex, petindex2);
+				CHAR_setDepotPetIndex( char_index, j, -1);
+				NPC_DepotPet_CheckRepeat_del( char_index, petindex2);
 				find ++;
 				ret = TRUE;
 			}
 		}
 		if( find >0)
 		{
-			CHAR_setDepotPetIndex( charaindex, i, -1);
-			NPC_DepotPet_CheckRepeat_del( charaindex, petindex1);
+			CHAR_setDepotPetIndex( char_index, i, -1);
+			NPC_DepotPet_CheckRepeat_del( char_index, petindex1);
 		}
 	}
 
@@ -1494,29 +1494,29 @@ int NPC_DepotPet_CheckRepeat( int charaindex)
 		workindex[i] = -1;
 	}
 	for( i = 0; i < CHAR_MAXDEPOTPETHAVE; i ++ ) {
-		int pindex = CHAR_getDepotPetIndex( charaindex, i);
+		int pindex = CHAR_getDepotPetIndex( char_index, i);
 		if( CHAR_CHECKINDEX( pindex) ) {
 			workindex[cnt++] = pindex;
 		}
 	}
 	for( i = 0; i < CHAR_MAXDEPOTPETHAVE; i ++ ) {
-		CHAR_setDepotPetIndex( charaindex, i, workindex[i]);
+		CHAR_setDepotPetIndex( char_index, i, workindex[i]);
 	}
 
 	return ret;
 }
 
-void NPC_DepotPet_CheckRepeat_del( int charaindex, int petindex)
+void NPC_DepotPet_CheckRepeat_del( int char_index, int petindex)
 {
 	LogPet(
-		CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-		CHAR_getChar( charaindex, CHAR_CDKEY ),
+		CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+		CHAR_getChar( char_index, CHAR_CDKEY ),
 		CHAR_getChar( petindex, CHAR_NAME),
 		CHAR_getInt( petindex, CHAR_LV),
 		"del(清除仓库洗宠)",
-		CHAR_getInt( charaindex,CHAR_FLOOR),
-		CHAR_getInt( charaindex,CHAR_X ),
-		CHAR_getInt( charaindex,CHAR_Y ),
+		CHAR_getInt( char_index,CHAR_FLOOR),
+		CHAR_getInt( char_index,CHAR_X ),
+		CHAR_getInt( char_index,CHAR_Y ),
 		CHAR_getChar( petindex, CHAR_UNIQUECODE)   // shan 2001/12/14
 		);
 	CHAR_endCharOneArray( petindex );

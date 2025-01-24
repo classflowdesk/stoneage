@@ -16,7 +16,7 @@ int MAPPOINT_setMapWarpGoal(int ps, char *buf);
 int MAPPOINT_setMapWarpFrom(int ps, char *buf);
 int MAPPOINT_getMapWarpGoal(int ps, int ofl, int ox, int oy, int *fl, int *x, int *y);
 
-void MAPPOINT_MapWarpHandle( int charaindex, int ps, int ofl, int ox, int oy);
+void MAPPOINT_MapWarpHandle( int char_index, int ps, int ofl, int ox, int oy);
 
 #ifdef _MO_LNS_MAPSUOXU
 int DelMapPoint(int ps);

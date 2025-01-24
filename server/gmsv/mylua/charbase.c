@@ -15,7 +15,7 @@
 #include "longzoro/version.h"
 #include "handletime.h"
 #include "item_event.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "shop.h"
 #ifdef _ALLBLUES_LUA   
 #include "mylua/mylua.h"
@@ -790,24 +790,24 @@ static int delFunctionPointer(lua_State *L)
 static int TalkToCli(lua_State *L) 
 {
 	size_t l;
-	const int talkedcharaindex = luaL_checkint(L, 1);
-	const int talkcharaindex = luaL_checkint(L, 2);
+	const int talkedchar_index = luaL_checkint(L, 1);
+	const int talkchar_index = luaL_checkint(L, 2);
 	char *message=luaL_checklstring(L, 3, &l);
 	const int color = getCharBaseValue(L, 4, CharBaseColor, arraysizeof(CharBaseColor));
-	CHAR_talkToCli(talkedcharaindex, talkcharaindex, message, color);
+	CHAR_talkToCli(talkedchar_index, talkchar_index, message, color);
 	return 1;
 }
 
 static int TalkToRound(lua_State *L) 
 {
 	size_t l;
-	const int talkedcharaindex = luaL_checkint(L, 1);
+	const int talkedchar_index = luaL_checkint(L, 1);
 	char *message=luaL_checklstring(L, 2, &l);
 	const int color = getCharBaseValue(L, 3, CharBaseColor, arraysizeof(CharBaseColor));
 
-	int fl = CHAR_getInt( talkedcharaindex, CHAR_FLOOR) ;
-	int x  = CHAR_getInt( talkedcharaindex, CHAR_X) ;
-	int y  = CHAR_getInt( talkedcharaindex, CHAR_Y) ;
+	int fl = CHAR_getInt( talkedchar_index, CHAR_FLOOR) ;
+	int x  = CHAR_getInt( talkedchar_index, CHAR_X) ;
+	int y  = CHAR_getInt( talkedchar_index, CHAR_Y) ;
 	
 	int i,j;
 
@@ -819,13 +819,13 @@ static int TalkToRound(lua_State *L)
 			for( object = MAP_getTopObj( fl,i,j ) ; object ; object = NEXT_OBJECT(object) ){
 				int objindex = GET_OBJINDEX(object);
 				int	toindex = OBJECT_getIndex( objindex);
-				if( OBJECT_getType(objindex) == OBJTYPE_CHARA && toindex != talkedcharaindex ){
+				if( OBJECT_getType(objindex) == OBJTYPE_CHARA && toindex != talkedchar_index ){
 					if( CHAR_getInt(toindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER){
 						typedef void (*TALKF)(int,int,char*,int,int);
 						TALKF   talkedfunc=NULL;
 						talkedfunc = (TALKF)CHAR_getFunctionPointer( toindex, CHAR_TALKEDFUNC);
 						if( talkedfunc ) {
-							talkedfunc(toindex, talkedcharaindex, message, color, -1);
+							talkedfunc(toindex, talkedchar_index, message, color, -1);
 						}
 					}
 				}
@@ -1008,22 +1008,22 @@ static int talkToFloor(lua_State *L)
 static int talkToParty(lua_State *L) 
 {
 	size_t l;
-	const int talkedcharaindex = luaL_checkint(L, 1);
-	const int talkcharaindex = luaL_checkint(L, 2);
+	const int talkedchar_index = luaL_checkint(L, 1);
+	const int talkchar_index = luaL_checkint(L, 2);
 	char *message=luaL_checklstring(L, 3, &l);
 	const int color = getCharBaseValue(L, 4, CharBaseColor, arraysizeof(CharBaseColor));
-	CHAR_talkToCliAndParty(talkedcharaindex, talkcharaindex, message, color);
+	CHAR_talkToCliAndParty(talkedchar_index, talkchar_index, message, color);
 	return 1;
 }
 
 static int talkToServer(lua_State *L) 
 {
 	size_t l;
-	const int talkcharaindex = luaL_checkint(L, 1);
+	const int talkchar_index = luaL_checkint(L, 1);
 	char *message=luaL_checklstring(L, 2, &l);
 	const int color = getCharBaseValue(L, 3, CharBaseColor, arraysizeof(CharBaseColor));
 	
-	CHAR_talkToAll( talkcharaindex, message, color);
+	CHAR_talkToAll( talkchar_index, message, color);
 	return 1;
 }
 
@@ -1031,7 +1031,7 @@ static int talkToServer(lua_State *L)
 static int talkToServerEx(lua_State *L)
 {
 	size_t l;
-	const int talkcharaindex = luaL_checkint(L, 1);
+	const int talkchar_index = luaL_checkint(L, 1);
 	char *message=luaL_checklstring(L, 2, &l);
 	const int color = getCharBaseValue(L, 3, CharBaseColor, arraysizeof(CharBaseColor));
 	const int fontsize = luaL_checkint(L, 4);
@@ -1041,7 +1041,7 @@ static int talkToServerEx(lua_State *L)
 		if (CHAR_getCharUse(i) == FALSE) continue;
 	  if ( !CHAR_CHECKINDEX( i ) )
 	    continue;
-			CHAR_talkToCliExt(i, talkcharaindex, message, color, fontsize);
+			CHAR_talkToCliExt(i, talkchar_index, message, color, fontsize);
 	}
 
 	return 1;
@@ -1051,12 +1051,12 @@ static int talkToServerEx(lua_State *L)
 #ifdef _ALLBLUES_LUA_1_1
 static int WarpToSpecificPoint(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int floor = luaL_checkint(L, 2);
 	const int x = luaL_checkint(L, 3);
 	const int y = luaL_checkint(L, 4);
 
-	CHAR_warpToSpecificPoint( charaindex, floor, x, y );
+	CHAR_warpToSpecificPoint( char_index, floor, x, y );
 	return 1;
 }
 static int MapAllWarp(lua_State *L) 
@@ -1201,66 +1201,66 @@ static int getDepotPetIndex(lua_State *L)
 
 static int DelItem(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
-	const int itemindex = luaL_checkint(L, 2);
+	const int char_index = luaL_checkint(L, 1);
+	const int item_index = luaL_checkint(L, 2);
 	
-	CHAR_DelItem( charaindex, itemindex);
+	CHAR_DelItem( char_index, item_index);
 
 	return 1;
 }
 
 static int getFd(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, getfdFromCharaIndex(charaindex));
+	lua_pushinteger(L, getfdFromCharaIndex(char_index));
 	return 1;
 }
 
 static int Updata(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int indextable = getCharBaseValue(L, 2, CharBaseUpdata, arraysizeof(CharBaseUpdata));
 
-	CHAR_send_P_StatusString( charaindex , indextable);
+	CHAR_send_P_StatusString( char_index , indextable);
 	return 1;
 }
 
 static int Additem(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int itemid = luaL_checkint(L, 2);
-	int itemindex = -1;
-	int emptyitemindexinchara = CHAR_findEmptyItemBox( charaindex );
+	int item_index = -1;
+	int emptyitem_indexinchara = CHAR_findEmptyItemBox( char_index );
 	
-	if( emptyitemindexinchara >= 0 ){
-		itemindex = ITEM_makeItemAndRegist( itemid );
+	if( emptyitem_indexinchara >= 0 ){
+		item_index = ITEM_makeItemAndRegist( itemid );
 		
-		if( itemindex > -1 ){
-	  	CHAR_setItemIndex( charaindex, emptyitemindexinchara, itemindex );
-	  	ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
-	  	ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, charaindex);
-	  	CHAR_sendItemDataOne( charaindex, emptyitemindexinchara);
+		if( item_index > -1 ){
+	  	CHAR_setItemIndex( char_index, emptyitem_indexinchara, item_index );
+	  	ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
+	  	ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, char_index);
+	  	CHAR_sendItemDataOne( char_index, emptyitem_indexinchara);
 			LogItem(
-				CHAR_getChar( charaindex, CHAR_NAME ),
-				CHAR_getChar( charaindex, CHAR_CDKEY ),
+				CHAR_getChar( char_index, CHAR_NAME ),
+				CHAR_getChar( char_index, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-				itemindex,
+				item_index,
 #else
 				atoi( message),
 #endif
 				"AddItem(制作道具LUA)",
-		      CHAR_getInt( charaindex,CHAR_FLOOR),
-					CHAR_getInt( charaindex,CHAR_X ),
-		      CHAR_getInt( charaindex,CHAR_Y ),
-		      ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-					ITEM_getChar( itemindex, ITEM_NAME),
-					ITEM_getInt( itemindex, ITEM_ID)
+		      CHAR_getInt( char_index,CHAR_FLOOR),
+					CHAR_getInt( char_index,CHAR_X ),
+		      CHAR_getInt( char_index,CHAR_Y ),
+		      ITEM_getChar( item_index, ITEM_UNIQUECODE),
+					ITEM_getChar( item_index, ITEM_NAME),
+					ITEM_getInt( item_index, ITEM_ID)
 		
 			);
 		}
 	}
-	lua_pushinteger(L, itemindex);
+	lua_pushinteger(L, item_index);
 	return 1;
 }
 #ifdef _NEW_ITEM_
@@ -1268,17 +1268,17 @@ extern int CheckCharMaxItem(int charindex);
 #endif
 static int Finditem(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int itemid = luaL_checkint(L, 2);
 	int i;
-	int itemindex=-1;
+	int item_index=-1;
 	int id;
-	for( i=CHAR_STARTITEMARRAY;i<CheckCharMaxItem(charaindex);i++ ){
-		itemindex = CHAR_getItemIndex( charaindex , i );
-		if( ITEM_CHECKINDEX( itemindex) )	{
-			id=ITEM_getInt(itemindex ,ITEM_ID );
+	for( i=CHAR_STARTITEMARRAY;i<CheckCharMaxItem(char_index);i++ ){
+		item_index = CHAR_getItemIndex( char_index , i );
+		if( ITEM_CHECKINDEX( item_index) )	{
+			id=ITEM_getInt(item_index ,ITEM_ID );
 			if(id == itemid){
-				lua_pushinteger(L, itemindex);
+				lua_pushinteger(L, item_index);
 				return 1;
 			}
 		}
@@ -1442,24 +1442,24 @@ static int AddPetCf(lua_State *L)
 #ifdef _PLAYER_NPC
 static int setPlayerNpc(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int petindex = luaL_checkint(L, 2);
 	int i;
-	for( i = 1; i < getPartyNum(charaindex); i ++ ) {
-		if( CHAR_getWorkInt( charaindex, i + CHAR_WORKPARTYINDEX1) == -1 ) {
+	for( i = 1; i < getPartyNum(char_index); i ++ ) {
+		if( CHAR_getWorkInt( char_index, i + CHAR_WORKPARTYINDEX1) == -1 ) {
 			break;
 		}
 	}
-	if(i == getPartyNum(charaindex)){
+	if(i == getPartyNum(char_index)){
 		CHAR_endCharOneArray( petindex );
 	}else{
 		if(CHAR_CHECKINDEX(petindex) == TRUE){
 			Object object;
 			int objindex;
 		
-			CHAR_setInt(petindex, CHAR_FLOOR, CHAR_getInt(charaindex, CHAR_FLOOR));
-			CHAR_setInt(petindex, CHAR_X, CHAR_getInt(charaindex, CHAR_X));
-			CHAR_setInt(petindex, CHAR_Y, CHAR_getInt(charaindex, CHAR_Y));
+			CHAR_setInt(petindex, CHAR_FLOOR, CHAR_getInt(char_index, CHAR_FLOOR));
+			CHAR_setInt(petindex, CHAR_X, CHAR_getInt(char_index, CHAR_X));
+			CHAR_setInt(petindex, CHAR_Y, CHAR_getInt(char_index, CHAR_Y));
 					
 			object.type = OBJTYPE_CHARA;
 			object.index = petindex;
@@ -1473,7 +1473,7 @@ static int setPlayerNpc(lua_State *L)
 			   CHAR_endCharOneArray( petindex );
 			} else {
 				CHAR_setWorkInt( petindex,CHAR_WORKOBJINDEX, objindex );
-				if(CHAR_JoinParty_Main(petindex, charaindex) == FALSE){
+				if(CHAR_JoinParty_Main(petindex, char_index) == FALSE){
 					CHAR_CharaDelete( petindex );
 					return 1;
 				}
@@ -1694,25 +1694,25 @@ static int dropPetAbsolute(lua_State *L)
 
 static int AllWarpToSpecificPoint(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int floor = luaL_checkint(L, 2);
 	const int x = luaL_checkint(L, 3);
 	const int y = luaL_checkint(L, 4);
 
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE ) == CHAR_PARTY_LEADER ){
+	if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE ) == CHAR_PARTY_LEADER ){
 		int i;
-		for( i = 0; i <  getPartyNum(charaindex); i ++ ){
-			int subindex = CHAR_getWorkInt( charaindex, CHAR_WORKPARTYINDEX1+i );
+		for( i = 0; i <  getPartyNum(char_index); i ++ ){
+			int subindex = CHAR_getWorkInt( char_index, CHAR_WORKPARTYINDEX1+i );
 			if( CHAR_CHECKINDEX( subindex ) == FALSE ) continue;
 			CHAR_warpToSpecificPoint( subindex, floor, x, y );
 			ITEM_WarpDelErrorItem( subindex );
 		}
-	}else if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE ) == CHAR_PARTY_CLIENT ){
-		CHAR_talkToCli(charaindex, -1, "队员无法使用。", CHAR_COLORYELLOW);
+	}else if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE ) == CHAR_PARTY_CLIENT ){
+		CHAR_talkToCli(char_index, -1, "队员无法使用。", CHAR_COLORYELLOW);
 		return FALSE;
-	}else if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE ) == CHAR_PARTY_NONE ){
-		ITEM_WarpDelErrorItem( charaindex );
-		CHAR_warpToSpecificPoint( charaindex, floor, x, y );
+	}else if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE ) == CHAR_PARTY_NONE ){
+		ITEM_WarpDelErrorItem( char_index );
+		CHAR_warpToSpecificPoint( char_index, floor, x, y );
 	}
 
 
@@ -1721,13 +1721,13 @@ static int AllWarpToSpecificPoint(lua_State *L)
 
 static int Findpet(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int petid = luaL_checkint(L, 2);
 	const int lv = luaL_checkint(L, 3);
 	int i;
 	
 	for( i = 0; i < CHAR_MAXPETHAVE; i ++ ){
-		int petindex = CHAR_getCharPet( charaindex, i );
+		int petindex = CHAR_getCharPet( char_index, i );
 		if(!CHAR_CHECKINDEX( petindex))continue;
 		if( CHAR_getInt(petindex, CHAR_PETID) == petid ){
 			if(lv > 0){
@@ -1746,13 +1746,13 @@ static int Findpet(lua_State *L)
 
 static int FindPetFormMatemo(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int metamo = luaL_checkint(L, 2);
 	const int lv = luaL_checkint(L, 3);
 	int i;
 	
 	for( i = 0; i < CHAR_MAXPETHAVE; i ++ ){
-		int petindex = CHAR_getCharPet( charaindex, i );
+		int petindex = CHAR_getCharPet( char_index, i );
 		if(!CHAR_CHECKINDEX( petindex))continue;
 		if( CHAR_getInt(petindex, CHAR_BASEBASEIMAGENUMBER) == metamo ){
 			if(lv > 0){
@@ -1772,7 +1772,7 @@ static int FindPetFormMatemo(lua_State *L)
 static int FindPetFormEnemyTempID(lua_State *L) 
 {
 	size_t l;
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	char *data=luaL_checklstring(L, 2, &l);
 	char token[64];
 	int enemytempid = -1, lv = 0;
@@ -1791,7 +1791,7 @@ static int FindPetFormEnemyTempID(lua_State *L)
 	}
 
 	for( i = 0; i < CHAR_MAXPETHAVE; i ++ ){
-		int petindex = CHAR_getCharPet( charaindex, i );
+		int petindex = CHAR_getCharPet( char_index, i );
 		if(!CHAR_CHECKINDEX( petindex))continue;
 
 		if( CHAR_getInt( petindex, CHAR_PETID) == enemytempid ){
@@ -1811,42 +1811,42 @@ static int FindPetFormEnemyTempID(lua_State *L)
 
 static int CharaDeleteHavePet(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
-	CHAR_CharaDeleteHavePet( charaindex);
+	const int char_index = luaL_checkint(L, 1);
+	CHAR_CharaDeleteHavePet( char_index);
 	return 1;
 }
 
 
 static int DelPet(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int petindex = luaL_checkint(L, 2);
 	int i;
 	char category[12];
 
 	for( i = 0; i < CHAR_MAXPETHAVE; i ++ ){
-		if( petindex == CHAR_getCharPet( charaindex, i ) ){
-			if( CHAR_getInt( charaindex, CHAR_RIDEPET) == i ) {
-				CHAR_setInt( charaindex, CHAR_RIDEPET, -1);
-				CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_RIDEPET );
-				CHAR_complianceParameter( charaindex );
-				CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex , CHAR_WORKOBJINDEX ));
+		if( petindex == CHAR_getCharPet( char_index, i ) ){
+			if( CHAR_getInt( char_index, CHAR_RIDEPET) == i ) {
+				CHAR_setInt( char_index, CHAR_RIDEPET, -1);
+				CHAR_send_P_StatusString( char_index, CHAR_P_STRING_RIDEPET );
+				CHAR_complianceParameter( char_index );
+				CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index , CHAR_WORKOBJINDEX ));
 			}
-	    LogPet( CHAR_getChar( charaindex, CHAR_NAME ), // 平乓仿
-		                CHAR_getChar( charaindex, CHAR_CDKEY ),
+	    LogPet( CHAR_getChar( char_index, CHAR_NAME ), // 平乓仿
+		                CHAR_getChar( char_index, CHAR_CDKEY ),
 		                CHAR_getChar( petindex, CHAR_NAME),
 		                CHAR_getInt( petindex, CHAR_LV),
 		                "EvnetDell(LUA任务删除)",
-		                CHAR_getInt( charaindex,CHAR_FLOOR),
-		                CHAR_getInt( charaindex,CHAR_X ),
-		                CHAR_getInt( charaindex,CHAR_Y ),
+		                CHAR_getInt( char_index,CHAR_FLOOR),
+		                CHAR_getInt( char_index,CHAR_X ),
+		                CHAR_getInt( char_index,CHAR_Y ),
 		                CHAR_getChar( petindex, CHAR_UNIQUECODE)   // shan 2001/12/14
 	    );
 
 			CHAR_endCharOneArray( petindex );
-			CHAR_setCharPet( charaindex, i, -1);
+			CHAR_setCharPet( char_index, i, -1);
 			snprintf( category, sizeof( category), "K%d",i);
-			CHAR_sendStatusString( charaindex, category );
+			CHAR_sendStatusString( char_index, category );
 			break;
 		}
 	}
@@ -1860,19 +1860,19 @@ static int DelPet(lua_State *L)
 #ifdef _ALLBLUES_LUA_1_7
 static int findEmptyItemBox(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, CHAR_findEmptyItemBox(charaindex));
+	lua_pushinteger(L, CHAR_findEmptyItemBox(char_index));
 	return 1;
 }
 
 static int findEmptyPetBox(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	int num = 0;
 	int i;
 	for( i = 0; i < CHAR_MAXPETHAVE; i ++ ){
-		int petindex = CHAR_getCharPet( charaindex, i );
+		int petindex = CHAR_getCharPet( char_index, i );
 		if(!CHAR_CHECKINDEX(petindex)){
 			num ++ ;
 		}
@@ -1883,7 +1883,7 @@ static int findEmptyPetBox(lua_State *L)
 
 static int dropPetFollow(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int havepetindex = luaL_checkint(L, 2);
 	char szPet[128];
     int dirx[9],diry[9];
@@ -1892,83 +1892,83 @@ static int dropPetFollow(lua_State *L)
     int floor,x,y;
     int petindex;
 
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEMODE)
+	if( CHAR_getWorkInt( char_index, CHAR_WORKBATTLEMODE)
 		!= BATTLE_CHARMODE_NONE) return FALSE;
-    petindex = CHAR_getCharPet(charaindex,havepetindex);
+    petindex = CHAR_getCharPet(char_index,havepetindex);
     if( petindex == -1  ) return FALSE;
-    if( !CHAR_CHECKINDEX( charaindex ) )return FALSE;
+    if( !CHAR_CHECKINDEX( char_index ) )return FALSE;
     if( CHAR_CHECKINDEX( petindex) == FALSE ) return FALSE;
 
 	if (CHAR_getInt(petindex, CHAR_PETFAMILY) == 1){
-     	CHAR_talkToCli(charaindex, -1, "家族守护兽无法丢出！", CHAR_COLORYELLOW);
+     	CHAR_talkToCli(char_index, -1, "家族守护兽无法丢出！", CHAR_COLORYELLOW);
     	return	FALSE;  
   }
-  if (CHAR_getInt(charaindex, CHAR_RIDEPET) == havepetindex){
-  	CHAR_talkToCli(charaindex, -1, "骑乘中的宠物无法跟随！", CHAR_COLORYELLOW);
+  if (CHAR_getInt(char_index, CHAR_RIDEPET) == havepetindex){
+  	CHAR_talkToCli(char_index, -1, "骑乘中的宠物无法跟随！", CHAR_COLORYELLOW);
   	return	FALSE;
   }
 
 	for( i  = 0 ; i < 7 ; i  ++ ){
-	    dirx[i+2] = CHAR_getDX(CHAR_getInt(charaindex,CHAR_DIR) + i+1);
-	    diry[i+2] = CHAR_getDY(CHAR_getInt(charaindex,CHAR_DIR) + i+1);
+	    dirx[i+2] = CHAR_getDX(CHAR_getInt(char_index,CHAR_DIR) + i+1);
+	    diry[i+2] = CHAR_getDY(CHAR_getInt(char_index,CHAR_DIR) + i+1);
 	}
-	dirx[0] = CHAR_getDX(CHAR_getInt(charaindex,CHAR_DIR));
-	diry[0] = CHAR_getDY(CHAR_getInt(charaindex,CHAR_DIR));
+	dirx[0] = CHAR_getDX(CHAR_getInt(char_index,CHAR_DIR));
+	diry[0] = CHAR_getDY(CHAR_getInt(char_index,CHAR_DIR));
 	dirx[1] = 0;
 	diry[1] = 0;
 
-	floor = CHAR_getInt( charaindex,CHAR_FLOOR );
+	floor = CHAR_getInt( char_index,CHAR_FLOOR );
 	for( i = 0 ; i < 9 ; i ++ ){
-	    int x=CHAR_getInt(charaindex,CHAR_X)+dirx[i];
-	    int y=CHAR_getInt(charaindex,CHAR_Y)+diry[i];
+	    int x=CHAR_getInt(char_index,CHAR_X)+dirx[i];
+	    int y=CHAR_getInt(char_index,CHAR_Y)+diry[i];
 	    if( PET_isPutPoint( floor, x, y ) == TRUE ) {
 	        break;
 	    }
 	}
 	if( i == 9 ) i = 1;
 
-	x=CHAR_getInt(charaindex,CHAR_X)+dirx[i];
-	y=CHAR_getInt(charaindex,CHAR_Y)+diry[i];
+	x=CHAR_getInt(char_index,CHAR_X)+dirx[i];
+	y=CHAR_getInt(char_index,CHAR_Y)+diry[i];
 
   objindex = PET_dropPetAbsolute( petindex,floor,x,y, FALSE );
   if( objindex == -1 ) return FALSE;
   
   CHAR_setWorkInt( petindex,CHAR_WORKOBJINDEX,objindex );
-  CHAR_setCharPet( charaindex, havepetindex, -1);
+  CHAR_setCharPet( char_index, havepetindex, -1);
 	CHAR_setInt( petindex, CHAR_FLOOR, floor);
 	CHAR_setInt( petindex, CHAR_X, x);
 	CHAR_setInt( petindex, CHAR_Y, y);
 	CHAR_setInt( petindex, CHAR_PUTPETTIME, NowTime.tv_sec);
-	if( havepetindex == CHAR_getInt( charaindex, CHAR_DEFAULTPET)) {
+	if( havepetindex == CHAR_getInt( char_index, CHAR_DEFAULTPET)) {
 		int	fd;
-		CHAR_setInt( charaindex, CHAR_DEFAULTPET, -1);
-	    fd = getfdFromCharaIndex( charaindex);
-		lssproto_KS_send( fd, havepetindex, 0);
+		CHAR_setInt( char_index, CHAR_DEFAULTPET, -1);
+	    fd = getfdFromCharaIndex( char_index);
+		GmsvServer_KS_send( fd, havepetindex, 0);
 
 	}
 	CHAR_sendCToArroundCharacter( objindex);
-  if( CHAR_getInt( charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER){
+  if( CHAR_getInt( char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER){
 #ifdef _PET_ITEM
-		CHAR_sendPetItemData( charaindex, havepetindex);
+		CHAR_sendPetItemData( char_index, havepetindex);
 #endif		
 		snprintf( szPet, sizeof( szPet ), "K%d", havepetindex );
-		CHAR_sendStatusString( charaindex, szPet );
+		CHAR_sendStatusString( char_index, szPet );
   }
 
-	CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW, petindex);
+	CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW, petindex);
 	CHAR_setWorkInt( petindex, CHAR_WORKPETFOLLOWMODE, CHAR_PETFOLLOW_NOW);
 	CHAR_setWorkInt( petindex, CHAR_WORKPETFOLLOWCOUNT, 0);
 	CHAR_setInt( petindex, CHAR_PUTPETTIME, (int)(NowTime.tv_sec));
-	CHAR_setInt( petindex, CHAR_WORKPLAYERINDEX, charaindex);
+	CHAR_setInt( petindex, CHAR_WORKPLAYERINDEX, char_index);
 	LogPet(
-		CHAR_getChar( charaindex, CHAR_NAME ),
-		CHAR_getChar( charaindex, CHAR_CDKEY ),
+		CHAR_getChar( char_index, CHAR_NAME ),
+		CHAR_getChar( char_index, CHAR_CDKEY ),
 		CHAR_getChar( petindex, CHAR_NAME),
 		CHAR_getInt( petindex, CHAR_LV),
 		"Follow(lua溜宠)",
-		CHAR_getInt( charaindex,CHAR_FLOOR),
-		CHAR_getInt( charaindex,CHAR_X ),
-		CHAR_getInt( charaindex,CHAR_Y ),
+		CHAR_getInt( char_index,CHAR_FLOOR),
+		CHAR_getInt( char_index,CHAR_X ),
+		CHAR_getInt( char_index,CHAR_Y ),
 		CHAR_getChar( petindex, CHAR_UNIQUECODE)
 	);
     return 1;
@@ -1976,19 +1976,19 @@ static int dropPetFollow(lua_State *L)
 
 static int getItemIndex(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
-	const int haveitemindex = luaL_checkint(L, 2);
+	const int char_index = luaL_checkint(L, 1);
+	const int haveitem_index = luaL_checkint(L, 2);
 	
-	lua_pushinteger(L, CHAR_getItemIndex( charaindex, haveitemindex ));
+	lua_pushinteger(L, CHAR_getItemIndex( char_index, haveitem_index ));
 	return 1;
 	
 }
 
 static int charSaveFromConnect(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
-	if( CHAR_getCharUse(charaindex) != FALSE ){
-		CHAR_charSaveFromConnect( charaindex, FALSE );
+	const int char_index = luaL_checkint(L, 1);
+	if( CHAR_getCharUse(char_index) != FALSE ){
+		CHAR_charSaveFromConnect( char_index, FALSE );
    }
 	return 1;
 }
@@ -1996,13 +1996,13 @@ static int charSaveFromConnect(lua_State *L)
 #ifdef _RECORD_IP
 static int userip(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
 	unsigned long ip;
 	int a,b,c,d;
 	char strIP[32];
 	
-  ip = CHAR_getWorkInt(charaindex, CHAR_WORK_RECORD_IP);
+  ip = CHAR_getWorkInt(char_index, CHAR_WORK_RECORD_IP);
   
   a=(ip % 0x100); ip=ip / 0x100;
   b=(ip % 0x100); ip=ip / 0x100;
@@ -2018,18 +2018,18 @@ static int userip(lua_State *L)
 
 static int DischargeParty(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int flg = luaL_checkint(L, 2);
-	CHAR_DischargeParty_New(charaindex, flg);
+	CHAR_DischargeParty_New(char_index, flg);
 	return 1;
 }
 
 
 static int Skillupsend(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	
-	CHAR_Skillupsend(charaindex);
+	CHAR_Skillupsend(char_index);
 	return 1;
 }
 #endif
@@ -2037,9 +2037,9 @@ static int Skillupsend(lua_State *L)
 #ifdef _ALLBLUES_LUA_1_9
 static int logou(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	
-	CHAR_logout(charaindex, TRUE);
+	CHAR_logout(char_index, TRUE);
 	return 1;
 }
  int copyChar(lua_State *L)
@@ -2076,7 +2076,7 @@ static int logou(lua_State *L)
 {
 	size_t l;
 	char *message=luaL_checklstring(L, 1, &l);
-	saacproto_AllServSend_send(message);
+	SaacClient_AllServSend_send(message);
 	return 1;
 }
 
@@ -2084,27 +2084,27 @@ static int logou(lua_State *L)
 
 static int earnFame(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int num = luaL_checkint(L, 2);
-	CHAR_earnFame(charaindex, num);
+	CHAR_earnFame(char_index, num);
 	return 1;
 }
 
 static int Encounter(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd=CHAR_getWorkInt( charaindex, CHAR_WORKFD);
+	const int char_index = luaL_checkint(L, 1);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd=CHAR_getWorkInt( char_index, CHAR_WORKFD);
 	setStayEncount(fd);
 #ifdef _USER_CHARLOOPS
 	{
 		Char 	*ch;
-		ch  = CHAR_getCharPointer( charaindex);
+		ch  = CHAR_getCharPointer( char_index);
 		if( ch == NULL ) return 0;
 		strcpysafe( ch->charfunctable[CHAR_LOOPFUNCTEMP1].string,
 			sizeof( ch->charfunctable[CHAR_LOOPFUNCTEMP1]), "CHAR_BattleStayLoop");//战斗
-		CHAR_setInt( charaindex, CHAR_LOOPINTERVAL, 2500);
-		CHAR_constructFunctable( charaindex);
+		CHAR_setInt( char_index, CHAR_LOOPINTERVAL, 2500);
+		CHAR_constructFunctable( char_index);
 	}
 #endif
 }
@@ -2112,9 +2112,9 @@ static int Encounter(lua_State *L)
 
 static int ClearEncounter(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd=CHAR_getWorkInt( charaindex, CHAR_WORKFD);
+	const int char_index = luaL_checkint(L, 1);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd=CHAR_getWorkInt( char_index, CHAR_WORKFD);
 	clearStayEncount(fd);
 	return 1;
 }
@@ -2141,10 +2141,10 @@ static int getDY(lua_State *L)
 
 static int sendAction(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int actionno = luaL_checkint(L, 2);
 	const int flg = luaL_checkint(L, 3);
-	CHAR_sendAction( charaindex, actionno, flg);
+	CHAR_sendAction( char_index, actionno, flg);
 	return 1;
 }
 #ifdef _NEW_ITEM_
@@ -2219,30 +2219,30 @@ static int DelSProfeesionSkill (lua_State *L)
 
 static int UpCahrData(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	size_t l;
   	const char *data = luaL_checklstring(L, 2, &l);
-	CHAR_sendStatusString(charaindex,data);
+	CHAR_sendStatusString(char_index,data);
 	return 1;
 }
 #ifdef _NEW_TITLE
 static int getCharNewTitleMode(lua_State *L){
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int id = luaL_checkint(L, 2);
 	if (id < 32){
-		if (CHAR_getInt(charaindex,CHAR_TITLE1)&(1<<id)) {
+		if (CHAR_getInt(char_index,CHAR_TITLE1)&(1<<id)) {
 			lua_pushinteger(L, 1);
 			return 1;
 		}
 	}
 	else if (id >=32 && id < 64) {
-		if (CHAR_getInt(charaindex,CHAR_TITLE2)&(1<<(id-32))) {
+		if (CHAR_getInt(char_index,CHAR_TITLE2)&(1<<(id-32))) {
 			lua_pushinteger(L, 1);
 			return 1;
 		}
 	}
 	else if (id >=64 && id < 96){
-		if (CHAR_getInt(charaindex,CHAR_TITLE3)&(1<<(id-64))) {
+		if (CHAR_getInt(char_index,CHAR_TITLE3)&(1<<(id-64))) {
 			lua_pushinteger(L, 1);
 			return 1;
 		}
@@ -2252,31 +2252,31 @@ static int getCharNewTitleMode(lua_State *L){
 }
 
 static int setCharNewTitleMode(lua_State *L){
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int id = luaL_checkint(L, 2);
 	if (id < 32){
-		CHAR_setInt(charaindex,CHAR_TITLE1,CHAR_getInt(charaindex,CHAR_TITLE1)|(1<<id));
+		CHAR_setInt(char_index,CHAR_TITLE1,CHAR_getInt(char_index,CHAR_TITLE1)|(1<<id));
 	}
 	else if (id >=32 && id < 64) {
-		CHAR_setInt(charaindex,CHAR_TITLE2,CHAR_getInt(charaindex,CHAR_TITLE2)|(1<<(id-32)));
+		CHAR_setInt(char_index,CHAR_TITLE2,CHAR_getInt(char_index,CHAR_TITLE2)|(1<<(id-32)));
 	}
 	else if (id >=64 && id < 96){
-		CHAR_setInt(charaindex,CHAR_TITLE3,CHAR_getInt(charaindex,CHAR_TITLE3)|(1<<(id-64)));
+		CHAR_setInt(char_index,CHAR_TITLE3,CHAR_getInt(char_index,CHAR_TITLE3)|(1<<(id-64)));
 	}
 	return 1;
 }
 
 static int clrCharNewTitleMode(lua_State *L){
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int id = luaL_checkint(L, 2);
 	if (id < 32){
-		CHAR_setInt(charaindex,CHAR_TITLE1,CHAR_getInt(charaindex,CHAR_TITLE1)& ~(1<<id));
+		CHAR_setInt(char_index,CHAR_TITLE1,CHAR_getInt(char_index,CHAR_TITLE1)& ~(1<<id));
 	}
 	else if (id >=32 && id < 64) {
-		CHAR_setInt(charaindex,CHAR_TITLE2,CHAR_getInt(charaindex,CHAR_TITLE2)& ~(1<<(id-32)));
+		CHAR_setInt(char_index,CHAR_TITLE2,CHAR_getInt(char_index,CHAR_TITLE2)& ~(1<<(id-32)));
 	}
 	else if (id >=64 && id < 96){
-		CHAR_setInt(charaindex,CHAR_TITLE3,CHAR_getInt(charaindex,CHAR_TITLE3)& ~(1<<(id-64)));
+		CHAR_setInt(char_index,CHAR_TITLE3,CHAR_getInt(char_index,CHAR_TITLE3)& ~(1<<(id-64)));
 	}
 	return 1;
 }
@@ -2284,24 +2284,24 @@ static int clrCharNewTitleMode(lua_State *L){
 
 static int lua_getMyMaxPilenum(lua_State *L) 
 {
-	int charaindex=luaL_checkint(L, 1);
-	lua_pushinteger(L, CHAR_getMyMaxPilenum(charaindex));
+	int char_index=luaL_checkint(L, 1);
+	lua_pushinteger(L, CHAR_getMyMaxPilenum(char_index));
 	return 1;
 }
 
 static int PileItemFromItemBoxToItemBox(lua_State *L) 
 {
-	int charaindex=luaL_checkint(L, 1);
+	int char_index=luaL_checkint(L, 1);
 	int from=luaL_checkint(L, 2);
 	int to=luaL_checkint(L, 3);
-	lua_pushinteger(L, CHAR_PileItemFromItemBoxToItemBox(charaindex,from,to));
+	lua_pushinteger(L, CHAR_PileItemFromItemBoxToItemBox(char_index,from,to));
 	return 1;
 }
 
 static int CheckUserItem(lua_State *L)
 {
-	int charaindex=luaL_checkint(L, 1);
-	CHAR_CheckUserItem(charaindex);
+	int char_index=luaL_checkint(L, 1);
+	CHAR_CheckUserItem(char_index);
 	return 1;
 }
 

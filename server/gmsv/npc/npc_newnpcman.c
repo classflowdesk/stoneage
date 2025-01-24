@@ -5,7 +5,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "enemy.h"
 #include "log.h"
 #include "battle.h"
@@ -413,7 +413,7 @@ static void NPC_NewNpcMan_selectWindow( int meindex, int toindex, int num, int f
 		break;
 	}
 
-	lssproto_WN_send( fd, windowtype, buttontype, windowno,
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 }
 
@@ -455,7 +455,7 @@ void NPC_NewNpcManWindowTalked( int meindex, int talkerindex, int seqno, int sel
 
 BOOL CHECK_ITEMEQUIT( int toindex)
 {
-	int i, itemindex;
+	int i, item_index;
 	char token[256];
 #ifdef _NEW_ITEM_
 	int maxitem = CheckCharMaxItem( toindex);
@@ -463,31 +463,31 @@ BOOL CHECK_ITEMEQUIT( int toindex)
 	int maxitem = CHAR_MAXITEMHAVE;
 #endif
 	for (i = CHAR_STARTITEMARRAY; i < maxitem; i ++) {
-		itemindex = CHAR_getItemIndex( toindex, i);
-		if( ITEM_getInt( itemindex, ITEM_ID) == 1292 ){
+		item_index = CHAR_getItemIndex( toindex, i);
+		if( ITEM_getInt( item_index, ITEM_ID) == 1292 ){
 			CHAR_DelItem( toindex, i);
-			itemindex = -1;
-			itemindex = ITEM_makeItemAndRegist( 1292);
-			if( !ITEM_CHECKINDEX( itemindex) ){
+			item_index = -1;
+			item_index = ITEM_makeItemAndRegist( 1292);
+			if( !ITEM_CHECKINDEX( item_index) ){
 			}else{
-				int ret = CHAR_addItemSpecificItemIndex( toindex, itemindex);
+				int ret = CHAR_addItemSpecificItemIndex( toindex, item_index);
 				if( ret < 0 || ret >= maxitem ) {
-					ITEM_endExistItemsOne( itemindex);
+					ITEM_endExistItemsOne( item_index);
 					continue;
 				}
-				sprintf( token,"拿到%s", ITEM_getChar( itemindex, ITEM_NAME));
+				sprintf( token,"拿到%s", ITEM_getChar( item_index, ITEM_NAME));
 				CHAR_talkToCli( toindex, -1, token, CHAR_COLORYELLOW );
 				CHAR_sendItemDataOne( toindex, ret);
 				continue;
 			}
 		}
 #ifdef _TAKE_ITEMDAMAGE
-		if( ITEM_getInt( itemindex, ITEM_ID) == 1292 &&
-			ITEM_getInt( itemindex, ITEM_MAXDAMAGECRUSHE) > 0 ){
+		if( ITEM_getInt( item_index, ITEM_ID) == 1292 &&
+			ITEM_getInt( item_index, ITEM_MAXDAMAGECRUSHE) > 0 ){
 
-			ITEM_setInt( itemindex, ITEM_MAXDAMAGECRUSHE, 0);
-			ITEM_setInt( itemindex, ITEM_DAMAGECRUSHE, 0);
-			sprintf(token,"修正%s损坏度", ITEM_getChar( itemindex, ITEM_NAME));
+			ITEM_setInt( item_index, ITEM_MAXDAMAGECRUSHE, 0);
+			ITEM_setInt( item_index, ITEM_DAMAGECRUSHE, 0);
+			sprintf(token,"修正%s损坏度", ITEM_getChar( item_index, ITEM_NAME));
 			CHAR_sendItemDataOne( toindex, i);
 			CHAR_talkToCli( toindex, -1, token, CHAR_COLORYELLOW);
 		}
@@ -496,12 +496,12 @@ BOOL CHECK_ITEMEQUIT( int toindex)
 #ifdef _TAKE_ITEMDAMAGE
 	// 寄放店
 	for (i = 0; i < CHAR_MAXPOOLITEMHAVE; i++) {
-		if( ITEM_getInt( itemindex, ITEM_ID) == 1292 &&
-			ITEM_getInt( itemindex, ITEM_MAXDAMAGECRUSHE) > 0 ){
+		if( ITEM_getInt( item_index, ITEM_ID) == 1292 &&
+			ITEM_getInt( item_index, ITEM_MAXDAMAGECRUSHE) > 0 ){
 
-			ITEM_setInt( itemindex, ITEM_MAXDAMAGECRUSHE, 0);
-			ITEM_setInt( itemindex, ITEM_DAMAGECRUSHE, 0);
-			sprintf(token,"修正寄放店中%s损坏度", ITEM_getChar( itemindex, ITEM_NAME));
+			ITEM_setInt( item_index, ITEM_MAXDAMAGECRUSHE, 0);
+			ITEM_setInt( item_index, ITEM_DAMAGECRUSHE, 0);
+			sprintf(token,"修正寄放店中%s损坏度", ITEM_getChar( item_index, ITEM_NAME));
 			CHAR_talkToCli( toindex, -1, token, CHAR_COLORYELLOW);
 		}
 	}
@@ -512,7 +512,7 @@ BOOL CHECK_ITEMEQUIT( int toindex)
 #ifdef _GET_MAGICAMOR
 BOOL CHECK_MAGICAMOR( int toindex)
 {
-	int i, itemindex;
+	int i, item_index;
 	char token[256];
 	int flg=0;
 	if(NPC_EventCheckFlg( toindex, 71) == FALSE){
@@ -525,22 +525,22 @@ BOOL CHECK_MAGICAMOR( int toindex)
 	int maxitem = CHAR_MAXITEMHAVE;
 #endif
 	for (i = CHAR_STARTITEMARRAY; i < maxitem; i ++) {
-		itemindex = CHAR_getItemIndex( toindex, i);
-		if( ITEM_getInt( itemindex, ITEM_ID) == 1292 ){
+		item_index = CHAR_getItemIndex( toindex, i);
+		if( ITEM_getInt( item_index, ITEM_ID) == 1292 ){
 			flg = 1;
 		}
 	}
 	if (flg==0){
-		itemindex = -1;
-		itemindex = ITEM_makeItemAndRegist( 1292);
-		if( !ITEM_CHECKINDEX( itemindex) ){
+		item_index = -1;
+		item_index = ITEM_makeItemAndRegist( 1292);
+		if( !ITEM_CHECKINDEX( item_index) ){
 		}else{
-			int ret = CHAR_addItemSpecificItemIndex( toindex, itemindex);
+			int ret = CHAR_addItemSpecificItemIndex( toindex, item_index);
 			if( ret < 0 || ret >= maxitem ) {
 				CHAR_talkToCli( toindex, -1, "身上道具空位不足!", CHAR_COLORRED);
-				ITEM_endExistItemsOne( itemindex);
+				ITEM_endExistItemsOne( item_index);
 			}
-			sprintf( token,"拿到%s", ITEM_getChar( itemindex, ITEM_NAME));
+			sprintf( token,"拿到%s", ITEM_getChar( item_index, ITEM_NAME));
 			CHAR_talkToCli( toindex, -1, token, CHAR_COLORYELLOW );
 			CHAR_sendItemDataOne( toindex, ret);
 		}
@@ -664,7 +664,7 @@ BOOL CHECK_ReplacePET( int toindex)
 		if( i == CHAR_getInt( toindex, CHAR_DEFAULTPET) )	{
 			int fd = getfdFromCharaIndex( toindex);
 			CHAR_setInt( toindex, CHAR_DEFAULTPET, -1);
-			lssproto_KS_send( fd, -1, TRUE);
+			GmsvServer_KS_send( fd, -1, TRUE);
 		}
 
 		snprintf( szPet,sizeof( szPet), "交出%s。", CHAR_getUseName( petindex) );
@@ -722,23 +722,23 @@ BOOL CHECK_ReplacePET( int toindex)
 //还原铁枪三堆叠
 void NPC_reCheckItemPilenum( int meindex, int toindex)
 {
-	int i, itemindex;
+	int i, item_index;
 #ifdef _NEW_ITEM_
 	int itemMax = CheckCharMaxItem(toindex);
 	for(i=0;i<itemMax;i++){
 #else
 	for(i=0;i<CHAR_MAXITEMHAVE;i++){
 #endif
-		itemindex = CHAR_getItemIndex( toindex , i );
-		if( !ITEM_CHECKINDEX( itemindex) ) continue;//ITEM_USEPILENUMS
-		if( ITEM_getInt( itemindex, ITEM_ID) != 20284 ) continue;
-		if( ITEM_getInt( itemindex, ITEM_CANBEPILE) != 1 ) continue;
+		item_index = CHAR_getItemIndex( toindex , i );
+		if( !ITEM_CHECKINDEX( item_index) ) continue;//ITEM_USEPILENUMS
+		if( ITEM_getInt( item_index, ITEM_ID) != 20284 ) continue;
+		if( ITEM_getInt( item_index, ITEM_CANBEPILE) != 1 ) continue;
 
-		if( ITEM_getInt( itemindex, ITEM_USEPILENUMS) > 1 ){
+		if( ITEM_getInt( item_index, ITEM_USEPILENUMS) > 1 ){
 			int itemID, pilenum=1, newindex;
-			itemID = ITEM_getInt( itemindex, ITEM_ID);
+			itemID = ITEM_getInt( item_index, ITEM_ID);
 			if( !ITEM_CHECKITEMTABLE( itemID) ) continue;
-			pilenum = ITEM_getInt( itemindex, ITEM_USEPILENUMS);
+			pilenum = ITEM_getInt( item_index, ITEM_USEPILENUMS);
 			while( pilenum > 1 ){
 				int ti = CHAR_findEmptyItemBox( toindex);
 				if( ti == -1 ){
@@ -753,10 +753,10 @@ void NPC_reCheckItemPilenum( int meindex, int toindex)
 				CHAR_setItemIndex( toindex , ti, newindex);
 				CHAR_sendItemDataOne( toindex, ti);
 				pilenum--;
-				ITEM_setInt( itemindex, ITEM_USEPILENUMS, pilenum);
+				ITEM_setInt( item_index, ITEM_USEPILENUMS, pilenum);
 			}
-			if( ITEM_getInt( itemindex, ITEM_CANBEPILE) != ITEMTBL_getInt( itemID, ITEM_CANBEPILE) )
-				ITEM_setInt( itemindex, ITEM_CANBEPILE, ITEMTBL_getInt( itemID, ITEM_CANBEPILE) );
+			if( ITEM_getInt( item_index, ITEM_CANBEPILE) != ITEMTBL_getInt( itemID, ITEM_CANBEPILE) )
+				ITEM_setInt( item_index, ITEM_CANBEPILE, ITEMTBL_getInt( itemID, ITEM_CANBEPILE) );
 			CHAR_sendItemDataOne( toindex, i);
 		}
 	}
@@ -1070,7 +1070,7 @@ static void NPC_NewNpcMan_selectWindow( int meindex, int toindex, int num, int f
 		return;
 	}
 
-	lssproto_WN_send( fd, windowtype, buttontype, windowno,
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 }
 
@@ -1144,7 +1144,7 @@ int NPC_NewNpcManDelPet(int meindex,int talker, int petsel)
 	defpet = CHAR_getInt( talker, CHAR_DEFAULTPET);
 	if(defpet == petsel)	{
 		CHAR_setInt( talker, CHAR_DEFAULTPET, -1);
-		lssproto_KS_send( fd, -1, TRUE);
+		GmsvServer_KS_send( fd, -1, TRUE);
 	}
 	snprintf( msgbuf,sizeof( msgbuf), "交出%s。", CHAR_getChar( petindex, CHAR_NAME));
 	

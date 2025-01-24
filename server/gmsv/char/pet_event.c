@@ -7,7 +7,7 @@
 #include "pet_event.h"
 #include "npcutil.h"
 #include "log.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 // Arminius 8.14 pet talk
 #include "npc_exchangeman.h"
 #include "npc_eventaction.h"
@@ -242,7 +242,7 @@ void PET_Talkfunc( int meindex, int talkerindex, char *msg, int color)
 		strcpy( buf3, buf2);
 	}
 
-	lssproto_WN_send( fd, windowtype, buttontype, 0,
+	GmsvServer_WN_send( fd, windowtype, buttontype, 0,
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), buf3 );         
   }
   
@@ -295,7 +295,7 @@ BOOL PetTalk_DelItem(int meindex,int talker,char *buf)
 	int i = 1, j = 1,k = 1;
 	char buff3[128];
 	char buf2[32];
-	int itemindex;
+	int item_index;
 
 	while( getStringFromIndexWithDelim(buf , "," , k, buff3, sizeof(buff3)) !=FALSE )	{
 		k++;
@@ -322,9 +322,9 @@ BOOL PetTalk_DelItem(int meindex,int talker,char *buf)
 				i < CHAR_MAXITEMHAVE
 #endif
 				; i++ ){
-				itemindex=CHAR_getItemIndex( talker , i );
-				if( ITEM_CHECKINDEX(itemindex) ){
-					id=ITEM_getInt(itemindex ,ITEM_ID );
+				item_index=CHAR_getItemIndex( talker , i );
+				if( ITEM_CHECKINDEX(item_index) ){
+					id=ITEM_getInt(item_index ,ITEM_ID );
 					if(itemno==id){
 						cnt++;
 						
@@ -332,17 +332,17 @@ BOOL PetTalk_DelItem(int meindex,int talker,char *buf)
 							CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 							CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+							ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 							"WarpManDelItem(NPC收道具後传至某点)",
 							CHAR_getInt( talker, CHAR_FLOOR),
 							CHAR_getInt( talker, CHAR_X ),
  							CHAR_getInt( talker, CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-						ITEM_getChar( itemindex, ITEM_NAME),
-						ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+						ITEM_getChar( item_index, ITEM_NAME),
+						ITEM_getInt( item_index, ITEM_ID)
 
 						);
 
@@ -368,25 +368,25 @@ BOOL PetTalk_DelItem(int meindex,int talker,char *buf)
 				j < CHAR_MAXITEMHAVE
 #endif
 				; j++){
-				itemindex = CHAR_getItemIndex( talker ,j);
+				item_index = CHAR_getItemIndex( talker ,j);
 
-				if( ITEM_CHECKINDEX(itemindex) ){
-					if( atoi( buff3) == ITEM_getInt(itemindex,ITEM_ID)){
+				if( ITEM_CHECKINDEX(item_index) ){
+					if( atoi( buff3) == ITEM_getInt(item_index,ITEM_ID)){
 						LogItem(
 							CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 							CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+							ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 							"WarpManDelItem(NPC收道具後传至某点)",
 							CHAR_getInt( talker,CHAR_FLOOR),
 							CHAR_getInt( talker,CHAR_X ),
 							CHAR_getInt( talker,CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-						ITEM_getChar( itemindex, ITEM_NAME),
-						ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+						ITEM_getChar( item_index, ITEM_NAME),
+						ITEM_getInt( item_index, ITEM_ID)
 						);
 						CHAR_DelItem( talker, j);
 					}
@@ -400,7 +400,7 @@ BOOL PetTalk_DelItem(int meindex,int talker,char *buf)
 
 BOOL PetTalk_AddItem(int meindex, int talker, char *buf)
 {
-	int itemID,k=1,itemindex=-1;
+	int itemID,k=1,item_index=-1;
 	int spaceNum=5,i;
 	char buff3[256], msgbuf[64], token[256];
 	int ret;
@@ -420,8 +420,8 @@ BOOL PetTalk_AddItem(int meindex, int talker, char *buf)
 			i < CHAR_MAXITEMHAVE
 #endif
 			; i++ ){
-			itemindex=CHAR_getItemIndex( talker , i );
-			if( itemindex == -1 )	{
+			item_index=CHAR_getItemIndex( talker , i );
+			if( item_index == -1 )	{
 				spaceNum = i+1;
 				break;
 			}
@@ -444,10 +444,10 @@ BOOL PetTalk_AddItem(int meindex, int talker, char *buf)
 	k++;
         itemID = atoi( buff3);
         if( itemID  )
-		itemindex = ITEM_makeItemAndRegist( itemID);
-		if(itemindex == -1)
+		item_index = ITEM_makeItemAndRegist( itemID);
+		if(item_index == -1)
 			continue;
-		ret = CHAR_addItemSpecificItemIndex( talker, itemindex);
+		ret = CHAR_addItemSpecificItemIndex( talker, item_index);
 		if( ret < 0 ||
 #ifdef _NEW_ITEM_
 
@@ -456,11 +456,11 @@ BOOL PetTalk_AddItem(int meindex, int talker, char *buf)
 			ret >= CHAR_MAXITEMHAVE
 #endif
 			) {
-			ITEM_endExistItemsOne( itemindex);
+			ITEM_endExistItemsOne( item_index);
 			print ("\n ret error!!");
 			return FALSE;
 		}
-		sprintf( token,"拿到%s",ITEM_getChar( itemindex, ITEM_NAME));
+		sprintf( token,"拿到%s",ITEM_getChar( item_index, ITEM_NAME));
 		CHAR_talkToCli( talker, -1,token,CHAR_COLORWHITE);
                                 
 		CHAR_sendItemDataOne( talker, ret);
@@ -672,7 +672,7 @@ BOOL PetTalk_WarpManReduce(int meindex,int talker,char *buf)
 	char buf3[256];
 	int id=0;
 	int i;
-	int itemindex;
+	int item_index;
 	int itemno;
 	int kosuu;
 	int cnt=0;
@@ -695,9 +695,9 @@ BOOL PetTalk_WarpManReduce(int meindex,int talker,char *buf)
 		i < CHAR_MAXITEMHAVE
 #endif
 		;i++ ){
-		itemindex=CHAR_getItemIndex( talker , i );
-		if( ITEM_CHECKINDEX(itemindex) ){
-			id=ITEM_getInt(itemindex ,ITEM_ID );
+		item_index=CHAR_getItemIndex( talker , i );
+		if( ITEM_CHECKINDEX(item_index) ){
+			id=ITEM_getInt(item_index ,ITEM_ID );
 			if(itemno==id){
 				cnt++;
 				if(cnt==kosuu){
@@ -753,7 +753,7 @@ BOOL PetTalk_CheckMyPet( int meindex, int talker, int petLv, int flg, int petid)
 BOOL PetTalk_ItemCheck(int meindex,int talker,int itemNo,int flg)
 {
 	int i;
-	int itemindex=-1;
+	int item_index=-1;
 	int id;
 #ifdef _NEW_ITEM_
 	int itemMax = CheckCharMaxItem(talker);
@@ -766,9 +766,9 @@ BOOL PetTalk_ItemCheck(int meindex,int talker,int itemNo,int flg)
 		i < CHAR_MAXITEMHAVE
 #endif
 		;i++ ){
-		itemindex = CHAR_getItemIndex( talker , i );
-		if( ITEM_CHECKINDEX( itemindex) )	{
-			id=ITEM_getInt(itemindex ,ITEM_ID );
+		item_index = CHAR_getItemIndex( talker , i );
+		if( ITEM_CHECKINDEX( item_index) )	{
+			id=ITEM_getInt(item_index ,ITEM_ID );
 			if( PetTalk_BigSmallLastCheck(itemNo,id,flg) == TRUE )
 				return TRUE;
 		}

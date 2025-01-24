@@ -13,8 +13,8 @@
 #include "chatmagic.h"
 #include "log.h"
 #include "npc_itemchange.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "npc_eventaction.h"
 #include "npc_charm.h"
 
@@ -102,7 +102,7 @@ void NPC_AlldomanWindowTalked(int meindex, int talkerindex, int seqno, int selec
 				sprintf( buf2 , "%s" , "初犊勇士" ) ;
 			else
 				sprintf( buf2 , " " );
-			saacproto_UpdataStele_send ( 				
+			SaacClient_UpdataStele_send ( 				
 				acfd , 
 				CHAR_getChar( talkerindex , CHAR_CDKEY ),
 				CHAR_getChar( talkerindex , CHAR_NAME ) , 
@@ -167,7 +167,7 @@ static void NPC_Alldoman_selectWindow( int meindex, int talker, int num, char *d
 		 }
 		 windowtype = WINDOW_MESSAGETYPE_MESSAGE;
 		 windowno = NPC_ALLDOMAN_MAIN_WND;
-		 lssproto_WN_send(fd, windowtype, buttontype, windowno,
+		 GmsvServer_WN_send(fd, windowtype, buttontype, windowno,
 			 CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token );
 		 break;
 	 case 5:
@@ -179,7 +179,7 @@ static void NPC_Alldoman_selectWindow( int meindex, int talker, int num, char *d
 			 "\n\n　　　　　　检视其他勇者"
 			 "\n\n　　　　　　　　取消"
 			 );
-		 lssproto_WN_send( fd, windowtype, buttontype, windowno,
+		 GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 			 CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),token);
 		 break;
 	 case 6:
@@ -209,7 +209,7 @@ static void NPC_Alldoman_selectWindow( int meindex, int talker, int num, char *d
 			if ( i + 1 == countnum )
 				break;
 		 }
-		 lssproto_WN_send( fd, windowtype, buttontype, windowno,
+		 GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 			 CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),token2);
 		 break;
     }
@@ -220,7 +220,7 @@ BOOL NPC_AlldomanInit( int meindex )
 {
 	if( loadherolist == 0){
 		loadherolist = 1;
-		saacproto_UpdataStele_send ( acfd , "FirstLoad", "LoadHerolist" , "华义" , 0 , 0 , 0 , 999 ) ;
+		SaacClient_UpdataStele_send ( acfd , "FirstLoad", "LoadHerolist" , "华义" , 0 , 0 , 0 , 999 ) ;
 	}
     CHAR_setInt( meindex , CHAR_WHICHTYPE , CHAR_TYPEALLDOMAN);
     CHAR_setFlg( meindex , CHAR_ISATTACKED , 0 );

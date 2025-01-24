@@ -7,7 +7,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 
 #ifdef _ALLBLUES_LUA   
 
@@ -94,18 +94,18 @@ static int windows_validation(lua_State *L)
 #else
 	validation = yzm << 6;
 #endif
-	lssproto_WN_send(fd, windowtype, buttontype + validation, seqno, objindex, data);
+	GmsvServer_WN_send(fd, windowtype, buttontype + validation, seqno, objindex, data);
 	return 1;
 }
 
 static int effect(lua_State *L)
 {
 	size_t l;
-	const int charaindex = luaL_checkint(L, 1);
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd = getfdFromCharaIndex( charaindex);
+	const int char_index = luaL_checkint(L, 1);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd = getfdFromCharaIndex( char_index);
   char *data=luaL_checklstring(L, 2, &l);
-	lssproto_BATTLESKILL_send(fd, data);
+	GmsvServer_BATTLESKILL_send(fd, data);
 
 	return 1;
 }
@@ -113,11 +113,11 @@ static int effect(lua_State *L)
 static int MagiccardAction(lua_State *L)
 {
 	size_t l;
-	const int charaindex = luaL_checkint(L, 1);
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd = getfdFromCharaIndex( charaindex);
+	const int char_index = luaL_checkint(L, 1);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd = getfdFromCharaIndex( char_index);
   char *data=luaL_checklstring(L, 2, &l);
-	lssproto_MagiccardAction_send(fd, data);
+	GmsvServer_MagiccardAction_send(fd, data);
 
 	return 1;
 }
@@ -125,16 +125,16 @@ static int MagiccardAction(lua_State *L)
 static int MagiccardDamage(lua_State *L)
 {
 	size_t l;
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd = getfdFromCharaIndex( charaindex);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd = getfdFromCharaIndex( char_index);
 	const int position = luaL_checkint(L, 2);
 	const int damage = luaL_checkint(L, 3);
 	const int offsetx = luaL_checkint(L, 4);
 	const int offsety = luaL_checkint(L, 5);
 
-	lssproto_MagiccardDamage_send(fd, position, damage, offsetx, offsety);
+	GmsvServer_MagiccardDamage_send(fd, position, damage, offsetx, offsety);
 
 	return 1;
 }
@@ -143,14 +143,14 @@ static int MagiccardDamage(lua_State *L)
 static int MoveScreen(lua_State *L)
 {
 	size_t l;
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd = getfdFromCharaIndex( charaindex);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd = getfdFromCharaIndex( char_index);
 	const int bMoveScreenMove = luaL_checkint(L, 2);
 	const int iXY = luaL_checkint(L, 3);
 
-	lssproto_MoveScreen_send(fd, bMoveScreenMove, iXY);
+	GmsvServer_MoveScreen_send(fd, bMoveScreenMove, iXY);
 
 	return 1;
 }
@@ -158,11 +158,11 @@ static int MoveScreen(lua_State *L)
 static int TheaterData(lua_State *L)
 {
 	size_t l;
-	const int charaindex = luaL_checkint(L, 1);
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd = getfdFromCharaIndex( charaindex);
+	const int char_index = luaL_checkint(L, 1);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd = getfdFromCharaIndex( char_index);
   char *data=luaL_checklstring(L, 2, &l);
-	lssproto_TheaterData_send(fd, data);
+	GmsvServer_TheaterData_send(fd, data);
 
 	return 1;
 }
@@ -181,7 +181,7 @@ static int windows_send(lua_State *L)
   char *data=luaL_checklstring(L, 6, &l);
 
 
-	lssproto_WN_send(fd, windowtype, buttontype, seqno, objindex, data);
+	GmsvServer_WN_send(fd, windowtype, buttontype, seqno, objindex, data);
 	return 1;
 }
 
@@ -194,7 +194,7 @@ static int show(lua_State *L)
   char *data=luaL_checklstring(L, 2, &l);
 
 
-	lssproto_C_send(fd, data);
+	GmsvServer_C_send(fd, data);
 	return 1;
 }
 
@@ -206,7 +206,7 @@ static int FM(lua_State *L)
 	int fd = getfdFromCharaIndex( index);
   char *data=luaL_checklstring(L, 2, &l);
   
-	lssproto_FM_send(fd, data);
+	GmsvServer_FM_send(fd, data);
 	return 1;
 }
 #ifdef _ADD_STATUS_2
@@ -218,7 +218,7 @@ static int S2(lua_State *L)
 	int fd = getfdFromCharaIndex( index);
   char *data=luaL_checklstring(L, 2, &l);
   
-	lssproto_S2_send(fd, data);
+	GmsvServer_S2_send(fd, data);
 	return 1;
 }
 #endif
@@ -233,7 +233,7 @@ static int S2(lua_State *L)
   const int color=luaL_checkint(L, 3);
   const int num=luaL_checkint(L, 4);
   
-	lssproto_DENGON_send(fd, data, color, num);
+	GmsvServer_DENGON_send(fd, data, color, num);
 	return 1;
 }
 
@@ -243,43 +243,43 @@ static int CharList(lua_State *L)
 	const int fd = luaL_checkint(L, 1);
   char *data=luaL_checklstring(L, 2, &l);
 
-	lssproto_CharList_send(fd, FAILED, data);
+	GmsvServer_CharList_send(fd, FAILED, data);
 	return 1;
 }
 
 static int SaMenu(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd = getfdFromCharaIndex( charaindex);
+	const int char_index = luaL_checkint(L, 1);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd = getfdFromCharaIndex( char_index);
   const int index = luaL_checkint(L, 2);
 	size_t l;
   char *data=luaL_checklstring(L, 3, &l);
-	lssproto_SAMENU_send(fd, index, data);
+	GmsvServer_SAMENU_send(fd, index, data);
 	return 1;
 }
 
 static int W2(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd = getfdFromCharaIndex( charaindex);
+	const int char_index = luaL_checkint(L, 1);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd = getfdFromCharaIndex( char_index);
   const int x = luaL_checkint(L, 2);
   const int y = luaL_checkint(L, 3);
 	size_t l;
   char *direction=luaL_checklstring(L, 4, &l);
-	lssproto_W2_recv(fd, x, y, direction);
+	GmsvServer_W2_recv(fd, x, y, direction);
 	return 1;
 }
 
 static int B(lua_State *L) 
 {
 	size_t l;
-	const int charaindex = luaL_checkint(L, 1);
-	if(CHAR_CHECKINDEX(charaindex) == FALSE) return 0;
-	int fd = getfdFromCharaIndex( charaindex);
+	const int char_index = luaL_checkint(L, 1);
+	if(CHAR_CHECKINDEX(char_index) == FALSE) return 0;
+	int fd = getfdFromCharaIndex( char_index);
   char *data=luaL_checklstring(L, 2, &l);
-	lssproto_B_recv(fd, data);
+	GmsvServer_B_recv(fd, data);
 	
 	return 1;
 }
@@ -295,7 +295,7 @@ static int FamilyBadge(lua_State *L)
 	const int fd = luaL_checkint(L, 1);
   char *data=luaL_checklstring(L, 2, &l);
 
-  lssproto_FamilyBadge_send(fd, data);
+  GmsvServer_FamilyBadge_send(fd, data);
 	return 1;
 }
 
@@ -324,14 +324,14 @@ static int CharTitleSend(lua_State *L)
 	const int fd = luaL_checkint(L, 1);
   char *data=luaL_checklstring(L, 2, &l);
 
-  lssproto_CharTitle_send(fd, data);
+  GmsvServer_CharTitle_send(fd, data);
 	return 1;
 }
 static int CharTitleCancel(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-  CHAR_CancelNewTitle( charaindex);
+  CHAR_CancelNewTitle( char_index);
 	return 1;
 }
 #endif
@@ -343,7 +343,7 @@ static int VisualBeatitudeSend(lua_State *L)
 	const int fd = luaL_checkint(L, 1);
   char *data=luaL_checklstring(L, 2, &l);
 
-  lssproto_VisualBeatitude_send(fd, data);
+  GmsvServer_VisualBeatitude_send(fd, data);
 	return 1;
 }
 #endif

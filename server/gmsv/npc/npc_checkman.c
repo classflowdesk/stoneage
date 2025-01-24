@@ -1,6 +1,6 @@
 #include "version.h"
 #include "char.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npcutil.h"
 #include "object.h"
 
@@ -236,7 +236,7 @@ static void NPC_CheckMan_selectWindow(int meindex, int talker, int num) {
 
   makeEscapeString(token, escapedname, sizeof(escapedname));
   /*-���ƥ˪������--*/
-  lssproto_WN_send(fd, windowtype, buttontype, windowno,
+  GmsvServer_WN_send(fd, windowtype, buttontype, windowno,
                    CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX), escapedname);
 }
 

@@ -2,7 +2,7 @@
 #include "npc_airplane.h"
 #include "char.h"
 #include "handletime.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npcutil.h"
 #include "object.h"
 
@@ -59,9 +59,9 @@ NPC_AIR_MSG airmsg[] = {
 
 static int NPC_AirSetPoint(int meindex, char *argstr);
 static void NPC_AirSetDestPoint(int meindex, char *argstr);
-static BOOL NPC_AirCheckDeniedItem(int meindex, int charaindex, char *argstr);
-static BOOL NPC_AirCheckLevel(int meindex, int charaindex, char *argstr);
-static int NPC_AirCheckStone(int meindex, int charaindex, char *argstr);
+static BOOL NPC_AirCheckDeniedItem(int meindex, int char_index, char *argstr);
+static BOOL NPC_AirCheckLevel(int meindex, int char_index, char *argstr);
+static int NPC_AirCheckStone(int meindex, int char_index, char *argstr);
 static void NPC_AirSendMsg(int meindex, int talkerindex, int tablenum);
 static int NPC_AirGetRoutePointNum(int meindex, char *argstr);
 static void NPC_Air_walk(int meindex);
@@ -492,7 +492,7 @@ static void NPC_AirSetDestPoint(int meindex, char *argstr) {
  * ϶�ý�ľ��ʧ��  ةë  �Ȼ����¾�������������
  *   �Ȼ������շֻ�
  **************************************/
-static BOOL NPC_AirCheckDeniedItem(int meindex, int charaindex, char *argstr) {
+static BOOL NPC_AirCheckDeniedItem(int meindex, int char_index, char *argstr) {
   char buf[1024];
   BOOL found = TRUE;
 
@@ -508,10 +508,10 @@ static BOOL NPC_AirCheckDeniedItem(int meindex, int charaindex, char *argstr) {
       if (ret == FALSE)
         break;
       itemid = atoi(buf2);
-      for (j = 0; j < CheckCharMaxItem(charaindex); j++) {
-        int itemindex = CHAR_getItemIndex(charaindex, j);
-        if (ITEM_CHECKINDEX(itemindex)) {
-          if (ITEM_getInt(itemindex, ITEM_ID) == itemid) {
+      for (j = 0; j < CheckCharMaxItem(char_index); j++) {
+        int item_index = CHAR_getItemIndex(char_index, j);
+        if (ITEM_CHECKINDEX(item_index)) {
+          if (ITEM_getInt(item_index, ITEM_ID) == itemid) {
             found = FALSE;
             break;
           }
@@ -525,7 +525,7 @@ static BOOL NPC_AirCheckDeniedItem(int meindex, int charaindex, char *argstr) {
  * ϶�ý�ľ��ʧ��  ةë  �Ȼ����¾�������������
  *   �Ȼ���ئ����ֻ�
  **************************************/
-BOOL NPC_AirCheckAllowItem(int meindex, int charaindex, BOOL pickupmode) {
+BOOL NPC_AirCheckAllowItem(int meindex, int char_index, BOOL pickupmode) {
   char buf[1024];
   BOOL found = TRUE;
   BOOL pickup = FALSE;
@@ -551,20 +551,20 @@ BOOL NPC_AirCheckAllowItem(int meindex, int charaindex, BOOL pickupmode) {
         break;
       itemid = atoi(buf2);
       getflg = FALSE;
-      for (j = 0; j < CheckCharMaxItem(charaindex); j++) {
-        int itemindex = CHAR_getItemIndex(charaindex, j);
-        if (ITEM_CHECKINDEX(itemindex)) {
-          if (ITEM_getInt(itemindex, ITEM_ID) == itemid) {
+      for (j = 0; j < CheckCharMaxItem(char_index); j++) {
+        int item_index = CHAR_getItemIndex(char_index, j);
+        if (ITEM_CHECKINDEX(item_index)) {
+          if (ITEM_getInt(item_index, ITEM_ID) == itemid) {
             /* ���������Ȼ����¾��գݹ���ʧ��  ةë���� */
             if (pickupmode && pickup && !getflg) {
-              CHAR_DelItem(charaindex, j);
+              CHAR_DelItem(char_index, j);
               getflg = TRUE;
             }
             break;
           }
         }
       }
-      if (j == CheckCharMaxItem(charaindex)) {
+      if (j == CheckCharMaxItem(char_index)) {
         found = FALSE;
         break;
       }
@@ -576,7 +576,7 @@ BOOL NPC_AirCheckAllowItem(int meindex, int charaindex, BOOL pickupmode) {
 /**************************************
  * ϶�ý�ľ����ì�ﶯ����������������
  **************************************/
-static BOOL NPC_AirCheckLevel(int meindex, int charaindex, char *argstr) {
+static BOOL NPC_AirCheckLevel(int meindex, int char_index, char *argstr) {
   int level;
 
   /* ئ��ľ������ئ��¦�Ѽ��������� */
@@ -584,7 +584,7 @@ static BOOL NPC_AirCheckLevel(int meindex, int charaindex, char *argstr) {
   if (level == -1) {
     return TRUE;
   }
-  if (CHAR_getInt(charaindex, CHAR_LV) >= level)
+  if (CHAR_getInt(char_index, CHAR_LV) >= level)
     return TRUE;
 
   return FALSE;
@@ -594,7 +594,7 @@ static BOOL NPC_AirCheckLevel(int meindex, int charaindex, char *argstr) {
  * ����ë������������
  * -1 ��   0������    �ݾ���  ۢStone
  **************************************/
-static int NPC_AirCheckStone(int meindex, int charaindex, char *argstr) {
+static int NPC_AirCheckStone(int meindex, int char_index, char *argstr) {
   int gold;
 
   /* ئ��ľ������ئ��¦�Ѽ��������� */
@@ -602,7 +602,7 @@ static int NPC_AirCheckStone(int meindex, int charaindex, char *argstr) {
   if (gold == -1) {
     return 0;
   }
-  if (CHAR_getInt(charaindex, CHAR_GOLD) >= gold)
+  if (CHAR_getInt(char_index, CHAR_GOLD) >= gold)
     return gold;
 
   return -1;
@@ -653,90 +653,90 @@ static int NPC_AirGetRoutePointNum(int meindex, char *argstr) {
   }
   return (i - 1);
 }
-BOOL NPC_AirCheckJoinParty(int meindex, int charaindex, BOOL msgflg) {
+BOOL NPC_AirCheckJoinParty(int meindex, int char_index, BOOL msgflg) {
   // int		fd;
   char argstr[NPC_UTIL_GETARGSTR_BUFSIZE];
   int ret;
   NPC_Util_GetArgStr(meindex, argstr, sizeof(argstr));
 
   /* ���������  ���� */
-  if (!NPC_Util_charIsInFrontOfChar(charaindex, meindex, 1))
+  if (!NPC_Util_charIsInFrontOfChar(char_index, meindex, 1))
     return FALSE;
   /*     ��ַ���  ���� */
   if (CHAR_getWorkInt(meindex, NPC_WORK_MODE) != 0) {
     if (msgflg)
-      NPC_AirSendMsg(meindex, charaindex, NPC_AIR_MSG_GETTINGON);
+      NPC_AirSendMsg(meindex, char_index, NPC_AIR_MSG_GETTINGON);
     return FALSE;
   }
   /* ��������������շֻ� */
-  if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) != CHAR_PARTY_NONE) {
+  if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) != CHAR_PARTY_NONE) {
     if (msgflg)
-      NPC_AirSendMsg(meindex, charaindex, NPC_AIR_MSG_NOTPARTY);
+      NPC_AirSendMsg(meindex, char_index, NPC_AIR_MSG_NOTPARTY);
     return FALSE;
   }
   /* �ɡ�  ū������ë������������ */
   if (CHAR_getEmptyPartyArray(meindex) == -1) {
     if (msgflg)
-      NPC_AirSendMsg(meindex, charaindex, NPC_AIR_MSG_OVERPARTY);
+      NPC_AirSendMsg(meindex, char_index, NPC_AIR_MSG_OVERPARTY);
     return FALSE;
   }
   /* ʧ��  ة����������ë����(���ʧ��  ة) */
-  if (!NPC_AirCheckDeniedItem(meindex, charaindex, argstr)) {
+  if (!NPC_AirCheckDeniedItem(meindex, char_index, argstr)) {
     if (msgflg)
-      NPC_AirSendMsg(meindex, charaindex, NPC_AIR_MSG_DENIEDITEM);
+      NPC_AirSendMsg(meindex, char_index, NPC_AIR_MSG_DENIEDITEM);
     return FALSE;
   }
 #ifdef _ITEM_CHECKWARES
-  if (CHAR_CheckInItemForWares(charaindex, 0) == FALSE) {
-    CHAR_talkToCli(charaindex, -1, "�޷�Я�������ϻ���",
+  if (CHAR_CheckInItemForWares(char_index, 0) == FALSE) {
+    CHAR_talkToCli(char_index, -1, "�޷�Я�������ϻ���",
                    CHAR_COLORYELLOW);
     return FALSE;
   }
 #endif
 
   /* ʧ��  ة����������ë����(  ۢʧ��  ة) */
-  if (!NPC_AirCheckAllowItem(meindex, charaindex, FALSE)) {
+  if (!NPC_AirCheckAllowItem(meindex, char_index, FALSE)) {
     if (msgflg)
-      NPC_AirSendMsg(meindex, charaindex, NPC_AIR_MSG_ALLOWITEM);
+      NPC_AirSendMsg(meindex, char_index, NPC_AIR_MSG_ALLOWITEM);
     return FALSE;
   }
   /* ��ì�Ｐ��������ë���� */
-  if (!NPC_AirCheckLevel(meindex, charaindex, argstr)) {
+  if (!NPC_AirCheckLevel(meindex, char_index, argstr)) {
     if (msgflg)
-      NPC_AirSendMsg(meindex, charaindex, NPC_AIR_MSG_LEVEL);
+      NPC_AirSendMsg(meindex, char_index, NPC_AIR_MSG_LEVEL);
     return FALSE;
   }
   /* ��ì����  �������������� */
-  //	if( CHAR_getInt( charaindex, CHAR_NOWEVENT) != 0 ||
-  //		CHAR_getInt( charaindex, CHAR_NOWEVENT2) != 0 ||
-  //		CHAR_getInt( charaindex, CHAR_NOWEVENT3) != 0 )
+  //	if( CHAR_getInt( char_index, CHAR_NOWEVENT) != 0 ||
+  //		CHAR_getInt( char_index, CHAR_NOWEVENT2) != 0 ||
+  //		CHAR_getInt( char_index, CHAR_NOWEVENT3) != 0 )
   //	{
-  //		if( msgflg) NPC_AirSendMsg( meindex, charaindex,
+  //		if( msgflg) NPC_AirSendMsg( meindex, char_index,
   //NPC_AIR_MSG_EVENT); 		return FALSE;
   //	}
   /* ���ż���������ë����  ����ë���¼�ƥ��  ���������ͱ����³����   */
-  ret = NPC_AirCheckStone(meindex, charaindex, argstr);
+  ret = NPC_AirCheckStone(meindex, char_index, argstr);
   if (ret == -1) {
     if (msgflg)
-      NPC_AirSendMsg(meindex, charaindex, NPC_AIR_MSG_GOLD);
+      NPC_AirSendMsg(meindex, char_index, NPC_AIR_MSG_GOLD);
     return FALSE;
   }
   if (ret != 0) {
     char msgbuf[128];
     /* ����ë���� */
-    CHAR_setInt(charaindex, CHAR_GOLD,
-                CHAR_getInt(charaindex, CHAR_GOLD) - ret);
+    CHAR_setInt(char_index, CHAR_GOLD,
+                CHAR_getInt(char_index, CHAR_GOLD) - ret);
     /* ˪�� */
-    CHAR_send_P_StatusString(charaindex, CHAR_P_STRING_GOLD);
+    CHAR_send_P_StatusString(char_index, CHAR_P_STRING_GOLD);
     snprintf(msgbuf, sizeof(msgbuf), "֧����%d Stone��", ret);
-    CHAR_talkToCli(charaindex, -1, msgbuf, CHAR_COLORYELLOW);
+    CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORYELLOW);
   }
   /* �ɡ�  ū��  �� */
-  // CHAR_JoinParty_Main( charaindex, meindex);
+  // CHAR_JoinParty_Main( char_index, meindex);
 
-  // fd = getfdFromCharaIndex( charaindex );
+  // fd = getfdFromCharaIndex( char_index );
 
-  // lssproto_PR_send( fd, 1, 1);
+  // GmsvServer_PR_send( fd, 1, 1);
 
   return TRUE;
 }

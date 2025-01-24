@@ -5,8 +5,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "npc_autopk.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "readmap.h"
 #include "battle.h"
 #include "log.h"
@@ -431,7 +431,7 @@ static void NPC_AutoPk_selectWindow( int meindex, int toindex, int num,int selec
 		return;
 		break;
 	}
-	lssproto_WN_send( fd, windowtype, buttontype, windowno,
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 }
 
@@ -583,18 +583,18 @@ void AutoPk_PKSystemInfo()
 			sprintf(buf2, "距离正式PK比赛时间还剩%d分钟！",autopktime);
 		AutoPk_PKSystemTalk(buf1, buf2);
 	}else if(autopktime==0){
-		int i,charaindex=0,num=0;
+		int i,char_index=0,num=0;
 		int playernum=CHAR_getPlayerMaxNum();
 		for(i=0;i<playernum;i++){
 			if(CHAR_CHECKINDEX(i) == FALSE) continue;
 				if(CHAR_getInt(i, CHAR_FLOOR) == 20000 ){
 					num++;
-					charaindex=i;
+					char_index=i;
 #ifdef _FORMULATE_AUTO_PK
 					char token[256];
-					CHAR_setWorkInt(charaindex, CHAR_WORK_AUTOPK, getAutoPkPoint());
+					CHAR_setWorkInt(char_index, CHAR_WORK_AUTOPK, getAutoPkPoint());
 					sprintf(token, "您获得参加比赛奖励积分%d\n", getAutoPkPoint());
-					CHAR_talkToCli( charaindex, -1, token, CHAR_COLORGREEN);
+					CHAR_talkToCli( char_index, -1, token, CHAR_COLORGREEN);
 #else
 					if(num>1)break;
 #endif
@@ -604,10 +604,10 @@ void AutoPk_PKSystemInfo()
 			AutoPk_PKSystemTalk("比赛正式开始咯！","比赛正式开始咯！");
 			setAward(TRUE);
 		}else{
-			if(CHAR_CHECKINDEX(charaindex)){
+			if(CHAR_CHECKINDEX(char_index)){
 				int fl = 0, x = 0, y = 0;
-				CHAR_getElderPosition(CHAR_getInt(charaindex, CHAR_LASTTALKELDER), &fl, &x, &y);
-				CHAR_warpToSpecificPoint(charaindex, fl, x, y);
+				CHAR_getElderPosition(CHAR_getInt(char_index, CHAR_LASTTALKELDER), &fl, &x, &y);
+				CHAR_warpToSpecificPoint(char_index, fl, x, y);
 			}
 			AutoPk_PKSystemTalk("由于参加比赛人数过少，所以取消比赛！","由于参加比赛人数过少，所以取消比赛！");
 			baward = FALSE;
@@ -651,10 +651,10 @@ void AutoPk_AwardSet( int petid, char *pet, int itemid, char *item )
 	}
 }
 
-void AutoPk_ChampionShipSet( int charaindex, int winnum, int win )
+void AutoPk_ChampionShipSet( int char_index, int winnum, int win )
 {
-	char *cdkey = CHAR_getChar( charaindex, CHAR_CDKEY);
-	char *name = CHAR_getChar( charaindex, CHAR_NAME);
+	char *cdkey = CHAR_getChar( char_index, CHAR_CDKEY);
+	char *name = CHAR_getChar( char_index, CHAR_NAME);
 	if(win==0){
 		char token[64];
 		if(winnum>ship[0].winnum){
@@ -740,23 +740,23 @@ BOOL AutoPk_AddItem( int charindex, int index )
 {
 	char msgbuf[64];
 	int	ret;
-	int itemindex=-1;
-  itemindex = CHAR_findEmptyItemBox( charindex );
-	if( itemindex < 0 )	{
+	int item_index=-1;
+  item_index = CHAR_findEmptyItemBox( charindex );
+	if( item_index < 0 )	{
 		CHAR_talkToCli( charindex, -1, "物品栏空间不足！！",  CHAR_COLORYELLOW);
 		return FALSE;
 	}
 
-	itemindex = ITEM_makeItemAndRegist( award[index].awarditemid );
-	if(itemindex == -1)
+	item_index = ITEM_makeItemAndRegist( award[index].awarditemid );
+	if(item_index == -1)
 		return FALSE;
-	ret = CHAR_addItemSpecificItemIndex( charindex, itemindex);
+	ret = CHAR_addItemSpecificItemIndex( charindex, item_index);
 	if( ret < 0 || ret >= CheckCharMaxItem(charindex) ) {
-		ITEM_endExistItemsOne( itemindex );
+		ITEM_endExistItemsOne( item_index );
 		print ("\n ret error!!");
 		return FALSE;
 	}
-	sprintf( msgbuf,"拿到%s",ITEM_getChar( itemindex, ITEM_NAME));
+	sprintf( msgbuf,"拿到%s",ITEM_getChar( item_index, ITEM_NAME));
 	CHAR_talkToCli( charindex, -1, msgbuf, CHAR_COLORYELLOW );
 	CHAR_sendItemDataOne( charindex, ret);
 	return TRUE;

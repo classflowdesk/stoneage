@@ -41,16 +41,16 @@ int EVENT_main(const int char_index, int event, int x, int y) {
     int o = GET_OBJINDEX(object);
     if (OBJECT_getType(o) == OBJTYPE_CHARA) {
       int etype;
-      int echaraindex = OBJECT_getIndex(o);
-      if (!CHAR_CHECKINDEX(echaraindex))
+      int echar_index = OBJECT_getIndex(o);
+      if (!CHAR_CHECKINDEX(echar_index))
         continue;
-      if (CHAR_getInt(echaraindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER)
+      if (CHAR_getInt(echar_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER)
         continue;
-      etype = CHAR_getWorkInt(echaraindex, CHAR_WORKEVENTTYPE);
+      etype = CHAR_getWorkInt(echar_index, CHAR_WORKEVENTTYPE);
       if (etype != CHAR_EVENT_NONE) {
         if (etype == event) {
           if (func_tbl[event] != NULL) {
-            rc = func_tbl[event](char_index, echaraindex, floor, x, y);
+            rc = func_tbl[event](char_index, echar_index, floor, x, y);
           }
           found = TRUE;
           break;

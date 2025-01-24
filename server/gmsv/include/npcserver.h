@@ -24,14 +24,14 @@ void NPCS_AskNpcList_send( int fd);
 void NPCS_NpcSLogin_recv( int fd, char *Mess);
 void NPCS_NpcSLogin_send( int fd);
 
-void NPCS_AskNpcTalk_send( int objindex, int npcsindex, int charaindex, char *Nlist);
+void NPCS_AskNpcTalk_send( int objindex, int npcsindex, int char_index, char *Nlist);
 
-void NPCS_NpcTalkMess_recv( int npcobjindex, int charaindex, int charobjindex, char *TalkMess, int Color);
-void NPCS_NpcWinMess_recv( int npcobjindex, int charaindex, int charobjindex, char *WinMess,
+void NPCS_NpcTalkMess_recv( int npcobjindex, int char_index, int charobjindex, char *TalkMess, int Color);
+void NPCS_NpcWinMess_recv( int npcobjindex, int char_index, int charobjindex, char *WinMess,
 						  int seqno, int windowtype, int buttontype, int page);
-void NPCS_NpcWinMess_send( int npcobjindex, int npcindex, int charaindex, char *WinMess,
+void NPCS_NpcWinMess_send( int npcobjindex, int npcindex, int char_index, char *WinMess,
 						  int seqno, int select);
-void NPCS_NpcCheckFreeMess_recv( int npcobjindex, int charaindex, int charobjindex,
+void NPCS_NpcCheckFreeMess_recv( int npcobjindex, int char_index, int charobjindex,
 								char *CheckfreeMess);
 
 #endif

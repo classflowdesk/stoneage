@@ -6,8 +6,8 @@
 BOOL ENCOUNT_initEncount( char* filename );
 BOOL ENCOUNT_reinitEncount( void );
 int ENCOUNT_getEncountAreaArray( int floor, int x, int y);
-int ENCOUNT_getEncountPercentMin( int charaindex, int floor , int x, int y );
-int ENCOUNT_getEncountPercentMax( int charaindex, int floor , int x, int y );
+int ENCOUNT_getEncountPercentMin( int char_index, int floor , int x, int y );
+int ENCOUNT_getEncountPercentMax( int char_index, int floor , int x, int y );
 int ENCOUNT_getCreateEnemyMaxNum( int floor , int x, int y );
 int ENCOUNT_getEncountIndex( int floor , int x, int y );
 int ENCOUNT_getEncountIndexFromArray( int array );

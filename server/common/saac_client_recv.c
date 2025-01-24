@@ -35,7 +35,7 @@ extern struct MissionInfo missionlist[MAXMISSION];
 extern struct MissionTable missiontable[MAXMISSIONTABLE];
 #endif
 
-void saacproto_ACGmsvDownRequest_recv(int fd, int min) {
+void SaacClient_ACGmsvDownRequest_recv(int fd, int min) {
   char buff[32];
   int i;
   int player_max_num = CHAR_getPlayerMaxNum();
@@ -51,11 +51,12 @@ void saacproto_ACGmsvDownRequest_recv(int fd, int min) {
   SERVSTATE_setDsptime(0);
 }
 
-void saacproto_ACServerLogin_recv(int fd, char *result, char *data) {
+void SaacClient_ACServerLogin_recv(int fd, char *result, char *data) {
 #ifdef _OTHER_SAAC_LINK
   if (CONNECT_getCtype(fd) == SQL) {
     if (strcmp(result, SUCCESSFUL) != 0) {
-      print("Connect to SQL is not successful!!!. result: %s, data: %s\n", result, data);
+      print("Connect to SQL is not successful!!!. result: %s, data: %s\n",
+            result, data);
       CONNECT_endOne_debug(fd);
       osfd = -1;
       return;
@@ -65,11 +66,13 @@ void saacproto_ACServerLogin_recv(int fd, char *result, char *data) {
 #endif
   {
     if (strcmp(result, SUCCESSFUL) != 0) {
-      print("Connect to AC Server is not successful!!!. result: %s, data: %s\n", result, data);
+      print("Connect to AC Server is not successful!!!. result: %s, data: %s\n",
+            result, data);
       shutdownProgram();
       exit(1);
     }
-    print("Connect to AC Server is successful. result: %s, data: %s\n", result, data);
+    print("Connect to AC Server is successful. result: %s, data: %s\n", result,
+          data);
     time(&initTime);
 
 #ifdef _SERVER_NUMS
@@ -83,13 +86,13 @@ void saacproto_ACServerLogin_recv(int fd, char *result, char *data) {
     print("succeed.\n");
 #ifdef _ANGEL_SUMMON
     print("Start to init AC mission table...");
-    saacproto_ACMissionTable_send(acfd, -1, 1, "", "");
+    SaacClient_ACMissionTable_send(acfd, -1, 1, "", "");
     print("succeed.\n");
 #endif
   }
 }
 
-void saacproto_ACCharList_recv(int fd, char *result, char *data, int retfd) {
+void SaacClient_ACCharList_recv(int fd, char *result, char *data, int retfd) {
   int clifd = getfdFromFdid(retfd);
   if (CONNECT_checkfd(clifd) == FALSE)
     return;
@@ -100,12 +103,12 @@ void saacproto_ACCharList_recv(int fd, char *result, char *data, int retfd) {
   }
 #endif
 #endif
-  lssproto_CharList_send(clifd, result, data);
+  GmsvServer_CharList_send(clifd, result, data);
   CONNECT_setState(clifd, NOTLOGIN);
 }
 
-void saacproto_ACCharLoad_recv(int fd, char *result, char *data, int ret_fd,
-                               int save_index) {
+void SaacClient_ACCharLoad_recv(int fd, char *result, char *data, int ret_fd,
+                                int save_index) {
   const int client_fd = getfdFromFdid(ret_fd);
   if (CONNECT_checkfd(client_fd) == FALSE)
     return;
@@ -118,12 +121,12 @@ void saacproto_ACCharLoad_recv(int fd, char *result, char *data, int ret_fd,
 #endif
     CONNECT_getCdkey(client_fd, cdkey, sizeof(cdkey));
     print(" (%s)ACCharLoad:%s ", cdkey, data);
-    lssproto_CharLogin_send(client_fd, result, data);
+    GmsvServer_CharLogin_send(client_fd, result, data);
     CONNECT_setState(client_fd, NOTLOGIN);
   }
 }
 
-void saacproto_ACCharSave_recv(int fd, char *result, char *data, int retfd) {
+void SaacClient_ACCharSave_recv(int fd, char *result, char *data, int retfd) {
   int clifd = getfdFromFdid(retfd), fdid;
   char cdkey[CDKEYLEN], passwd[PASSWDLEN], charname[CHARNAMELEN];
 
@@ -138,21 +141,21 @@ void saacproto_ACCharSave_recv(int fd, char *result, char *data, int retfd) {
   case WHILECREATE:
     if (strcmp(result, FAILED) == 0)
       data = "";
-    lssproto_CreateNewChar_send(clifd, result, data);
+    GmsvServer_CreateNewChar_send(clifd, result, data);
     CONNECT_setState(clifd, NOTLOGIN);
     break;
 
   case WHILELOGOUTSAVE:
     if (strcmp(result, SUCCESSFUL) == 0)
-      lssproto_CharLogout_send(clifd, result, "success");
+      GmsvServer_CharLogout_send(clifd, result, "success");
     else
-      lssproto_CharLogout_send(clifd, result, "Cannot save");
+      GmsvServer_CharLogout_send(clifd, result, "Cannot save");
     CONNECT_setState(clifd, NOTLOGIN);
     CONNECT_setCharaindex(clifd, -1);
     break;
 
   case WHILELOSTCHARSAVE:
-    saacproto_ACCharDelete_send(acfd, cdkey, passwd, charname, "", fdid);
+    SaacClient_ACCharDelete_send(acfd, cdkey, passwd, charname, "", fdid);
     CONNECT_setState(clifd, WHILELOSTCHARDELETE);
     CONNECT_setCharaindex(clifd, -1);
     // CONNECT_setCloseRequest( clifd , 1 );
@@ -179,7 +182,7 @@ void saacproto_ACCharSave_recv(int fd, char *result, char *data, int retfd) {
   }
 }
 
-void saacproto_ACCharDelete_recv(int fd, char *result, char *data, int retfd) {
+void SaacClient_ACCharDelete_recv(int fd, char *result, char *data, int retfd) {
   int clifd = getfdFromFdid(retfd);
   if (CONNECT_checkfd(clifd) == FALSE)
     return;
@@ -192,7 +195,7 @@ void saacproto_ACCharDelete_recv(int fd, char *result, char *data, int retfd) {
   case WHILECHARDELETE:
     if (strcmp(result, FAILED) == 0)
       data = "";
-    lssproto_CharDelete_send(clifd, result, data);
+    GmsvServer_CharDelete_send(clifd, result, data);
     CONNECT_setState(clifd, NOTLOGIN);
     CONNECT_setCharaindex(clifd, -1);
     // CONNECT_setCloseRequest(clifd, 1);
@@ -202,7 +205,7 @@ void saacproto_ACCharDelete_recv(int fd, char *result, char *data, int retfd) {
   }
 }
 
-void saacproto_ACLock_recv(int fd, char *result, char *data, int retfd) {
+void SaacClient_ACLock_recv(int fd, char *result, char *data, int retfd) {
   int clifd = getfdFromFdid(retfd);
   char cdkey[CDKEYLEN];
   int cindex = getCharindexFromFdid(retfd);
@@ -240,7 +243,7 @@ void saacproto_ACLock_recv(int fd, char *result, char *data, int retfd) {
       if (strcmp(data, mesg) == 0) {
         CONNECT_setState(clifd, NOTLOGIN);
       } else {
-        saacproto_ACLock_send(fd, cdkey, UNLOCK, CONNECT_getFdid(clifd));
+        SaacClient_ACLock_send(fd, cdkey, UNLOCK, CONNECT_getFdid(clifd));
       }
     }
     break;
@@ -249,33 +252,33 @@ void saacproto_ACLock_recv(int fd, char *result, char *data, int retfd) {
   }
 }
 
-void saacproto_ACUCheck_recv(int fd, char *cd) {
+void SaacClient_ACUCheck_recv(int fd, char *cd) {
   int conind;
   int flag = 0;
   conind = getfdFromCdkeyWithLogin(cd);
   flag = (conind >= 0) ? 1 : 0;
-  saacproto_ACUCheck_send(fd, cd, flag);
+  SaacClient_ACUCheck_send(fd, cd, flag);
 }
 
-void saacproto_DBUpdateEntryInt_recv(int fd, char *result, char *table,
-                                     char *key, int msgid, int msgid2) {
+void SaacClient_DBUpdateEntryInt_recv(int fd, char *result, char *table,
+                                      char *key, int msgid, int msgid2) {
   if (strcmp(result, NET_STRING_FAILED) == 0) {
     print("failed: DBUpdateEntryInt\n");
     return;
   }
 }
 
-void saacproto_DBUpdateEntryString_recv(int fd, char *result, char *table,
-                                        char *key, int msgid, int msgid2) {
+void SaacClient_DBUpdateEntryString_recv(int fd, char *result, char *table,
+                                         char *key, int msgid, int msgid2) {
   if (strcmp(result, NET_STRING_FAILED) == 0) {
     print("failed: DBUpdateEntryString\n");
     return;
   }
 }
 
-void saacproto_DBGetEntryRank_recv(int fd, char *result, int rank, int count,
-                                   char *table, char *key, int msgid,
-                                   int msgid2) {
+void SaacClient_DBGetEntryRank_recv(int fd, char *result, int rank, int count,
+                                    char *table, char *key, int msgid,
+                                    int msgid2) {
   if (strcmp(result, NET_STRING_FAILED) == 0) {
     print("failed: DBGetEntryRank\n");
     return;
@@ -290,33 +293,33 @@ void saacproto_DBGetEntryRank_recv(int fd, char *result, int rank, int count,
   }
 }
 
-void saacproto_DBDeleteEntryInt_recv(int fd, char *result, char *table,
-                                     char *key, int msgid, int msgid2) {
+void SaacClient_DBDeleteEntryInt_recv(int fd, char *result, char *table,
+                                      char *key, int msgid, int msgid2) {
   if (strcmp(result, NET_STRING_FAILED) == 0) {
     print("failed: DBDeleteEntryInt\n");
     return;
   }
 }
 
-void saacproto_DBDeleteEntryString_recv(int fd, char *result, char *table,
-                                        char *key, int msgid, int msgid2) {
+void SaacClient_DBDeleteEntryString_recv(int fd, char *result, char *table,
+                                         char *key, int msgid, int msgid2) {
   if (strcmp(result, NET_STRING_FAILED) == 0) {
     print("failed: DBDeleteEntryString\n");
     return;
   }
 }
 
-void saacproto_DBGetEntryInt_recv(int fd, char *result, int value, char *table,
-                                  char *key, int msgid, int msgid2) {
+void SaacClient_DBGetEntryInt_recv(int fd, char *result, int value, char *table,
+                                   char *key, int msgid, int msgid2) {
   if (strcmp(result, NET_STRING_FAILED) == 0) {
     print("failed: DBGetEntryInt\n");
     return;
   }
 }
 
-void saacproto_DBGetEntryString_recv(int fd, char *result, char *value,
-                                     char *table, char *key, int msgid,
-                                     int msgid2) {
+void SaacClient_DBGetEntryString_recv(int fd, char *result, char *value,
+                                      char *table, char *key, int msgid,
+                                      int msgid2) {
   char cdkey[32];
   char charaname[32];
 
@@ -342,17 +345,17 @@ void saacproto_DBGetEntryString_recv(int fd, char *result, char *value,
   }
 }
 
-void saacproto_DBGetEntryByRank_recv(int fd, char *result, char *list,
-                                     char *table, int msgid, int msgid2) {
+void SaacClient_DBGetEntryByRank_recv(int fd, char *result, char *list,
+                                      char *table, int msgid, int msgid2) {
   if (strcmp(result, NET_STRING_FAILED) == 0) {
     print("failed: DBGetEntryByRank\n");
     return;
   }
 }
 
-void saacproto_DBGetEntryByCount_recv(int fd, char *result, char *list,
-                                      char *table, int count_start, int msgid,
-                                      int msgid2) {
+void SaacClient_DBGetEntryByCount_recv(int fd, char *result, char *list,
+                                       char *table, int count_start, int msgid,
+                                       int msgid2) {
   if (strcmp(result, NET_STRING_FAILED) == 0) {
     print("failed: DBGetEntryByCount\n");
     return;
@@ -362,21 +365,20 @@ void saacproto_DBGetEntryByCount_recv(int fd, char *result, char *list,
   }
 }
 #ifdef _ALLDOMAN
-void saacproto_UpdataStele_recv(int fd, char *token) {
+void SaacClient_UpdataStele_recv(int fd, char *token) {
   NPC_AlldomanWriteStele(token);
 }
-void saacproto_S_UpdataStele_recv(int i, char *ocdkey, char *oname,
-                                  char *ncdkey, char *nname, char *title,
-                                  int level, int trns, int floor) {
-  print("\nSyu log Single=> %s , %s , %s , %s ", ocdkey, oname, ncdkey,
-        nname);
+void SaacClient_S_UpdataStele_recv(int i, char *ocdkey, char *oname,
+                                   char *ncdkey, char *nname, char *title,
+                                   int level, int trns, int floor) {
+  print("\nSyu log Single=> %s , %s , %s , %s ", ocdkey, oname, ncdkey, nname);
   NPC_Alldoman_S_WriteStele(ocdkey, oname, ncdkey, nname, title, level, trns,
                             floor);
 }
 #endif
 
-/* */
-void saacproto_Broadcast_recv(const int fd, const char *char_id, const char *char_name, const char *message) {
+void SaacClient_Broadcast_recv(const int fd, const char *char_id,
+                               const char *char_name, const char *message) {
 
   if (strstr(message, "online") == 0 || strstr(message, "offline") == 0 ||
       strstr(message, "param") == 0 || strstr(message, "chardelete") == 0) {
@@ -384,25 +386,24 @@ void saacproto_Broadcast_recv(const int fd, const char *char_id, const char *cha
     char escape_info[1024];
     snprintf(info, sizeof(info), "%s_%s", char_id, char_name);
     makeEscapeString(info, escape_info, sizeof(escape_info));
-    saacproto_DBGetEntryString_send(acfd, DB_ADDRESSBOOK, escape_info, 0, 0);
+    SaacClient_DBGetEntryString_send(acfd, DB_ADDRESSBOOK, escape_info, 0, 0);
   }
 }
 
-/* */
-void saacproto_Message_recv(const int fd, const char *id_from, const char *char_name_from,
-                            const char *id_to, const char *char_name_to, const char *message,
-                            const int option, const int mesgid) {
-  BOOL ret;
-  ret = ADDRESSBOOK_sendMessage_FromOther(id_from, char_name_from, id_to,
-                                          char_name_to, message, option);
-  if (ret == TRUE) {
-    saacproto_MessageAck_send(acfd, id_to, char_name_to, "successful", mesgid);
+void SaacClient_Message_recv(const int fd, const char *id_from,
+                             const char *char_name_from, const char *id_to,
+                             const char *char_name_to, const char *message,
+                             const int option, const int mesgid) {
+  int ret = ADDRESSBOOK_sendMessage_FromOther(id_from, char_name_from, id_to,
+                                              char_name_to, message, option);
+  if (ret == 1) {
+    SaacClient_MessageAck_send(acfd, id_to, char_name_to, SUCCESSFUL, mesgid);
   }
 }
 
 /* 收到从客户端发送创建family的请求 */
-void saacproto_ACAddFM_recv(int fd, char *result, int family_index, int char_fdid,
-                            int index) {
+void SaacClient_ACAddFM_recv(int fd, char *result, int family_index,
+                             int char_fdid, int index) {
   int ret;
   const int client_fd = getfdFromFdid(char_fdid);
   if (CONNECT_checkfd(client_fd) == FALSE)
@@ -415,7 +416,7 @@ void saacproto_ACAddFM_recv(int fd, char *result, int family_index, int char_fdi
 }
 
 /* 收到从客户端发送加入family的请求 */
-void saacproto_ACJoinFM_recv(int fd, char *result, int recv, int charfdid) {
+void SaacClient_ACJoinFM_recv(int fd, char *result, int recv, int charfdid) {
   int ret;
   int clifd = getfdFromFdid(charfdid);
   if (CONNECT_checkfd(clifd) == FALSE)
@@ -428,8 +429,8 @@ void saacproto_ACJoinFM_recv(int fd, char *result, int recv, int charfdid) {
 }
 
 /* 收到从客户端发送离开family的请求 */
-void saacproto_ACLeaveFM_recv(int fd, char *result, int resultflag,
-                              int charfdid) {
+void SaacClient_ACLeaveFM_recv(int fd, char *result, int resultflag,
+                               int charfdid) {
   int ret;
   int clifd = getfdFromFdid(charfdid);
   if (CONNECT_checkfd(clifd) == FALSE)
@@ -442,11 +443,10 @@ void saacproto_ACLeaveFM_recv(int fd, char *result, int resultflag,
   print("ACLeaveFM_%d", ret);
 }
 
-/* */
-void saacproto_ACChangeFM_recv(int fd, char *result, int charfdid) {}
+void SaacClient_ACChangeFM_recv(int fd, char *result, int charfdid) {}
 
-/* 收到从客户端发送删除family的请求 */
-void saacproto_ACDelFM_recv(int fd, char *result, int charfdid) {
+/* Saac客户端收到服务端的发送删除family的请求 */
+void SaacClient_ACDelFM_recv(int fd, char *result, int charfdid) {
   int ret;
   int clifd = getfdFromFdid(charfdid);
   if (CONNECT_checkfd(clifd) == FALSE)
@@ -459,7 +459,7 @@ void saacproto_ACDelFM_recv(int fd, char *result, int charfdid) {
   print("ACDelFM_%d", ret);
 }
 
-void saacproto_ACShowFMList_recv(int fd, char *result, int fmnum, char *data) {
+void SaacClient_ACShowFMList_recv(int fd, char *result, int fmnum, char *data) {
   int ret;
   if (strcmp(result, SUCCESSFUL) == 0)
     ret = 1;
@@ -468,11 +468,12 @@ void saacproto_ACShowFMList_recv(int fd, char *result, int fmnum, char *data) {
   ACShowFMList(ret, fmnum, data);
 }
 
-void saacproto_ACShowMemberList_recv(int fd, char *result, int index,
-                                     int fmmemnum, int fmacceptflag,
-                                     int fmjoinnum, char *data
+void SaacClient_ACShowMemberList_recv(int fd, char *result, int index,
+                                      int fmmemnum, int fmacceptflag,
+                                      int fmjoinnum, char *data
 #ifdef _FAMILYBADGE_
-                                     , int badge
+                                      ,
+                                      int badge
 #endif
 ) {
   int ret;
@@ -482,12 +483,14 @@ void saacproto_ACShowMemberList_recv(int fd, char *result, int index,
     ret = 0;
   ACShowMemberList(ret, index, fmmemnum, fmacceptflag, fmjoinnum, data
 #ifdef _FAMILYBADGE_
-                   , badge
+                   ,
+                   badge
 #endif
   );
 }
 
-void saacproto_ACFMDetail_recv(int fd, char *result, char *data, int charfdid) {
+void SaacClient_ACFMDetail_recv(int fd, char *result, char *data,
+                                int charfdid) {
   int ret;
   int clifd = getfdFromFdid(charfdid);
   if (CONNECT_checkfd(clifd) == FALSE)
@@ -498,24 +501,24 @@ void saacproto_ACFMDetail_recv(int fd, char *result, char *data, int charfdid) {
     ret = 0;
   ACFMDetail(ret, data, clifd);
 }
-void saacproto_ACMemberJoinFM_recv(int fd, char *result, char *data,
-                                   int charfdid) {}
-void saacproto_ACMemberLeaveFM_recv(int fd, char *result, char *data,
+void SaacClient_ACMemberJoinFM_recv(int fd, char *result, char *data,
                                     int charfdid) {}
+void SaacClient_ACMemberLeaveFM_recv(int fd, char *result, char *data,
+                                     int charfdid) {}
 #ifdef _PERSONAL_FAME
-void saacproto_ACFMCharLogin_recv(int fd, char *result, int index, int floor,
-                                  int fmdp, int joinflag, int fmsetupflag,
-                                  int flag, int charindex, int charfame,
-                                  int charfdid
+void SaacClient_ACFMCharLogin_recv(int fd, char *result, int index, int floor,
+                                   int fmdp, int joinflag, int fmsetupflag,
+                                   int flag, int charindex, int charfame,
+                                   int charfdid
 #ifdef _NEW_MANOR_LAW
-                                  ,
-                                  int momentum
+                                   ,
+                                   int momentum
 #endif
 )
 #else
-void saacproto_ACFMCharLogin_recv(int fd, char *result, int index, int floor,
-                                  int fmdp, int joinflag, int fmsetupflag,
-                                  int flag, int charindex, int charfdid)
+void SaacClient_ACFMCharLogin_recv(int fd, char *result, int index, int floor,
+                                   int fmdp, int joinflag, int fmsetupflag,
+                                   int flag, int charindex, int charfdid)
 #endif
 {
   int ret;
@@ -539,9 +542,9 @@ void saacproto_ACFMCharLogin_recv(int fd, char *result, int index, int floor,
                 charindex);
 #endif
 }
-void saacproto_ACFMCharLogout_recv(int fd, char *result, int charfdid) {}
-void saacproto_ACFMReadMemo_recv(int fd, char *result, int index, int num,
-                                 int dataindex, char *data) {
+void SaacClient_ACFMCharLogout_recv(int fd, char *result, int charfdid) {}
+void SaacClient_ACFMReadMemo_recv(int fd, char *result, int index, int num,
+                                  int dataindex, char *data) {
   int ret;
   if (strcmp(result, SUCCESSFUL) == 0)
     ret = 1;
@@ -549,8 +552,8 @@ void saacproto_ACFMReadMemo_recv(int fd, char *result, int index, int num,
     ret = 0;
   ACShowFMMemo(ret, index, num, dataindex, data);
 }
-void saacproto_ACFMWriteMemo_recv(int fd, char *result, int index) {}
-void saacproto_ACFMPointList_recv(int fd, char *result, char *data) {
+void SaacClient_ACFMWriteMemo_recv(int fd, char *result, int index) {}
+void SaacClient_ACFMPointList_recv(int fd, char *result, char *data) {
   int ret;
   if (strcmp(result, SUCCESSFUL) == 0)
     ret = 1;
@@ -559,7 +562,7 @@ void saacproto_ACFMPointList_recv(int fd, char *result, char *data) {
   ACShowPointList(ret, data);
 }
 
-void saacproto_ACSetFMPoint_recv(int fd, char *result, int r, int charfdid) {
+void SaacClient_ACSetFMPoint_recv(int fd, char *result, int r, int charfdid) {
   int ret;
   int clifd = getfdFromFdid(charfdid);
   if (CONNECT_checkfd(clifd) == FALSE)
@@ -571,10 +574,10 @@ void saacproto_ACSetFMPoint_recv(int fd, char *result, int r, int charfdid) {
   }
   ACSetFMPoint(ret, r, clifd);
 }
-void saacproto_ACFixFMPoint_recv(int fd, char *result, int r) {}
-void saacproto_ACFMAnnounce_recv(int fd, char *result, char *fmname,
-                                 int fmindex, int index, int kindflag,
-                                 char *data, int color) {
+void SaacClient_ACFixFMPoint_recv(int fd, char *result, int r) {}
+void SaacClient_ACFMAnnounce_recv(int fd, char *result, char *fmname,
+                                  int fmindex, int index, int kindflag,
+                                  char *data, int color) {
   int ret;
   if (strcmp(result, SUCCESSFUL) == 0) {
     ret = 1;
@@ -584,8 +587,8 @@ void saacproto_ACFMAnnounce_recv(int fd, char *result, char *fmname,
   ACFMAnnounce(ret, fmname, fmindex, index, kindflag, data, color);
 }
 
-void saacproto_ACShowTopFMList_recv(int fd, char *result, int kindflag, int num,
-                                    char *data) {
+void SaacClient_ACShowTopFMList_recv(int fd, char *result, int kindflag,
+                                     int num, char *data) {
   int ret;
   if (strcmp(result, SUCCESSFUL) == 0)
     ret = 1;
@@ -597,8 +600,8 @@ void saacproto_ACShowTopFMList_recv(int fd, char *result, int kindflag, int num,
 extern struct FMS_DPTOP fmdptop;
 #endif
 
-void saacproto_ACFixFMData_recv(int fd, char *result, int kindflag, char *data1,
-                                char *data2, int charfdid) {
+void SaacClient_ACFixFMData_recv(int fd, char *result, int kindflag,
+                                 char *data1, char *data2, int charfdid) {
   int ret;
   int intdata;
   int clifd = getfdFromFdid(charfdid);
@@ -672,8 +675,8 @@ void saacproto_ACFixFMData_recv(int fd, char *result, int kindflag, char *data1,
 #endif
   }
 }
-void saacproto_ACFixFMPK_recv(int fd, char *result, int data, int winindex,
-                              int loseindex) {
+void SaacClient_ACFixFMPK_recv(int fd, char *result, int data, int winindex,
+                               int loseindex) {
   int ret;
   if (strcmp(result, SUCCESSFUL) == 0)
     ret = 1;
@@ -691,8 +694,8 @@ void saacproto_ACFixFMPK_recv(int fd, char *result, int data, int winindex,
     LogFMPOP(tmpbuf);
   }
 }
-void saacproto_ACGMFixFMData_recv(int fd, char *result, char *fmname,
-                                  int charfdid) {
+void SaacClient_ACGMFixFMData_recv(int fd, char *result, char *fmname,
+                                   int charfdid) {
   int ret;
   int clifd = getfdFromFdid(charfdid);
   char buf[256];
@@ -715,8 +718,8 @@ void saacproto_ACGMFixFMData_recv(int fd, char *result, char *fmname,
   }
 }
 extern int familyTax[];
-void saacproto_ACGetFMData_recv(int fd, char *result, int kindflag, int data,
-                                int charfdid) {
+void SaacClient_ACGetFMData_recv(int fd, char *result, int kindflag, int data,
+                                 int charfdid) {
   int ret;
   char buf[256];
   int clifd = getfdFromFdid(charfdid);
@@ -741,11 +744,11 @@ void saacproto_ACGetFMData_recv(int fd, char *result, int kindflag, int data,
     }
     familyTax[fmindex] = data;
     sprintf(buf, "B|T|%d", data);
-    lssproto_FM_send(clifd, buf);
+    GmsvServer_FM_send(clifd, buf);
   }
 }
-void saacproto_ACFMClearPK_recv(int fd, char *result, char *fmname, int fmindex,
-                                int index) {
+void SaacClient_ACFMClearPK_recv(int fd, char *result, char *fmname,
+                                 int fmindex, int index) {
   int ret, i = 0;
 
   if (strcmp(result, SUCCESSFUL) == 0)
@@ -771,27 +774,26 @@ void saacproto_ACFMClearPK_recv(int fd, char *result, char *fmname, int fmindex,
 }
 
 #ifdef _ACFMPK_LIST
-void saacproto_ACSendFmPk_recv(int fd, int toindex, int flg) {
+void SaacClient_ACSendFmPk_recv(int fd, int to_index, int flg) {
   char buf[256];
   if (flg == 0) {
-    sprintf(buf, "ׯ԰��ս��¼ʧ�ܣ���");
-    CHAR_talkToCli(toindex, -1, buf, CHAR_COLORRED);
+    sprintf(buf, "家族PK.");
+    CHAR_talkToCli(to_index, -1, buf, CHAR_COLORRED);
   } else {
     sprintf(buf, "%s ��������սׯ԰�ʸ�",
-            CHAR_getChar(toindex, CHAR_FMNAME));
+            CHAR_getChar(to_index, CHAR_FMNAME));
     int i;
     for (i = 0; i < CHAR_getPlayerMaxNum(); i++) {
       if (CHAR_getCharUse(i) != FALSE) {
         CHAR_talkToCli(i, -1, buf, CHAR_COLORBLUE2);
       }
     }
-    sprintf(buf,
-            "ׯ԰��ս��¼ȷ��OK����ú�׼����");
-    CHAR_talkToCli(toindex, -1, buf, CHAR_COLORYELLOW);
+    sprintf(buf, "家族PK.");
+    CHAR_talkToCli(to_index, -1, buf, CHAR_COLORYELLOW);
   }
 }
 
-void saacproto_ACLoadFmPk_recv(int fd, char *data) {
+void SaacClient_ACLoadFmPk_recv(int fd, char *data) {
   char buf[10], fm_pk_data[128];
   char token[256], skip[256];
   int fm_pk_num, fmpks_pos = -1;
@@ -803,7 +805,7 @@ void saacproto_ACLoadFmPk_recv(int fd, char *data) {
     print("\n err fm_pk_num(%d)", fm_pk_num);
     return;
   }
-  // ʱ��
+  //
   if (getStringFromIndexWithDelim(data, "|", 2, token, sizeof(token))) {
     fmpks[fmpks_pos + 1].dueltime = atoi(token);
   }
@@ -815,7 +817,7 @@ void saacproto_ACLoadFmPk_recv(int fd, char *data) {
   if (getStringFromIndexWithDelim(data, "|", 4, token, sizeof(token))) {
     strcpy(fmpks[fmpks_pos + 1].host_name, makeStringFromEscaped(token));
   }
-  // �Ͷ� familyindex
+  // No.5 family_index
   if (getStringFromIndexWithDelim(data, "|", 5, token, sizeof(token))) {
     fmpks[fmpks_pos + 1].guest_index = atoi(token);
   }
@@ -855,7 +857,7 @@ void saacproto_ACLoadFmPk_recv(int fd, char *data) {
 }
 #endif
 
-void saacproto_ACManorPKAck_recv(int fd, char *data) {
+void SaacClient_ACManorPKAck_recv(int fd, char *data) {
   // ������� server �� ׯ԰ pk scheduleman
   int i;
   char token[256], skip[256];
@@ -937,7 +939,7 @@ void saacproto_ACManorPKAck_recv(int fd, char *data) {
 }
 
 #ifdef _WAEI_KICK
-void saacproto_ACKick_recv(int fd, int act, char *data, int retfd) {
+void SaacClient_ACKick_recv(int fd, int act, char *data, int retfd) {
   int clifd = getfdFromFdid(retfd);
   // if( CONNECT_checkfd(clifd) == FALSE )return;
   // char cdkey[CDKEYLEN];
@@ -993,8 +995,8 @@ void saacproto_ACKick_recv(int fd, int act, char *data, int retfd) {
           if (!CHAR_CHECKINDEX(fd_charaindex))
             continue;
           CHAR_talkToCli(fd_charaindex, -1, buf1, CHAR_COLORYELLOW);
-          //						CHAR_talkToCli(fd_charaindex, -1, buf2,
-          //CHAR_COLORYELLOW);
+          //						CHAR_talkToCli(fd_charaindex,
+          //-1, buf2, CHAR_COLORYELLOW);
         }
       }
     }
@@ -1008,8 +1010,8 @@ void saacproto_ACKick_recv(int fd, int act, char *data, int retfd) {
 #endif
 
 #ifdef _CHAR_POOLITEM
-void saacproto_ACCharSavePoolItem_recv(int fd, char *result, char *data,
-                                       int retfd) {
+void SaacClient_ACCharSavePoolItem_recv(int fd, char *result, char *data,
+                                        int retfd) {
   int charaindex = getCharindexFromFdid(retfd);
   // print("\n ACCharSavePoolItem_recv:%s ", data);
   if (!CHAR_CHECKINDEX(charaindex))
@@ -1020,8 +1022,8 @@ void saacproto_ACCharSavePoolItem_recv(int fd, char *result, char *data,
   }
 }
 
-void saacproto_ACCharGetPoolItem_recv(int fd, char *result, char *data,
-                                      int retfd, int meindex) {
+void SaacClient_ACCharGetPoolItem_recv(int fd, char *result, char *data,
+                                       int retfd, int meindex) {
 #ifdef _NPC_DEPOTITEM
   Char *ch = NULL;
   int i, clifd, charaindex;
@@ -1060,10 +1062,11 @@ void saacproto_ACCharGetPoolItem_recv(int fd, char *result, char *data,
                     "          ʹ�õ��ֿ߲�\n\n"
                     "          ����ŵ��ߣ�\n"
                     "          ��ȡ�ص��ߣ�\n");
-    lssproto_WN_send(clifd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_CANCEL,
-                     311, // CHAR_WINDOWTYPE_DEPOTITEMSHOP_HANDLE,
-                     CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
-                     makeEscapeString(message, buf, sizeof(buf)));
+    GmsvServer_WN_send(clifd, WINDOW_MESSAGETYPE_SELECT,
+                       WINDOW_BUTTONTYPE_CANCEL,
+                       311, // CHAR_WINDOWTYPE_DEPOTITEMSHOP_HANDLE,
+                       CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
+                       makeEscapeString(message, buf, sizeof(buf)));
   }
 #endif
 }
@@ -1071,8 +1074,8 @@ void saacproto_ACCharGetPoolItem_recv(int fd, char *result, char *data,
 #endif //
 
 #ifdef _CHAR_POOLPET
-void saacproto_ACCharSavePoolPet_recv(int fd, char *result, char *data,
-                                      int retfd) {
+void SaacClient_ACCharSavePoolPet_recv(int fd, char *result, char *data,
+                                       int retfd) {
   int charaindex = getCharindexFromFdid(retfd);
   if (!CHAR_CHECKINDEX(charaindex))
     return;
@@ -1082,8 +1085,8 @@ void saacproto_ACCharSavePoolPet_recv(int fd, char *result, char *data,
   }
 }
 
-void saacproto_ACCharGetPoolPet_recv(int fd, char *result, char *data,
-                                     int retfd, int meindex) {
+void SaacClient_ACCharGetPoolPet_recv(int fd, char *result, char *data,
+                                      int retfd, int meindex) {
 #ifdef _NPC_DEPOTPET
   Char *ch = NULL;
   int i, clifd, charaindex;
@@ -1116,18 +1119,22 @@ void saacproto_ACCharGetPoolPet_recv(int fd, char *result, char *data,
   if (clifd != -1) {
     char message[1024];
     char buf[1024];
-    strcpy(message,
-           "3\n"
-           "              ʹ�ó���ֿ�\n"
-           "���ر�ע�⣺���𽫹��س�����빫���ֿ�"
-           "\n"
-           "�����������������﹫���ֿ⡻\n"
-           "          ��������ų������\n"
-           "          ������ȡ�س������\n");
-    lssproto_WN_send(clifd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_CANCEL,
-                     CHAR_WINDOWTYPE_DEPOTPETSHOP_HANDLE,
-                     CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
-                     makeEscapeString(message, buf, sizeof(buf)));
+    strcpy(
+        message,
+        "3\n"
+        "              ʹ�ó���ֿ�\n"
+        "���ر�ע�⣺���𽫹��س�����빫���"
+        "ֿ"
+        "�"
+        "\n"
+        "�����������������﹫���ֿ⡻\n"
+        "          ��������ų������\n"
+        "          ������ȡ�س������\n");
+    GmsvServer_WN_send(clifd, WINDOW_MESSAGETYPE_SELECT,
+                       WINDOW_BUTTONTYPE_CANCEL,
+                       CHAR_WINDOWTYPE_DEPOTPETSHOP_HANDLE,
+                       CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
+                       makeEscapeString(message, buf, sizeof(buf)));
   }
 #endif
 }
@@ -1135,10 +1142,10 @@ void saacproto_ACCharGetPoolPet_recv(int fd, char *result, char *data,
 #endif
 
 #ifdef _ANGEL_SUMMON
-// void saacproto_ACMissionTable_recv( int fd, int num, int type, char *data,
+// void SaacClient_ACMissionTable_recv( int fd, int num, int type, char *data,
 // int charaindex)
-void saacproto_ACMissionTable_recv(int fd, int num, int type, char *data,
-                                   char *angelinfo) {
+void SaacClient_ACMissionTable_recv(int fd, int num, int type, char *data,
+                                    char *angelinfo) {
   char msg[1024];
 
   if (type == 1) { // get data list
@@ -1210,7 +1217,7 @@ void saacproto_ACMissionTable_recv(int fd, int num, int type, char *data,
       return;
     }
 
-    lssproto_WN_send(
+    GmsvServer_WN_send(
         getfdFromCharaIndex(angelindex), WINDOW_MESSAGETYPE_ANGELMESSAGE,
         WINDOW_BUTTONTYPE_YESNO, CHAR_WINDOWTYPE_ANGEL_ASK, -1,
         "Ŀǰħ����Ű����������Ҫ��İ�æ��ǰ��Ѱ��������������Щħ�壬���Ƿ�Ը���æ��");
@@ -1237,53 +1244,60 @@ void saacproto_ACMissionTable_recv(int fd, int num, int type, char *data,
 #endif
 
 #ifdef _TEACHER_SYSTEM
-void saacproto_ACCheckCharacterOnLine_recv(int acfd, int charaindex,
-                                           int iOnline, char *data, int flag) {
+void SaacClient_ACCheckCharacterOnLine_recv(int acfd, int charaindex,
+                                            int iOnline, char *data, int flag) {
   switch (flag) {
   case R_F_TEACHER_SYSTEM:
     CHAR_Teacher_system_View(charaindex, iOnline, data);
     break;
   default:
-    printf("saacproto_ACCheckCharacterOnLine_recv(): error flag type!!(%d)\n",
+    printf("SaacClient_ACCheckCharacterOnLine_recv(): error flag type!!(%d)\n",
            flag);
   }
 }
 #endif
 
-void saacproto_ACCharLogin_recv(int fd, int clifd, int flag) {
-  lssproto_ClientLogin_send(clifd, "ok");
-  if (flag == 0) {
+void SaacClient_ACCharLogin_recv(int fd, int client_fd, int flag) {
+  // 告诉客户端SaacServer的返回情况.
+  GmsvServer_ClientLogin_send(client_fd, "ok");
+  char reaseon[128];
+  switch (flag) {
+  case 1:
+    snprintf(reason, sizeof(reason), "");
+    break;
+  case 2:
+    snprintf(reason, sizeof(reason), "");
+    break;
+  case 3:
+    snprintf(reason, sizeof(reason), "");
+    break;
+  case 4:
+    snprintf(reason, sizeof(reason), "");
+    break;
+  case 5:
+    snprintf(reason, sizeof(reason), "");
+    break;
+  case 6:
+    snprintf(reason, sizeof(reason), "");
+    break;
+  case 0:
+  default:
     return;
-  } else if (flag == 1) {
-    lssproto_CharList_send(clifd, FAILED, "�˺Ż����벻��Ϊ�գ�");
-  } else if (flag == 2) {
-    lssproto_CharList_send(
-        clifd, FAILED,
-        "�����Ϸ�˺ű��������޷���½��");
-  } else if (flag == 3) {
-    lssproto_CharList_send(
-        clifd, FAILED,
-        "�����ϷIP�ѱ��������޷���½��");
-  } else if (flag == 4) {
-    lssproto_CharList_send(clifd, FAILED,
-                           "�����Ϸ�˺ŵ�½�����ޣ��벻Ҫ����������Ϸ��");
-  } else if (flag == 5) {
-    lssproto_CharList_send(clifd, FAILED,
-                           "�����˺���δע�ᣬ���½www.09sa.com����ע�ᣡ");
-  } else if (flag == 6) {
-    lssproto_CharList_send(clifd, FAILED, "�����˺Ż��������");
   }
+  GmsvServer_CharList_send(client_fd, FAILED, reason);
+  return;
 }
 
 #ifdef _NEW_VIP_SHOP
-void saacproto_QueryPoint_recv(int fd, int point) {
-  int charaindex = CONNECT_getCharaindex(fd);
+// What's query point?
+void SaacClient_QueryPoint_recv(int fd, int point) {
+  const int char_index = CONNECT_getCharaindex(fd);
   char token[64];
   sprintf(token, "��Ŀǰ�ĸ����ػر���Ϊ��%d", point);
-  CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
+  CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
 }
 
-void saacproto_NewVipShop_recv(int fd, int point, char *buf, int flag) {
+void SaacClient_NewVipShop_recv(int fd, int point, char *buf, int flag) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (point == -1) {
     CHAR_talkToCli(charaindex, -1, "����ػرҲ��㣡", CHAR_COLORYELLOW);
@@ -1364,7 +1378,6 @@ void saacproto_NewVipShop_recv(int fd, int point, char *buf, int flag) {
     {
       char buf1[32];
       easyGetTokenFromString(buf, 1, buf1, sizeof(buf1));
-      // ����Ƿ�PETABI�ֶ�
       if (strstr(buf1, "PETABI")) {
         easyGetTokenFromString(buf, 2, buf1, sizeof(buf1));
         petid = atoi(buf1);
@@ -1401,7 +1414,8 @@ void saacproto_NewVipShop_recv(int fd, int point, char *buf, int flag) {
     }
 
     if (i == CHAR_MAXPETHAVE)
-      CHAR_talkToCli(charaindex, -1, "��ȡ����ʧ�ܣ�", CHAR_COLORYELLOW);
+      CHAR_talkToCli(charaindex, -1, "宠物数量已经达到最大值",
+                     CHAR_COLORYELLOW);
 
     if (CHAR_CHECKINDEX(ret) == TRUE) {
 #ifdef _PET_MM
@@ -1410,7 +1424,7 @@ void saacproto_NewVipShop_recv(int fd, int point, char *buf, int flag) {
         LevelUpPoint = (50 << 24) + (50 << 16) + (50 << 8) + (50 << 0);
         CHAR_setInt(ret, CHAR_ALLOCPOINT, LevelUpPoint);
       } else if (strstr(buf1, "MM3") || strstr(buf1, "MM4")) {
-        while (CHAR_getInt(ret, CHAR_LV) < 79) { // ����
+        while (CHAR_getInt(ret, CHAR_LV) < 79) {
           int LevelUpPoint;
           LevelUpPoint = (50 << 24) + (50 << 16) + (50 << 8) + (50 << 0);
           CHAR_setInt(ret, CHAR_ALLOCPOINT, LevelUpPoint);
@@ -1427,40 +1441,25 @@ void saacproto_NewVipShop_recv(int fd, int point, char *buf, int flag) {
         easyGetTokenFromString(buf, 1, buf1, sizeof(buf1));
         if (strstr(buf, "PETABI")) {
           int lv, trans, vital, str, tough, dex;
-          // ��ȡ�ȼ�
           easyGetTokenFromString(buf, 3, buf1, sizeof(buf1));
           lv = atoi(buf1);
-          // ��ȡת��
           easyGetTokenFromString(buf, 4, buf1, sizeof(buf1));
           trans = atoi(buf1);
-          // ��ȡѪ
           easyGetTokenFromString(buf, 5, buf1, sizeof(buf1));
           vital = atoi(buf1);
-          // ��ȡ��
           easyGetTokenFromString(buf, 6, buf1, sizeof(buf1));
           str = atoi(buf1);
-          // ��ȡ��
           easyGetTokenFromString(buf, 7, buf1, sizeof(buf1));
           tough = atoi(buf1);
-          // ��ȡ��
           easyGetTokenFromString(buf, 8, buf1, sizeof(buf1));
           dex = atoi(buf1);
-
-          // ���õȼ�
           CHAR_setInt(ret, CHAR_LV, lv);
-          // ����ת��
           CHAR_setInt(ret, CHAR_TRANSMIGRATION, trans);
-          // ����Ѫ
           CHAR_setInt(ret, CHAR_VITAL, vital * 20);
-          // ���ù�
           CHAR_setInt(ret, CHAR_STR, str * 80);
-          // ���÷�
           CHAR_setInt(ret, CHAR_TOUGH, tough * 80);
-          // ������
           CHAR_setInt(ret, CHAR_DEX, dex * 100);
-          // ���þ���
           CHAR_setMaxExpFromLevel(ret, CHAR_getInt(ret, CHAR_LV));
-          // ������
           CHAR_setInt(ret, CHAR_VARIABLEAI, 10000);
         }
       }
@@ -1509,31 +1508,31 @@ void saacproto_NewVipShop_recv(int fd, int point, char *buf, int flag) {
 #endif
 
 #ifdef _ITEM_PET_LOCKED
-void saacproto_ItemPetLocked_recv(int fd, int flag, char *data) {
+void SaacClient_ItemPetLocked_recv(int fd, int flag, char *data) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (flag == 1) {
     CHAR_setInt(charaindex, CHAR_LOCKED, 0);
     CHAR_talkToCli(charaindex, -1, data, CHAR_COLORYELLOW);
   } else if (flag == 0) {
     char buf[256];
-    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                     WINDOW_BUTTONTYPE_OKCANCEL,
-                     CHAR_WINDOWTYPE_ITEM_PET_LOCKED_PASSWD, -1,
-                     makeEscapeString(data, buf, sizeof(buf)));
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+                       WINDOW_BUTTONTYPE_OKCANCEL,
+                       CHAR_WINDOWTYPE_ITEM_PET_LOCKED_PASSWD, -1,
+                       makeEscapeString(data, buf, sizeof(buf)));
   } else if (flag == -1) {
     CHAR_talkToCli(charaindex, -1, data, CHAR_COLORRED);
   }
 }
 
-void saacproto_ItemPetLockedPasswd_recv(int fd, char *data) {
+void SaacClient_ItemPetLockedPasswd_recv(int fd, char *data) {
   char buf[256];
-  lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK, -1, -1,
-                   makeEscapeString(data, buf, sizeof(buf)));
+  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK, -1,
+                     -1, makeEscapeString(data, buf, sizeof(buf)));
 }
 #endif
 
 #ifdef _ONLINE_COST
-void saacproto_OnlineCost_recv(int fd, char *data) {
+void SaacClient_OnlineCost_recv(int fd, char *data) {
   int charaindex = CONNECT_getCharaindex(fd);
 
 #ifdef _SQL_VIPPOINT_LOG
@@ -1548,7 +1547,7 @@ void saacproto_OnlineCost_recv(int fd, char *data) {
 #endif
 
 #ifdef _SQL_BUY_FUNC
-void saacproto_OnlineBuy_recv(int fd, char *data) {
+void SaacClient_OnlineBuy_recv(int fd, char *data) {
   char buf[64];
   int charaindex = CONNECT_getCharaindex(fd);
   char token[256];
@@ -1594,7 +1593,7 @@ void saacproto_OnlineBuy_recv(int fd, char *data) {
         break;
     }
     if (i == CHAR_MAXPETHAVE) {
-      CHAR_talkToCli(charaindex, -1, "���ĳ���������", CHAR_COLORGREEN);
+      CHAR_talkToCli(charaindex, -1, "宠物数量已达到最大值", CHAR_COLORGREEN);
       return;
     }
 
@@ -1627,7 +1626,7 @@ void saacproto_OnlineBuy_recv(int fd, char *data) {
     emptyitemindexinchara = CHAR_findEmptyItemBox(charaindex);
 
     if (emptyitemindexinchara < 0) {
-      CHAR_talkToCli(charaindex, -1, "������Ʒ������", CHAR_COLORYELLOW);
+      CHAR_talkToCli(charaindex, -1, "物品栏已满", CHAR_COLORYELLOW);
       return;
     }
 
@@ -1638,15 +1637,12 @@ void saacproto_OnlineBuy_recv(int fd, char *data) {
       ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
       ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, charaindex);
       CHAR_sendItemDataOne(charaindex, emptyitemindexinchara);
-
-      snprintf(token, sizeof(token), "��ȡ��Ʒ %s",
+      snprintf(token, sizeof(token), "得到物品 %s",
                ITEM_getChar(itemindex, ITEM_NAME));
       CHAR_talkToCli(charaindex, -1, token, CHAR_COLORGREEN);
     } else {
-      CHAR_talkToCli(charaindex, -1, "����Ʒ�����ڣ����뱾������Ա��ϵ��",
-                     CHAR_COLORYELLOW);
+      CHAR_talkToCli(charaindex, -1, "", CHAR_COLORYELLOW);
     }
-
   } else if (data[0] == '2') {
     getStringFromIndexWithDelim(data, "|", 2, buf, sizeof(buf));
     int gold = atoi(buf);
@@ -1663,7 +1659,7 @@ void saacproto_OnlineBuy_recv(int fd, char *data) {
 #endif
 
 #ifdef _VIPPOINT_OLD_TO_NEW
-void saacproto_OldToNew_recv(int fd, char *data) {
+void SaacClient_OldToNew_recv(int fd, char *data) {
   int charaindex = CONNECT_getCharaindex(fd);
 #ifdef _AMPOINT_LOG
   LogAmPoint(CHAR_getChar(charaindex, CHAR_NAME),
@@ -1679,7 +1675,7 @@ void saacproto_OldToNew_recv(int fd, char *data) {
 #endif
 
 #ifdef _FORMULATE_AUTO_PK
-void saacproto_FormulateAutoPk_recv(int fd, char *data) {
+void SaacClient_FormulateAutoPk_recv(int fd, char *data) {
   int charaindex = CONNECT_getCharaindex(fd);
   CHAR_setWorkInt(charaindex, CHAR_WORK_AUTOPK, 0);
   CHAR_talkToCli(charaindex, -1, data, CHAR_COLORGREEN);
@@ -1688,7 +1684,7 @@ void saacproto_FormulateAutoPk_recv(int fd, char *data) {
 
 #ifdef _LOTTERY_SYSTEM
 extern int todayaward[7];
-void saacproto_LotterySystem_recv(char *data) {
+void SaacClient_LotterySystem_recv(char *data) {
   int i;
   char token[256];
   for (i = 0; i < 7; i++) {
@@ -1708,20 +1704,20 @@ void saacproto_LotterySystem_recv(char *data) {
   for (i = 0; i < playernum; i++) {
     if (CHAR_getCharUse(i) != FALSE) {
       char token[256];
-      sprintf(token, "%04d%02d%02d�����н�������%0d,%0d,%0d,%0d,%0d,%0d,%0d",
+      sprintf(token, "%04d%02d%02d6连抽%0d,%0d,%0d,%0d,%0d,%0d,%0d",
               now.tm_year + 1900, now.tm_mon + 1, now.tm_mday, todayaward[0],
               todayaward[1], todayaward[2], todayaward[3], todayaward[4],
               todayaward[5], todayaward[6]);
 
       CHAR_talkToCli(i, -1, token, CHAR_COLORGREEN);
-      CHAR_talkToCli(i, -1, "���н������ѵ�NPC�ϻ��ҽ�Ʒ��", CHAR_COLORGREEN);
+      CHAR_talkToCli(i, -1, "抽奖系统", CHAR_COLORGREEN);
     }
   }
 }
 #endif
 
 #ifdef _ALL_SERV_SEND
-void saacproto_AllServSend_recv(char *data) {
+void SaacClient_AllServSend_recv(char *data) {
   int i;
   int playernum = CHAR_getPlayerMaxNum();
   for (i = 0; i < playernum; i++) {

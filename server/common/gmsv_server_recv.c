@@ -42,31 +42,31 @@ BOOL checkStringErr(char *);
 
 extern struct FM_PKFLOOR fmpkflnum[FAMILY_FMPKFLOOR];
 
-static int Callfromcli_Util_getTargetCharaindex(int fd, int toindex) {
-  int to_charaindex = -1;
+static int Callfromcli_Util_getTargetCharaindex(int fd, int to_index) {
+  int to_chara_index = -1;
   const int char_index = CONNECT_getCharaindex(fd);
   // 如何解释to_index是个什么东东?
-  if (toindex == 0) {
-    to_charaindex = char_index;
+  if (to_index == 0) {
+    to_char_index = char_index;
   } else if (toindex > 0 && toindex < 6) {
-    to_charaindex = CHAR_getCharPet(char_index, toindex - 1);
-    if (!CHAR_CHECKINDEX(to_charaindex)) {
-      to_charaindex = -1;
+    to_char_index = CHAR_getCharPet(char_index, toindex - 1);
+    if (!CHAR_CHECKINDEX(to_char_index)) {
+      to_char_index = -1;
     }
   } else if (toindex > 5 && toindex < 11) {
-    to_charaindex = CHAR_getPartyIndex(char_index, toindex - 6);
+    to_char_index = CHAR_getPartyIndex(char_index, toindex - 6);
   }
-  return to_charaindex;
+  return to_char_index;
 }
 
-void lssproto_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
+void GmsvServer_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
                                int servid, char *Newip) {
   if (CONNECT_getState(fd) == NULLCONNECT) {
     CONNECT_setState(fd, NOTLOGIN);
   }
   // ttom avoid the restore 2001/01/09
   if (CONNECT_isNOTLOGIN(fd) == FALSE) {
-    print("\n the Client had  Logined fd=%d", fd);
+    print("\n the Client had Logined fd=%d", fd);
     return;
   }
   if (checkStringErr(cdkey))
@@ -100,10 +100,9 @@ void lssproto_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
 #ifdef _NO_FULLPLAYER_ATT
   {
     int res;
-
     if (strlen(cdkey) == 0 || strlen(passwd) == 0 || strlen(ip) == 0) {
-      print("��½��Ϣ�д���\n");
-      lssproto_ClientLogin_send(fd, "no");
+      // print("Cannot login due to empty cdkey, passwd, ip.\n");
+      GmsvServer_ClientLogin_send(fd, NO);
       CONNECT_endOne_debug(fd);
       return;
     }
@@ -117,12 +116,12 @@ void lssproto_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
             strcmp(ip, getNoAttIp(4)) != 0) {
           if (getNoCdkeyType() == 0) {
             if (sasql_query_online_ip(ip) == 0) {
-              print("����1��\n");
+              print("online ip is illegal.\n");
               CONNECT_endOne_debug(fd);
               return;
             }
           } else {
-            print("����2��\n");
+            print("???\n");
             CONNECT_endOne_debug(fd);
             return;
           }
@@ -154,13 +153,13 @@ void lssproto_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
   }
 #endif
 #ifdef _NEWCLISETMAC
-  saacproto_ACCharLogin_send(acfd, fd, cdkey, passwd, ip, mac);
+  SaacClient_ACCharLogin_send(acfd, fd, cdkey, passwd, ip, mac);
 #else
-  saacproto_ACCharLogin_send(acfd, fd, cdkey, passwd, ip);
+  SaacClient_ACCharLogin_send(acfd, fd, cdkey, passwd, ip);
 #endif
 }
 
-void lssproto_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
+void GmsvServer_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
                                  int imgno, int faceimgno, int vital, int str,
                                  int tgh, int dex, int earth, int water,
                                  int fire, int wind, int hometown) {
@@ -168,24 +167,24 @@ void lssproto_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
   if (CONNECT_isCLI(fd) == FALSE)
     return;
   if (CONNECT_isNOTLOGIN(fd) == FALSE) {
-    // lssproto_CreateNewChar_send(fd, FAILED, "Not NOTLOGIN State\n");
-    lssproto_CreateNewChar_send(fd, FAILED, "当前用户没有登录.\n");
+    // GmsvServer_CreateNewChar_send(fd, FAILED, "Not NOTLOGIN State\n");
+    GmsvServer_CreateNewChar_send(fd, FAILED, "当前用户没有登录.\n");
     return;
   }
   if (strlen(charname) == 0) {
-    // lssproto_CreateNewChar_send(fd, FAILED, "0 length name.\n");
-    lssproto_CreateNewChar_send(fd, FAILED, "用户名称长度不能位0.\n");
+    // GmsvServer_CreateNewChar_send(fd, FAILED, "0 length name.\n");
+    GmsvServer_CreateNewChar_send(fd, FAILED, "用户名称长度不能位0.\n");
     return;
   } else if (strlen(charname) >= 32) {
-    // lssproto_CreateNewChar_send(fd, FAILED, "Too long charname.\n");
-    lssproto_CreateNewChar_send(fd, FAILED, "用户名称长度大于16个字符.\n");
+    // GmsvServer_CreateNewChar_send(fd, FAILED, "Too long charname.\n");
+    GmsvServer_CreateNewChar_send(fd, FAILED, "用户名称长度大于16个字符.\n");
     return;
     // Nuke start 0711: Avoid naming as WAEI
-  } else if (strstr(charname, "����") || strstr(charname, "gm") ||
+  } else if (strstr(charname, "gM") || strstr(charname, "gm") ||
              strstr(charname, "GM") || strstr(charname, "Gm") ||
-             strstr(charname, "gM") || strstr(charname, "管理员") ||
-             strstr(charname, "�ǣ�") || strstr(charname, "�ǣ�") ||
-             strstr(charname, "���")
+             strstr(charname, "") || strstr(charname, "管理员") ||
+             strstr(charname, "admin") || strstr(charname, "ADMIN") ||
+             strstr(charname, "Admin")
 #ifdef _UNREG_NEMA
              || (strstr(charname, getUnregname(0)) &&
                  strlen(getUnregname(0)) > 0) ||
@@ -197,12 +196,12 @@ void lssproto_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
               strlen(getUnregname(3)) > 0) ||
              (strstr(charname, getUnregname(4)) && strlen(getUnregname(4)) > 0)
 #endif
-             || strstr(charname, "��������") || strstr(charname, "|") ||
+             || strstr(charname, "") || strstr(charname, "|") ||
              strstr(charname, "'") || strstr(charname, "=") ||
              strstr(charname, ";")
              // WON END
   ) {
-    lssproto_CreateNewChar_send(fd, FAILED, "Ivalid Char Name.\n");
+    GmsvServer_CreateNewChar_send(fd, FAILED, "Ivalid Char Name.\n");
     return;
     /*
     unsigned int ip=CONNECT_get_userip(fd);
@@ -222,7 +221,7 @@ void lssproto_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
 
     print(" name_WAEI_IP:%d.%d.%d.%d ck:%d ",a,b,c,d,ck );
     if( !ck ) {
-      lssproto_CreateNewChar_send(fd,FAILED, "Invalid charname\n");
+      GmsvServer_CreateNewChar_send(fd,FAILED, "Invalid charname\n");
       return;
     }
     */
@@ -231,8 +230,8 @@ void lssproto_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
   int j;
   for (j = 0; j < 32; j++) {
     if (strstr(charname, getIllegalName(j)) && strlen(getIllegalName(j)) > 0) {
-      // lssproto_CreateNewChar_send(fd,FAILED, "Invalid charname\n");
-      lssproto_CreateNewChar_send(fd, FAILED,
+      // GmsvServer_CreateNewChar_send(fd,FAILED, "Invalid charname\n");
+      GmsvServer_CreateNewChar_send(fd, FAILED,
                                   "角色名称命中非法角色名称名单.\n");
       return;
     }
@@ -268,7 +267,7 @@ void lssproto_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
       }
     }
     if (ach) {
-      lssproto_CreateNewChar_send(fd, FAILED, "角色名称中存在奇异字符.\n");
+      GmsvServer_CreateNewChar_send(fd, FAILED, "角色名称中存在奇异字符.\n");
       return;
     }
   }
@@ -279,7 +278,7 @@ void lssproto_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
                      tgh, dex, earth, water, fire, wind, hometown, cdkey);
 }
 
-void lssproto_CharLogin_recv(int fd, char *charname) {
+void GmsvServer_CharLogin_recv(int fd, char *charname) {
   char cdkey[CDKEYLEN], passwd[PASSWDLEN];
 
   if (CONNECT_isCLI(fd) == FALSE)
@@ -288,18 +287,18 @@ void lssproto_CharLogin_recv(int fd, char *charname) {
   print("\n���Ե�½: ��������=%s\n", charname);
 
   if (charname[0] == '\0') {
-    lssproto_CharLogin_send(fd, FAILED, "Can't access char have no name\n");
+    GmsvServer_CharLogin_send(fd, FAILED, "Can't access char have no name\n");
     return;
   }
   if (CONNECT_isNOTLOGIN(fd) == FALSE) {
-    lssproto_CharLogin_send(fd, FAILED, "Already Logged in\n");
+    GmsvServer_CharLogin_send(fd, FAILED, "Already Logged in\n");
     return;
   }
   CONNECT_setCharname(fd, charname);
   CONNECT_getCdkey(fd, cdkey, sizeof(cdkey));
   CONNECT_getPasswd(fd, passwd, sizeof(passwd));
 
-  saacproto_ACCharLoad_send(acfd, cdkey, passwd, charname, 1, "",
+  SaacClient_ACCharLoad_send(acfd, cdkey, passwd, charname, 1, "",
                             CONNECT_getFdid(fd));
   CONNECT_setState(fd, WHILELOGIN);
 }
@@ -322,13 +321,13 @@ BOOL CheckDropatLogout(int charaindex) {
 }
 #endif
 
-void lssproto_CharLogout_recv(int fd, int flg) {
+void GmsvServer_CharLogout_recv(int fd, int flg) {
   char cdkey[CDKEYLEN], charname[CHARNAMELEN];
   int charaindex = CONNECT_getCharaindex(fd);
   if (CONNECT_isCLI(fd) == FALSE)
     return;
   if (CONNECT_isLOGIN(fd) == FALSE) {
-    lssproto_CharLogout_send(fd, FAILED, "Not Logged in\n");
+    GmsvServer_CharLogout_send(fd, FAILED, "Not Logged in\n");
 
     return;
   }
@@ -429,9 +428,6 @@ void lssproto_CharLogout_recv(int fd, int flg) {
                   charaindex, CHAR_getWorkInt(charaindex, CHAR_WORK_AUTOPK), 2);
               AutoPk_GetChampionShip();
 #ifdef _FORMULATE_AUTO_PK
-              //              saacproto_FormulateAutoPk_send(acfd,
-              //              CHAR_getChar(winindex, CHAR_CDKEY),
-              //              CHAR_getWorkInt(winindex,CHAR_WORK_AUTOPK));
               CHAR_setInt(winindex, CHAR_AMPOINT,
                           CHAR_getInt(winindex, CHAR_AMPOINT) +
                               CHAR_getWorkInt(winindex, CHAR_WORK_AUTOPK));
@@ -443,13 +439,11 @@ void lssproto_CharLogout_recv(int fd, int flg) {
 #endif
         if (CHAR_getInt(charaindex, CHAR_FLOOR) != 117 &&
             CHAR_getInt(charaindex, CHAR_FLOOR) != 887
-#ifdef _ADD_DUNGEON // ׷�ӵ���
+#ifdef _ADD_DUNGEON
             && CHAR_getInt(charaindex, CHAR_FLOOR) != 8513
 #endif
         ) {
-
           CHAR_warpToSpecificPoint(charaindex, fl, x, y);
-
           if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) ==
               CHAR_PARTY_LEADER) {
             int i;
@@ -480,68 +474,60 @@ void lssproto_CharLogout_recv(int fd, int flg) {
   }
 }
 
-void lssproto_CharDelete_recv(int fd, char *charname, char *passwd) {
+void GmsvServer_CharDelete_recv(int fd, char *charname, char *passwd) {
   char cdkey[CDKEYLEN];
-  int fdid;
-
   if (CONNECT_isCLI(fd) == FALSE)
     return;
   if (CONNECT_isNOTLOGIN(fd) == FALSE) {
-    lssproto_CharDelete_send(fd, FAILED, "Already Logged in\n");
+    GmsvServer_CharDelete_send(fd, FAILED, "Already Logged in\n");
     return;
   }
   CONNECT_getCdkey(fd, cdkey, sizeof(cdkey));
-
-  fdid = CONNECT_getFdid(fd);
-  saacproto_ACCharDelete_send(acfd, cdkey, passwd, charname, "", fdid);
+  int fdid = CONNECT_getFdid(fd);
+  SaacClient_ACCharDelete_send(acfd, cdkey, passwd, charname, "", fdid);
   {
     char buff[512];
     char escapebuf[1024];
     snprintf(buff, sizeof(buff), "%s_%s", cdkey, charname);
     makeEscapeString(buff, escapebuf, sizeof(escapebuf));
-    saacproto_DBDeleteEntryInt_send(acfd, DB_DUELPOINT, escapebuf, fdid, 0);
-    saacproto_DBDeleteEntryString_send(acfd, DB_ADDRESSBOOK, escapebuf, fdid,
+    SaacClient_DBDeleteEntryInt_send(acfd, DB_DUELPOINT, escapebuf, fdid, 0);
+    SaacClient_DBDeleteEntryString_send(acfd, DB_ADDRESSBOOK, escapebuf, fdid,
                                        0);
   }
-  saacproto_Broadcast_send(acfd, cdkey, charname, "chardelete", 0);
-
+  SaacClient_Broadcast_send(acfd, cdkey, charname, "chardelete", 0);
   CONNECT_setState(fd, WHILECHARDELETE);
 }
 
-void lssproto_NewCharDelete_recv(int fd, char *charname, char *passwd) {
+void GmsvServer_NewCharDelete_recv(int fd, char *charname, char *passwd) {
   char cdkey[CDKEYLEN];
-  int fdid;
-
   if (CONNECT_isCLI(fd) == FALSE)
     return;
   if (CONNECT_isNOTLOGIN(fd) == FALSE) {
-    lssproto_CharDelete_send(fd, FAILED, "Already Logged in\n");
+    GmsvServer_CharDelete_send(fd, FAILED, "Already Logged in.\n");
     return;
   }
   CONNECT_getCdkey(fd, cdkey, sizeof(cdkey));
-  fdid = CONNECT_getFdid(fd);
+  int fdid = CONNECT_getFdid(fd);
 #ifdef _ALLBLUES_LUA_1_9
   if (FreeCharDelet(fd, cdkey, passwd) == 0) {
     return;
   }
 #endif
-  saacproto_ACCharDelete_send(acfd, cdkey, passwd, charname, "", fdid);
-
+  SaacClient_ACCharDelete_send(acfd, cdkey, passwd, charname, "", fdid);
   {
     char buff[512];
     char escapebuf[1024];
     snprintf(buff, sizeof(buff), "%s_%s", cdkey, charname);
     makeEscapeString(buff, escapebuf, sizeof(escapebuf));
-    saacproto_DBDeleteEntryInt_send(acfd, DB_DUELPOINT, escapebuf, fdid, 0);
-    saacproto_DBDeleteEntryString_send(acfd, DB_ADDRESSBOOK, escapebuf, fdid,
+    SaacClient_DBDeleteEntryInt_send(acfd, DB_DUELPOINT, escapebuf, fdid, 0);
+    SaacClient_DBDeleteEntryString_send(acfd, DB_ADDRESSBOOK, escapebuf, fdid,
                                        0);
   }
-  saacproto_Broadcast_send(acfd, cdkey, charname, "chardelete", 0);
-
+  SaacClient_Broadcast_send(acfd, cdkey, charname, "chardelete", 0);
   CONNECT_setState(fd, WHILECHARDELETE);
 }
 
-void lssproto_CharList_recv(int fd) {
+void GmsvServer_CharList_recv(int fd) {
   char cdkey[CDKEYLEN], passwd[PASSWDLEN];
   int fdid = -1;
   int charlistflg = 0;
@@ -550,7 +536,7 @@ void lssproto_CharList_recv(int fd) {
     return;
 
   if (CONNECT_isNOTLOGIN(fd) == FALSE) {
-    lssproto_CharList_send(fd, FAILED, "�벻Ҫ���зǷ���½��Ϸ��");
+    GmsvServer_CharList_send(fd, FAILED, "�벻Ҫ���зǷ���½��Ϸ��");
     return;
   }
 
@@ -559,7 +545,7 @@ void lssproto_CharList_recv(int fd) {
 #ifdef _MO_LOGIN_NO_KICK
   if (getLoginNoKick() == 1) {
     if (!sasql_CheckPasswd(cdkey, passwd)) {
-      lssproto_CharList_send(fd, FAILED, "�˺��������");
+      GmsvServer_CharList_send(fd, FAILED, "�˺��������");
       return;
     }
   }
@@ -577,7 +563,7 @@ void lssproto_CharList_recv(int fd) {
           if (!CHAR_logout(i, TRUE)) {
             print("err %s:%d\n", __FILE__, __LINE__);
           }
-          lssproto_CharList_send(fd, FAILED, "�����˺��������ߣ������µ�¼��Ϸ��");
+          GmsvServer_CharList_send(fd, FAILED, "�����˺��������ߣ������µ�¼��Ϸ��");
           CONNECT_setCloseRequest(getfdFromCharaIndex(i), 1);
           break;
         } else
@@ -610,15 +596,15 @@ void lssproto_CharList_recv(int fd) {
   d = (tmpip % 0x100);
   sprintf(ip, "%d.%d.%d.%d", a, b, c, d);
 
-  saacproto_ACCharList_send(acfd, cdkey, passwd, ip, mac, fdid, charlistflg);
+  SaacClient_ACCharList_send(acfd, cdkey, passwd, ip, mac, fdid, charlistflg);
 
   CONNECT_setState(fd, WHILEDOWNLOADCHARLIST);
 }
 
-void lssproto_Echo_recv(int fd, char *arg0) {
+void GmsvServer_Echo_recv(int fd, char *arg0) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
-  lssproto_Echo_send(fd, arg0);
+  GmsvServer_Echo_send(fd, arg0);
 }
 
 #define CHECKFD                                                                \
@@ -632,7 +618,7 @@ void lssproto_Echo_recv(int fd, char *arg0) {
   if (CONNECT_isLOGIN(fd) == FALSE)                                            \
     return;
 
-void lssproto_W_recv(int fd, int x, int y, char *direction) {
+void GmsvServer_W_recv(int fd, int x, int y, char *direction) {
   // ttom +3
   int char_index, ix, iy;
   char_index = CONNECT_getCharaindex(fd);
@@ -695,7 +681,7 @@ void lssproto_W_recv(int fd, int x, int y, char *direction) {
 }
 /*------------------------------------------------------------
  ------------------------------------------------------------*/
-void lssproto_W2_recv(int fd, int x, int y, char *direction) {
+void GmsvServer_W2_recv(int fd, int x, int y, char *direction) {
   // ttom +3
   int char_index, ix, iy, i_fl;
   // Char *chwk;// CoolFish: Rem 2001/4/18
@@ -720,7 +706,7 @@ void lssproto_W2_recv(int fd, int x, int y, char *direction) {
           if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) !=
               CHAR_PARTY_CLIENT) {
             if (CONNECT_getBDTime(fd) < time(NULL)) {
-              lssproto_EN_recv(fd, CHAR_getInt(char_index, CHAR_X),
+              GmsvServer_EN_recv(fd, CHAR_getInt(char_index, CHAR_X),
                                CHAR_getInt(char_index, CHAR_Y));
               CONNECT_setBDTime(fd, (int)time(NULL) + 3);
             }
@@ -746,7 +732,7 @@ void lssproto_W2_recv(int fd, int x, int y, char *direction) {
     if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) !=
         CHAR_PARTY_CLIENT) {
       if (CONNECT_getBDTime(fd) < time(NULL)) {
-        lssproto_EN_recv(fd, CHAR_getInt(char_index, CHAR_X),
+        GmsvServer_EN_recv(fd, CHAR_getInt(char_index, CHAR_X),
                          CHAR_getInt(char_index, CHAR_Y));
         CONNECT_setBDTime(fd, (int)time(NULL) + 3);
       }
@@ -819,12 +805,12 @@ void lssproto_W2_recv(int fd, int x, int y, char *direction) {
   CHAR_walk_init(fd, x, y, direction, FALSE);
 }
 
-void lssproto_SKD_recv(int fd, int dir, int index) { CHECKFDANDTIME; }
+void GmsvServer_SKD_recv(int fd, int dir, int index) { CHECKFDANDTIME; }
 
-void lssproto_ID_recv(int fd, int x, int y, int haveitemindex, int toindex) {
+void GmsvServer_ID_recv(int fd, int x, int y, int haveitemindex, int toindex) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
-  int to_charaindex;
+  int to_char_index;
   int char_index;
 
   CHECKFDANDTIME;
@@ -849,28 +835,28 @@ void lssproto_ID_recv(int fd, int x, int y, int haveitemindex, int toindex) {
     y = iy;
   }
   CHAR_setMyPosition(char_index, x, y, TRUE);
-  to_charaindex = Callfromcli_Util_getTargetCharaindex(fd, toindex);
-  CHAR_ItemUse(char_index, to_charaindex, haveitemindex);
+  to_char_index = Callfromcli_Util_getTargetCharaindex(fd, toindex);
+  CHAR_ItemUse(char_index, to_char_index, haveitemindex);
 }
 
 /*------------------------------------------------------------
  * ��įë����
  ------------------------------------------------------------*/
-void lssproto_ST_recv(int fd, int titleindex) {
+void GmsvServer_ST_recv(int fd, int titleindex) {
   CHECKFDANDTIME;
   CHAR_selectTitle(CONNECT_getCharaindex(fd), titleindex);
 }
 /*------------------------------------------------------------
  * ��įë��������
  ------------------------------------------------------------*/
-void lssproto_DT_recv(int fd, int titleindex) {
+void GmsvServer_DT_recv(int fd, int titleindex) {
   CHECKFDANDTIME;
   CHAR_deleteTitle(CONNECT_getCharaindex(fd), titleindex);
 }
 
 /*------------------------------------------------------------
  ------------------------------------------------------------*/
-void lssproto_FT_recv(int fd, char *data) {
+void GmsvServer_FT_recv(int fd, char *data) {
   CHECKFDANDTIME;
 
   // Robin 04/23 debug
@@ -885,7 +871,7 @@ void lssproto_FT_recv(int fd, char *data) {
 
 /*------------------------------------------------------------
  ------------------------------------------------------------*/
-void lssproto_PI_recv(int fd, int x, int y, int dir) {
+void GmsvServer_PI_recv(int fd, int x, int y, int dir) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
@@ -909,7 +895,7 @@ void lssproto_PI_recv(int fd, int x, int y, int dir) {
   CHAR_PickUpItem(char_index, dir);
 }
 
-void lssproto_DI_recv(int fd, int x, int y, int itemindex) {
+void GmsvServer_DI_recv(int fd, int x, int y, int itemindex) {
   int charaindex;
   CHECKFDANDTIME;
   charaindex = CONNECT_getCharaindex(fd);
@@ -928,7 +914,7 @@ void lssproto_DI_recv(int fd, int x, int y, int itemindex) {
     char buf[256];
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
 
-    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
                      WINDOW_BUTTONTYPE_OKCANCEL,
                      CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
                      makeEscapeString(message, buf, sizeof(buf)));
@@ -948,7 +934,7 @@ void lssproto_DI_recv(int fd, int x, int y, int itemindex) {
   CHAR_DropItem(charaindex, itemindex);
 }
 
-void lssproto_DP_recv(int fd, int x, int y, int petindex) {
+void GmsvServer_DP_recv(int fd, int x, int y, int petindex) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
@@ -958,7 +944,7 @@ void lssproto_DP_recv(int fd, int x, int y, int petindex) {
     char buf[256];
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
 
-    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
                      WINDOW_BUTTONTYPE_OKCANCEL,
                      CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
                      makeEscapeString(message, buf, sizeof(buf)));
@@ -982,7 +968,7 @@ void lssproto_DP_recv(int fd, int x, int y, int petindex) {
   PET_dropPet(char_index, petindex);
 }
 
-void lssproto_DG_recv(int fd, int x, int y, int amount) {
+void GmsvServer_DG_recv(int fd, int x, int y, int amount) {
   CHECKFDANDTIME;
   const int char_index = CONNECT_getCharaindex(fd);
   // ttom avoid the warp at will 12/15
@@ -1008,7 +994,7 @@ void lssproto_DG_recv(int fd, int x, int y, int amount) {
 
 /*------------------------------------------------------------
  ------------------------------------------------------------*/
-void lssproto_MI_recv(int fd, int fromid, int toid) {
+void GmsvServer_MI_recv(int fd, int fromid, int toid) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
@@ -1056,7 +1042,7 @@ void lssproto_MI_recv(int fd, int fromid, int toid) {
                            "4�����ʹ��ͣ��Ƿ��Ǹ����߼�������ʯ��"
                            "\n");
 
-          lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+          GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
                            WINDOW_BUTTONTYPE_YESNO,
                            CHAR_WINDOWTYPE_ITEM_UPLEVEL, -1,
                            makeEscapeString(message, buf, sizeof(buf)));
@@ -1080,7 +1066,7 @@ void lssproto_MI_recv(int fd, int fromid, int toid) {
 }
 
 #ifdef _PET_ITEM
-void lssproto_PETITEM_recv(int fd, int x, int y, int petindex, int fromindex,
+void GmsvServer_PETITEM_recv(int fd, int x, int y, int petindex, int fromindex,
                            int toindex) {
   int char_index;
   CHECKFDANDTIME;
@@ -1091,7 +1077,7 @@ void lssproto_PETITEM_recv(int fd, int x, int y, int petindex, int fromindex,
     char buf[256];
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
 
-    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
                      WINDOW_BUTTONTYPE_OKCANCEL,
                      CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
                      makeEscapeString(message, buf, sizeof(buf)));
@@ -1110,7 +1096,7 @@ void lssproto_PETITEM_recv(int fd, int x, int y, int petindex, int fromindex,
 }
 #endif
 
-void lssproto_SKUP_recv(int fd, int skillid) {
+void GmsvServer_SKUP_recv(int fd, int skillid) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
@@ -1125,7 +1111,7 @@ void lssproto_SKUP_recv(int fd, int skillid) {
 /*------------------------------------------------------------
  * ���ͥ���������˥�å�����������
  ------------------------------------------------------------*/
-void lssproto_MSG_recv(int fd, int index, char *message, int color) {
+void GmsvServer_MSG_recv(int fd, int index, char *message, int color) {
   int char_index;
   CHECKFD;
   char_index = CONNECT_getCharaindex(fd);
@@ -1135,7 +1121,7 @@ void lssproto_MSG_recv(int fd, int index, char *message, int color) {
 /*------------------------------------------------------------
  * ���ɥ쥹�֥å������Ƥ����������ɤ����׵᤬�褿
  ------------------------------------------------------------*/
-void lssproto_AB_recv(int fd) {
+void GmsvServer_AB_recv(int fd) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
@@ -1145,14 +1131,14 @@ void lssproto_AB_recv(int fd) {
 /*------------------------------------------------------------
  * ���ɥ쥹�֥å��ι��ܤ�������
  ------------------------------------------------------------*/
-void lssproto_DAB_recv(int fd, int index) {
+void GmsvServer_DAB_recv(int fd, int index) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
   ADDRESSBOOK_deleteEntry(char_index, index);
 }
 
-void lssproto_AAB_recv(int fd, int x, int y) {
+void GmsvServer_AAB_recv(int fd, int x, int y) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
@@ -1169,14 +1155,14 @@ void lssproto_AAB_recv(int fd, int x, int y) {
   ADDRESSBOOK_addEntry(char_index);
 }
 
-void lssproto_L_recv(int fd, int dir) {
+void GmsvServer_L_recv(int fd, int dir) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
   CHAR_Look(char_index, dir);
 }
 
-void lssproto_TK_recv(int fd, int x, int y, char *message, int color,
+void GmsvServer_TK_recv(int fd, int x, int y, char *message, int color,
                       int area) {
   int char_index, ix, iy; // ttom+2
   int fmindex, channel;
@@ -1248,7 +1234,7 @@ void lssproto_TK_recv(int fd, int x, int y, char *message, int color,
   //}
 }
 
-void lssproto_M_recv(int fd, int fl, int x1, int y1, int x2, int y2) {
+void GmsvServer_M_recv(int fd, int fl, int x1, int y1, int x2, int y2) {
   char *mapdata;
   RECT seek = {x1, y1, x2 - x1, y2 - y1}, ret;
   int char_index;
@@ -1267,13 +1253,13 @@ void lssproto_M_recv(int fd, int fl, int x1, int y1, int x2, int y2) {
 #ifdef _MO_MAP_AUTO_UPDATE
   mapdata = MAP_getdataFromRECT(fl, &seek, &ret);
   if (mapdata != NULL) {
-    lssproto_M_send(fd, fl, ret.x, ret.y, ret.x + ret.width, ret.y + ret.height,
+    GmsvServer_M_send(fd, fl, ret.x, ret.y, ret.x + ret.width, ret.y + ret.height,
                     mapdata);
   }
 #endif
 }
 
-void lssproto_C_recv(int fd, int index) {
+void GmsvServer_C_recv(int fd, int index) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
   int char_index;
@@ -1295,16 +1281,16 @@ void lssproto_C_recv(int fd, int index) {
 #ifdef _FAMILYBADGE_
 extern int getFamilyBadge(int index);
 #endif
-void lssproto_S_recv(int fd, char *category) {
+void GmsvServer_S_recv(int fd, char *category) {
   char *string;
   int char_index;
   char_index = CONNECT_getCharaindex(fd);
   string = CHAR_makeStatusString(char_index, category);
   if (string != NULL)
-    lssproto_S_send(fd, string);
+    GmsvServer_S_send(fd, string);
 }
 
-void lssproto_EV_recv(int fd, int event, int seqno, int x, int y, int dir) {
+void GmsvServer_EV_recv(int fd, int event, int seqno, int x, int y, int dir) {
   int rc;
   int fx, fy;
   int char_index;
@@ -1389,13 +1375,13 @@ OK:
                             CHAR_getInt(char_index, CHAR_Y), 1, &fx, &fy);
   }
   rc = EVENT_main(char_index, event, fx, fy);
-  lssproto_EV_send(fd, seqno, rc);
+  GmsvServer_EV_send(fd, seqno, rc);
 #ifdef _PLAYER_EFFECT
   if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER &&
       CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT) > 0) {
     char msg[256];
     sprintf(msg, "2|%d", CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT));
-    lssproto_CHAREFFECT_send(fd, msg);
+    GmsvServer_CHAREFFECT_send(fd, msg);
   }
 #endif
 #ifdef FAMILY_MANOR_
@@ -1404,7 +1390,7 @@ OK:
     char msg[256];
     sprintf(msg, "3|%d",
             CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT_MANOR));
-    lssproto_CHAREFFECT_send(fd, msg);
+    GmsvServer_CHAREFFECT_send(fd, msg);
   }
 #endif
 
@@ -1413,7 +1399,7 @@ OK:
       CHAR_getInt(char_index, CHAR_TITLE_DEFAULT) > 0) {
     char msg[256];
     sprintf(msg, "4|%d", CHAR_getInt(char_index, CHAR_TITLE_DEFAULT));
-    lssproto_CHAREFFECT_send(fd, msg);
+    GmsvServer_CHAREFFECT_send(fd, msg);
   }
 #endif
 #ifdef _TRUMP_EQUIPMENT
@@ -1421,7 +1407,7 @@ OK:
       CHAR_getInt(char_index, CHAR_TRUMP_EFFECT) > 0) {
     char msg[256];
     sprintf(msg, "5|%d", CHAR_getInt(char_index, CHAR_TRUMP_EFFECT));
-    lssproto_CHAREFFECT_send(fd, msg);
+    GmsvServer_CHAREFFECT_send(fd, msg);
   }
 #endif
 #ifdef _FAMILYBADGE_
@@ -1429,12 +1415,12 @@ OK:
       getFamilyBadge(char_index)) {
     char msg[256];
     sprintf(msg, "1|%d", getFamilyBadge(char_index));
-    lssproto_CHAREFFECT_send(fd, msg);
+    GmsvServer_CHAREFFECT_send(fd, msg);
   }
 #endif
 }
 
-void lssproto_EN_recv(int fd, int x, int y) {
+void GmsvServer_EN_recv(int fd, int x, int y) {
   int ret = FALSE, err = 0;
   int char_index;
   CHECKFD;
@@ -1454,7 +1440,7 @@ void lssproto_EN_recv(int fd, int x, int y) {
 /*------------------------------------------------------------
  * �ץ쥤�䡼Ʊ�Τǥ��󥫥���ȡʷ�Ʈ��ȯ��
  ------------------------------------------------------------*/
-void lssproto_DU_recv(int fd, int x, int y) {
+void GmsvServer_DU_recv(int fd, int x, int y) {
   OBJECT object;
   int char_index;
   int ret = FALSE, charaindex = -1, enemyindex;
@@ -1509,7 +1495,7 @@ void lssproto_DU_recv(int fd, int x, int y) {
 #ifdef _ALLBLUES_LUA_1_5
       int flg = FreeVsPlayer(charaindex, toindex);
       if (flg == 1) {
-        lssproto_EN_send(fd, FALSE, 0);
+        GmsvServer_EN_send(fd, FALSE, 0);
         return;
       } else if (flg == 2) {
         return;
@@ -1701,12 +1687,12 @@ void lssproto_DU_recv(int fd, int x, int y) {
         for (i = 0; i < FAMILY_FMPKFLOOR; i++) {
           if (fmpkflnum[i].fl == CHAR_getInt(charaindex, CHAR_FLOOR)) {
             if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEFLAG) == -1) {
-              lssproto_EN_send(fd, FALSE, 0);
+              GmsvServer_EN_send(fd, FALSE, 0);
               return;
             }
             if (CHAR_getInt(charaindex, CHAR_FMINDEX) ==
                 CHAR_getInt(toindex, CHAR_FMINDEX)) {
-              lssproto_EN_send(fd, FALSE, 0);
+              GmsvServer_EN_send(fd, FALSE, 0);
               return;
             }
           }
@@ -1731,14 +1717,14 @@ void lssproto_DU_recv(int fd, int x, int y) {
         break;
     }
     if (cnt == 0) {
-      goto lssproto_DU_recv_Err;
+      goto GmsvServer_DU_recv_Err;
     } else if (cnt == 1) {
       enemyindex = CONNECT_getDuelcharaindex(fd, 0);
       if (CHAR_getWorkInt(enemyindex, CHAR_WORKPARTYMODE) ==
           CHAR_PARTY_CLIENT) {
         enemyindex = CHAR_getWorkInt(enemyindex, CHAR_WORKPARTYINDEX1);
         if (enemyindex < 0)
-          goto lssproto_DU_recv_Err;
+          goto GmsvServer_DU_recv_Err;
       }
 
 #ifdef _VIP_POINT_PK
@@ -1786,7 +1772,7 @@ void lssproto_DU_recv(int fd, int x, int y) {
                     "�",
                     menum, tonum);
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            lssproto_EN_send(fd, FALSE, 0);
+            GmsvServer_EN_send(fd, FALSE, 0);
             return;
           }
         }
@@ -1799,14 +1785,14 @@ void lssproto_DU_recv(int fd, int x, int y) {
                 "��Ļ��ֵ㲻��%d���޷�����PK��",
                 getVipPointPK(3));
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            goto lssproto_DU_recv_Err;
+            goto GmsvServer_DU_recv_Err;
           } else if (CHAR_getInt(enemyindex, CHAR_AMPOINT) < getVipPointPK(3)) {
             sprintf(token,
                     "�Է����ֵ㲻��%"
                     "d���޷�����PK��",
                     getVipPointPK(3));
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            goto lssproto_DU_recv_Err;
+            goto GmsvServer_DU_recv_Err;
           }
         } else if (CHAR_getInt(charaindex, CHAR_FLOOR) == 33333 &&
                    CHAR_getInt(enemyindex, CHAR_FLOOR) == 33333) {
@@ -1816,14 +1802,14 @@ void lssproto_DU_recv(int fd, int x, int y) {
                 "��Ļ��ֵ㲻��%d���޷�����PK��",
                 getVipPointPK(2));
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            goto lssproto_DU_recv_Err;
+            goto GmsvServer_DU_recv_Err;
           } else if (CHAR_getInt(enemyindex, CHAR_AMPOINT) < getVipPointPK(2)) {
             sprintf(token,
                     "�Է����ֵ㲻��%"
                     "d���޷�����PK��",
                     getVipPointPK(2));
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            goto lssproto_DU_recv_Err;
+            goto GmsvServer_DU_recv_Err;
           }
         } else if (CHAR_getInt(charaindex, CHAR_FLOOR) == 22222 &&
                    CHAR_getInt(enemyindex, CHAR_FLOOR) == 22222) {
@@ -1833,14 +1819,14 @@ void lssproto_DU_recv(int fd, int x, int y) {
                 "��Ļ��ֵ㲻��%d���޷�����PK��",
                 getVipPointPK(1));
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            goto lssproto_DU_recv_Err;
+            goto GmsvServer_DU_recv_Err;
           } else if (CHAR_getInt(enemyindex, CHAR_AMPOINT) < getVipPointPK(1)) {
             sprintf(token,
                     "�Է����ֵ㲻��%"
                     "d���޷�����PK��",
                     getVipPointPK(1));
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            goto lssproto_DU_recv_Err;
+            goto GmsvServer_DU_recv_Err;
           }
         } else if (CHAR_getInt(charaindex, CHAR_FLOOR) == 11111 &&
                    CHAR_getInt(enemyindex, CHAR_FLOOR) == 11111) {
@@ -1850,14 +1836,14 @@ void lssproto_DU_recv(int fd, int x, int y) {
                 "��Ļ��ֵ㲻��%d���޷�����PK��",
                 getVipPointPK(0));
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            goto lssproto_DU_recv_Err;
+            goto GmsvServer_DU_recv_Err;
           } else if (CHAR_getInt(enemyindex, CHAR_AMPOINT) < getVipPointPK(0)) {
             sprintf(token,
                     "�Է����ֵ㲻��%"
                     "d���޷�����PK��",
                     getVipPointPK(0));
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
-            goto lssproto_DU_recv_Err;
+            goto GmsvServer_DU_recv_Err;
           }
         }
       }
@@ -1898,17 +1884,17 @@ void lssproto_DU_recv(int fd, int x, int y) {
         strlength += strlen(buf);
       }
 
-      lssproto_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_CANCEL,
+      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_CANCEL,
                        CHAR_WINDOWTYPE_SELECTDUEL, -1,
                        makeEscapeString(msgbuf, escapebuf, sizeof(escapebuf)));
       ret = TRUE;
     }
   }
 
-lssproto_DU_recv_Err:;
+GmsvServer_DU_recv_Err:;
   if (ret == FALSE) {
     /* ����˪�� */
-    lssproto_EN_send(fd, FALSE, 0);
+    GmsvServer_EN_send(fd, FALSE, 0);
     if (cnt > 0)
       return;
     else if (found)
@@ -1919,7 +1905,7 @@ lssproto_DU_recv_Err:;
 }
 /*------------------------------------------------------------
  ------------------------------------------------------------*/
-void lssproto_EO_recv(int fd, int dummy) {
+void GmsvServer_EO_recv(int fd, int dummy) {
   int char_index;
   CHECKFD;
   char_index = CONNECT_getCharaindex(fd);
@@ -1930,7 +1916,7 @@ void lssproto_EO_recv(int fd, int dummy) {
     char msg[256];
     sprintf(msg, "2|%d", CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT));
 #ifdef _FAMILYBADGE_
-    lssproto_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
+    GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
 #endif
   }
 #endif
@@ -1940,7 +1926,7 @@ void lssproto_EO_recv(int fd, int dummy) {
     char msg[256];
     sprintf(msg, "3|%d",
             CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT_MANOR));
-    lssproto_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
+    GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
   }
 #endif
 #ifdef _TRUMP_EQUIPMENT
@@ -1948,7 +1934,7 @@ void lssproto_EO_recv(int fd, int dummy) {
       CHAR_getInt(char_index, CHAR_TRUMP_EFFECT) > 0) {
     char msg[256];
     sprintf(msg, "5|%d", CHAR_getInt(char_index, CHAR_TRUMP_EFFECT));
-    lssproto_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
+    GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
   }
 #endif
 #ifdef _NEW_UPDATETITLE
@@ -1956,7 +1942,7 @@ void lssproto_EO_recv(int fd, int dummy) {
       CHAR_getInt(char_index, CHAR_TITLE_DEFAULT) > 0) {
     char msg[256];
     sprintf(msg, "4|%d", CHAR_getInt(char_index, CHAR_TITLE_DEFAULT));
-    lssproto_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
+    GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
   }
 #endif
 #ifdef _FAMILYBADGE_
@@ -1964,14 +1950,14 @@ void lssproto_EO_recv(int fd, int dummy) {
       getFamilyBadge(char_index)) {
     char msg[256];
     sprintf(msg, "1|%d", getFamilyBadge(char_index));
-    lssproto_CHAREFFECT_send(fd, msg);
+    GmsvServer_CHAREFFECT_send(fd, msg);
   }
 #endif
 }
 
 /*------------------------------------------------------------
  ------------------------------------------------------------*/
-void lssproto_BU_recv(int fd, int dummy) {
+void GmsvServer_BU_recv(int fd, int dummy) {
   int char_index;
   CHECKFD;
   char_index = CONNECT_getCharaindex(fd);
@@ -1979,7 +1965,7 @@ void lssproto_BU_recv(int fd, int dummy) {
   // BATTLE_WatchStop( char_index );
 }
 
-void lssproto_B_recv(int fd, char *command) {
+void GmsvServer_B_recv(int fd, char *command) {
   int char_index;
   int battle_index; // ttom++
   CHECKFD;
@@ -1992,7 +1978,7 @@ void lssproto_B_recv(int fd, char *command) {
   }
 }
 
-void lssproto_FS_recv(int fd, int flg) {
+void GmsvServer_FS_recv(int fd, int flg) {
   int char_index;
   CHECKFDANDTIME;
 
@@ -2022,7 +2008,7 @@ void lssproto_FS_recv(int fd, int flg) {
 #endif
     );
 
-    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_OKCANCEL,
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_OKCANCEL,
                      CHAR_WINDOWTYPE_BATTLEPKTYPE, -1,
                      makeEscapeString(message, buf, sizeof(buf)));
   }
@@ -2054,11 +2040,11 @@ void lssproto_FS_recv(int fd, int flg) {
 
   CHAR_setFlg(char_index, CHAR_ISTRADE,
               (flg & CHAR_FS_TRADE) ? TRUE : FALSE);
-  lssproto_FS_send(fd, flg);
+  GmsvServer_FS_send(fd, flg);
 }
 /*------------------------------------------------------------
  ------------------------------------------------------------*/
-void lssproto_PR_recv(int fd, int x, int y, int request) {
+void GmsvServer_PR_recv(int fd, int x, int y, int request) {
   int result = FALSE;
   int char_index;
   CHECKFDANDTIME;
@@ -2120,21 +2106,21 @@ void lssproto_PR_recv(int fd, int x, int y, int request) {
 }
 /*------------------------------------------------------------
  ------------------------------------------------------------*/
-void lssproto_KS_recv(int fd, int petarray) {
+void GmsvServer_KS_recv(int fd, int petarray) {
   int ret, char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(char_index))
     return;
   if (petarray != -1 && CHAR_getInt(char_index, CHAR_RIDEPET) == petarray) {
-    lssproto_KS_send(fd, petarray, FALSE);
+    GmsvServer_KS_send(fd, petarray, FALSE);
     return;
   }
   ret = PET_SelectBattleEntryPet(char_index, petarray);
-  lssproto_KS_send(fd, petarray, ret);
+  GmsvServer_KS_send(fd, petarray, ret);
 }
 
-void lssproto_SPET_recv(int fd, int standbypet) {
+void GmsvServer_SPET_recv(int fd, int standbypet) {
   int char_index;
   int i, s_pet = 0, cnt = 0;
 
@@ -2150,7 +2136,7 @@ void lssproto_SPET_recv(int fd, int standbypet) {
   // }
 
   // if( CHAR_getInt( char_index, CHAR_RIDEPET) == petarray ) {
-  //   lssproto_SPET_send( fd, petarray, FALSE);
+  //   GmsvServer_SPET_send( fd, petarray, FALSE);
   //}
 
   for (i = 0; i < CHAR_MAXPETHAVE; i++) {
@@ -2163,7 +2149,7 @@ void lssproto_SPET_recv(int fd, int standbypet) {
       // if( cnt > 4 ) {
       //   print("\n �ķ��!�����賬������!!:%s ", CHAR_getChar( char_index,
       //   CHAR_CDKEY) );
-      // lssproto_SPET_send( fd, s_pet, FALSE);
+      // GmsvServer_SPET_send( fd, s_pet, FALSE);
       //  break;
       //}
 
@@ -2172,10 +2158,10 @@ void lssproto_SPET_recv(int fd, int standbypet) {
   }
   CHAR_setWorkInt(char_index, CHAR_WORKSTANDBYPET, s_pet);
 
-  lssproto_SPET_send(fd, s_pet, TRUE);
+  GmsvServer_SPET_send(fd, s_pet, TRUE);
 }
 
-void lssproto_AC_recv(int fd, int x, int y, int actionno) {
+void GmsvServer_AC_recv(int fd, int x, int y, int actionno) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
   int char_index;
@@ -2200,7 +2186,7 @@ void lssproto_AC_recv(int fd, int x, int y, int actionno) {
   return;
 }
 
-void lssproto_LOOK_recv(int fd, int x, int y) {
+void GmsvServer_LOOK_recv(int fd, int x, int y) {
   int charaindex, floor;
   CHECKFDANDTIME;
   charaindex = CONNECT_getCharaindex(fd);
@@ -2219,8 +2205,8 @@ void lssproto_LOOK_recv(int fd, int x, int y) {
   BATTLE_WatchTry(charaindex);
 }
 
-void lssproto_MU_recv(int fd, int x, int y, int array, int toindex) {
-  int to_charaindex = -1, char_index;
+void GmsvServer_MU_recv(int fd, int x, int y, int array, int toindex) {
+  int to_char_index = -1, char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
   { // ttom avoid warp at will
@@ -2237,11 +2223,11 @@ void lssproto_MU_recv(int fd, int x, int y, int array, int toindex) {
   }
 
   CHAR_setMyPosition(char_index, x, y, TRUE);
-  to_charaindex = Callfromcli_Util_getTargetCharaindex(fd, toindex);
-  MAGIC_Use(char_index, array, to_charaindex);
+  to_char_index = Callfromcli_Util_getTargetCharaindex(fd, toindex);
+  MAGIC_Use(char_index, array, to_char_index);
 }
 
-void lssproto_JB_recv(int fd, int x, int y) {
+void GmsvServer_JB_recv(int fd, int x, int y) {
   int charaindex, floor;
 
   CHECKFDANDTIME;
@@ -2283,7 +2269,7 @@ void lssproto_JB_recv(int fd, int x, int y) {
 #endif
 }
 
-void lssproto_KN_recv(int fd, int havepetindex, char *data) {
+void GmsvServer_KN_recv(int fd, int havepetindex, char *data) {
   int char_index;
   CHECKFD;
   char_index = CONNECT_getCharaindex(fd);
@@ -2308,7 +2294,7 @@ void lssproto_KN_recv(int fd, int havepetindex, char *data) {
   CHAR_inputUserPetName(char_index, havepetindex, data);
 }
 
-void lssproto_WN_recv(int fd, int x, int y, int seqno, int objindex, int select,
+void GmsvServer_WN_recv(int fd, int x, int y, int seqno, int objindex, int select,
                       char *data) {
   CHECKFDANDTIME;
   if (checkStringErr(data))
@@ -2337,8 +2323,8 @@ void lssproto_WN_recv(int fd, int x, int y, int seqno, int objindex, int select,
       mindex = checkIfAngel(char_index);
       print("====Check Angel Summon Mission Info====");
       getMissionNameInfo(char_index, name_info);
-      saacproto_ACMissionTable_send(acfd, mindex, 3, name_info, "");
-      lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK, -1,
+      SaacClient_ACMissionTable_send(acfd, mindex, 3, name_info, "");
+      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK, -1,
                        -1, "�����ź���\n������İ���������ħ������Σ����½�������ˡ�");
       sendAngelCleanToCli(fd);
     }
@@ -2405,7 +2391,7 @@ void lssproto_WN_recv(int fd, int x, int y, int seqno, int objindex, int select,
       if (enemy == 0) {
       FIRST:
 
-        lssproto_EN_send(fd, FALSE, 0);
+        GmsvServer_EN_send(fd, FALSE, 0);
         CHAR_talkToCli(char_index, -1, "�¼�����", CHAR_COLORYELLOW);
         goto END_WN;
       }
@@ -2430,7 +2416,7 @@ END_WN:
 }
 
 /* 收到战斗中发起的HELP请求 */
-void lssproto_HL_recv(int fd, int flg) {
+void GmsvServer_HL_recv(int fd, int flg) {
   char msgbuf[128];
   int i, char_index;
   CHECKFD;
@@ -2487,7 +2473,7 @@ void lssproto_HL_recv(int fd, int flg) {
     if (CHAR_CHECKINDEX(toindex)) {
       int tofd = getfdFromCharaIndex(toindex);
       if (tofd != -1) {
-        lssproto_HL_send(tofd, flg);
+        GmsvServer_HL_send(tofd, flg);
       }
       CHAR_talkToCli(toindex, -1, msgbuf, CHAR_COLORYELLOW);
       CHAR_sendBattleEffect(toindex, ON);
@@ -2495,9 +2481,9 @@ void lssproto_HL_recv(int fd, int flg) {
   }
 }
 
-void lssproto_ProcGet_recv(int fd) { outputNetProcLog(fd, 1); }
+void GmsvServer_ProcGet_recv(int fd) { outputNetProcLog(fd, 1); }
 
-void lssproto_PlayerNumGet_recv(int fd) {
+void GmsvServer_PlayerNumGet_recv(int fd) {
   /*
     int    i;
     int    clicnt  =0;
@@ -2510,11 +2496,11 @@ void lssproto_PlayerNumGet_recv(int fd) {
               }
       }
     }
-    lssproto_PlayerNumGet_send( fd, clicnt * 0.6, playercnt * 0.6);
+    GmsvServer_PlayerNumGet_send( fd, clicnt * 0.6, playercnt * 0.6);
   */
 }
 
-void lssproto_LB_recv(int fd, int x, int y) {
+void GmsvServer_LB_recv(int fd, int x, int y) {
   CHECKFDANDTIME;
   const int from_id = CONNECT_getCharaindex(fd);
   {
@@ -2529,7 +2515,7 @@ void lssproto_LB_recv(int fd, int x, int y) {
   BATTLE_WatchTry(from_id);
 }
 
-void lssproto_Shutdown_recv(int fd, char *passwd, int min) {
+void GmsvServer_Shutdown_recv(int fd, char *passwd, int min) {
   char buff[32];
   // ??? why need this password in mingwen?
   if (strcmp(passwd, "hogehoge") == 0) {
@@ -2546,7 +2532,7 @@ void lssproto_Shutdown_recv(int fd, char *passwd, int min) {
     SERVSTATE_setDsptime(0);
   }
 }
-void lssproto_PMSG_recv(int fd, int index, int petindex, int itemindex,
+void GmsvServer_PMSG_recv(int fd, int index, int petindex, int itemindex,
                         char *message, int color) {
 
   // CoolFish: Prevent Trade Cheat 2001/4/18
@@ -2564,7 +2550,7 @@ void lssproto_PMSG_recv(int fd, int index, int petindex, int itemindex,
     char message[256];
     char buf[256];
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
-    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
                      WINDOW_BUTTONTYPE_OKCANCEL,
                      CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
                      makeEscapeString(message, buf, sizeof(buf)));
@@ -2579,22 +2565,22 @@ void lssproto_PMSG_recv(int fd, int index, int petindex, int itemindex,
                       message, color);
 }
 
-void lssproto_PS_recv(int fd, int havepetindex, int havepetskill, int toindex,
+void GmsvServer_PS_recv(int fd, int havepetindex, int havepetskill, int toindex,
                       char *data) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
-  int to_charaindex = Callfromcli_Util_getTargetCharaindex(fd, toindex);
+  int to_char_index = Callfromcli_Util_getTargetCharaindex(fd, toindex);
   int petindex;
   BOOL ret;
   petindex = CHAR_getCharPet(charaindex, havepetindex);
   if (!CHAR_CHECKINDEX(petindex))
     return;
-  ret = PETSKILL_Use(petindex, havepetskill, to_charaindex, data);
-  lssproto_PS_send(fd, ret, havepetindex, havepetskill, toindex);
+  ret = PETSKILL_Use(petindex, havepetskill, to_char_index, data);
+  GmsvServer_PS_send(fd, ret, havepetindex, havepetskill, toindex);
 }
 
-void lssproto_SP_recv(int fd, int x, int y, int dir) {
+void GmsvServer_SP_recv(int fd, int x, int y, int dir) {
   const int char_index = CONNECT_getCharaindex(fd);
   { // ttom avoid the warp at will
     int i_x, i_y;
@@ -2608,7 +2594,7 @@ void lssproto_SP_recv(int fd, int x, int y, int dir) {
   CHAR_setMyPosition_main(char_index, x, y, dir, TRUE);
 }
 
-void lssproto_TD_recv(int fd, char *message) {
+void GmsvServer_TD_recv(int fd, char *message) {
   CHECKFDANDTIME;
   const int char_index = CONNECT_getCharaindex(fd);
   if (CHAR_getWorkInt(char_index, CHAR_WORKSTREETVENDOR) != -1) {
@@ -2618,7 +2604,7 @@ void lssproto_TD_recv(int fd, char *message) {
   CHAR_Trade(fd, char_index, message);
 }
 
-void lssproto_FM_recv(int fd, char *message) {
+void GmsvServer_FM_recv(int fd, char *message) {
   const int char_index = CONNECT_getCharaindex(fd);
   if (checkStringErr(message))
     return;
@@ -2626,7 +2612,7 @@ void lssproto_FM_recv(int fd, char *message) {
 }
 
 // shan 2002/01/10
-void lssproto_PETST_recv(int fd, int nPet, int sPet) {
+void GmsvServer_PETST_recv(int fd, int nPet, int sPet) {
   int charaindex;
   int i, nums = 0;
   CHECKFDANDTIME;
@@ -2653,12 +2639,12 @@ void lssproto_PETST_recv(int fd, int nPet, int sPet) {
   }
 
   if (nPet != CHAR_getInt(charaindex, CHAR_DEFAULTPET)) {
-    lssproto_PETS_send(fd, nPet, sPet);
+    GmsvServer_PETS_send(fd, nPet, sPet);
   }
 }
 
 #ifdef _MIND_ICON
-void lssproto_MA_recv(int fd, int x, int y, int nMind) {
+void GmsvServer_MA_recv(int fd, int x, int y, int nMind) {
   int charaindex;
   CHECKFDANDTIME;
 
@@ -2734,7 +2720,7 @@ BOOL checkStringErr(char *checkstring) {
 }
 
 #ifdef _TEAM_KICKPARTY
-void lssproto_KTEAM_recv(int fd, int si) {
+void GmsvServer_KTEAM_recv(int fd, int si) {
   // 移出队伍中的第几个成员.
   if (si < 0 || si > 5)
     return;
@@ -2764,11 +2750,11 @@ void lssproto_KTEAM_recv(int fd, int si) {
 #endif
 
 #ifdef _CHATROOMPROTOCOL
-void lssproto_CHATROOM_recv(int fd, char *data) { ChatRoom_recvall(fd, data); }
+void GmsvServer_CHATROOM_recv(int fd, char *data) { ChatRoom_recvall(fd, data); }
 #endif
 
 #ifdef _NEWREQUESTPROTOCOL // (���ɿ�) Syu ADD ����ProtocolҪ��ϸ��
-void lssproto_RESIST_recv(int fd) {
+void GmsvServer_RESIST_recv(int fd) {
   int charindex = -1;
 
   char token[256];
@@ -2784,12 +2770,12 @@ void lssproto_RESIST_recv(int fd) {
           CHAR_getInt(charindex, CHAR_WATER_EXP),
           CHAR_getInt(charindex, CHAR_FIRE_EXP),
           CHAR_getInt(charindex, CHAR_WIND_EXP));
-  lssproto_RESIST_send(fd, token);
+  GmsvServer_RESIST_send(fd, token);
 }
 #endif
 
 #ifdef _OUTOFBATTLESKILL // Syu ADD
-void lssproto_BATTLESKILL_recv(int fd, int iNum) {
+void GmsvServer_BATTLESKILL_recv(int fd, int iNum) {
 #ifdef _CHAR_PROFESSION // WON ADD
   int charaindex = CONNECT_getCharaindex(fd);
 #ifndef _PROSKILL_OPTIMUM
@@ -2827,7 +2813,7 @@ void lssproto_BATTLESKILL_recv(int fd, int iNum) {
 #endif
 
 #ifdef _STREET_VENDOR
-void lssproto_STREET_VENDOR_recv(int fd, char *message) {
+void GmsvServer_STREET_VENDOR_recv(int fd, char *message) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(charaindex))
     return;
@@ -2837,7 +2823,7 @@ void lssproto_STREET_VENDOR_recv(int fd, char *message) {
     char message[256];
     char buf[256];
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
-    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
                      WINDOW_BUTTONTYPE_OKCANCEL,
                      CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
                      makeEscapeString(message, buf, sizeof(buf)));
@@ -2857,13 +2843,13 @@ void lssproto_STREET_VENDOR_recv(int fd, char *message) {
 #endif
 
 #ifdef _RIGHTCLICK
-void lssproto_RCLICK_recv(int fd, int type, char *data) {
+void GmsvServer_RCLICK_recv(int fd, int type, char *data) {
   print("\n RCLICK_recv( type=%d data=%s) ", type, data);
 }
 #endif
 
 #ifdef _JOBDAILY
-void lssproto_JOBDAILY_recv(int fd, char *data) {
+void GmsvServer_JOBDAILY_recv(int fd, char *data) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(charaindex))
     return;
@@ -2873,7 +2859,7 @@ void lssproto_JOBDAILY_recv(int fd, char *data) {
 #endif
 
 #ifdef _TEACHER_SYSTEM
-void lssproto_TEACHER_SYSTEM_recv(int fd, char *data) {
+void GmsvServer_TEACHER_SYSTEM_recv(int fd, char *data) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(charaindex))
     return;
@@ -2882,7 +2868,7 @@ void lssproto_TEACHER_SYSTEM_recv(int fd, char *data) {
 #endif
 
 #ifdef _ASSESS_ABILITY
-void lssproto_ASSESS_ABILITY_recv(int fd) {
+void GmsvServer_ASSESS_ABILITY_recv(int fd) {
   const int charaindex = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(charaindex))
     return;
@@ -2895,19 +2881,19 @@ void lssproto_ASSESS_ABILITY_recv(int fd) {
     strcat(data, tmp);
   }
 
-  lssproto_ASSESS_ABILITY_send(fd, data);
+  GmsvServer_ASSESS_ABILITY_send(fd, data);
 }
 #endif
 
 #ifdef _ONLINE_SHOP
-void lssproto_VIP_SHOP_recv(int fd, int type, int page) {
+void GmsvServer_VIP_SHOP_recv(int fd, int type, int page) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(charaindex))
     return;
   OnlineShop_ShowList(fd, charaindex, type, page);
 }
 
-void lssproto_VIP_SHOP_buy_recv(int fd, int type, int page, int id, int num) {
+void GmsvServer_VIP_SHOP_buy_recv(int fd, int type, int page, int id, int num) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(charaindex))
     return;
@@ -2915,7 +2901,7 @@ void lssproto_VIP_SHOP_buy_recv(int fd, int type, int page, int id, int num) {
 }
 #endif
 
-void lssproto_SaMenu_recv(int fd, int index) {
+void GmsvServer_SaMenu_recv(int fd, int index) {
   CHECKFDANDTIME;
   const int charaindex = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(charaindex))
@@ -2924,7 +2910,7 @@ void lssproto_SaMenu_recv(int fd, int index) {
 }
 
 #ifdef _FAMILYBADGE_
-void lssproto_FamilyBadge_recv(int fd) {
+void GmsvServer_FamilyBadge_recv(int fd) {
   const int charaindex = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(charaindex))
     return;

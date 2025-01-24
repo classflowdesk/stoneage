@@ -9,55 +9,55 @@ BOOL RunCharBattleOverEvent( int meindex, int toindex, int iswin);
 BOOL RunCharWindowTalked( int meindex, int talkerindex, int seqno, int select, char *data);
 
 #ifdef _ALLBLUES_LUA_1_2 
-BOOL RunItemUseEvent( int itemindex, int charaindex, int toindex, int haveitemindex );
-BOOL RunItemDieReLifeEvent( int toindex, int itemindex, int haveitemindex );
-BOOL RunItemDetachEvent( int charaindex, int itemindex );
-BOOL RunItemAttachEvent( int charaindex, int itemindex );
-BOOL RunItemPickupEvent( int charaindex, int itemindex );
-BOOL RunItemPostOverEvent( int itemindex, int charaindex );
-BOOL RunItemPreOverEvent( int itemindex, int charaindex );
-BOOL RunItemDropEvent( int charaindex, int itemindex );
-BOOL RunUseChatMagic( int charaindex, char *data, lua_State *lua);
+BOOL RunItemUseEvent( int item_index, int char_index, int toindex, int haveitem_index );
+BOOL RunItemDieReLifeEvent( int toindex, int item_index, int haveitem_index );
+BOOL RunItemDetachEvent( int char_index, int item_index );
+BOOL RunItemAttachEvent( int char_index, int item_index );
+BOOL RunItemPickupEvent( int char_index, int item_index );
+BOOL RunItemPostOverEvent( int item_index, int char_index );
+BOOL RunItemPreOverEvent( int item_index, int char_index );
+BOOL RunItemDropEvent( int char_index, int item_index );
+BOOL RunUseChatMagic( int char_index, char *data, lua_State *lua);
 #endif
 #ifdef _PETSKILL_SHOP_LUA   
 BOOL FreePetSkillShop( int talkerindex, int petindex, int oldSkillID, int newSkillID);
 #endif
-void ABNPC_Lua_NEWSHOP_Recv( int charaindex);
+void ABNPC_Lua_NEWSHOP_Recv( int char_index);
 #ifdef _PETSKILL_SHOP_LUA   
 BOOL OffLineCommand( int battleindex, int charindex, int side);
 #endif
 #ifdef _ALLBLUES_LUA_1_4
-BOOL BattleFinish( int battleindex, int charaindex);
-BOOL BattleEscape( int battleindex, int charaindex);
-BOOL RunCharLogOutEvent( int charaindex);
+BOOL BattleFinish( int battleindex, int char_index);
+BOOL BattleEscape( int battleindex, int char_index);
+BOOL RunCharLogOutEvent( int char_index);
 #endif
 #ifdef _ALLBLUES_LUA_1_5
-BOOL FreePartyJoin( int charaindex, int toindex );
-BOOL FreeVsPlayer( int charaindex, int toindex );
-BOOL FreeCharLogin( int charaindex );
-BOOL FreeCharCreate( int charaindex );
+BOOL FreePartyJoin( int char_index, int toindex );
+BOOL FreeVsPlayer( int char_index, int toindex );
+BOOL FreeCharLogin( int char_index );
+BOOL FreeCharCreate( int char_index );
 BOOL NetLoopFunction( void );
 #endif
 #ifdef _ALLBLUES_LUA_1_6
 BOOL FamilyRideFunction( int meindex, int petindex, int petid );
-BOOL CharTalkFunction( int charaindex, char *message, int color );
+BOOL CharTalkFunction( int char_index, char *message, int color );
 #endif
 #ifdef _ALLBLUES_LUA_1_7
-BOOL CharVsEnemyFunction( int charaindex );
+BOOL CharVsEnemyFunction( int char_index );
 #endif
 #ifdef _ALLBLUES_LUA_1_8
 BOOL CaptureOkFunction( int attackindex, int defindex );
 BOOL CaptureCheckFunction( int attackindex, int defindex );
 #endif
 #ifdef _ALLBLUES_LUA_1_9
-BOOL SetBattleEnmeyFunction(int meindex, int enemyindex, int id );
-BOOL BattleFinishFunction( int charaindex, int battletime, int battleturn, int battletype );
+BOOL SetBattleEnmeyFunction(int meindex, int enemy_index, int id );
+BOOL BattleFinishFunction( int char_index, int battletime, int battleturn, int battletype );
 void FreeCharExpSave( int charindex, int exp );
-BOOL BattleCommand( int charaindex, int battleindex );
+BOOL BattleCommand( int char_index, int battleindex );
 #endif
 #endif
 
 #ifdef _RIDEQUERY_
-void FreeRideQuery( int charaindex);
+void FreeRideQuery( int char_index);
 #endif
 

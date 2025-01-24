@@ -86,8 +86,8 @@ static int getNum (lua_State *L) {
 }
 static int setIndex (lua_State *L) {
   const int index = luaL_checkint(L, 1);
-  const int charaindex = luaL_checkint(L, 2);
-	OBJECT_setIndex(index, charaindex);
+  const int char_index = luaL_checkint(L, 2);
+	OBJECT_setIndex(index, char_index);
   return 1;
 }
 

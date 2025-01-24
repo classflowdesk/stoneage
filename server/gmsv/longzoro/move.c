@@ -9,7 +9,7 @@
 
 Talk_Move_Floor_t talkmovefloor[MAXTALKMOVEFLOOR];
 
-BOOL talk_move_map(int charaindex, char *messageeraseescape)
+BOOL talk_move_map(int char_index, char *messageeraseescape)
 {
 	if(messageeraseescape[0] == '/' && messageeraseescape[1] == 'm' && messageeraseescape[2] == 'o' && messageeraseescape[3] == 'v' && messageeraseescape[4] == 'e'){
 			char token[32];
@@ -21,17 +21,17 @@ BOOL talk_move_map(int charaindex, char *messageeraseescape)
 				strcpy( buf, "您可顺移地方:");
 				for(i=0;i<MAXTALKMOVEFLOOR;i++){
 					if( strlen( buf ) >= 220 ){
-						CHAR_talkToCli( charaindex, -1, buf, CHAR_COLORYELLOW);	
+						CHAR_talkToCli( char_index, -1, buf, CHAR_COLORYELLOW);	
 						strcpy( buf, "您可顺移地方:");
 					}
-					if( CHAR_getInt(charaindex, CHAR_TRANSMIGRATION) > talkmovefloor[i].trans 
-							|| ( CHAR_getInt(charaindex, CHAR_TRANSMIGRATION) == talkmovefloor[i].trans
-								 && CHAR_getInt(charaindex, CHAR_LV) >= talkmovefloor[i].level ) ) {
+					if( CHAR_getInt(char_index, CHAR_TRANSMIGRATION) > talkmovefloor[i].trans 
+							|| ( CHAR_getInt(char_index, CHAR_TRANSMIGRATION) == talkmovefloor[i].trans
+								 && CHAR_getInt(char_index, CHAR_LV) >= talkmovefloor[i].level ) ) {
 						strcat( buf, talkmovefloor[i].name);
 						strcat( buf, " ");
 					}
 				}
-				CHAR_talkToCli( charaindex, -1, buf, CHAR_COLORYELLOW);	
+				CHAR_talkToCli( char_index, -1, buf, CHAR_COLORYELLOW);	
 				return TRUE;
 			}
 
@@ -43,10 +43,10 @@ BOOL talk_move_map(int charaindex, char *messageeraseescape)
 				}
 			}
 			if( isMove == TRUE ){
-				if( CHAR_getInt(charaindex, CHAR_TRANSMIGRATION) > talkmovefloor[i].trans 
-					|| ( CHAR_getInt(charaindex, CHAR_TRANSMIGRATION) == talkmovefloor[i].trans
-								 && CHAR_getInt(charaindex, CHAR_LV) >= talkmovefloor[i].level ) ) {
-							CHAR_warpToSpecificPoint(charaindex, talkmovefloor[i].id, talkmovefloor[i].x, talkmovefloor[i].y );
+				if( CHAR_getInt(char_index, CHAR_TRANSMIGRATION) > talkmovefloor[i].trans 
+					|| ( CHAR_getInt(char_index, CHAR_TRANSMIGRATION) == talkmovefloor[i].trans
+								 && CHAR_getInt(char_index, CHAR_LV) >= talkmovefloor[i].level ) ) {
+							CHAR_warpToSpecificPoint(char_index, talkmovefloor[i].id, talkmovefloor[i].x, talkmovefloor[i].y );
 							return TRUE;
 				}
 			}

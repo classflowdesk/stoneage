@@ -4,12 +4,12 @@
 int GetEnemyExp( int level );
 
 int BATTLE_GetLevelExp(
-	int charaindex,
+	int char_index,
 	int level
 );
 
 int BATTLE_LevelUpCheck(
-	int charaindex
+	int char_index
 );
 
 

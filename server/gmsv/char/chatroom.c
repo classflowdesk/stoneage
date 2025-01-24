@@ -1,7 +1,8 @@
 #include "version.h"
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
+//
+#include "gmsv_server.h"
+#include "saac_client.h"
+//
 #include "readmap.h"
 #include "object.h"
 #include "char.h"
@@ -10,8 +11,6 @@
 #include "battle.h"
 #include "log.h"
 #include "config_file.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
 #include "family.h"
 #include "chatroom.h"
 #include "net.h"
@@ -136,7 +135,7 @@ BOOL ChatRoom_Destroy ( int myindex )
 			CHAR_setWorkInt ( ChatRoom[ i ].MemberList[ j ] , CHAR_WORKCHATROOMNUM , 0 ) ; 
 			fd = getfdFromCharaIndex( ChatRoom[ i ].MemberList[ j ] );
 			sprintf ( buf , "D|%d" , i ) ; 
-			lssproto_CHATROOM_send ( fd , buf ) ; 
+			GmsvServer_CHATROOM_send ( fd , buf ) ; 
 			ChatRoom[ i ].MemberList[ j ] = -1 ; 
 		}
 		return TRUE;
@@ -161,7 +160,7 @@ void ChatRoom_Message ( int myindex ,  char *message )
 				continue;
 			snprintf ( buf , sizeof ( buf ) , "T|%s" , message ) ; 
 			fd = getfdFromCharaIndex ( ChatRoom[ i ].MemberList[ j ] );
-			lssproto_CHATROOM_send ( fd , buf ) ; 
+			GmsvServer_CHATROOM_send ( fd , buf ) ; 
 		}
 	}
 }
@@ -183,7 +182,7 @@ void ChatRoom_Kick ( int myindex , int toindex )
 			CHAR_setWorkInt ( toindex , CHAR_WORKCHATROOMNUM , -1) ; 
 			//CHAR_talkToCli ( toindex , -1 , "室长将你踢出聊天室！" , CHAR_COLORRED ) ; 
 			fd = getfdFromCharaIndex( toindex );
-			lssproto_CHATROOM_send ( fd , "K|" ) ; 
+			GmsvServer_CHATROOM_send ( fd , "K|" ) ; 
 			ChatRoom[ Num ].NowPeople --;
 			for ( i = 0 ; i < MAX_PPLINROOM ; i ++ ) {
 				if ( ChatRoom[ Num ].MemberList[ i ] == toindex ) {
@@ -281,7 +280,7 @@ void ChatRoom_Join ( int myindex , int num )
 	if ( ChatRoom[ num ].useFlag == TRUE && ChatRoom[ num ].NowPeople < MAX_PPLINROOM ) {
 		sprintf ( buf , "J|%s|%d" , CHAR_getChar( myindex , CHAR_NAME ) , myindex ) ; 
 		fd = getfdFromCharaIndex( ChatRoom[ num ].Maker );
-		lssproto_CHATROOM_send ( fd , buf );
+		GmsvServer_CHATROOM_send ( fd , buf );
 	}else if ( ChatRoom[ num ].NowPeople >= MAX_PPLINROOM ) 
 		CHAR_talkToCli ( myindex , -1 , "聊天室人数已满！" , CHAR_COLORRED ) ; 
 
@@ -339,7 +338,7 @@ void ChatRoom_List ( int fd )
 			strncat ( token , buf , sizeof ( buf ) ) ; 
 		}
 	}
-	lssproto_CHATROOM_send ( fd , token ) ; 
+	GmsvServer_CHATROOM_send ( fd , token ) ; 
 }
 
 void ChatRoom_Refresh ( int Num )
@@ -372,7 +371,7 @@ void ChatRoom_Refresh ( int Num )
 			else RoomLeader = 0 ;
 			sprintf ( token2 , "%s%d|" , token , RoomLeader ) ; 
 			fd= getfdFromCharaIndex ( ChatRoom[ Num ].MemberList[ i ] );
-			lssproto_CHATROOM_send ( fd , token2 ) ; 
+			GmsvServer_CHATROOM_send ( fd , token2 ) ; 
 		}
 	}
 }

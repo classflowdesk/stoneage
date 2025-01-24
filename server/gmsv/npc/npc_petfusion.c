@@ -5,8 +5,8 @@
 #include "char_base.h"
 #include "char_data.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "readmap.h"
 #include "battle.h"
 #include "log.h"
@@ -130,7 +130,7 @@ static void NPC_PetFusion_selectWindow( int meindex, int toindex, int num,int se
 		break;
 	}
 	CHAR_setWorkInt( toindex, CHAR_WORKSHOPRELEVANT, windowno);
-	lssproto_WN_send( fd, windowtype, buttontype, windowno,
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 }
 void NPC_PetFusionManWindowTalked( int meindex, int talkerindex, int seqno, int select, char *data)

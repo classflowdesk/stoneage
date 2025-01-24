@@ -13,7 +13,7 @@ typedef struct TALK_MOVE_FLOOR_t{
 }Talk_Move_Floor_t;
 
 BOOL MoveMap_init();
-BOOL talk_move_map(int charaindex, char *messageeraseescape);
+BOOL talk_move_map(int char_index, char *messageeraseescape);
 
 #endif
 #endif

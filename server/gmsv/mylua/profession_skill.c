@@ -8,7 +8,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 
 #ifdef _PROFESSION_SKILL			// WON ADD 人物职业技能
 #ifdef _ALLBLUES_LUA_1_8 

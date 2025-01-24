@@ -3,7 +3,7 @@
 #include "enemy.h"
 #include "object.h"
 #include "char.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "battle.h"
 #include "battle_command.h"
 #include "lua.h"
@@ -15,7 +15,7 @@
 
 static int CreateVsEnemy (lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int npcindex = luaL_checkint(L, 2);
 	int enemytable[11];
 	int i;
@@ -35,13 +35,13 @@ static int CreateVsEnemy (lua_State *L)
 			enemytable[i] = -1;
 		}
 	}
-	int ret = BATTLE_CreateVsEnemyNew(charaindex, npcindex, enemytable);
+	int ret = BATTLE_CreateVsEnemyNew(char_index, npcindex, enemytable);
 	if( ret == 0 ) {
 		if(npcindex>-1){
 			CHAR_setWorkInt( npcindex, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_INIT );
 			CHAR_sendBattleEffect( npcindex, ON);
 		}
-		lua_pushinteger(L, CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEINDEX));
+		lua_pushinteger(L, CHAR_getWorkInt( char_index, CHAR_WORKBATTLEINDEX));
 		return 1;
 	}else{
 		return 0;
@@ -51,7 +51,7 @@ static int CreateVsEnemy (lua_State *L)
 static int CreateVsEnemyLv (lua_State *L)
 {
 	size_t l;
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int npcindex = luaL_checkint(L, 2);
 	char *enemytablebuf = luaL_checklstring(L, 3, &l);
 	char *enemylvtablebuf = luaL_checklstring(L, 4, &l);
@@ -84,13 +84,13 @@ static int CreateVsEnemyLv (lua_State *L)
 		lua_pushinteger(L, -1);
 		return 0;
 	}
-	int ret = BATTLE_CreateVsEnemyLvNew(charaindex, npcindex, enemytable,enemylvtable);
+	int ret = BATTLE_CreateVsEnemyLvNew(char_index, npcindex, enemytable,enemylvtable);
 	if( ret == 0 ) {
 		if(npcindex>-1){
 			CHAR_setWorkInt( npcindex, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_INIT );
 			CHAR_sendBattleEffect( npcindex, ON);
 		}
-		lua_pushinteger(L, CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEINDEX));
+		lua_pushinteger(L, CHAR_getWorkInt( char_index, CHAR_WORKBATTLEINDEX));
 		return 1;
 	}else{
 		return 0;
@@ -103,17 +103,17 @@ static int getCharOne(lua_State *L)
 	const int num = luaL_checkint(L, 2);
 	const int side = luaL_checkint(L, 3);
 	
-	lua_pushinteger(L, BattleArray[battle].Side[side].Entry[num].charaindex);
+	lua_pushinteger(L, BattleArray[battle].Side[side].Entry[num].char_index);
 	
 	return 1;
 }
 
 static int Exit(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int battleindex = luaL_checkint(L, 2);
 	
-	BATTLE_Exit( charaindex, battleindex );
+	BATTLE_Exit( char_index, battleindex );
 	
 	return 1;
 }
@@ -127,7 +127,7 @@ static CharBase BattleBaseEvent[] = {
 static int CreateRandVsPlayer (lua_State *L) 
 {
 	const int floorid = luaL_checkint(L, 1);
-	int charaindex1 = -1, charaindex2 = -1;
+	int char_index1 = -1, char_index2 = -1;
 	int num = 0;
 	int i = 0; 
 	int playernum = CHAR_getPlayerMaxNum();
@@ -136,13 +136,13 @@ static int CreateRandVsPlayer (lua_State *L)
 	  if ( !CHAR_CHECKINDEX( i ) )continue;
 	  if ( CHAR_getInt( i, CHAR_FLOOR ) == floorid ) {
 			if (CHAR_getWorkInt(i, CHAR_WORKBATTLEMODE) == BATTLE_CHARMODE_NONE){
-				if(charaindex1 == -1){
-					charaindex1 = i;
+				if(char_index1 == -1){
+					char_index1 = i;
 				}else{
-					charaindex2 = i;
+					char_index2 = i;
 				}
-				if(CHAR_CHECKINDEX( charaindex1 ) && CHAR_CHECKINDEX( charaindex2 ) ){
-					BATTLE_CreateVsPlayer(charaindex1, charaindex2);
+				if(CHAR_CHECKINDEX( char_index1 ) && CHAR_CHECKINDEX( char_index2 ) ){
+					BATTLE_CreateVsPlayer(char_index1, char_index2);
 					num ++;
 				}
 			}
@@ -156,14 +156,14 @@ static int CreateRandVsPlayer (lua_State *L)
 
 static int CreateVsPlayer(lua_State *L) 
 {
-	const int charaindex1 = luaL_checkint(L, 1);
-	const int charaindex2 = luaL_checkint(L, 2);
+	const int char_index1 = luaL_checkint(L, 1);
+	const int char_index2 = luaL_checkint(L, 2);
 	
-	if(CHAR_CHECKINDEX( charaindex1 ) && CHAR_CHECKINDEX( charaindex2 ) ){
-		if( CHAR_getWorkInt( charaindex1, CHAR_WORKBATTLEMODE ) == BATTLE_CHARMODE_NONE 
-			&& CHAR_getWorkInt( charaindex2, CHAR_WORKBATTLEMODE ) == BATTLE_CHARMODE_NONE ){
-			if(BATTLE_CreateVsPlayer(charaindex1, charaindex2) == 0){
-				lua_pushinteger(L, CHAR_getWorkInt( charaindex1, CHAR_WORKBATTLEINDEX));
+	if(CHAR_CHECKINDEX( char_index1 ) && CHAR_CHECKINDEX( char_index2 ) ){
+		if( CHAR_getWorkInt( char_index1, CHAR_WORKBATTLEMODE ) == BATTLE_CHARMODE_NONE 
+			&& CHAR_getWorkInt( char_index2, CHAR_WORKBATTLEMODE ) == BATTLE_CHARMODE_NONE ){
+			if(BATTLE_CreateVsPlayer(char_index1, char_index2) == 0){
+				lua_pushinteger(L, CHAR_getWorkInt( char_index1, CHAR_WORKBATTLEINDEX));
 				return 1;
 			}
 		}
@@ -196,38 +196,38 @@ static int WatchEntry(lua_State *L)
 
 static int NewEntry(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int battleindex = luaL_checkint(L, 2);
 	const int side = luaL_checkint(L, 3);
-	int fd = getfdFromCharaIndex(charaindex);
-	int iRet = BATTLE_NewEntry(charaindex, battleindex, side);
+	int fd = getfdFromCharaIndex(char_index);
+	int iRet = BATTLE_NewEntry(char_index, battleindex, side);
 	if( iRet == 0 ){
-		CHAR_setWorkInt( charaindex, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_RESCUE );
+		CHAR_setWorkInt( char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_RESCUE );
 		iRet = BATTLE_PetDefaultEntry(
-				charaindex,
+				char_index,
 				battleindex,
 				side
 		);
 	}
 	if( iRet == 0 ){
 		int		flg;
-		if( CHAR_getInt( charaindex, CHAR_DEFAULTPET ) >= 0 ){
-			int pindex = CHAR_getCharPet( charaindex, CHAR_getInt( charaindex, CHAR_DEFAULTPET ) );
+		if( CHAR_getInt( char_index, CHAR_DEFAULTPET ) >= 0 ){
+			int pindex = CHAR_getCharPet( char_index, CHAR_getInt( char_index, CHAR_DEFAULTPET ) );
 			CHAR_setWorkInt( pindex, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_RESCUE );
 		}
 		if( fd != -1 ){
-			lssproto_EN_send( fd, BattleArray[battleindex].type, BattleArray[battleindex].field_no );
+			GmsvServer_EN_send( fd, BattleArray[battleindex].type, BattleArray[battleindex].field_no );
 		}
 		flg = (BattleArray[battleindex].Side[side].flg & BSIDE_FLG_HELP_OK)? TRUE:FALSE;
-		lssproto_HL_send( fd, flg);
+		GmsvServer_HL_send( fd, flg);
 		char szBuffer[256];
 		sprintf( szBuffer, "BP|%X|%X|%X",
-			BATTLE_Index2No( battleindex, charaindex ), BP_FLG_JOIN, CHAR_getInt(charaindex, CHAR_MP ) );
-		BATTLE_CommandSend( charaindex, szBuffer );
+			BATTLE_Index2No( battleindex, char_index ), BP_FLG_JOIN, CHAR_getInt(char_index, CHAR_MP ) );
+		BATTLE_CommandSend( char_index, szBuffer );
 		lua_pushinteger(L, 1);
 	}else{
 		if( fd != -1 ){
-			lssproto_EN_send( fd, FALSE, BattleArray[battleindex].field_no );
+			GmsvServer_EN_send( fd, FALSE, BattleArray[battleindex].field_no );
 		}
 		lua_pushinteger(L, 0);
 	}

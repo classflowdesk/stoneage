@@ -1386,7 +1386,7 @@ void NPC_Lua_LookedCallBack(int _meindex, int _desindex)
 	return ;
 }
 
-BOOL NPC_Lua_ItemPutCallBack(int _meindex, int _itemindex)
+BOOL NPC_Lua_ItemPutCallBack(int _meindex, int _item_index)
 {
 	if(M_Script_Lua == NULL)
 	{
@@ -1403,7 +1403,7 @@ BOOL NPC_Lua_ItemPutCallBack(int _meindex, int _itemindex)
 
 	lua_getglobal(M_Script_Lua, (const char *)TM_char->lua_charfunctable[CHAR_ITEMPUTFUNC].string);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_meindex);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_itemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_item_index);
 	
 	TM_Ret = lua_pcall(M_Script_Lua, 2, 1, 0);
 	if(TM_Ret != 0)
@@ -1564,14 +1564,14 @@ int NPC_Lua_BattleProPertyCallBack(int _attackindex, int _defindex, int *_damage
 }
 #endif
 
-void NPC_Lua_ItemPerOverCallBack(int _itemindex, int _playindex)
+void NPC_Lua_ItemPerOverCallBack(int _item_index, int _playindex)
 {
 	if(M_Script_Lua == NULL)
 	{
 		print("M_Script_Lua Null!");
 		return ;
 	}
-	ITEM_Item *TM_Item = ITEM_getItemPointer(_itemindex);
+	ITEM_Item *TM_Item = ITEM_getItemPointer(_item_index);
 	if(TM_Item == NULL)
 	{
 		return ;
@@ -1579,7 +1579,7 @@ void NPC_Lua_ItemPerOverCallBack(int _itemindex, int _playindex)
 	int TM_Ret = 0;
 
 	lua_getglobal(M_Script_Lua, (const char *)TM_Item->lua_charfunctable[LUAITEM_PREOVERFUNC].string);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_itemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_item_index);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_playindex);
 
 	TM_Ret = lua_pcall(M_Script_Lua, 2, 0, 0);
@@ -1595,14 +1595,14 @@ void NPC_Lua_ItemPerOverCallBack(int _itemindex, int _playindex)
 	return ;
 }
 
-void NPC_Lua_ItemPostOverCallBack(int _itemindex, int _playindex)
+void NPC_Lua_ItemPostOverCallBack(int _item_index, int _playindex)
 {
 	if(M_Script_Lua == NULL)
 	{
 		print("M_Script_Lua Null!");
 		return ;
 	}
-	ITEM_Item *TM_Item = ITEM_getItemPointer(_itemindex);
+	ITEM_Item *TM_Item = ITEM_getItemPointer(_item_index);
 	if(TM_Item == NULL)
 	{
 		return ;
@@ -1610,7 +1610,7 @@ void NPC_Lua_ItemPostOverCallBack(int _itemindex, int _playindex)
 	int TM_Ret = 0;
 
 	lua_getglobal(M_Script_Lua, (const char *)TM_Item->lua_charfunctable[LUAITEM_POSTOVERFUNC].string);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_itemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_item_index);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_playindex);
 
 	TM_Ret = lua_pcall(M_Script_Lua, 2, 0, 0);
@@ -1699,14 +1699,14 @@ void NPC_Lua_ItemWatchCallBack(int _meindex, int _objindex, int _chac, int _x, i
 	return ;
 }
 
-void NPC_Lua_ItemUseCallBack(int _playindex, int _to_charindex, int _haveitemindex)
+void NPC_Lua_ItemUseCallBack(int _playindex, int _to_charindex, int _haveitem_index)
 {
 	if(M_Script_Lua == NULL)
 	{
 		print("M_Script_Lua Null!");
 		return ;
 	}
-	int TM_ItemIndex = CHAR_getItemIndex( _playindex, _haveitemindex);
+	int TM_ItemIndex = CHAR_getItemIndex( _playindex, _haveitem_index);
 	ITEM_Item *TM_Item = ITEM_getItemPointer(TM_ItemIndex);
 	if(TM_Item == NULL)
 	{
@@ -1716,7 +1716,7 @@ void NPC_Lua_ItemUseCallBack(int _playindex, int _to_charindex, int _haveitemind
 	lua_getglobal(M_Script_Lua, (const char *)TM_Item->lua_charfunctable[LUAITEM_USEFUNC].string);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_playindex);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_to_charindex);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_haveitemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_haveitem_index);
 
 	TM_Ret = lua_pcall(M_Script_Lua, 3, 0, 0);
 	if(TM_Ret != 0)
@@ -1731,14 +1731,14 @@ void NPC_Lua_ItemUseCallBack(int _playindex, int _to_charindex, int _haveitemind
 	return ;
 }
 
-void NPC_Lua_ItemAttachCallBack(int _playindex, int _itemindex)
+void NPC_Lua_ItemAttachCallBack(int _playindex, int _item_index)
 {
 	if(M_Script_Lua == NULL)
 	{
 		print("M_Script_Lua Null!");
 		return ;
 	}
-	ITEM_Item *TM_Item = ITEM_getItemPointer(_itemindex);
+	ITEM_Item *TM_Item = ITEM_getItemPointer(_item_index);
 	if(TM_Item == NULL)
 	{
 		return ;
@@ -1747,7 +1747,7 @@ void NPC_Lua_ItemAttachCallBack(int _playindex, int _itemindex)
 
 	lua_getglobal(M_Script_Lua, (const char *)TM_Item->lua_charfunctable[LUAITEM_ATTACHFUNC].string);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_playindex);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_itemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_item_index);
 
 	TM_Ret = lua_pcall(M_Script_Lua, 2, 0, 0);
 	if(TM_Ret != 0)
@@ -1762,14 +1762,14 @@ void NPC_Lua_ItemAttachCallBack(int _playindex, int _itemindex)
 	return ;
 }
 
-void NPC_Lua_ItemDetachCallBack(int _playindex, int _itemindex)
+void NPC_Lua_ItemDetachCallBack(int _playindex, int _item_index)
 {
 	if(M_Script_Lua == NULL)
 	{
 		print("M_Script_Lua Null!");
 		return ;
 	}
-	ITEM_Item *TM_Item = ITEM_getItemPointer(_itemindex);
+	ITEM_Item *TM_Item = ITEM_getItemPointer(_item_index);
 	if(TM_Item == NULL)
 	{
 		return ;
@@ -1778,7 +1778,7 @@ void NPC_Lua_ItemDetachCallBack(int _playindex, int _itemindex)
 
 	lua_getglobal(M_Script_Lua, (const char *)TM_Item->lua_charfunctable[LUAITEM_DETACHFUNC].string);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_playindex);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_itemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_item_index);
 
 	TM_Ret = lua_pcall(M_Script_Lua, 2, 0, 0);
 	if(TM_Ret != 0)
@@ -1793,14 +1793,14 @@ void NPC_Lua_ItemDetachCallBack(int _playindex, int _itemindex)
 	return ;
 }
 
-void NPC_Lua_ItemDropCallBack(int _playindex, int _itemindex)
+void NPC_Lua_ItemDropCallBack(int _playindex, int _item_index)
 {
 	if(M_Script_Lua == NULL)
 	{
 		print("M_Script_Lua Null!");
 		return ;
 	}
-	ITEM_Item *TM_Item = ITEM_getItemPointer(_itemindex);
+	ITEM_Item *TM_Item = ITEM_getItemPointer(_item_index);
 	if(TM_Item == NULL)
 	{
 		return ;
@@ -1809,7 +1809,7 @@ void NPC_Lua_ItemDropCallBack(int _playindex, int _itemindex)
 
 	lua_getglobal(M_Script_Lua, (const char *)TM_Item->lua_charfunctable[LUAITEM_DROPFUNC].string);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_playindex);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_itemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_item_index);
 
 	TM_Ret = lua_pcall(M_Script_Lua, 2, 0, 0);
 	if(TM_Ret != 0)
@@ -1824,14 +1824,14 @@ void NPC_Lua_ItemDropCallBack(int _playindex, int _itemindex)
 	return ;
 }
 
-void NPC_Lua_ItemPickUPCallBack(int _playindex, int _itemindex)
+void NPC_Lua_ItemPickUPCallBack(int _playindex, int _item_index)
 {
 	if(M_Script_Lua == NULL)
 	{
 		print("M_Script_Lua Null!");
 		return ;
 	}
-	ITEM_Item *TM_Item = ITEM_getItemPointer(_itemindex);
+	ITEM_Item *TM_Item = ITEM_getItemPointer(_item_index);
 	if(TM_Item == NULL)
 	{
 		return ;
@@ -1840,7 +1840,7 @@ void NPC_Lua_ItemPickUPCallBack(int _playindex, int _itemindex)
 
 	lua_getglobal(M_Script_Lua, (const char *)TM_Item->lua_charfunctable[LUAITEM_PICKUPFUNC].string);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_playindex);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_itemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_item_index);
 
 	TM_Ret = lua_pcall(M_Script_Lua, 2, 0, 0);
 	if(TM_Ret != 0)
@@ -1856,14 +1856,14 @@ void NPC_Lua_ItemPickUPCallBack(int _playindex, int _itemindex)
 }
 
 #ifdef _Item_ReLifeAct
-void NPC_Lua_ItemDieReLifeCallBack(int _playindex, int _itemindex, int _haveitem)
+void NPC_Lua_ItemDieReLifeCallBack(int _playindex, int _item_index, int _haveitem)
 {
 	if(M_Script_Lua == NULL)
 	{
 		print("M_Script_Lua Null!");
 		return ;
 	}
-	ITEM_Item *TM_Item = ITEM_getItemPointer(_itemindex);
+	ITEM_Item *TM_Item = ITEM_getItemPointer(_item_index);
 	if(TM_Item == NULL)
 	{
 		return ;
@@ -1872,7 +1872,7 @@ void NPC_Lua_ItemDieReLifeCallBack(int _playindex, int _itemindex, int _haveitem
 
 	lua_getglobal(M_Script_Lua, (const char *)TM_Item->lua_charfunctable[LUAITEM_DIERELIFEFUNC].string);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_playindex);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)_itemindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)_item_index);
 	lua_pushinteger(M_Script_Lua, (lua_Integer)_haveitem);
 
 	TM_Ret = lua_pcall(M_Script_Lua, 3, 0, 0);
@@ -1927,20 +1927,20 @@ void NPC_Lua_BattleWinCallBack(int _battleindex, int _createindex)
 	return ;
 }
 
-int NPC_GivePet(int charaindex, int lv, int enemyid)
+int NPC_GivePet(int char_index, int lv, int enemyid)
 {
 	int	petindex = -1;
 	int	enemyarray = -1;
 	int i = 0;
 
 	enemyarray = ENEMY_getEnemyArrayFromId(enemyid);
-	petindex = ENEMY_createPetFromEnemyIndex( charaindex, enemyarray);
+	petindex = ENEMY_createPetFromEnemyIndex( char_index, enemyarray);
 
 	if( !CHAR_CHECKINDEX( petindex)) return -1;
 
 	for( i = 0; i < CHAR_MAXPETHAVE; i ++ )
 	{
-		if( CHAR_getCharPet( charaindex, i ) == petindex )break;
+		if( CHAR_getCharPet( char_index, i ) == petindex )break;
 	}
 
 	if( i != CHAR_MAXPETHAVE )
@@ -1965,20 +1965,20 @@ int NPC_GivePet(int charaindex, int lv, int enemyid)
 		{
 			char msgbuf[64];
 			snprintf( msgbuf, sizeof( msgbuf ), "K%d", i );
-			CHAR_sendStatusString( charaindex, msgbuf );
+			CHAR_sendStatusString( char_index, msgbuf );
 			snprintf( msgbuf, sizeof( msgbuf ), "W%d", i );
-			CHAR_sendStatusString( charaindex, msgbuf );
+			CHAR_sendStatusString( char_index, msgbuf );
 		}
 		LogPet
 			(
-				CHAR_getChar( charaindex, CHAR_NAME ),
-				CHAR_getChar( charaindex, CHAR_CDKEY ),
+				CHAR_getChar( char_index, CHAR_NAME ),
+				CHAR_getChar( char_index, CHAR_CDKEY ),
 				CHAR_getChar( petindex, CHAR_NAME),
 				CHAR_getInt( petindex, CHAR_LV),
 				"GivePet",
-				CHAR_getInt( charaindex,CHAR_FLOOR),
-				CHAR_getInt( charaindex,CHAR_X ),
-				CHAR_getInt( charaindex,CHAR_Y ),
+				CHAR_getInt( char_index,CHAR_FLOOR),
+				CHAR_getInt( char_index,CHAR_X ),
+				CHAR_getInt( char_index,CHAR_Y ),
 				CHAR_getChar( petindex, CHAR_UNIQUECODE)
 			);
 
@@ -1989,46 +1989,46 @@ int NPC_GivePet(int charaindex, int lv, int enemyid)
 	}
 }
 
-int NPC_GiveItem(int charaindex, int itemid)
+int NPC_GiveItem(int char_index, int itemid)
 {
-	int emptyitemindexinchara = -1;
-	int itemindex = -1;
+	int emptyitem_indexinchara = -1;
+	int item_index = -1;
 	int TM_RetItemIndex = -1;
 
-	emptyitemindexinchara = CHAR_findEmptyItemBox( charaindex );
+	emptyitem_indexinchara = CHAR_findEmptyItemBox( char_index );
 
-	if( emptyitemindexinchara < 0 )
+	if( emptyitem_indexinchara < 0 )
 	{
 		return -1;
 	}
 
-	itemindex = ITEM_makeItemAndRegist( itemid );
+	item_index = ITEM_makeItemAndRegist( itemid );
 
-	if( itemindex != -1 )
+	if( item_index != -1 )
 	{
 
-		CHAR_setItemIndex( charaindex, emptyitemindexinchara, itemindex );
-		ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
-		ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, charaindex);
-		CHAR_sendItemDataOne( charaindex, emptyitemindexinchara);
+		CHAR_setItemIndex( char_index, emptyitem_indexinchara, item_index );
+		ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX,-1);
+		ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, char_index);
+		CHAR_sendItemDataOne( char_index, emptyitem_indexinchara);
 		LogItem
 			(
-				CHAR_getChar( charaindex, CHAR_NAME ),
-				CHAR_getChar( charaindex, CHAR_CDKEY ),
+				CHAR_getChar( char_index, CHAR_NAME ),
+				CHAR_getChar( char_index, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-				itemindex,
+				item_index,
 #else
-				ITEM_getInt( itemindex, ITEM_ID ),
+				ITEM_getInt( item_index, ITEM_ID ),
 #endif
 				"GiveItem",
-				CHAR_getInt( charaindex,CHAR_FLOOR),
-				CHAR_getInt( charaindex,CHAR_X ),
-				CHAR_getInt( charaindex,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-				ITEM_getChar( itemindex, ITEM_NAME),
-				ITEM_getInt( itemindex, ITEM_ID)
+				CHAR_getInt( char_index,CHAR_FLOOR),
+				CHAR_getInt( char_index,CHAR_X ),
+				CHAR_getInt( char_index,CHAR_Y ),
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+				ITEM_getChar( item_index, ITEM_NAME),
+				ITEM_getInt( item_index, ITEM_ID)
 			);
-		TM_RetItemIndex = itemindex;
+		TM_RetItemIndex = item_index;
 	}else
 	{
 		return -2;
@@ -2036,62 +2036,62 @@ int NPC_GiveItem(int charaindex, int itemid)
 	return TM_RetItemIndex;
 }
 
-int NPC_DelPet(int charaindex, int petsel)
+int NPC_DelPet(int char_index, int petsel)
 {
-	int TM_PetIndex = CHAR_getCharPet( charaindex, petsel);
-	int TM_Fd = getfdFromCharaIndex( charaindex );
+	int TM_PetIndex = CHAR_getCharPet( char_index, petsel);
+	int TM_Fd = getfdFromCharaIndex( char_index );
 
 	if( !CHAR_CHECKINDEX(TM_PetIndex) ) return -1;
 
 	//战斗状态不允许收宠
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE )
+	if( CHAR_getWorkInt( char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE )
 	{
 		return -1;
 	}
 
 	//先改成无参战宠
-	if( CHAR_getInt( charaindex, CHAR_DEFAULTPET) == petsel)
+	if( CHAR_getInt( char_index, CHAR_DEFAULTPET) == petsel)
 	{
-		CHAR_setInt( charaindex, CHAR_DEFAULTPET, -1);
-		lssproto_KS_send( TM_Fd, -1, TRUE);
+		CHAR_setInt( char_index, CHAR_DEFAULTPET, -1);
+		GmsvServer_KS_send( TM_Fd, -1, TRUE);
 	}
 
-	if( CHAR_getInt( charaindex, CHAR_RIDEPET) == petsel )
+	if( CHAR_getInt( char_index, CHAR_RIDEPET) == petsel )
 	{
-		CHAR_setInt( charaindex, CHAR_RIDEPET, -1);
-		CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_RIDEPET );
-		CHAR_complianceParameter( charaindex );
-		CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex , CHAR_WORKOBJINDEX ));
+		CHAR_setInt( char_index, CHAR_RIDEPET, -1);
+		CHAR_send_P_StatusString( char_index, CHAR_P_STRING_RIDEPET );
+		CHAR_complianceParameter( char_index );
+		CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index , CHAR_WORKOBJINDEX ));
 	}
 
 	{
 		char TM_MsgBuff[128];
 		snprintf( TM_MsgBuff,sizeof( TM_MsgBuff), "交出%s。",	CHAR_getChar( TM_PetIndex, CHAR_NAME));
-		CHAR_talkToCli( charaindex, -1, TM_MsgBuff,  CHAR_COLORWHITE);
+		CHAR_talkToCli( char_index, -1, TM_MsgBuff,  CHAR_COLORWHITE);
 	}
 
 	//记录日志
 	LogPet
 	(
-		CHAR_getChar( charaindex, CHAR_NAME ),
-		CHAR_getChar( charaindex, CHAR_CDKEY ),
+		CHAR_getChar( char_index, CHAR_NAME ),
+		CHAR_getChar( char_index, CHAR_CDKEY ),
 		CHAR_getChar( TM_PetIndex, CHAR_NAME),
 		CHAR_getInt( TM_PetIndex, CHAR_LV),
 		"CHAR_DelPet(删除宠物)",
-		CHAR_getInt( charaindex,CHAR_FLOOR),
-		CHAR_getInt( charaindex,CHAR_X ),
-		CHAR_getInt( charaindex,CHAR_Y ),
+		CHAR_getInt( char_index,CHAR_FLOOR),
+		CHAR_getInt( char_index,CHAR_X ),
+		CHAR_getInt( char_index,CHAR_Y ),
 		CHAR_getChar( TM_PetIndex, CHAR_UNIQUECODE)
 	);
 
-	CHAR_setCharPet( charaindex, petsel, -1);
+	CHAR_setCharPet( char_index, petsel, -1);
 
 	CHAR_endCharOneArray( TM_PetIndex );
 
 	{
 		char TM_szPet[64];
 		snprintf( TM_szPet, sizeof( TM_szPet ), "K%d", petsel);
-		CHAR_sendStatusString( charaindex, TM_szPet );
+		CHAR_sendStatusString( char_index, TM_szPet );
 	}
 
 	return 0;
@@ -2278,7 +2278,7 @@ BATTLE_CreateVsEnemy_End:;
 		{
 			BATTLE_ExitAll(TM_BattleIndex);
 			BATTLE_DeleteBattle(TM_BattleIndex);
-			if(TM_FD != -1)lssproto_EN_send(TM_FD, FALSE, TM_FieldNO);
+			if(TM_FD != -1)GmsvServer_EN_send(TM_FD, FALSE, TM_FieldNO);
 		}
 		else
 		{
@@ -2287,12 +2287,12 @@ BATTLE_CreateVsEnemy_End:;
 			{
 				if(BattleArray[TM_BattleIndex].dpbattle)
 				{
-					lssproto_EN_send(TM_FD, BATTLE_TYPE_DP_BATTLE, TM_FieldNO);
+					GmsvServer_EN_send(TM_FD, BATTLE_TYPE_DP_BATTLE, TM_FieldNO);
 				}else{
 					if(TM_Type > 0){
-						lssproto_EN_send(TM_FD, TM_Type, TM_FieldNO);
+						GmsvServer_EN_send(TM_FD, TM_Type, TM_FieldNO);
 					}else{
-						lssproto_EN_send(TM_FD, BattleArray[TM_BattleIndex].type, TM_FieldNO);
+						GmsvServer_EN_send(TM_FD, BattleArray[TM_BattleIndex].type, TM_FieldNO);
 					}
 				}
 			}else	{
@@ -2311,9 +2311,9 @@ BATTLE_CreateVsEnemy_End:;
 				TM_FD = getfdFromCharaIndex(TM_Pindex);
 				if( TM_FD != -1 ){
 					if(TM_Type > 0){
-						lssproto_EN_send(TM_FD, TM_Type, TM_FieldNO);
+						GmsvServer_EN_send(TM_FD, TM_Type, TM_FieldNO);
 					}else{
-						lssproto_EN_send(TM_FD, BattleArray[TM_BattleIndex].type, TM_FieldNO);
+						GmsvServer_EN_send(TM_FD, BattleArray[TM_BattleIndex].type, TM_FieldNO);
 					}
 				}
 			}
@@ -2356,72 +2356,72 @@ BATTLE_CreateVsEnemy_End:;
 	return TM_BattleIndex;
 }
 
-int NPC_Lua_CreateVsPlayer(int *_OutBattleIndex, int charaindex0, int charaindex1 )
+int NPC_Lua_CreateVsPlayer(int *_OutBattleIndex, int char_index0, int char_index1 )
 {
 	int battleindex, pindex, field_no,
-	i, j, charaindex[2],
+	i, j, char_index[2],
 	parent[2], fd,
 	iRet = 0;
 
-	if( CHAR_CHECKINDEX( charaindex0 ) == FALSE )return BATTLE_ERR_CHARAINDEX;
-	if( CHAR_CHECKINDEX( charaindex1 ) == FALSE )return BATTLE_ERR_CHARAINDEX;
+	if( CHAR_CHECKINDEX( char_index0 ) == FALSE )return BATTLE_ERR_CHARAINDEX;
+	if( CHAR_CHECKINDEX( char_index1 ) == FALSE )return BATTLE_ERR_CHARAINDEX;
 
-	if( CHAR_getWorkInt( charaindex0, CHAR_WORKBATTLEMODE ) != BATTLE_CHARMODE_NONE ){
-		CHAR_talkToCli( charaindex0, -1, "二重遭遇。", CHAR_COLORYELLOW );
-		CHAR_talkToCli( charaindex1, -1, "二重遭遇。", CHAR_COLORYELLOW );
+	if( CHAR_getWorkInt( char_index0, CHAR_WORKBATTLEMODE ) != BATTLE_CHARMODE_NONE ){
+		CHAR_talkToCli( char_index0, -1, "二重遭遇。", CHAR_COLORYELLOW );
+		CHAR_talkToCli( char_index1, -1, "二重遭遇。", CHAR_COLORYELLOW );
 		return BATTLE_ERR_ALREADYBATTLE;
 	}
-	if( CHAR_getWorkInt( charaindex1, CHAR_WORKBATTLEMODE ) != BATTLE_CHARMODE_NONE ){
-		CHAR_talkToCli( charaindex0, -1, "二重遭遇。", CHAR_COLORYELLOW );
-		CHAR_talkToCli( charaindex1, -1, "二重遭遇。", CHAR_COLORYELLOW );
+	if( CHAR_getWorkInt( char_index1, CHAR_WORKBATTLEMODE ) != BATTLE_CHARMODE_NONE ){
+		CHAR_talkToCli( char_index0, -1, "二重遭遇。", CHAR_COLORYELLOW );
+		CHAR_talkToCli( char_index1, -1, "二重遭遇。", CHAR_COLORYELLOW );
 		return BATTLE_ERR_ALREADYBATTLE;
 	}
 #ifdef _DEATH_CONTEND
-	if( CHAR_getInt( charaindex0, CHAR_FLOOR) == 8250 ||
-		CHAR_getInt( charaindex0, CHAR_PKLISTLEADER) != 1 || 
-		CHAR_getInt( charaindex0, CHAR_PKLISTTEAMNUM) == -1 ||
-//		CHAR_getWorkInt( charaindex0, CHAR_WORKPARTYMODE ) != CHAR_PARTY_LEADER ||
-		CHAR_getInt( charaindex1, CHAR_PKLISTLEADER) != 1 ||
-		CHAR_getInt( charaindex1, CHAR_PKLISTTEAMNUM) == -1 //||
-//		CHAR_getWorkInt( charaindex1, CHAR_WORKPARTYMODE ) != CHAR_PARTY_LEADER
+	if( CHAR_getInt( char_index0, CHAR_FLOOR) == 8250 ||
+		CHAR_getInt( char_index0, CHAR_PKLISTLEADER) != 1 || 
+		CHAR_getInt( char_index0, CHAR_PKLISTTEAMNUM) == -1 ||
+//		CHAR_getWorkInt( char_index0, CHAR_WORKPARTYMODE ) != CHAR_PARTY_LEADER ||
+		CHAR_getInt( char_index1, CHAR_PKLISTLEADER) != 1 ||
+		CHAR_getInt( char_index1, CHAR_PKLISTTEAMNUM) == -1 //||
+//		CHAR_getWorkInt( char_index1, CHAR_WORKPARTYMODE ) != CHAR_PARTY_LEADER
 
 		){
 		
 
-		CHAR_talkToCli( charaindex0, -1, "无效战斗。", CHAR_COLORYELLOW );
-		CHAR_talkToCli( charaindex1, -1, "无效战斗。", CHAR_COLORYELLOW );
+		CHAR_talkToCli( char_index0, -1, "无效战斗。", CHAR_COLORYELLOW );
+		CHAR_talkToCli( char_index1, -1, "无效战斗。", CHAR_COLORYELLOW );
 		return BATTLE_ERR_ALREADYBATTLE;
 	}
 /*
 
 	if( PKLIST_CheckPKReapetTeam(
-			CHAR_getInt( charaindex0, CHAR_PKLISTTEAMNUM),
-			CHAR_getInt( charaindex1, CHAR_PKLISTTEAMNUM) ) == FALSE ){
-		CHAR_talkToCli( charaindex0, -1, "重复战斗。", CHAR_COLORYELLOW );
-		CHAR_talkToCli( charaindex1, -1, "重复战斗。", CHAR_COLORYELLOW );
+			CHAR_getInt( char_index0, CHAR_PKLISTTEAMNUM),
+			CHAR_getInt( char_index1, CHAR_PKLISTTEAMNUM) ) == FALSE ){
+		CHAR_talkToCli( char_index0, -1, "重复战斗。", CHAR_COLORYELLOW );
+		CHAR_talkToCli( char_index1, -1, "重复战斗。", CHAR_COLORYELLOW );
 		return BATTLE_ERR_ALREADYBATTLE;
 	}
 */	
 #endif
 	//获取玩家的地图领域-用于战斗背景的显示
 	field_no = NPC_Lua_getBattleFieldNo(
-		CHAR_getInt( charaindex0, CHAR_FLOOR ) ,
-		CHAR_getInt( charaindex0, CHAR_X ),
-		CHAR_getInt( charaindex0, CHAR_Y ) );
+		CHAR_getInt( char_index0, CHAR_FLOOR ) ,
+		CHAR_getInt( char_index0, CHAR_X ),
+		CHAR_getInt( char_index0, CHAR_Y ) );
 
-	charaindex[0] = charaindex0;
-	charaindex[1] = charaindex1;
+	char_index[0] = char_index0;
+	char_index[1] = char_index1;
 	for( j = 0; j < 2; j ++ ){
-		if( CHAR_getWorkInt( charaindex[j], CHAR_WORKBATTLEMODE ) != 0 ){
+		if( CHAR_getWorkInt( char_index[j], CHAR_WORKBATTLEMODE ) != 0 ){
 			return BATTLE_ERR_ALREADYBATTLE;
 		}
 	}
 	for( j = 0; j < 2; j ++ ){
-		if( CHAR_getWorkInt( charaindex[j], CHAR_WORKPARTYMODE ) == CHAR_PARTY_LEADER ){
-			parent[j] = charaindex[j];
+		if( CHAR_getWorkInt( char_index[j], CHAR_WORKPARTYMODE ) == CHAR_PARTY_LEADER ){
+			parent[j] = char_index[j];
 		}else
-			if( CHAR_getWorkInt( charaindex[j], CHAR_WORKPARTYMODE ) == CHAR_PARTY_CLIENT ){
-				parent[j] = CHAR_getWorkInt( charaindex[j], CHAR_WORKPARTYINDEX1 );
+			if( CHAR_getWorkInt( char_index[j], CHAR_WORKPARTYMODE ) == CHAR_PARTY_CLIENT ){
+				parent[j] = CHAR_getWorkInt( char_index[j], CHAR_WORKPARTYINDEX1 );
 			}else{
 				parent[j] = -1;
 			}
@@ -2434,7 +2434,7 @@ int NPC_Lua_CreateVsPlayer(int *_OutBattleIndex, int charaindex0, int charaindex
 
 	BattleArray[battleindex].Side[0].type = BATTLE_S_TYPE_PLAYER;
 	BattleArray[battleindex].Side[1].type = BATTLE_S_TYPE_PLAYER;
-	BattleArray[battleindex].leaderindex = charaindex0;
+	BattleArray[battleindex].leaderindex = char_index0;
 	BattleArray[battleindex].type = BATTLE_TYPE_P_vs_P;
 	BattleArray[battleindex].dpbattle = 1;
 	BattleArray[battleindex].field_no = field_no;
@@ -2445,12 +2445,12 @@ int NPC_Lua_CreateVsPlayer(int *_OutBattleIndex, int charaindex0, int charaindex
 #ifdef _DEATH_CONTEND//计算胜败func
 	BattleArray[battleindex].PkFunc = NPC_PKLIST_Finish_Exit;
 	//winside = 0
-	BattleArray[battleindex].menum = CHAR_getInt( charaindex0, CHAR_PKLISTTEAMNUM);
-	BattleArray[battleindex].tonum = CHAR_getInt( charaindex1, CHAR_PKLISTTEAMNUM);
+	BattleArray[battleindex].menum = CHAR_getInt( char_index0, CHAR_PKLISTTEAMNUM);
+	BattleArray[battleindex].tonum = CHAR_getInt( char_index1, CHAR_PKLISTTEAMNUM);
 #endif
 
 	for( j = 0; j < 2; j ++ ){
-		iRet = BATTLE_PartyNewEntry( charaindex[j], battleindex, j );
+		iRet = BATTLE_PartyNewEntry( char_index[j], battleindex, j );
 		if( iRet ){
 			goto BATTLE_CreateVsPlayer_End;
 		}
@@ -2460,29 +2460,29 @@ BATTLE_CreateVsPlayer_End:;
 	if( iRet ){
 		BATTLE_ExitAll( battleindex );
 		BATTLE_DeleteBattle( battleindex );
-		fd = getfdFromCharaIndex(charaindex[0]);
-		if( fd != -1 )lssproto_EN_send( fd, FALSE, field_no );
+		fd = getfdFromCharaIndex(char_index[0]);
+		if( fd != -1 )GmsvServer_EN_send( fd, FALSE, field_no );
 	}else{
 		for( j = 0; j < 2; j ++ ){
-			fd = getfdFromCharaIndex(charaindex[j]);
-			if( fd != -1 )lssproto_EN_send( fd, BattleArray[battleindex].type, field_no );
-			if( CHAR_getWorkInt( charaindex[j], CHAR_WORKACTION) != -1 ) {
+			fd = getfdFromCharaIndex(char_index[j]);
+			if( fd != -1 )GmsvServer_EN_send( fd, BattleArray[battleindex].type, field_no );
+			if( CHAR_getWorkInt( char_index[j], CHAR_WORKACTION) != -1 ) {
 				CHAR_sendWatchEvent(
-						CHAR_getWorkInt( charaindex[j], CHAR_WORKOBJINDEX),
+						CHAR_getWorkInt( char_index[j], CHAR_WORKOBJINDEX),
 						CHAR_ACTSTAND,
 						NULL, 0, FALSE);
-				CHAR_setWorkInt( charaindex[j], CHAR_WORKACTION, -1);
+				CHAR_setWorkInt( char_index[j], CHAR_WORKACTION, -1);
 
 			}
-			CHAR_sendBattleEffect( charaindex[j], ON);
-			for( i = 1; i < getPartyNum(charaindex[j]); i ++ ){
-				pindex = CHAR_getWorkInt( charaindex[j], i + CHAR_WORKPARTYINDEX1 );
+			CHAR_sendBattleEffect( char_index[j], ON);
+			for( i = 1; i < getPartyNum(char_index[j]); i ++ ){
+				pindex = CHAR_getWorkInt( char_index[j], i + CHAR_WORKPARTYINDEX1 );
 				if( CHAR_CHECKINDEX( pindex ) == FALSE )continue;
 				if( CHAR_getWorkInt( pindex, CHAR_WORKBATTLEMODE ) ==
 					BATTLE_CHARMODE_FINAL ) continue;
 
 				fd = getfdFromCharaIndex(pindex);
-				if( fd != -1 )lssproto_EN_send( fd, BattleArray[battleindex].type, field_no );
+				if( fd != -1 )GmsvServer_EN_send( fd, BattleArray[battleindex].type, field_no );
 				if( CHAR_getWorkInt( pindex, CHAR_WORKACTION) != -1 ) {
 					CHAR_sendWatchEvent(
 							CHAR_getWorkInt( pindex, CHAR_WORKOBJINDEX),
@@ -2514,13 +2514,13 @@ int NPC_Lua_getBattleFieldNo(int _Floor, int _X, int _Y)
 }
 
 #ifdef _MO_LNS_NLGSUOXU
-int NPC_PetUp(int charaindex, int lv, int petindex)
+int NPC_PetUp(int char_index, int lv, int petindex)
 {
 	int i = 0;
 	if( !CHAR_CHECKINDEX( petindex)) return -1;
 	for( i = 0; i < CHAR_MAXPETHAVE; i ++ )
 	{
-		if( CHAR_getCharPet( charaindex, i ) == petindex )break;
+		if( CHAR_getCharPet( char_index, i ) == petindex )break;
 	}
 
 	if( i != CHAR_MAXPETHAVE )
@@ -2546,24 +2546,24 @@ int NPC_PetUp(int charaindex, int lv, int petindex)
 		{
 			char msgbuf[64];
 			snprintf( msgbuf, sizeof( msgbuf ), "K%d", i );
-			CHAR_sendStatusString( charaindex, msgbuf );
+			CHAR_sendStatusString( char_index, msgbuf );
 			snprintf( msgbuf, sizeof( msgbuf ), "W%d", i );
-			CHAR_sendStatusString( charaindex, msgbuf );
+			CHAR_sendStatusString( char_index, msgbuf );
 #ifdef _PET_SKILL2
 			snprintf( msgbuf, sizeof( msgbuf ), "Q%d", i );
-			CHAR_sendStatusString( charaindex, msgbuf );
+			CHAR_sendStatusString( char_index, msgbuf );
 #endif
 		}
 		LogPet
 			(
-			CHAR_getChar( charaindex, CHAR_NAME ),
-			CHAR_getChar( charaindex, CHAR_CDKEY ),
+			CHAR_getChar( char_index, CHAR_NAME ),
+			CHAR_getChar( char_index, CHAR_CDKEY ),
 			CHAR_getChar( petindex, CHAR_NAME),
 			CHAR_getInt( petindex, CHAR_LV),
 			"PetUp",
-			CHAR_getInt( charaindex,CHAR_FLOOR),
-			CHAR_getInt( charaindex,CHAR_X ),
-			CHAR_getInt( charaindex,CHAR_Y ),
+			CHAR_getInt( char_index,CHAR_FLOOR),
+			CHAR_getInt( char_index,CHAR_X ),
+			CHAR_getInt( char_index,CHAR_Y ),
 			CHAR_getChar( petindex, CHAR_UNIQUECODE)
 			);
 
@@ -2573,23 +2573,23 @@ int NPC_PetUp(int charaindex, int lv, int petindex)
 }
 
 #ifdef _CHAR_PROFESSION
-int NPC_AddSk(int charaindex, int skindex, int sklv)
+int NPC_AddSk(int char_index, int skindex, int sklv)
 {
 	char skk[64];
-	if( !CHAR_CHECKINDEX( charaindex)) return -1;
+	if( !CHAR_CHECKINDEX( char_index)) return -1;
 	sprintf( skk, "%d %d",skindex,sklv);
 
-	CHAR_CHAT_DEBUG_addsk(charaindex,skk);
+	CHAR_CHAT_DEBUG_addsk(char_index,skk);
 	return 1;
 }
 
-int NPC_SetZy(int charaindex, int zyin)
+int NPC_SetZy(int char_index, int zyin)
 {
 	char skk[64];
-	if( !CHAR_CHECKINDEX( charaindex)) return -1;
+	if( !CHAR_CHECKINDEX( char_index)) return -1;
 	sprintf( skk, "1 0 %d",zyin);
 
-	CHAR_CHAT_DEBUG_show_profession(charaindex,skk);
+	CHAR_CHAT_DEBUG_show_profession(char_index,skk);
 	return 1;
 }
 #endif
@@ -2598,7 +2598,7 @@ int NPC_SetZy(int charaindex, int zyin)
 #endif //#ifdef _JZ_NEWSCRIPT_LUA
 
 #ifdef _MO_LNS_MYSQLSUOXU
-void NPC_Lua_SQLPushAdvCallBack(int luaresult,int luaflg,int luaerrno,char* luaerrstr,int luafieldCount,int rowCount,int rowAt,char* row,char* filepath,char* function,int npcindex,int charaindex,char* msg)
+void NPC_Lua_SQLPushAdvCallBack(int luaresult,int luaflg,int luaerrno,char* luaerrstr,int luafieldCount,int rowCount,int rowAt,char* row,char* filepath,char* function,int npcindex,int char_index,char* msg)
 {
 	if(M_Script_Lua == NULL)
 	{
@@ -2642,7 +2642,7 @@ void NPC_Lua_SQLPushAdvCallBack(int luaresult,int luaflg,int luaerrno,char* luae
 		lua_pushstring( M_Script_Lua, row );
 	}
 	lua_pushinteger(M_Script_Lua, (lua_Integer)npcindex);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)charaindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)char_index);
 	lua_pushstring(M_Script_Lua, msg);
 	TM_Ret = lua_pcall(M_Script_Lua, 11, 0, 0);
 	if(TM_Ret != 0)
@@ -2689,7 +2689,7 @@ void NPC_Lua_SQLPushCallBack(char* _result,char* _filename,char* _function,int _
 
 
 
-void NPC_Lua_NEWSHOP_Recv(char* function, int charaindex)
+void NPC_Lua_NEWSHOP_Recv(char* function, int char_index)
 {
 	if (M_Script_Lua == NULL)
 	{
@@ -2700,7 +2700,7 @@ void NPC_Lua_NEWSHOP_Recv(char* function, int charaindex)
 	int TM_Ret = 0;
 	BOOL TM_BoolRet = FALSE;
 	lua_getglobal(M_Script_Lua, (const char*)function);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)charaindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)char_index);
 	TM_Ret = lua_pcall(M_Script_Lua, 1, 0, 0);
 	if (TM_Ret != 0)
 	{
@@ -2712,7 +2712,7 @@ void NPC_Lua_NEWSHOP_Recv(char* function, int charaindex)
 
 
 #ifdef _CHARSIGNDAY_
-void NPC_Lua_CharSignDay_Recv(char* function,int charaindex)
+void NPC_Lua_CharSignDay_Recv(char* function,int char_index)
 {
 	if(M_Script_Lua == NULL)
 	{
@@ -2723,7 +2723,7 @@ void NPC_Lua_CharSignDay_Recv(char* function,int charaindex)
 	int TM_Ret = 0;
 	BOOL TM_BoolRet = FALSE;
 	lua_getglobal(M_Script_Lua, (const char*)function);
-	lua_pushinteger(M_Script_Lua, (lua_Integer)charaindex);
+	lua_pushinteger(M_Script_Lua, (lua_Integer)char_index);
 	TM_Ret = lua_pcall(M_Script_Lua, 1, 0, 0);
 	if(TM_Ret != 0)
 	{

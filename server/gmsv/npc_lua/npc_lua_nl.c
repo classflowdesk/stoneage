@@ -411,9 +411,9 @@ int NPC_Lua_NL_SendMesg(lua_State *_NLL)
 
 	CheckEx(_NLL,2);
 	CheckIndexNull(_NLL, 1);
-	int charaindex = (int)lua_tointeger(_NLL, 1);
+	int char_index = (int)lua_tointeger(_NLL, 1);
 	int fengbaohao = (int)lua_tointeger(_NLL, 2);
-	int fd = getfdFromCharaIndex(charaindex );
+	int fd = getfdFromCharaIndex(char_index );
 	util_SendMesg(fd, fengbaohao, Buff_Data);
 	LRetInt(_NLL, 1);
 

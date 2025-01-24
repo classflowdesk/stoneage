@@ -6,7 +6,7 @@
 #include "handletime.h"
 #include "anim_tbl.h"
 #include "npc_door.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npcutil.h"
 
 

@@ -5,8 +5,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "config_file.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "npc_familyman.h"
 #include "family.h"
 #include "autil.h"
@@ -129,7 +129,7 @@ static void NPC_Familyman_selectWindow( int meindex, int toindex, int num)
 	
 	fd = getfdFromCharaIndex( toindex);
 	if( fd != -1 ) {
-		lssproto_WN_send( fd, w.windowtype, 
+		GmsvServer_WN_send( fd, w.windowtype, 
 						w.buttontype,
 						w.windowno+100,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -199,7 +199,7 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
 			if( CHAR_getInt( talkerindex, CHAR_FMINDEX ) > 0 )
 			{
 				//CHAR_talkToCli( talkerindex, -1, "资格不符！已经加入家族。", CHAR_COLORWHITE );
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n很抱歉喔！你已经加入家族了！", buf, sizeof(buf)));
 				return;
@@ -208,7 +208,7 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
 				&& (CHAR_getInt( talkerindex, CHAR_LV) < 30)  )
 			{
 				//CHAR_talkToCli( talkerindex, -1, "很抱歉！等级不足。", CHAR_COLORWHITE );
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n很抱歉喔！你的等级不足！", buf, sizeof(buf)));
 				return;
@@ -216,7 +216,7 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
                         
                         if( !NPC_EventCheckFlg( talkerindex, 4 ) )
                         {
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n很抱歉喔！你必须先完成成人礼才行！", buf, sizeof(buf)));
 				return;
@@ -224,13 +224,13 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
                         
 			if( CHAR_getInt( talkerindex, CHAR_GOLD ) < 10000 )
 			{
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n很抱歉喔！你的申请手续费不足！", buf, sizeof(buf)));
 				return;
 			}
 						
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_FAMILYADD, WINDOW_BUTTONTYPE_NONE, CHAR_WINDOWTYPE_FAMILYMAN_ADD,
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_FAMILYADD, WINDOW_BUTTONTYPE_NONE, CHAR_WINDOWTYPE_FAMILYMAN_ADD,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), "Hello!!" );
 			
 			return;
@@ -252,10 +252,10 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
 
 			sprintf( sendbuf, "S|F|%d|%d|%d%s", familyNumTotal, 1, j, buf );
 			//print(" FL:%s ", sendbuf );			
-			lssproto_FM_send( fd, sendbuf );
+			GmsvServer_FM_send( fd, sendbuf );
 			*/
 			
-			//saacproto_ACShowFMList_send( acfd );
+			//SaacClient_ACShowFMList_send( acfd );
 			
 			FAMILY_Detail( fd, talkerindex, "S|F|1|0" );			
 			return;
@@ -266,7 +266,7 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
 		{
 			if( CHAR_getInt( talkerindex, CHAR_FMINDEX ) == -1 ) {
 				// CHAR_talkToCli( talkerindex, -1, "你还未加入任何家族呀。", CHAR_COLORWHITE );
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK, -1, -1,
 					makeEscapeString( "\n很抱歉喔！你还没有加入任何家族呀！", buf, sizeof(buf)));
 				return;
@@ -282,7 +282,7 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
 			// CoolFish Change for old leader del family check
 			if(CHAR_getInt(talkerindex, CHAR_FMLEADERFLAG) == FMMEMBER_LEADER)
 			{
-				lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_YESNO, CHAR_WINDOWTYPE_FAMILYMAN_OUT,
 					CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
 					makeEscapeString("\n您现在是这个家族的族长喔...\n\n家族解散了就无法再救回唷！～\n\n确定要解散家族吗？",buf, sizeof(buf)));		
@@ -301,7 +301,7 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
 		}
 		//fd = getfdFromCharaIndex( talkerindex);
 		if( fd != -1 ) {
-			lssproto_WN_send( fd, w.windowtype, 
+			GmsvServer_WN_send( fd, w.windowtype, 
 							w.buttontype,
 							w.windowno+100,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -316,7 +316,7 @@ void NPC_FamilymanWindowTalked( int meindex, int talkerindex,
  * 涩烂白央奶伙毛  氏匹隙烂今木凶windowno及犯□正毛本永玄允月
  * 
  * 娄醒“
- *		meindex		int		仇及NPC及charaindex
+ *		meindex		int		仇及NPC及char_index
  *		windowno	int		它奴件玉它  寞
  *		
  */

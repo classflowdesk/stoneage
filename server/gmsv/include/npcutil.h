@@ -15,7 +15,7 @@ BOOL NPC_Util_isBackContact( int frontindex , int backindex );
 void NPC_Util_AnnounceFloor( int floorid , char *msg );
 
 
-BOOL NPC_Util_moveItemToChar( int charindex, int itemindex,BOOL net );
+BOOL NPC_Util_moveItemToChar( int charindex, int item_index,BOOL net );
 BOOL NPC_Util_createItemToChar( int charindex, int itemid , BOOL net);
 int NPC_Util_CharDistance( int index1, int index2 );
 int NPC_Util_SearchNear( int meindex, int maxlen, int type );
@@ -30,7 +30,7 @@ BOOL NPC_Util_isFaceToFace( int index1, int index2, int distance );
 BOOL NPC_Util_isFaceToChara( int index1, int index2, int distance );
 BOOL NPC_Util_charIsInFrontOfChar( int index1, int index2, int distance );
 
-int NPC_Util_SearchItemInChar( int charindex , int itemindex);
+int NPC_Util_SearchItemInChar( int charindex , int item_index);
 int NPC_Util_GiveAllItemToChar( int give , int take );
 /*
 int NPC_Util_ControlOtherNPC( CHAR_TYPE chartype ,
@@ -38,7 +38,7 @@ int NPC_Util_ControlOtherNPC( CHAR_TYPE chartype ,
                               char *command );
 */
 void NPC_Util_NPCDelete( int srcindex );
-BOOL NPC_Util_moveItemToMap( int itemindex , int fl , int x , int y,
+BOOL NPC_Util_moveItemToMap( int item_index , int fl , int x , int y,
                              BOOL net );
 char *NPC_Util_GetArgStr( int index, char *argstr, int len);
 int NPC_Util_GetNumFromStrWithDelim( char *srcstr, char* in);
@@ -54,7 +54,7 @@ void cutDotsTail( char *s );
 int NPC_Util_FrontItem( int meindex );
 void NPC_Util_Boss2KingStart( int bossindex );
 int NPC_Util_FrontChar( int meindex );
-int *NPC_Util_getEnemy( int meindex, int charaindex);
+int *NPC_Util_getEnemy( int meindex, int char_index);
 
 void  NPC_NowEndEventSetFlgCls(int talker,int shiftbit);
 void  NPC_EventSetFlg(int talker,int shiftbit);

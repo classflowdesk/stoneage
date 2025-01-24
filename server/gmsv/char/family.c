@@ -1,15 +1,13 @@
 #include "version.h"
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
+//
+#include "gmsv_server.h"
+#include "saac_client.h"
+//
 #include "config_file.h"
 #include "readmap.h"
 #include "object.h"
 #include "char.h"
 #include "char_base.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
 #include "npcutil.h"
 #include "family.h"
 #include "log.h"
@@ -27,7 +25,6 @@
 #ifdef _ALLBLUES_LUA   
 #include "mylua/function.h"
 #endif
-
 #ifdef _SASQL
 #include "longzoro/sasql.h"
 #endif
@@ -35,10 +32,10 @@
 
 #define CHAR_MAXNAME 32
 #define CHAR_MAXID 20
-#define MINFMLEVLEFORPOINT	3	// 3 ÉêÇë×¯Ô°×îµÍµÈ¼¶
+#define MINFMLEVLEFORPOINT 3
 #ifdef _FAMILY_MANORNUM_CHANGE
 #else
-#define	MANORNUM		4
+#define	MANORNUM 4
 #endif
 
 
@@ -52,10 +49,10 @@ int	familyTax[FAMILY_MAXNUM];
 
 extern	tagRidePetTable ridePetTable[296];
 
-void LeaveMemberIndex( int charaindex, int fmindexi);
+void LeaveMemberIndex( int char_index, int fmindexi);
 
 
-// Arminius: È¡µÃ¼Ò×å pk dp Ôö¼Ó/ËðÊ§Öµ
+// Arminius: È¡ï¿½Ã¼ï¿½ï¿½ï¿½ pk dp ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½Ê§Öµ
 // getFMdpAward
 // arg: windp=winner's fmdp	losedp=loser's fmdp
 // ret: dp award
@@ -105,7 +102,7 @@ int fmdplevelexp[]={0,			// 0
 // Arminius end
 
 // shan begin
-int getFmLv(int playerindex)	// ºÏ³ÉÊ±×¨ÓÃ
+int getFmLv(int playerindex)	// ï¿½Ï³ï¿½Ê±×¨ï¿½ï¿½
 {
     int i, dp;
     dp = CHAR_getWorkInt(playerindex, CHAR_WORKFMDP);
@@ -140,7 +137,7 @@ struct FM_PKFLOOR    fmpkflnum[FAMILY_FMPKFLOOR]=
 	{2032},
 	{3032},
 	{4032},
-#ifdef _FAMILY_MANORNUM_CHANGE	// CoolFish ÓÃÀ´ÐÞ¸Ä×°Ô°ÊýÁ¿
+#ifdef _FAMILY_MANORNUM_CHANGE	// CoolFish ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸ï¿½×°Ô°ï¿½ï¿½ï¿½ï¿½
 	{5032},
 	{6032},
 	{7032},
@@ -150,7 +147,7 @@ struct FM_PKFLOOR    fmpkflnum[FAMILY_FMPKFLOOR]=
 #endif
 };
 int leaderdengonindex = 0;
-// shan end ÐÂÔöÍ¼²ãÐèµ½ family.h Ôö¼Ó FAMILY_FMPKFLOOR ÊýÁ¿
+// shan end ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½èµ½ family.h ï¿½ï¿½ï¿½ï¿½ FAMILY_FMPKFLOOR ï¿½ï¿½ï¿½ï¿½
 
 void SetFMPetVarInit(int meindex)
 {
@@ -172,7 +169,7 @@ void SetFMPetVarInit(int meindex)
 
 void SetFMVarInit(int meindex)
 {
-		SetFMPetVarInit(meindex); // Çå³ýÊØ»¤ÊÞ Flag
+		SetFMPetVarInit(meindex); // ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½ Flag
    	CHAR_setInt(meindex, CHAR_FMINDEX, -1);
    	CHAR_setChar(meindex, CHAR_FMNAME, "");
    	CHAR_setInt(meindex, CHAR_FMSPRITE, -1);
@@ -212,7 +209,7 @@ void FAMILY_Init( void )
 	}
 #endif		
 	familyListBuf[0] = '\0';
-	saacproto_ACShowFMList_send( acfd );
+	SaacClient__ACShowFMList_send( acfd );
 
 	//print( "FamilyData_Init:%s ", familyListBuf );
 }
@@ -238,48 +235,48 @@ void CHAR_Family(int fd, int index, char *message)
       switch(tolower(firstToken[0]))
       {
 			case 'a':
-				// ³ÉÁ¢¼Ò×å
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				FAMILY_Add(fd, index, message);
 				break;
 			case 'j':
-				// ¼ÓÈë¼Ò×å
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				FAMILY_Join(fd, index, message);
 				break;
 			case 'e':
-				// Àë¿ª¡¢ÍË³ö¼Ò×å
+				// ï¿½ë¿ªï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½
 				FAMILY_Leave(fd, index, message);
 				break;
 			case 'm':
-				// ×å³¤ÉóºË
+				// ï¿½å³¤ï¿½ï¿½ï¿½
 				FAMILY_CheckMember(fd, index, message);
 				break;         
 			case 's':
-				// È¡µÃ¼Ò×åÏà¹Ø×ÊÁÏ
+				// È¡ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				FAMILY_Detail(fd, index, message);
 				break;
 			case 'c':
-				// ¼Ò×åÆµµÀ
+				// ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½
 				FAMILY_Channel(fd, index, message);
 				break;
 			case 'b':
-				// ¼Ò×åÒøÐÐ
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				FAMILY_Bank(fd, index, message);
 				break;
 			case 'p':
-				// ÉêÇë¼Ò×å¾Ýµã
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½
 				FAMILY_SetPoint(fd, index, message);
 				break;
 			case 't':
-				// ÊÇ·ñ¼ÌÐøÕÐÄ¼³ÉÔ±
+				// ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ô±
 				FAMILY_SetAcceptFlag(fd, index, message);
 				break;
 			case 'x':
-				// ÐÞ¸Ä¼Ò×åÖ÷Ö¼
+				// ï¿½Þ¸Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½Ö¼
 				FAMILY_FixRule( fd, index, message );
 				break;
 #ifdef _RIDEFLG_
 			case 'r':
-				// Æï³Ë³èÎï
+				// ï¿½ï¿½Ë³ï¿½ï¿½ï¿½
 				if(!FAMILY_RidePet( fd, index, message )){
 					CHAR_setInt( index , CHAR_RIDEPET, -1 );
 					CHAR_setInt( index , CHAR_BASEIMAGENUMBER , CHAR_getInt( index , CHAR_BASEBASEIMAGENUMBER) );
@@ -290,11 +287,11 @@ void CHAR_Family(int fd, int index, char *message)
 				break;
 #endif
 			case 'l':
-				// ×å³¤¹¦ÄÜ
+				// ï¿½å³¤ï¿½ï¿½ï¿½ï¿½
 				FAMILY_LeaderFunc( fd, index, message );
 				break;
 #ifdef _FM_MODIFY
-				// ¼Ò×å²¼¸æÀ¸¹¦ÄÜ
+				// ï¿½ï¿½ï¿½å²¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			case 'd':
 #ifdef _UN_FMMEMO
 #else
@@ -359,38 +356,38 @@ void FAMILY_Add(int fd, int meindex, char* message)
 	if (CHAR_getInt(meindex, CHAR_FMINDEX) >= 0 
 		&& strcmp(CHAR_getChar(meindex, CHAR_FMNAME), "") != 0)
 	{
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nÄãÒÑ¾­¼ÓÈë¼Ò×åÂÞ¡«ÎÞ·¨ÔÙ³ÉÁ¢¼Ò×å£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¡ï¿½ï¿½Þ·ï¿½ï¿½Ù³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å£¡", buf, sizeof(buf)));
    	return;
 	}
 	tmpflag = CheckLeaderQ(meindex);
 	if(tmpflag == -1)
 	{
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nºÜ±§Ç¸à¸£¡ÄãµÄµÈ¼¶²»×ã£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½Ü±ï¿½Ç¸à¸£ï¿½ï¿½ï¿½ÄµÈ¼ï¿½ï¿½ï¿½ï¿½ã£¡", buf, sizeof(buf)));
    	return;
 	}
 	
 	if(tmpflag == -2)
 	{
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nºÜ±§Ç¸à¸£¡Äã±ØÐëÏÈÍê³É³ÉÈËÀñ²ÅÐÐ£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½Ü±ï¿½Ç¸à¸£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð£ï¿½", buf, sizeof(buf)));
    	return;   
 	}
 
 	gold = CHAR_getInt(meindex, CHAR_GOLD);
 	if( gold < 1000 )
 	{
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nºÜ±§Ç¸à¸£¡³ÉÁ¢¼Ò×åÐèÒª1000Ê¯±ÒµÄÊÖÐø·Ñ£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½Ü±ï¿½Ç¸à¸£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òª1000Ê¯ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ£ï¿½", buf, sizeof(buf)));
    	return;
 	}
 	else {
@@ -401,12 +398,12 @@ void FAMILY_Add(int fd, int meindex, char* message)
 	if (getStringFromIndexWithDelim(message, "|", 2, token,
    	sizeof(token)) == FALSE)	return;
 	sprintf(fmname, "%s", token);
-	if ((strstr(fmname, " ")) || (strcmp(fmname, "") == 0) || (strstr(fmname, "¡¡")))
+	if ((strstr(fmname, " ")) || (strcmp(fmname, "") == 0) || (strstr(fmname, "ï¿½ï¿½")))
 	{
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\n¼Ò×åµÄÃû³ÆÇëÎðÊäÈë¿Õ¸ñ£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¸ï¿½", buf, sizeof(buf)));
    	return;
 	}
 	if (getStringFromIndexWithDelim(message, "|", 3, token,
@@ -415,10 +412,10 @@ void FAMILY_Add(int fd, int meindex, char* message)
 	petindex = CHAR_getCharPet(meindex, havepetindex);
 	if (!CHAR_CHECKINDEX(petindex))
 	{
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nÇëÑ¡ÔñÒ»Ö»³èÎï×÷Îª¼Ò×åÊØ»¤ÊÞ£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½Ñ¡ï¿½ï¿½Ò»Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½Þ£ï¿½", buf, sizeof(buf)));
    	return;
 	}
 	if (getStringFromIndexWithDelim(message, "|", 4, token,
@@ -427,27 +424,27 @@ void FAMILY_Add(int fd, int meindex, char* message)
 	if (getStringFromIndexWithDelim(message, "|", 5, token,
    	sizeof(token)) == FALSE)	return;
 	if (strcmp(token, "") == 0)
-   	sprintf(fmrule, "ÎÞ");
+   	sprintf(fmrule, "ï¿½ï¿½");
 	else
    	sprintf(fmrule, "%s", token);
 
 #ifdef _FAMILYBADGE_
 	if (getStringFromIndexWithDelim(message, "|", 6, token,
    	sizeof(token)) == FALSE) {
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\n¼Ò×å»ÕÕÂÉèÖÃ´íÎó", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½", buf, sizeof(buf)));
 		return;
 	}
 	fmbadge = atoi(token);
 	extern int FamilyBadgeData[];
 	extern int FamilyBadgeDataNum;
 	if(fmbadge <0 || fmbadge>FamilyBadgeDataNum){
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\n¼Ò×å»ÕÕÂÉèÖÃ´íÎó", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½", buf, sizeof(buf)));
 		return;
 	}
 	fmbadge = FamilyBadgeData[fmbadge];
@@ -478,7 +475,7 @@ void FAMILY_Add(int fd, int meindex, char* message)
 	//   print("%s %s %s %d %s %s %s %d %d\n", fmname, charname, charid, charlv, petname,
 	//   	petattr, fmrule, fmsprite, chargrano);
 #ifdef _PERSONAL_FAME
-	saacproto_ACAddFM_send(acfd, fmname, charname, charid, charlv,
+	SaacClient__ACAddFM_send(acfd, fmname, charname, charid, charlv,
    	petname, petattr, fmrule, fmsprite, chargrano,
    	CHAR_getInt(meindex, CHAR_FAME),
 #ifdef _FAMILYBADGE_
@@ -488,23 +485,23 @@ void FAMILY_Add(int fd, int meindex, char* message)
 	//   print("ACAddFM acfd:%d meindex:%d fmname:%s charname:%s fame:%d Connectfd:%d fd:%d\n",
 	//   	acfd, meindex, fmname, charname, CHAR_getInt(meindex, CHAR_FAME), CONNECT_getFdid(fd), fd);
 #else
-	saacproto_ACAddFM_send(acfd, fmname, charname, charid, charlv,
+	SaacClient__ACAddFM_send(acfd, fmname, charname, charid, charlv,
    	petname, petattr, fmrule, fmsprite, chargrano, CONNECT_getFdid(fd));
 #endif
 	
-	// ÒªÇó×îÐÂ¼Ò×åÁÐ±í
-	//saacproto_ACShowFMList_send( acfd );
+	// Òªï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
+	//SaacClient__ACShowFMList_send( acfd );
 	
 }
 
 /*
-  ¨q©´©°¨r
-¨q©¼©¸©¼©¸¨r
-©¸©´£®£®©°©¼©¤¨r
-¨q©Ø©¤©¤©È¡ï~~©À¨r
-©¦£ï¡¡£ï©¦¡¡¡¡©¦¡ñ
-¨t©Ð©¤©¤¨s¡¡¡¡©¦ ~~~~~~~~~ßè
-¡ø¡÷¡ø¡÷¡ø¡÷¡ø¡÷¡ø¡÷¡ø¡÷¡ø¡÷¡ø¡÷
+  ï¿½qï¿½ï¿½ï¿½ï¿½ï¿½r
+ï¿½qï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½r
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½r
+ï¿½qï¿½Ø©ï¿½ï¿½ï¿½ï¿½È¡ï¿½~~ï¿½ï¿½ï¿½r
+ï¿½ï¿½ï¿½ï¡¡ï¿½ï©¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½tï¿½Ð©ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ~~~~~~~~~ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 */
 
@@ -531,28 +528,28 @@ void ACAddFM(int fd, int result, int fmindex, int index)
 		CHAR_setWorkInt(meindex, CHAR_WORKFMSETUPFLAG, 0);
 #ifdef _NEW_MANOR_LAW
 		CHAR_setInt(meindex,CHAR_MOMENTUM,0);
-		CHAR_talkToCli(meindex,-1,"³ÉÁ¢¼Ò×å¸öÈËÆøÊÆ¹éÁã",CHAR_COLORYELLOW);
+		CHAR_talkToCli(meindex,-1,"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¹ï¿½ï¿½ï¿½",CHAR_COLORYELLOW);
 #endif
-		 lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		 GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			 WINDOW_BUTTONTYPE_OK,
 			 -1, -1,
-			 makeEscapeString( "\n¹§Ï²Äã³ÉÁ¢ÁËÐÂµÄ¼Ò×å£¡µ«ÇëÔÚ£·ÌìÖ®ÄÚÕÙ¼¯µ½£±£°Ãû×åÈË¼ÓÈë£¬²»È»»áÈ¡Ïû¼Ò×å×Ê¸ñà¸¡£", buf, sizeof(buf)));
+			 makeEscapeString( "\nï¿½ï¿½Ï²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÂµÄ¼ï¿½ï¿½å£¡ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½Ù¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¼ï¿½ï¿½ë£¬ï¿½ï¿½È»ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¸ï¿½à¸¡ï¿½", buf, sizeof(buf)));
 		 JoinMemberIndex( meindex, index);
 		 CHAR_charSaveFromConnect(meindex, FALSE);
 		 
-		 // ÒªÇó×îÐÂ¼Ò×å×ÊÁÏ
-		 saacproto_ACShowFMList_send( acfd );
-		 saacproto_ACShowMemberList_send( acfd, index );
-		 saacproto_ACShowTopFMList_send(acfd, FM_TOP_INTEGRATE);
+		 // Òªï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		 SaacClient__ACShowFMList_send( acfd );
+		 SaacClient__ACShowMemberList_send( acfd, index );
+		 SaacClient__ACShowTopFMList_send(acfd, FM_TOP_INTEGRATE);
 #ifdef _NEW_MANOR_LAW
-		 saacproto_ACShowTopFMList_send(acfd, FM_TOP_MOMENTUM);
+		 SaacClient__ACShowTopFMList_send(acfd, FM_TOP_MOMENTUM);
 #endif
 		 LogFamily(
 			 CHAR_getChar( meindex, CHAR_FMNAME),
 			 CHAR_getInt( meindex, CHAR_FMINDEX),
 			 CHAR_getChar( meindex, CHAR_NAME),
 			 CHAR_getChar( meindex, CHAR_CDKEY),
-			 "ADDFAMILY(³ÉÁ¢¼Ò×å)",
+			 "ADDFAMILY(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)",
 			 ""
 			 );
    }
@@ -572,10 +569,10 @@ void ACAddFM(int fd, int result, int fmindex, int index)
    	   CHAR_setInt(petindex, CHAR_PETFAMILY, -1);
    	}
    	if (fmindex == -2)
-   		sprintf(tmpbuf, "\nÒÑ¾­ÓÐÏàÍ¬Ãû×ÖµÄ¼Ò×å³ÉÁ¢ÁË£¡");
+   		sprintf(tmpbuf, "\nï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ÖµÄ¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½");
    	else
-   		sprintf(tmpbuf, "\nÉêÇë³ÉÁ¢¼Ò×åÊ§°Ü£¡");
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+   		sprintf(tmpbuf, "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½");
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
 		makeEscapeString(tmpbuf, buf, sizeof(buf)));
@@ -595,18 +592,18 @@ void FAMILY_Join(int fd, int meindex, char *message)
          return;
 
    if (CheckFMMember(meindex) < 0){
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nÄãÒÑ¾­¼ÓÈëÆäËû¼Ò×åÁËà¸£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à¸£ï¿½", buf, sizeof(buf)));
 		return;
    }
 
 #ifdef _FM_JOINLIMIT
 	if( CHAR_getInt( meindex, CHAR_FMTIMELIMIT ) > (int)time(NULL) ){
 		char buff[255];
-		sprintf(buff, "\nÈçÖ®Ç°ÍË³ö¼Ò×å£¬\nÐèÂú%dÐ¡Ê±²ÅÄÜÔÙ¼ÓÈë¼Ò×åà¸£¡",(CHAR_getInt( meindex, CHAR_FMTIMELIMIT )-(int)time(NULL))/3600+1);
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		sprintf(buff, "\nï¿½ï¿½Ö®Ç°ï¿½Ë³ï¿½ï¿½ï¿½ï¿½å£¬\nï¿½ï¿½ï¿½ï¿½%dÐ¡Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ù¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à¸£ï¿½",(CHAR_getInt( meindex, CHAR_FMTIMELIMIT )-(int)time(NULL))/3600+1);
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK, -1, -1,
 			makeEscapeString( buff, buf, sizeof(buf)));
 		return;
@@ -627,10 +624,10 @@ void FAMILY_Join(int fd, int meindex, char *message)
    fmsprite = atoi(token);
 
 	 if(memberlist[index].fmnum > FAMILY_MAXMEMBER){
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 				WINDOW_BUTTONTYPE_OK,
 				-1, -1,
-				makeEscapeString( "\n´Ë¼Ò×åÄ¿Ç°ÎÞ·¨ÕÐÊÕ³ÉÔ±£¬¼Ò×å³ÉÔ±ÈËÊýÒÑµ½´ïÉÏÏÞ£¡", buf, sizeof(buf)));
+				makeEscapeString( "\nï¿½Ë¼ï¿½ï¿½ï¿½Ä¿Ç°ï¿½Þ·ï¿½ï¿½ï¿½ï¿½Õ³ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½Ñµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ£ï¿½", buf, sizeof(buf)));
 			return;
 	 }
    
@@ -649,14 +646,14 @@ void FAMILY_Join(int fd, int meindex, char *message)
 
 //   print("JoinFM index:%d fmindex:%d fmname:%s charname:%s charid:%s charlv:%d sprite:%d\n",
 //   	index, fmindex, fmname, charname, charid, charlv, fmsprite);
-#ifdef _PERSONAL_FAME	// Arminius: ¼Ò×å¸öÈËÉùÍû
+#ifdef _PERSONAL_FAME	// Arminius: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //   print("fame:%d charfdid:%d\n", CHAR_getInt(meindex, CHAR_FAME),
 //   	CONNECT_getFdid(fd));
-   saacproto_ACJoinFM_send(acfd, fmname, fmindex, charname, charid, charlv,
+   SaacClient__ACJoinFM_send(acfd, fmname, fmindex, charname, charid, charlv,
    	index, CHAR_getInt(meindex, CHAR_FAME), CONNECT_getFdid(fd));
 #else   
 //   print("charfdid:%d\n", CONNECT_getFdid(fd));
-   saacproto_ACJoinFM_send(acfd, fmname, fmindex, charname, charid, charlv,
+   SaacClient__ACJoinFM_send(acfd, fmname, fmindex, charname, charid, charlv,
    	index, CONNECT_getFdid(fd));
 #endif
 }
@@ -673,15 +670,15 @@ void ACJoinFM(int fd, int result, int recv)
          return;
 
    if (result == 1) {
-		 lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		 GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nÐ»Ð»ÄãµÄ¼ÓÈëÉêÇë£¡ÇëÏÈµÈ×å³¤¶ÔÄãµÄÉóºËÍ¨¹ýÖ®áá£¬²ÅËãÕýÊ½¼ÓÈë¡£", buf, sizeof(buf)));
+			makeEscapeString( "\nÐ»Ð»ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë£¡ï¿½ï¿½ï¿½Èµï¿½ï¿½å³¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ö®ï¿½á£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ë¡£", buf, sizeof(buf)));
 		 
 		  JoinMemberIndex( meindex, CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI) );
 #ifdef _NEW_MANOR_LAW
 			CHAR_setInt(meindex,CHAR_MOMENTUM,0);
-			CHAR_talkToCli(meindex,-1,"¼ÓÈë¼Ò×å¸öÈËÆøÊÆ¹éÁã",CHAR_COLORYELLOW);
+			CHAR_talkToCli(meindex,-1,"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¹ï¿½ï¿½ï¿½",CHAR_COLORYELLOW);
 #endif
 		 
 		sprintf(buf,"fame:%d",CHAR_getInt(meindex,CHAR_FAME));
@@ -691,7 +688,7 @@ void ACJoinFM(int fd, int result, int recv)
 			 CHAR_getInt( meindex, CHAR_FMINDEX),
 			 CHAR_getChar( meindex, CHAR_NAME),
 			 CHAR_getChar( meindex, CHAR_CDKEY),
-			 "JOINFAMILY(ÉêÇë¼ÓÈë¼Ò×å)",
+			 "JOINFAMILY(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)",
 			 buf
 			 );
 		 
@@ -701,23 +698,23 @@ void ACJoinFM(int fd, int result, int recv)
 	SetFMVarInit(meindex);
    	if (recv == -2)
    	{
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\n´Ë¼Ò×åÄ¿Ç°²»Ô¸ÒâÕÐÊÕ³ÉÔ±£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½Ë¼ï¿½ï¿½ï¿½Ä¿Ç°ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½ï¿½ï¿½Õ³ï¿½Ô±ï¿½ï¿½", buf, sizeof(buf)));
 	}
 	else if (recv == -3)
 	{
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\n´Ë¼Ò×åÄ¿Ç°ÎÞ·¨ÕÐÊÕ³ÉÔ±£¬¼Ò×å³ÉÔ±ÈËÊýÒÑµ½´ïÉÏÏÞ£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½Ë¼ï¿½ï¿½ï¿½Ä¿Ç°ï¿½Þ·ï¿½ï¿½ï¿½ï¿½Õ³ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½Ñµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ£ï¿½", buf, sizeof(buf)));
 	}
 	else
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nÉêÇë¼ÓÈë¼Ò×åÊ§°Ü£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½", buf, sizeof(buf)));
    }
    
    CHAR_sendStatusString( meindex, "F");   
@@ -741,10 +738,10 @@ void FAMILY_Leave(int fd, int meindex, char *message)
       || (CHAR_getInt(meindex, CHAR_FMLEADERFLAG) == -1))
 #endif      
    {
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
-		makeEscapeString( "\nÄã²¢Ã»ÓÐ¼ÓÈë¼Ò×åà¸£¡", buf, sizeof(buf)));
+		makeEscapeString( "\nï¿½ã²¢Ã»ï¿½Ð¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à¸£ï¿½", buf, sizeof(buf)));
       	return;
    }
 
@@ -760,10 +757,10 @@ void FAMILY_Leave(int fd, int meindex, char *message)
 #endif         
 			     if( (fmpks[fmpks_pos+1].host_index+1)  == CHAR_getInt(meindex, CHAR_FMINDEX) ||
 	    			   (fmpks[fmpks_pos+1].guest_index+1) == CHAR_getInt(meindex, CHAR_FMINDEX) ){
-		    		   lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		    		   GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			                             WINDOW_BUTTONTYPE_OK,
 			                             -1, -1,
-			                             makeEscapeString( "\nÄãÄ¿Ç°µÄ¼Ò×åÕýÔ¼Õ½ÖÐ£¬Òò´ËÎÞ·¨½âÉ¢¼Ò×å£¡", buf, sizeof(buf)));
+			                             makeEscapeString( "\nï¿½ï¿½Ä¿Ç°ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼Õ½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½É¢ï¿½ï¿½ï¿½å£¡", buf, sizeof(buf)));
 	      	     return;
 	      	 }
 			   }
@@ -787,15 +784,9 @@ void FAMILY_Leave(int fd, int meindex, char *message)
       if (CHAR_getInt(meindex, CHAR_FMLEADERFLAG) == 1) 
 #endif      
 			{
-//         print("DelFM index:%d fmindex:%d fmname:%s\n", index, fmindex, fmname);
-         saacproto_ACDelFM_send(acfd, fmname, fmindex, index, charname, charid,CONNECT_getFdid(fd));
-
-         // ÒªÇó×îÐÂ¼Ò×åÁÐ±í
-         //saacproto_ACShowFMList_send( acfd );
+         SaacClient__ACDelFM_send(acfd, fmname, fmindex, index, charname, charid,CONNECT_getFdid(fd));
       }else {
-//         print("LeaveFM index:%d fmindex:%d fmname:%s charname:%s charid:%s\n",
-//         	index, fmindex, fmname, charname, charid);
-				 saacproto_ACLeaveFM_send(acfd, fmname, fmindex, charname, charid, index, CONNECT_getFdid(fd));
+				 SaacClient__ACLeaveFM_send(acfd, fmname, fmindex, charname, charid, index, CONNECT_getFdid(fd));
       }
    }
 }
@@ -813,23 +804,23 @@ void ACLeaveFM( int fd, int result, int resultflag)
 			CHAR_getInt( meindex, CHAR_FMINDEX),
 			CHAR_getChar( meindex, CHAR_NAME),
 			CHAR_getChar( meindex, CHAR_CDKEY),
-	    	"LEAVEFAMILY(Àë¿ª¼Ò×å)",
+	    	"LEAVEFAMILY(ï¿½ë¿ªï¿½ï¿½ï¿½ï¿½)",
 				""
 				);
 		if(  CHAR_getWorkInt( meindex, CHAR_WORKFMCHANNEL) != -1 )
 			CHAR_setWorkInt( meindex, CHAR_WORKFMCHANNEL, -1 );
 		LeaveMemberIndex( meindex, CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI) );
 		SetFMVarInit(meindex);
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK, -1, -1,
-			makeEscapeString( "\nÉêÇëÍË³ö¼Ò×å£Ï£Ë£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½Ï£Ë£ï¿½", buf, sizeof(buf)));
 		CHAR_setWorkInt( meindex, CHAR_WORKFMFLOOR, -1);
 #ifdef _FM_JOINLIMIT
 		CHAR_setInt( meindex, CHAR_FMTIMELIMIT, (int)time(NULL)+getJoinFamilyTime()*(60*60) );
 #endif
 #ifdef _NEW_MANOR_LAW
 		CHAR_setInt(meindex,CHAR_MOMENTUM,0);
-		CHAR_talkToCli(meindex,-1,"ÍË³ö¼Ò×å¸öÈËÆøÊÆ¹éÁã",CHAR_COLORYELLOW);
+		CHAR_talkToCli(meindex,-1,"ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¹ï¿½ï¿½ï¿½",CHAR_COLORYELLOW);
 #endif
 		CHAR_setInt( meindex , CHAR_RIDEPET, -1 );
 		CHAR_setInt( meindex , CHAR_BASEIMAGENUMBER , CHAR_getInt( meindex , CHAR_BASEBASEIMAGENUMBER) );
@@ -840,9 +831,9 @@ void ACLeaveFM( int fd, int result, int resultflag)
 			CHAR_ReMetamo(meindex);
 #endif
 	}else
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK, -1, -1,
-		makeEscapeString( "\nÉêÇëÍË³ö¼Ò×åÊ§°Ü£¡", buf, sizeof(buf)));
+		makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½", buf, sizeof(buf)));
 	
 	CHAR_sendStatusString( meindex, "F" );
 }
@@ -865,7 +856,7 @@ void ACDelFM(int fd, int result)
 		CHAR_getInt( meindex, CHAR_FMINDEX),
 		CHAR_getChar( meindex, CHAR_NAME),
 		CHAR_getChar( meindex, CHAR_CDKEY),
-		"DELFAMILY(¼Ò×å½âÉ¢)",
+		"DELFAMILY(ï¿½ï¿½ï¿½ï¿½ï¿½É¢)",
 		""
 	);
 
@@ -878,31 +869,31 @@ void ACDelFM(int fd, int result)
         */
         
 	SetFMVarInit(meindex);
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
-		makeEscapeString( "\n¼Ò×åÒÑ¾­½âÉ¢ÁË£¡", buf, sizeof(buf)));
+		makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½É¢ï¿½Ë£ï¿½", buf, sizeof(buf)));
 
-	// ÒªÇó×îÐÂ¼Ò×åÁÐ±í
-	saacproto_ACShowFMList_send( acfd );
+	// Òªï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
+	SaacClient__ACShowFMList_send( acfd );
 
-// won ÒÆµ½Ç°ÃæÈ¥
+// won ï¿½Æµï¿½Ç°ï¿½ï¿½È¥
 /*
 	LogFamily(
 		CHAR_getChar( meindex, CHAR_FMNAME),
 		CHAR_getInt( meindex, CHAR_FMINDEX),
 		CHAR_getChar( meindex, CHAR_NAME),
 		CHAR_getChar( meindex, CHAR_CDKEY),
-		"DELFAMILY(¼Ò×å½âÉ¢)",
+		"DELFAMILY(ï¿½ï¿½ï¿½ï¿½ï¿½É¢)",
 		""
 	);
 */
    }
    else
-	 lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	 GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
-		makeEscapeString( "\nÉêÇë½âÉ¢¼Ò×åÊ§°Ü£¡", buf, sizeof(buf)));
+		makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½É¢ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½", buf, sizeof(buf)));
 
    CHAR_sendStatusString( meindex, "F");
 }
@@ -1150,7 +1141,7 @@ void ACShowFMMemo(int result, int index, int num, int dataindex, char *data)
    }
 }
 
-#ifdef _PERSONAL_FAME   // Arminius: ¼Ò×åÏÔ\\¸öÈËÉùÍû
+#ifdef _PERSONAL_FAME   // Arminius: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void ACFMCharLogin(int fd, int result, int index, int floor, int fmdp,
 	int joinflag, int fmsetupflag, int flag, int charindex, int charfame
 	#ifdef _NEW_MANOR_LAW
@@ -1168,7 +1159,7 @@ void ACFMCharLogin(int fd, int result, int index, int floor, int fmdp,
    if (!CHAR_CHECKINDEX(meindex))	return;
    if (result == 1){
 #ifdef _NEW_MANOR_LAW
-		 // ÆøÊÆ»Ø´«Îª0Ê±Òª°ÑÈËÎïµÄÆøÊÆÉè¶¨Îª0,ÒòÎª»Ø´«ÊÇ0ÓÐ¿ÉÄÜÊÇ´òÍê×¯Ô°Õ½,ËùÒÔÆøÊÆÒª¹éÁã
+		 // ï¿½ï¿½ï¿½Æ»Ø´ï¿½Îª0Ê±Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨Îª0,ï¿½ï¿½Îªï¿½Ø´ï¿½ï¿½ï¿½0ï¿½Ð¿ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ï¿½ï¿½×¯Ô°Õ½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½
 		 if(momentum == 0) CHAR_setInt(meindex,CHAR_MOMENTUM,0);
 		 else CHAR_setInt(meindex,CHAR_MOMENTUM,momentum);
 #endif
@@ -1224,15 +1215,15 @@ void ACFMCharLogin(int fd, int result, int index, int floor, int fmdp,
 					 return;
 			 }
 /*
-			 lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+			 GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 				 WINDOW_BUTTONTYPE_OK,
 				 -1, -1,
-				 makeEscapeString("\n¼Ò×åÊØ»¤ÊÞÏûÊ§ÁË£¡\nÇëÁ¢¿ÌÔÙÑ¡¶¨Ò»Ö»ÊØ»¤ÊÞ£¬\n·ñÔò¼Ò×åÔÚÆßÌìÖ®áá»áÏûÊ§à¡£¡\n", buf, sizeof(buf)));
+				 makeEscapeString("\nï¿½ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ë£ï¿½\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½Ò»Ö»ï¿½Ø»ï¿½ï¿½Þ£ï¿½\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½Ê§à¡£ï¿½\n", buf, sizeof(buf)));
 */
 				
-			CHAR_talkToCli(meindex, -1, "\n¼Ò×åÊØ»¤ÊÞÏûÊ§ÁË£¡\nÇëÁ¢¿ÌÔÙÑ¡¶¨Ò»Ö»ÊØ»¤ÊÞ£¬\n·ñÔò¼Ò×åÔÚÆßÌìÖ®áá»áÏûÊ§à¡£¡\n", CHAR_COLORRED);
+			CHAR_talkToCli(meindex, -1, "\nï¿½ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ë£ï¿½\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½Ò»Ö»ï¿½Ø»ï¿½ï¿½Þ£ï¿½\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½Ê§à¡£ï¿½\n", CHAR_COLORRED);
 			
-			 saacproto_ACFixFMData_send(acfd,
+			 SaacClient__ACFixFMData_send(acfd,
 				 CHAR_getChar(meindex, CHAR_FMNAME),
 				 CHAR_getInt(meindex, CHAR_FMINDEX),
 				 CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), FM_FIX_DELFMTIME,
@@ -1247,7 +1238,7 @@ void ACFMCharLogin(int fd, int result, int index, int floor, int fmdp,
 #ifdef _FM_JOINLIMIT
 			 		CHAR_setInt( meindex, CHAR_FMTIMELIMIT, (int)time(NULL)+getJoinFamilyTime()*(60*60) );
 #endif
-   		    CHAR_talkToCli(meindex, -1, "ÄãÒÑ¾­ÍË³ö¼Ò×å»ò¼Ò×åÒÑ¾­²»´æÔÚÁË£¡", CHAR_COLORYELLOW);
+   		    CHAR_talkToCli(meindex, -1, "ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½", CHAR_COLORYELLOW);
 					CHAR_setWorkInt( meindex, CHAR_WORKFMFLOOR, -1);
 					CHAR_setInt( meindex , CHAR_RIDEPET, -1 );
 					CHAR_setInt( meindex , CHAR_BASEIMAGENUMBER , CHAR_getInt( meindex , CHAR_BASEBASEIMAGENUMBER) );
@@ -1297,7 +1288,7 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 		}
 		
 		sprintf( sendbuf, "S|F|%d|%d|%d%s", familyNumTotal, atoi(token2), j, buf );
-		lssproto_FM_send( fd, sendbuf );
+		GmsvServer_FM_send( fd, sendbuf );
 		
 		return;
 		
@@ -1315,29 +1306,29 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 #else
 		personfame = CHAR_getWorkInt( meindex, CHAR_WORKFMDP);
 #endif       
-		sprintf( sendbuf, "ÄãÄ¿Ç°µÄ¸öÈËÉùÍûµãÊýÎª£º%d", personfame);
+		sprintf( sendbuf, "ï¿½ï¿½Ä¿Ç°ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½%d", personfame);
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORYELLOW);
 #ifdef _NEW_MANOR_LAW
-		sprintf(sendbuf,"ÄãÄ¿Ç°µÄ¸öÈËÆøÊÆµãÊýÎª£º%d",CHAR_getInt(meindex,CHAR_MOMENTUM)/100);
+		sprintf(sendbuf,"ï¿½ï¿½Ä¿Ç°ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½Îªï¿½ï¿½%d",CHAR_getInt(meindex,CHAR_MOMENTUM)/100);
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORCYAN);
 #endif
 #ifndef _VERSION_NEW
 #ifdef _VIP_SERVER
-		sprintf( sendbuf, "ÄãÄ¿Ç°µÄ¸öÈË»ý·ÖµãÊýÎª£º%d",CHAR_getInt(meindex,CHAR_AMPOINT));
+		sprintf( sendbuf, "ï¿½ï¿½Ä¿Ç°ï¿½Ä¸ï¿½ï¿½Ë»ï¿½ï¿½Öµï¿½ï¿½ï¿½Îªï¿½ï¿½%d",CHAR_getInt(meindex,CHAR_AMPOINT));
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORYELLOW);
 #endif
 #endif
 #ifdef _ONLINE_SHOP
-		sprintf(sendbuf,"ÄãÄ¿Ç°µÄ¸öÈË±´±ÒµãÊýÎª£º%d",CHAR_getInt(meindex, CHAR_BJ));
+		sprintf(sendbuf,"ï¿½ï¿½Ä¿Ç°ï¿½Ä¸ï¿½ï¿½Ë±ï¿½ï¿½Òµï¿½ï¿½ï¿½Îªï¿½ï¿½%d",CHAR_getInt(meindex, CHAR_BJ));
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORGRAY);
 #endif
 #ifdef _BOUND_TIME
 	time_t boundtime = CHAR_getInt(meindex, CHAR_BOUNDTIME);
 	if(CHAR_getInt(meindex, CHAR_BOUNDTIME)==0){
-		CHAR_talkToCli(meindex, -1, "ÄãÄ¿Ç°µÄÌØÊâÈ¨ÏÞÆÚÏÞÎ´ÆôÓÃ£¡", CHAR_COLORYELLOW);
+		CHAR_talkToCli(meindex, -1, "ï¿½ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½Ã£ï¿½", CHAR_COLORYELLOW);
 	}else if(CHAR_getInt(meindex, CHAR_BOUNDTIME) > time(NULL)){
 		struct tm *tm1 = localtime(&boundtime);
-		sprintf( sendbuf, "ÄãÄ¿Ç°µÄÌØÊâÈ¨ÏÞÆÚÏÞÎª£º%4dÄê%2dÔÂ%2dÈÕ %2d:%2d:%2d\n",
+		sprintf( sendbuf, "ï¿½ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½%4dï¿½ï¿½%2dï¿½ï¿½%2dï¿½ï¿½ %2d:%2d:%2d\n",
 																										tm1->tm_year + 1900,
 																										tm1->tm_mon + 1,
 																										tm1->tm_mday,
@@ -1346,20 +1337,20 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 																										tm1->tm_sec);	
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORYELLOW);
 	}else{
-		CHAR_talkToCli(meindex, -1, "ÄãÄ¿Ç°µÄÌØÊâÈ¨ÏÞÆÚÏÞÒÑ¹ýÆÚ£¡", CHAR_COLORYELLOW);
+		CHAR_talkToCli(meindex, -1, "ï¿½ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½Ú£ï¿½", CHAR_COLORYELLOW);
 	}
 #endif
 #ifdef _VIP_RIDE
 	
 	if(CHAR_getInt(meindex, CHAR_VIPTIME)==-1){
-		CHAR_talkToCli(meindex, -1, "ÄãÄ¿Ç°µÄ»áÔ±È¨ÏÞÆÚÏÞÓÀ¾Ã£¡", CHAR_COLORYELLOW);
+		CHAR_talkToCli(meindex, -1, "ï¿½ï¿½Ä¿Ç°ï¿½Ä»ï¿½Ô±È¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½", CHAR_COLORYELLOW);
 	}else if(CHAR_getInt(meindex, CHAR_VIPTIME)==0){
-		CHAR_talkToCli(meindex, -1, "ÄãÄ¿Ç°µÄ»áÔ±È¨ÏÞÆÚÏÞÎ´ÆôÓÃ£¡", CHAR_COLORYELLOW);
+		CHAR_talkToCli(meindex, -1, "ï¿½ï¿½Ä¿Ç°ï¿½Ä»ï¿½Ô±È¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½Ã£ï¿½", CHAR_COLORYELLOW);
 	}else if(CHAR_getInt(meindex, CHAR_VIPTIME) > time(NULL)){
 		time_t viptime = (time_t)CHAR_getInt(meindex, CHAR_VIPTIME);
 		struct tm *tm1 = localtime(&viptime);
 
-		sprintf( sendbuf, "ÄãÄ¿Ç°µÄ»áÔ±È¨ÏÞÓÐÐ§ÆÚ£º%4dÄê%2dÔÂ%2dÈÕ %2d:%2d:%2d\n",
+		sprintf( sendbuf, "ï¿½ï¿½Ä¿Ç°ï¿½Ä»ï¿½Ô±È¨ï¿½ï¿½ï¿½ï¿½Ð§ï¿½Ú£ï¿½%4dï¿½ï¿½%2dï¿½ï¿½%2dï¿½ï¿½ %2d:%2d:%2d\n",
 																										tm1->tm_year + 1900,
 																										tm1->tm_mon + 1,
 																										tm1->tm_mday,
@@ -1368,12 +1359,12 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 																										tm1->tm_sec);	
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORPURPLE);
 	}else{
-		CHAR_talkToCli(meindex, -1, "ÄãÄ¿Ç°µÄ»áÔ±È¨ÏÞÆÚÏÞÒÑ¹ýÆÚ£¡", CHAR_COLORYELLOW);
+		CHAR_talkToCli(meindex, -1, "ï¿½ï¿½Ä¿Ç°ï¿½Ä»ï¿½Ô±È¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½Ú£ï¿½", CHAR_COLORYELLOW);
 	}
 #endif
 
 #ifdef _CAMEO_MONEY
-		sprintf(sendbuf,"ÄãÄ¿Ç°µÄ¸öÈË±´¿ÇÊýÄ¿Îª£º%d", CHAR_getInt(meindex,CHAR_CAMEO));
+		sprintf(sendbuf,"ï¿½ï¿½Ä¿Ç°ï¿½Ä¸ï¿½ï¿½Ë±ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Îªï¿½ï¿½%d", CHAR_getInt(meindex,CHAR_CAMEO));
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORYELLOW);
 #endif
 
@@ -1381,9 +1372,9 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 {
 	int num = CHAR_getInt(meindex, CHAR_MISSIONTRAIN_NUM) - 1;
 	if(num < 0){
-		CHAR_talkToCli(meindex, -1, "ÄãÄ¿Ç°µÄÁ¬ÐøÍê³ÉÈÎÎñÁ´£ºÎ´½ÓÈÎÎñ", CHAR_COLORYELLOW);
+		CHAR_talkToCli(meindex, -1, "ï¿½ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", CHAR_COLORYELLOW);
 	}else{
-		sprintf(sendbuf,"ÄãÄ¿Ç°µÄÁ¬ÐøÍê³ÉÈÎÎñÁ´£º%d", num);
+		sprintf(sendbuf,"ï¿½ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½%d", num);
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORYELLOW);
 	}
 }
@@ -1396,7 +1387,7 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 			time_t titletime = (time_t)CHAR_getInt(meindex, CHAR_TITLE_TIME);
 			struct tm *tm1 = localtime(&titletime);
 			
-			sprintf( sendbuf, "ÄãÄ¿Ç°µÄÓ¢ÐÛ³ÆºÅÓÐÐ§ÆÚ£º%4dÄê%2dÔÂ%2dÈÕ %2d:%2d:%2d\n",
+			sprintf( sendbuf, "ï¿½ï¿½Ä¿Ç°ï¿½ï¿½Ó¢ï¿½Û³Æºï¿½ï¿½ï¿½Ð§ï¿½Ú£ï¿½%4dï¿½ï¿½%2dï¿½ï¿½%2dï¿½ï¿½ %2d:%2d:%2d\n",
 																											tm1->tm_year + 1900,
 																											tm1->tm_mon + 1,
 																											tm1->tm_mday,
@@ -1409,43 +1400,43 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 #endif
 #ifdef _MISSION_TIME
 	if(CHAR_getInt(meindex, CHAR_MISSION_TIME) > time(NULL)){
-		sprintf( sendbuf, "ÄãÄ¿Ç°¸±±¾ÈÎÎñÊ±¼äÊ£Óà£º%d·ÖÖÓ", (CHAR_getInt(meindex, CHAR_MISSION_TIME) - time(NULL)) / 60);
+		sprintf( sendbuf, "ï¿½ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ê£ï¿½à£º%dï¿½ï¿½ï¿½ï¿½", (CHAR_getInt(meindex, CHAR_MISSION_TIME) - time(NULL)) / 60);
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORGREEN);
 	}
 #endif
 #ifdef _ACTIVE_GAME
-		sprintf(sendbuf,"ÄãÄ¿Ç°µÄ¸öÈË»îÁ¦ÊýÄ¿Îª£º%d", CHAR_getInt(meindex,CHAR_ACTIVE));
+		sprintf(sendbuf,"ï¿½ï¿½Ä¿Ç°ï¿½Ä¸ï¿½ï¿½Ë»ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Îªï¿½ï¿½%d", CHAR_getInt(meindex,CHAR_ACTIVE));
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORCYAN);
 #endif
 {
 	int addexptime = CHAR_getWorkInt( meindex, CHAR_WORKITEM_ADDEXPTIME );
 	int lefttime = addexptime;
 	if(lefttime>0){
-		sprintf(sendbuf, "ÄãÄ¿Ç°µÄ¾­ÑéÉÏÉýÐ§¹ûÎª£º¾­ÑéÉÏÉý %d\% Ê£ÓàÊ±¼ä %d ·Ö %d Ãë", CHAR_getWorkInt( meindex, CHAR_WORKITEM_ADDEXP ), lefttime/60, lefttime%60 );
+		sprintf(sendbuf, "ï¿½ï¿½Ä¿Ç°ï¿½Ä¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ %d\% Ê£ï¿½ï¿½Ê±ï¿½ï¿½ %d ï¿½ï¿½ %d ï¿½ï¿½", CHAR_getWorkInt( meindex, CHAR_WORKITEM_ADDEXP ), lefttime/60, lefttime%60 );
 		CHAR_talkToCli( meindex, -1, sendbuf, CHAR_COLORYELLOW);
 	}
 }
 #ifdef _SASQL
-		sprintf(sendbuf,"ÄãÄ¿Ç°µÄ¸öÈË½ð±ÒÊýÎª£º%d",sasql_getVipPoint(meindex));
+		sprintf(sendbuf,"ï¿½ï¿½Ä¿Ç°ï¿½Ä¸ï¿½ï¿½Ë½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½%d",sasql_getVipPoint(meindex));
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORYELLOW);
 #else
 #ifdef _NEW_VIP_SHOP
 #ifdef _OTHER_SAAC_LINK
 		if(osfd == -1){
 			OtherSaacConnect();
-			CHAR_talkToCli( meindex, -1, "µã¾í·þÎñÆ÷Î´Õý³£Á¬½Ó!", CHAR_COLORRED );
+			CHAR_talkToCli( meindex, -1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!", CHAR_COLORRED );
 		}else{
-			CHAR_talkToCli(meindex, -1, "»ñÈ¡½ð±ÒÖÐ£¬ÇëÉÔºò...", CHAR_COLORRED);
-			saacproto_QueryPoint_send( osfd, fd, CHAR_getChar(meindex, CHAR_CDKEY));
+			CHAR_talkToCli(meindex, -1, "ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½Ôºï¿½...", CHAR_COLORRED);
+			SaacClient__QueryPoint_send( osfd, fd, CHAR_getChar(meindex, CHAR_CDKEY));
 		}
 #else
-		CHAR_talkToCli(meindex, -1, "»ñÈ¡½ð±ÒÖÐ£¬ÇëÉÔºò...", CHAR_COLORRED);
-		saacproto_QueryPoint_send( acfd, fd, CHAR_getChar(meindex, CHAR_CDKEY));
+		CHAR_talkToCli(meindex, -1, "ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½Ôºï¿½...", CHAR_COLORRED);
+		SaacClient__QueryPoint_send( acfd, fd, CHAR_getChar(meindex, CHAR_CDKEY));
 #endif
 #endif
 #endif
 #ifdef _OFFLINE_TIME 
-		sprintf(sendbuf,"ÄãÄ¿Ç°µÄ¿ÉÀëÏßÊ±¼ä·ÖÖÓ£º%d", CHAR_getInt(meindex,CHAR_OFFLINE_TIME));
+		sprintf(sendbuf,"ï¿½ï¿½Ä¿Ç°ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó£ï¿½%d", CHAR_getInt(meindex,CHAR_OFFLINE_TIME));
 		CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORYELLOW);
 #endif
 #endif
@@ -1459,7 +1450,7 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 		tempindex = atoi( token2 );
 		
 		//print(" send_fmname_ac:%s ", fmname);
-		saacproto_ACFMDetail_send( acfd, fmname, fmindex, tempindex, CONNECT_getFdid(fd) );
+		SaacClient__ACFMDetail_send( acfd, fmname, fmindex, tempindex, CONNECT_getFdid(fd) );
 	}
 	
 	// shan begin
@@ -1491,7 +1482,7 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 							time_t dueltime = (time_t)fmpks[fmpks_pos + 1].dueltime;
 							struct tm *tm1 = localtime(&dueltime);
 							
-							sprintf(tmpbuf, "%d/%d %d:%d¡¾%s¡¿ %s £ö£ó %s",
+							sprintf(tmpbuf, "%d/%d %d:%dï¿½ï¿½%sï¿½ï¿½ %s ï¿½ï¿½ï¿½ï¿½ %s",
 								tm1->tm_mon + 1, tm1->tm_mday, tm1->tm_hour, tm1->tm_min,
 								fmpks[fmpks_pos + 2].host_name,
 								fmpks[fmpks_pos + 1].guest_name,
@@ -1500,11 +1491,11 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 				}
 			}
 			if (strcmp(tmpbuf, "") == 0)
-				sprintf(tmpbuf, "ÎÞÌôÕ½ÅÅ³Ì");
+				sprintf(tmpbuf, "ï¿½ï¿½ï¿½ï¿½Õ½ï¿½Å³ï¿½");
       
       getStringFromIndexWithDelim(memberlist[fmindex_wk].numberlistarray[0],
 				"|",2,leadernamebuf,sizeof(leadernamebuf));
-      // sendbuf -> ¼Ò×åÃû³Æ|ÈËÊý|×å³¤Ãû³Æ|¼Ò×åÅÅÐÐ|¼Ò×åÉùÍû|¸öÈËÉùÍû|¸öÈËÖ°Î»|¼Ò×å¾«Áé|PK
+      // sendbuf -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½ï¿½|ï¿½å³¤ï¿½ï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½ï¿½Ö°Î»|ï¿½ï¿½ï¿½å¾«ï¿½ï¿½|PK
 #ifdef _VERSION_NEW
 			sprintf( sendbuf, "%s|%d|%s|%d|%d|%d|%d|%d|%s|%d|%d", 
 #else
@@ -1533,14 +1524,14 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 				tmpbuf
 
 #ifdef _NEW_MANOR_LAW
-				,fmdptop.fmMomentum[h]/100	// ¼Ò×åÆøÊÆ
-				,CHAR_getInt(meindex,CHAR_MOMENTUM)/100 // ¸öÈËÆøÊÆ
+				,fmdptop.fmMomentum[h]/100	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+				,CHAR_getInt(meindex,CHAR_MOMENTUM)/100 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #endif
 				);
 #ifdef _FAMILYBADGE_
 				sprintf(sendbuf+strlen(sendbuf),"|%d",memberlist[fmindex_wk].badge);
 #endif
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_FAMILYDETAIL,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_FAMILYDETAIL,
 				WINDOW_BUTTONTYPE_OK,
 				-1,
 				-1,
@@ -1577,14 +1568,14 @@ void ACFMDetail(int ret, char *data, int clifd)
    	//	sizeof(fmname)) == FALSE)	return;	
 
 	//makeStringFromEscaped( buf );
-	//buf2 = lssproto_demkstr_string( buf );
+	//buf2 = GmsvServer_demkstr_string( buf );
 
 	
 	sprintf(sendbuf, "S|D|%s", data); 
-	lssproto_FM_send( clifd, sendbuf );
+	GmsvServer_FM_send( clifd, sendbuf );
 	//print(" Detail:%s ", sendbuf);
 	/*
-	lssproto_WN_send( clifd, WINDOW_MESSAGETYPE_FAMILYDETAIL,
+	GmsvServer_WN_send( clifd, WINDOW_MESSAGETYPE_FAMILYDETAIL,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
 		sendbuf );
@@ -1626,10 +1617,10 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 #endif      
    {
 //   	print("leaderflag:%d\n", CHAR_getInt(meindex, CHAR_FMLEADERFLAG));
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
-		makeEscapeString( "\nÄã²»ÊÇ×å³¤£¬ËùÒÔÃ»ÓÐÐÞ¸ÄµÄÈ¨Á¦à¡£¡", buf, sizeof(buf)));
+		makeEscapeString( "\nï¿½ã²»ï¿½ï¿½ï¿½å³¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Þ¸Äµï¿½È¨ï¿½ï¿½à¡£ï¿½", buf, sizeof(buf)));
       	return;
    }   
    if (getStringFromIndexWithDelim(message, "|", 2, token,
@@ -1653,7 +1644,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
    {
 	// shan begin
     char sbuf[1024];
-	sprintf( sbuf, "×å³¤´úºÅ:%d -> ÈËÎïÃû³Æ:%s ÈËÎïË÷Òý (Éè¸ÃÈËÎïÎª×åÔ±):%d\n", CHAR_getInt(meindex, CHAR_FMLEADERFLAG), charname, charindex);
+	sprintf( sbuf, "ï¿½å³¤ï¿½ï¿½ï¿½ï¿½:%d -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:%s ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Ô±):%d\n", CHAR_getInt(meindex, CHAR_FMLEADERFLAG), charname, charindex);
 	LogFamily(
 		CHAR_getChar(meindex, CHAR_FMNAME),
 		CHAR_getInt(meindex, CHAR_FMINDEX),
@@ -1664,7 +1655,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 		);
 	// shan end
 
-   	saacproto_ACMemberJoinFM_send(acfd,
+   	SaacClient__ACMemberJoinFM_send(acfd,
    		CHAR_getChar(meindex, CHAR_FMNAME),
    		CHAR_getInt(meindex, CHAR_FMINDEX), charname, charindex,
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), result,
@@ -1673,7 +1664,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
    }
 #else
    {
-   	saacproto_ACMemberJoinFM_send(acfd,
+   	SaacClient__ACMemberJoinFM_send(acfd,
    		CHAR_getChar(meindex, CHAR_FMNAME),
    		CHAR_getInt(meindex, CHAR_FMINDEX), charname, charindex,
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), result,
@@ -1694,10 +1685,10 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
       	    || (fmpks[fmpks_pos].guest_index == index
       	    	&& strcmp(fmname, fmpks[fmpks_pos].guest_name) == 0))
       	 {
-      	 	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+      	 	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
       	 		WINDOW_BUTTONTYPE_OK,
       	 		-1, -1,
-      	 		makeEscapeString( "\n¼Ò×åÄ¿Ç°ÕýÔÚÕ½¶·ÖÐ£¬ËùÒÔÎÞ·¨ÉóºË³ÉÔ±¡£", buf, sizeof(buf)));
+      	 		makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½Ë³ï¿½Ô±ï¿½ï¿½", buf, sizeof(buf)));
 //      	 	print("fmpks_pos:%d index:%d host:%d guest:%d\n", fmpks_pos,
 //      	 		index, fmpks[fmpks_pos].host_index, fmpks[fmpks_pos].guest_index);
       	 	return;
@@ -1707,7 +1698,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 	  {	  
 	  // shan begin
       char sbuf[1024];	  
-	  sprintf( sbuf, "×å³¤´úºÅ:%d -> ÈËÎïÃû³Æ:%s ÈËÎïË÷Òý:%d (½«¸ÃÈËÎïÍË³ö¼Ò×å)\n", CHAR_getInt(meindex, CHAR_FMLEADERFLAG), charname, charindex);
+	  sprintf( sbuf, "ï¿½å³¤ï¿½ï¿½ï¿½ï¿½:%d -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:%s ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:%d (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½)\n", CHAR_getInt(meindex, CHAR_FMLEADERFLAG), charname, charindex);
 	  LogFamily(
 		  CHAR_getChar(meindex, CHAR_FMNAME),
 		  CHAR_getInt(meindex, CHAR_FMINDEX),
@@ -1717,7 +1708,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 		  sbuf
 		  );
 	  // shan end      
-	  saacproto_ACMemberLeaveFM_send(acfd,
+	  SaacClient__ACMemberLeaveFM_send(acfd,
       		CHAR_getChar(meindex, CHAR_FMNAME),
       	 	CHAR_getInt(meindex, CHAR_FMINDEX), charname, charindex,
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI),
@@ -1726,7 +1717,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 	  }
 #else
 	  {
-      saacproto_ACMemberLeaveFM_send(acfd,
+      SaacClient__ACMemberLeaveFM_send(acfd,
       		CHAR_getChar(meindex, CHAR_FMNAME),
       	 	CHAR_getInt(meindex, CHAR_FMINDEX), charname, charindex,
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI),
@@ -1745,7 +1736,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 	  {
 	  // shan begin
       char sbuf[1024];
-	  sprintf( sbuf, "×å³¤´úºÅ:%d -> ÈËÎïÃû³Æ:%s ÈËÎïË÷Òý:%d (Éè¸ÃÈËÎïÎª³¤ÀÏ)\n", CHAR_getInt(meindex, CHAR_FMLEADERFLAG), charname, charindex);
+	  sprintf( sbuf, "ï¿½å³¤ï¿½ï¿½ï¿½ï¿½:%d -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:%s ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:%d (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½)\n", CHAR_getInt(meindex, CHAR_FMLEADERFLAG), charname, charindex);
 	  LogFamily(
 		  CHAR_getChar(meindex, CHAR_FMNAME),
 		  CHAR_getInt(meindex, CHAR_FMINDEX),
@@ -1755,7 +1746,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 		  sbuf
 		  );
 	  // shan end      
-   	saacproto_ACMemberJoinFM_send(acfd,
+   	SaacClient__ACMemberJoinFM_send(acfd,
    		CHAR_getChar(meindex, CHAR_FMNAME),
    		CHAR_getInt(meindex, CHAR_FMINDEX), charname, charindex,
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), result,
@@ -1764,7 +1755,7 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 	  }
 #else
    {
-   	saacproto_ACMemberJoinFM_send(acfd,
+   	SaacClient__ACMemberJoinFM_send(acfd,
       		CHAR_getChar(meindex, CHAR_FMNAME),
       	 	CHAR_getInt(meindex, CHAR_FMINDEX), charname, charindex,
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), result,
@@ -1773,8 +1764,8 @@ void FAMILY_CheckMember(int fd, int meindex, char *message)
 #endif
    }
 #endif
-   // ÒªÇó×îÐÂ¼Ò×åÁÐ±í
-   saacproto_ACShowFMList_send( acfd );
+   // Òªï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
+   SaacClient__ACShowFMList_send( acfd );
 }
 
 void FAMILY_Channel(int fd, int meindex, char *message)
@@ -1788,10 +1779,10 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 	
 	//   print(" channelFM:%d ", fmindexi);
 	if( fmindexi < 0 ) {
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\nÄã»¹Ã»ÓÐ¼ÓÈëÈÎºÎ¼Ò×å£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ã»¹Ã»ï¿½Ð¼ï¿½ï¿½ï¿½ï¿½ÎºÎ¼ï¿½ï¿½å£¡", buf, sizeof(buf)));
 		return;
 	}
 	
@@ -1826,14 +1817,14 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 				i++;
 			}
 			if( i >= FAMILY_MAXCHANNELMEMBER ) {
-				CHAR_talkToCli( meindex, -1, "´ËÆµµÀÈËÊýÒÑÂú¡£", CHAR_COLORWHITE);
+				CHAR_talkToCli( meindex, -1, "ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", CHAR_COLORWHITE);
 				return;
 			}
-			sprintf( buf, "¼ÓÈë¼Ò×åÆµµÀ [%d]¡£", channel );
+			sprintf( buf, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ [%d]ï¿½ï¿½", channel );
 			CHAR_talkToCli( meindex, -1, buf, CHAR_COLORWHITE);
 			
 			if( nowchannel >=0 && nowchannel < FAMILY_MAXCHANNEL ) {
-				sprintf( buf, "%s ÍË³öÆµµÀ¡£", CHAR_getChar( meindex, CHAR_NAME) );
+				sprintf( buf, "%s ï¿½Ë³ï¿½Æµï¿½ï¿½ï¿½ï¿½", CHAR_getChar( meindex, CHAR_NAME) );
 				for( i=0; i < FAMILY_MAXCHANNELMEMBER; i++ ) {
 					if( CHAR_CHECKINDEX(channelMember[fmindexi][nowchannel][i])
 						&& channelMember[fmindexi][nowchannel][i] != meindex ) {
@@ -1841,7 +1832,7 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 					}
 				}
 			}
-			sprintf( buf, "%s ¼ÓÈëÆµµÀ¡£", CHAR_getChar( meindex, CHAR_NAME) );
+			sprintf( buf, "%s ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½", CHAR_getChar( meindex, CHAR_NAME) );
 			for( i=0; i < FAMILY_MAXCHANNELMEMBER; i++ ) {
 				if( CHAR_CHECKINDEX(channelMember[fmindexi][channel][i])
 					&& channelMember[fmindexi][channel][i] != meindex ) {
@@ -1861,15 +1852,15 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 			}
 			if( i >= FAMILY_MAXMEMBER ) {
 #ifndef _CHANNEL_MODIFY
-				CHAR_talkToCli( meindex, -1, "´ËÆµµÀÈËÊýÒÑÂú¡£", CHAR_COLORWHITE);
+				CHAR_talkToCli( meindex, -1, "ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", CHAR_COLORWHITE);
 #endif
 				return;
 			}
 #ifndef _CHANNEL_MODIFY
-			sprintf( buf, "¼ÓÈë¼Ò×åÆµµÀ [È«]¡£");
+			sprintf( buf, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ [È«]ï¿½ï¿½");
 			CHAR_talkToCli( meindex, -1, buf, CHAR_COLORWHITE);
 			if( nowchannel >=0 && nowchannel < FAMILY_MAXCHANNEL ) {
-				sprintf( buf, "%s ÍË³öÆµµÀ¡£", CHAR_getChar( meindex, CHAR_NAME) );
+				sprintf( buf, "%s ï¿½Ë³ï¿½Æµï¿½ï¿½ï¿½ï¿½", CHAR_getChar( meindex, CHAR_NAME) );
 				for( i=0; i < FAMILY_MAXCHANNELMEMBER; i++ ) {
 					if( CHAR_CHECKINDEX(channelMember[fmindexi][nowchannel][i])
 						&& channelMember[fmindexi][nowchannel][i] != meindex ) {
@@ -1877,7 +1868,7 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 					}
 				}
 			}
-			sprintf( buf, "%s ¼ÓÈëÆµµÀ¡£", CHAR_getChar( meindex, CHAR_NAME) );
+			sprintf( buf, "%s ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½", CHAR_getChar( meindex, CHAR_NAME) );
 			for( i=0; i < FAMILY_MAXCHANNELMEMBER; i++ ) {
 				if( CHAR_CHECKINDEX(channelMember[fmindexi][channel][i])
 					&& channelMember[fmindexi][channel][i] != meindex ) {
@@ -1892,14 +1883,14 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 		else if( channel == FAMILY_MAXCHANNEL && CHAR_getInt( meindex, CHAR_FMLEADERFLAG ) == 1 )
 #endif
 		{
-			CHAR_talkToCli( meindex, -1, "Æô¶¯×å³¤¹ã²¥¡£", CHAR_COLORWHITE);
+			CHAR_talkToCli( meindex, -1, "ï¿½ï¿½ï¿½ï¿½ï¿½å³¤ï¿½ã²¥ï¿½ï¿½", CHAR_COLORWHITE);
 		}
 		else {
 			channel = -1;
 #ifndef _CHANNEL_MODIFY
-			CHAR_talkToCli( meindex, -1, "ÍË³ö¼Ò×åÆµµÀ¡£", CHAR_COLORWHITE);
+			CHAR_talkToCli( meindex, -1, "ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½", CHAR_COLORWHITE);
 #else
-			CHAR_talkToCli( meindex, -1, "¹Ø±Õ×å³¤¹ã²¥¡£", CHAR_COLORWHITE);
+			CHAR_talkToCli( meindex, -1, "ï¿½Ø±ï¿½ï¿½å³¤ï¿½ã²¥ï¿½ï¿½", CHAR_COLORWHITE);
 			channel = 0;
 			i = 0;
 			while(i < FAMILY_MAXMEMBER){
@@ -1911,7 +1902,7 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 			}
 #endif
 			
-			sprintf( buf, "%s ÍË³öÆµµÀ¡£", CHAR_getChar( meindex, CHAR_NAME) );
+			sprintf( buf, "%s ï¿½Ë³ï¿½Æµï¿½ï¿½ï¿½ï¿½", CHAR_getChar( meindex, CHAR_NAME) );
 			for( i=0; i < FAMILY_MAXCHANNELMEMBER; i++ ) {
 				if( CHAR_CHECKINDEX(channelMember[fmindexi][nowchannel][i])
 					&& channelMember[fmindexi][nowchannel][i] != meindex ) {
@@ -1924,7 +1915,7 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 		if( channel != -1 ) CHAR_setWorkInt( meindex, CHAR_WORKFMCHANNELQUICK, channel);
 		
 		sprintf( sendbuf, "C|J|%d", channel);
-		lssproto_FM_send( fd, sendbuf);
+		GmsvServer_FM_send( fd, sendbuf);
 		
 	}
 	else if( strcmp( token, "L") == 0) {
@@ -1965,7 +1956,7 @@ void FAMILY_Channel(int fd, int meindex, char *message)
 			}
 		}
 		sprintf( sendbuf, "C|L|%d|%d%s", channel, num, subbuf);
-		lssproto_FM_send( fd, sendbuf);
+		GmsvServer_FM_send( fd, sendbuf);
 		//print(" CList:%s ", sendbuf);
 	}
 }
@@ -1979,7 +1970,7 @@ void FAMILY_Bank(int fd, int meindex, char *message)
 	fmindex = CHAR_getInt( meindex, CHAR_FMINDEX);
 	// add shan
 	if( fmindex <= 0 && CHAR_getInt( meindex, CHAR_BANKGOLD) < 1) {
-		CHAR_talkToCli( meindex, -1, "Äã±ØÐëÏÈ¼ÓÈë¼Ò×å¡£", CHAR_COLORWHITE);
+		CHAR_talkToCli( meindex, -1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½å¡£", CHAR_COLORWHITE);
 		return;
 	}
 	
@@ -1998,12 +1989,12 @@ void FAMILY_Bank(int fd, int meindex, char *message)
 			   	|| toBank < 0) ) {
 			// shan add       
 			if( toBank > 0 && CHAR_getInt( meindex, CHAR_FMINDEX ) < 1 ) {
-				sprintf(buf, "±§Ç¸£¡ÄãÃ»ÓÐ¼ÓÈëÈÎºÎ¼Ò×å£¬ËùÒÔ½öÄÜÁìÈ¡´æ¿î");
+				sprintf(buf, "ï¿½ï¿½Ç¸ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Ð¼ï¿½ï¿½ï¿½ï¿½ÎºÎ¼ï¿½ï¿½å£¬ï¿½ï¿½ï¿½Ô½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½");
 				CHAR_talkToCli( meindex, -1, buf, CHAR_COLORWHITE);
 				return;
 			}
 			if( bank + toBank <0) {
-				sprintf(buf, "±§Ç¸£¡ÄãµÄ¼Ò×åÒøÐÐ¸öÈËÕÊ»§Ã»ÓÐÕâÃ´¶à´æ¿î");
+				sprintf(buf, "ï¿½ï¿½Ç¸ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¸ï¿½ï¿½ï¿½ï¿½Ê»ï¿½Ã»ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½ï¿½");
 				CHAR_talkToCli( meindex, -1, buf, CHAR_COLORWHITE);
 				return;
 			}
@@ -2012,15 +2003,15 @@ void FAMILY_Bank(int fd, int meindex, char *message)
 			CHAR_send_P_StatusString( meindex , CHAR_P_STRING_GOLD);
 			
 			if( toBank >= 0 ) {
-				sprintf(buf, "´æÈë%dµ½¼Ò×åÒøÐÐ¸öÈËÕÊ»§¡£", toBank);
+				sprintf(buf, "ï¿½ï¿½ï¿½ï¿½%dï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¸ï¿½ï¿½ï¿½ï¿½Ê»ï¿½ï¿½ï¿½", toBank);
 				CHAR_talkToCli( meindex, -1, buf, CHAR_COLORWHITE);
-				// Syu ADD ÐÂÔö¼Ò×å¸öÈËÒøÐÐ´æÈ¡Log (²»º¬¼Ò×åÒøÐÐ)
+				// Syu ADD ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½È¡Log (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 				LogFamilyBankStone(
 					CHAR_getChar( meindex, CHAR_NAME ), 
 					CHAR_getChar( meindex, CHAR_CDKEY ),
 					toBank,                            
 					CHAR_getInt( meindex, CHAR_GOLD ),
-					"myBank(´æ¿î)(¼Ò×å¸öÈËÒøÐÐ)",
+					"myBank(ï¿½ï¿½ï¿½)(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)",
 					CHAR_getInt( meindex,CHAR_FLOOR),
 					CHAR_getInt( meindex,CHAR_X ),
 					CHAR_getInt( meindex,CHAR_Y ),
@@ -2029,15 +2020,15 @@ void FAMILY_Bank(int fd, int meindex, char *message)
 				
 			}
 			else {
-				sprintf(buf, "´Ó¼Ò×åÒøÐÐ¸öÈËÕÊ»§È¡³ö%d¡£", -toBank);
+				sprintf(buf, "ï¿½Ó¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¸ï¿½ï¿½ï¿½ï¿½Ê»ï¿½È¡ï¿½ï¿½%dï¿½ï¿½", -toBank);
 				CHAR_talkToCli( meindex, -1, buf, CHAR_COLORWHITE);
-				// Syu ADD ÐÂÔö¼Ò×å¸öÈËÒøÐÐ´æÈ¡Log (²»º¬¼Ò×åÒøÐÐ)
+				// Syu ADD ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½È¡Log (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 				LogFamilyBankStone(
 					CHAR_getChar( meindex, CHAR_NAME ), 
 					CHAR_getChar( meindex, CHAR_CDKEY ),
 					toBank,                            
 					CHAR_getInt( meindex, CHAR_GOLD ),
-					"myBank(Ìá¿î)(¼Ò×å¸öÈËÒøÐÐ)",
+					"myBank(ï¿½ï¿½ï¿½)(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)",
 					CHAR_getInt( meindex,CHAR_FLOOR),
 					CHAR_getInt( meindex,CHAR_X ),
 					CHAR_getInt( meindex,CHAR_Y ),
@@ -2045,14 +2036,14 @@ void FAMILY_Bank(int fd, int meindex, char *message)
 					);
 				
 			}
-			// Syu ADD ÐÂÔö¼Ò×å¸öÈËÒøÐÐ´æÈ¡Log (²»º¬¼Ò×åÒøÐÐ)
+			// Syu ADD ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½È¡Log (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 			LogStone(
 				-1,
-				CHAR_getChar( meindex, CHAR_NAME ), /* Æ½ÅÒ·Â   */
-				CHAR_getChar( meindex, CHAR_CDKEY ), /* ½»¡õ°Ç¡õID */
-				-toBank,                                 /* àÅº° */
+				CHAR_getChar( meindex, CHAR_NAME ), /* Æ½ï¿½Ò·ï¿½   */
+				CHAR_getChar( meindex, CHAR_CDKEY ), /* ï¿½ï¿½ï¿½ï¿½ï¿½Ç¡ï¿½ID */
+				-toBank,                                 /* ï¿½Åºï¿½ */
 				CHAR_getInt( meindex, CHAR_GOLD ),
-				"myBank(¼Ò×å¸öÈËÒøÐÐ)",
+				"myBank(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)",
 				CHAR_getInt( meindex,CHAR_FLOOR),
 				CHAR_getInt( meindex,CHAR_X ),
 				CHAR_getInt( meindex,CHAR_Y )
@@ -2086,27 +2077,27 @@ void FAMILY_Bank(int fd, int meindex, char *message)
 		FMindex = CHAR_getWorkInt( meindex, CHAR_WORKFMINDEXI );
 		mygold = CHAR_getInt( meindex, CHAR_GOLD);
 		if( mygold < 0 || mygold > MaxGold || toTax == 0 )	return;
-		if( toTax > 0 )	{//+´æ¿î
+		if( toTax > 0 )	{//+ï¿½ï¿½ï¿½
 			if( ((mygold-toTax) < 0) || (familyTax[ FMindex] + toTax) > CHAR_MAXFMBANKGOLDHAVE )	{
 				return;
 			}
-		}else if( toTax < 0 ){ //-È¡¿î
+		}else if( toTax < 0 ){ //-È¡ï¿½ï¿½
 			if( ((mygold-toTax)>MaxGold) || (familyTax[ FMindex] + toTax) < 0 )	{
 				return;
 			}
 		}
 		
 		
-		if( toTax>0 ) {	//´æ¿îÔ¤ÏÈ¿Û¿î
+		if( toTax>0 ) {	//ï¿½ï¿½ï¿½Ô¤ï¿½È¿Û¿ï¿½
 			CHAR_setInt( meindex, CHAR_GOLD, CHAR_getInt( meindex, CHAR_GOLD)-toTax );
 		}
-		sprintf( buf, "¼Ò×åÒøÐÐ%s´¦ÀíÖÐ....", (toTax>0)?"´æ¿î":"È¡¿î");
+		sprintf( buf, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½%sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½....", (toTax>0)?"ï¿½ï¿½ï¿½":"È¡ï¿½ï¿½");
 		CHAR_talkToCli( meindex , -1, buf, CHAR_COLORYELLOW);
 		
 		CHAR_send_P_StatusString( meindex , CHAR_P_STRING_GOLD);
 		sprintf( buf, "%d", toTax );
 		
-		saacproto_ACFixFMData_send(acfd,
+		SaacClient__ACFixFMData_send(acfd,
 			CHAR_getChar(meindex, CHAR_FMNAME),
 			CHAR_getInt(meindex, CHAR_FMINDEX),
 			CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), FM_FIX_FMGOLD, buf,
@@ -2137,17 +2128,17 @@ void FAMILY_SetPoint(int fd, int meindex, char *message)
       || (CHAR_getInt(meindex, CHAR_FMLEADERFLAG) != 1))
 #endif
    {
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
-		makeEscapeString( "\nÄã²»ÊÇ×å³¤£¬ËùÒÔÃ»ÓÐÐÞ¸ÄµÄÈ¨Á¦à¡£¡", buf, sizeof(buf)));
+		makeEscapeString( "\nï¿½ã²»ï¿½ï¿½ï¿½å³¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Þ¸Äµï¿½È¨ï¿½ï¿½à¡£ï¿½", buf, sizeof(buf)));
       	return;
    }
    fmdp = CHAR_getWorkInt(meindex, CHAR_WORKFMDP);
 #ifdef _FM_POINT_APPLY_FAME
   if(fmdp < 100000){
-   	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,WINDOW_BUTTONTYPE_OK,-1, -1,
-		makeEscapeString( "\nÄã¼Ò×åµÄÉùÍû²»×ã1000ÉùÍû£¬ÎÞ·¨ÉêÇë×¯Ô°£¡", buf, sizeof(buf)));
+   	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,WINDOW_BUTTONTYPE_OK,-1, -1,
+		makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1000ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½×¯Ô°ï¿½ï¿½", buf, sizeof(buf)));
     return;
   }
 #endif
@@ -2157,9 +2148,9 @@ void FAMILY_SetPoint(int fd, int meindex, char *message)
    	   && ((fmpks[i * MAX_SCHEDULE + 1].flag = FMPKS_FLAG_MANOR_BATTLEBEGIN)
    	   	|| (fmpks[i * MAX_SCHEDULE + 1].flag == FMPKS_FLAG_MANOR_PREPARE))){
    		char	tmpbuf[256];
-   		sprintf(tmpbuf, "\nÄã¸ú%sÒÑ¾­ÓÐÔ¤Ô¼×¯Ô°Õù¶áÈüÁË¡«\nÎÞ·¨ÔÙÉêÇë×¯Ô°ÁËà¸£¡",
+   		sprintf(tmpbuf, "\nï¿½ï¿½ï¿½%sï¿½Ñ¾ï¿½ï¿½ï¿½Ô¤Ô¼×¯Ô°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¡ï¿½\nï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¯Ô°ï¿½ï¿½à¸£ï¿½",
    			fmpks[i * MAX_SCHEDULE + 1].host_name);
-   		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+   		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
    			WINDOW_BUTTONTYPE_OK,
    			-1, -1,
    			makeEscapeString(tmpbuf, buf, sizeof(buf)));
@@ -2185,7 +2176,7 @@ void FAMILY_SetPoint(int fd, int meindex, char *message)
    	CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI),
    	fmpointindex, fl, x, y);
 */
-   saacproto_ACSetFMPoint_send(acfd,
+   SaacClient__ACSetFMPoint_send(acfd,
    	CHAR_getChar(meindex, CHAR_FMNAME),
    	CHAR_getInt(meindex, CHAR_FMINDEX),
    	CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI),
@@ -2204,22 +2195,22 @@ void ACSetFMPoint(int ret, int r, int clifd)
          return;
    if (ret == 0){
    		if (r == -1)
-   			sprintf(message, "ÉêÇë¼Ò×åÊ§°Ü£¡");
+   			sprintf(message, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½");
    		else if (r == -2)
-   			sprintf(message, "ÄãÒÑ¾­ÓÐ¼Ò×å¾ÝµãÁË¡«²»µÃÖØ¸´ÉêÇë£¡");
+   			sprintf(message, "ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½Ð¼ï¿½ï¿½ï¿½Ýµï¿½ï¿½Ë¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ë£¡");
    		else if (r == -3)
-   			sprintf(message, "ÉÐÎ´µ½´ïÉêÇë¼Ò×å¾ÝµãµÄ×Ê¸ñ£¡");
+   			sprintf(message, "ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½ï¿½ï¿½Ê¸ï¿½");
    		else if (r == -4)
-   			sprintf(message, "¼Ò×å¾ÝµãÒÑ¾­ÓÐ¼Ò×åÔÚÊ¹ÓÃÖÐÂÞ£¡");
+   			sprintf(message, "ï¿½ï¿½ï¿½ï¿½Ýµï¿½ï¿½Ñ¾ï¿½ï¿½Ð¼ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½Þ£ï¿½");
    		else if (r == -5)
-   			sprintf(message, "ÄúµÄ¼Ò×åÈËÊýÎ´´ïÉêÇë±ê×¼à¡£¡");
+   			sprintf(message, "ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¼à¡£ï¿½");
    		else if (r == -6)
-   			sprintf(message, "ÓÉÓÚÄãÊ§ÊØ×¯Ô°£¬ÐèÔÚÈýÊ®·ÖÖÓºóÉêÇëÓ´£¡");
+   			sprintf(message, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½×¯Ô°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê®ï¿½ï¿½ï¿½Óºï¿½ï¿½ï¿½ï¿½ï¿½Ó´ï¿½ï¿½");
    }
    else if (ret == 1)
-			sprintf(message, "ÉêÇë¼Ò×å¾Ýµã£Ï£Ë£¡");
+			sprintf(message, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½Ï£Ë£ï¿½");
    
-   lssproto_WN_send( clifd, WINDOW_MESSAGETYPE_MESSAGE,
+   GmsvServer_WN_send( clifd, WINDOW_MESSAGETYPE_MESSAGE,
    	WINDOW_BUTTONTYPE_OK,
    	-1, -1,
    	makeEscapeString(message, buf, sizeof(buf)));
@@ -2228,7 +2219,7 @@ void ACSetFMPoint(int ret, int r, int clifd)
 void ACFMAnnounce(int ret, char *fmname, int fmindex, int index,
 	int kindflag, char *data, int color)
 {
-   // kindflag 1:×å³¤¹ã²¥ 2:ÏµÍ³¹«¸æ¼Ò×å±»É¾³ý 3:ÏµÍ³Í¨ÖªÑ¶Ï¢
+   // kindflag 1:ï¿½å³¤ï¿½ã²¥ 2:ÏµÍ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å±»É¾ï¿½ï¿½ 3:ÏµÍ³Í¨ÖªÑ¶Ï¢
    int i, chindex;
    if( ret != 1 )	return;
 //   print("fmname:%s fmindex:%d index:%d kindflag:%d data:%s color:%d\n",
@@ -2256,7 +2247,7 @@ void ACFMAnnounce(int ret, char *fmname, int fmindex, int index,
                int fd = getfdFromCharaIndex( chindex );
                if (fd == -1)	return;
                SetFMVarInit( chindex );
-               CHAR_talkToCli( chindex , -1, "ÓÉì¶ÄúµÄ¼Ò×åÔÚÆßÌìÖ®ÄÚÃ»ÓÐÕÙÊÕµ½£±£°Ãû¼Ò×å³ÉÔ±£¬ËùÒÔ±»ÆÈ½âÉ¢ÁË£¡",
+               CHAR_talkToCli( chindex , -1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½È½ï¿½É¢ï¿½Ë£ï¿½",
                		CHAR_COLORRED);
             }
          }else
@@ -2271,9 +2262,9 @@ void ACFMAnnounce(int ret, char *fmname, int fmindex, int index,
       meindex = CONNECT_getCharaindex(clifd);
       if (!CHAR_CHECKINDEX(meindex))	return;
       CHAR_talkToCli(meindex, -1, data, CHAR_COLORRED);
-      if(strstr(data,"ÒÑ¾­ÉóºËÍê±ÏÄúµÄ¼ÓÈëÉêÇë£¡")!=NULL){
+      if(strstr(data,"ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë£¡")!=NULL){
 
-			}else if(strstr(data,"ÒÑ¾­½«ÄãÌß³ö¼Ò×åÁË£¡")!=NULL){
+			}else if(strstr(data,"ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½")!=NULL){
 				CHAR_setInt( meindex , CHAR_RIDEPET, -1 );
 				CHAR_setInt( meindex , CHAR_BASEIMAGENUMBER , CHAR_getInt( meindex , CHAR_BASEBASEIMAGENUMBER) );
 				CHAR_complianceParameter( meindex );
@@ -2294,7 +2285,7 @@ void ACFMAnnounce(int ret, char *fmname, int fmindex, int index,
       meindex = CONNECT_getCharaindex(clifd);
       if (!CHAR_CHECKINDEX(meindex))	return;
 //      print("Here2\n");
-      lssproto_WN_send(clifd, WINDOW_MESSAGETYPE_MESSAGE,
+      GmsvServer_WN_send(clifd, WINDOW_MESSAGETYPE_MESSAGE,
       		WINDOW_BUTTONTYPE_OK,
       		-1, -1,
       		makeEscapeString(data, buf, sizeof(buf)));
@@ -2324,10 +2315,10 @@ void FAMILY_SetAcceptFlag(int fd, int meindex, char *message)
       || (CHAR_getInt(meindex, CHAR_FMLEADERFLAG) != 1))
 #endif      
    {
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
-		makeEscapeString( "\nÄã²»ÊÇ×å³¤£¬ËùÒÔÃ»ÓÐÐÞ¸ÄµÄÈ¨Á¦à¡£¡", buf, sizeof(buf)));
+		makeEscapeString( "\nï¿½ã²»ï¿½ï¿½ï¿½å³¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Þ¸Äµï¿½È¨ï¿½ï¿½à¡£ï¿½", buf, sizeof(buf)));
       	return;
    }
    
@@ -2336,7 +2327,7 @@ void FAMILY_SetAcceptFlag(int fd, int meindex, char *message)
    result = atoi(token);
    if ((result == 0) || (result == 1))
    {
-   	saacproto_ACFixFMData_send(acfd,
+   	SaacClient__ACFixFMData_send(acfd,
    		CHAR_getChar(meindex, CHAR_FMNAME),
    		CHAR_getInt(meindex, CHAR_FMINDEX),
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), FM_FIX_ACCEPTFLAG,
@@ -2359,10 +2350,10 @@ void FAMILY_FixRule( int fd, int meindex, char* message )
       || (CHAR_getInt(meindex, CHAR_FMLEADERFLAG) != 1))
 #endif      
    {
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
-		makeEscapeString( "\nÄã²»ÊÇ×å³¤£¬ËùÒÔÃ»ÓÐÐÞ¸ÄµÄÈ¨Á¦à¡£¡", buf, sizeof(buf)));
+		makeEscapeString( "\nï¿½ã²»ï¿½ï¿½ï¿½å³¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Þ¸Äµï¿½È¨ï¿½ï¿½à¡£ï¿½", buf, sizeof(buf)));
       	return;
    }
 
@@ -2376,15 +2367,15 @@ void FAMILY_FixRule( int fd, int meindex, char* message )
  
 	   if (strcmp( buf, "") == 0)
 	   {
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\n¼Ò×åÖ÷Ö¼²»¿ÉÎª¿Õ°×à¡£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¼ï¿½ï¿½ï¿½ï¿½Îªï¿½Õ°ï¿½à¡£ï¿½", buf, sizeof(buf)));
 	      	return;
 	   }
 
 //	   print(" new_rule:%s ", buf);
-	   saacproto_ACFixFMData_send(acfd,
+	   SaacClient__ACFixFMData_send(acfd,
    		CHAR_getChar(meindex, CHAR_FMNAME),
 	   	CHAR_getInt(meindex, CHAR_FMINDEX),
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), FM_FIX_FMRULE,
@@ -2399,10 +2390,10 @@ void FAMILY_FixRule( int fd, int meindex, char* message )
    {
 	   if (getStringFromIndexWithDelim(message, "|", 3, buf,
 		   sizeof(buf)) == FALSE) {
-			   lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+			   GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 				   WINDOW_BUTTONTYPE_OK,
 				   -1, -1,
-				   makeEscapeString( "\n¼Ò×å»ÕÕÂÉèÖÃ´íÎó", buf, sizeof(buf)));
+				   makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½", buf, sizeof(buf)));
 			   return;
 	   }
 	   int badgeindex = atoi( buf );
@@ -2410,33 +2401,33 @@ void FAMILY_FixRule( int fd, int meindex, char* message )
 	   extern int FamilyBadgeDataNum;
 	   extern int FamilyBadgePrice;
 	   if(badgeindex <0 || badgeindex>FamilyBadgeDataNum){
-		   lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		   GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			   WINDOW_BUTTONTYPE_OK,
 			   -1, -1,
-			   makeEscapeString( "\n¼Ò×å»ÕÕÂÉèÖÃ´íÎó", buf, sizeof(buf)));
+			   makeEscapeString( "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½", buf, sizeof(buf)));
 		   return;
 	   }
 	   int vippoint = sasql_getVipPoint(meindex);
 	   if(vippoint < FamilyBadgePrice){
-		   lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		   GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			   WINDOW_BUTTONTYPE_OK,
 			   -1, -1,
-			   makeEscapeString( "\nÄúµÄ½ð±Ò²»×ã£¡", buf, sizeof(buf)));
+			   makeEscapeString( "\nï¿½ï¿½ï¿½Ä½ï¿½Ò²ï¿½ï¿½ã£¡", buf, sizeof(buf)));
 		   return;
 	   }
 	   sasql_setVipPoint(meindex,vippoint - FamilyBadgePrice);
 	   char token[256];
-	   sprintf(token, "ÏµÍ³¿Û³ý%d½ð±Ò",FamilyBadgePrice);
+	   sprintf(token, "ÏµÍ³ï¿½Û³ï¿½%dï¿½ï¿½ï¿½",FamilyBadgePrice);
 	   CHAR_talkToCli( meindex, -1, token, CHAR_COLORYELLOW);
 	   badgeindex = FamilyBadgeData[badgeindex];
 	   sprintf(buf,"%d",badgeindex);
-	   saacproto_ACFixFMData_send(acfd,
+	   SaacClient__ACFixFMData_send(acfd,
 		   CHAR_getChar(meindex, CHAR_FMNAME),
 		   CHAR_getInt(meindex, CHAR_FMINDEX),
 		   CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), FM_FIX_BADGE,
 		   buf, "", CHAR_getWorkInt(meindex, CHAR_WORKFMCHARINDEX),
 		   CONNECT_getFdid(fd));
-	   saacproto_ACShowMemberList_send( acfd, CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI));
+	   SaacClient__ACShowMemberList_send( acfd, CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI));
 	   return;
    }
 #endif
@@ -2445,32 +2436,32 @@ void FAMILY_FixRule( int fd, int meindex, char* message )
 	   int havepetindex, petindex, i;
 	   char petname[20], petattr[512];
 
-	   // ¼ì²éÊÇ·ñÒÑÓÐÊØ»¤ÊÞ
+	   // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½
 	   for( i =0; i< CHAR_MAXPETHAVE; i++ )
 	   {
 	   	int petindex = CHAR_getCharPet(meindex, i);
 	   	if (!CHAR_CHECKINDEX(petindex))     continue;
 	   	if( CHAR_getInt( petindex , CHAR_PETFAMILY ) ==1 )
 	   	{
-//			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+//			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 //				WINDOW_BUTTONTYPE_OK,
 //				-1, -1,
-//				makeEscapeString( "\nÔ­±¾µÄÊØ»¤ÊÞ»¹ÔÚà¡¡£", buf, sizeof(buf)));
+//				makeEscapeString( "\nÔ­ï¿½ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½Þ»ï¿½ï¿½ï¿½à¡¡ï¿½", buf, sizeof(buf)));
 //		      	return;
 				CHAR_setInt( petindex , CHAR_PETFAMILY,0 );
 	   	}
 	   }
-	   // ¼ì²éÊÇ·ñÒÑÓÐÊØ»¤ÊÞ(¼Ä³è)
+	   // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½(ï¿½Ä³ï¿½)
 	   for( i =0; i< CHAR_MAXPOOLPETHAVE; i++ )
 	   {
 	   	int petindex = CHAR_getCharPoolPet(meindex, i);
 	   	if (!CHAR_CHECKINDEX(petindex))     continue;
 	   	if( CHAR_getInt( petindex , CHAR_PETFAMILY ) ==1 )
 	   	{
-//			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+//			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 //				WINDOW_BUTTONTYPE_OK,
 //				-1, -1,
-//				makeEscapeString( "\nÔ­±¾µÄÊØ»¤ÊÞ»¹ÔÚà¡¡£", buf, sizeof(buf)));
+//				makeEscapeString( "\nÔ­ï¿½ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½Þ»ï¿½ï¿½ï¿½à¡¡ï¿½", buf, sizeof(buf)));
 //		      	return;
 				CHAR_setInt( petindex , CHAR_PETFAMILY,0 );
 	   	}
@@ -2495,7 +2486,7 @@ void FAMILY_FixRule( int fd, int meindex, char* message )
 	   	CHAR_getWorkInt(petindex, CHAR_WORKQUICK));
 	   	
 	   CHAR_setInt(petindex, CHAR_PETFAMILY, 1);
-	   saacproto_ACFixFMData_send(acfd,
+	   SaacClient__ACFixFMData_send(acfd,
    		CHAR_getChar(meindex, CHAR_FMNAME),
 	   	CHAR_getInt(meindex, CHAR_FMINDEX),
    		CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), FM_FIX_FMPET,
@@ -2523,7 +2514,7 @@ void JoinMemberIndex( int meindex, int fmindexi )
 	}
 #ifdef _CHANNEL_MODIFY
 	i = 0;
-	// ÏÈÇåµô¾ÉµÄÆµµÀ¼ÇÂ¼
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½Æµï¿½ï¿½ï¿½ï¿½Â¼
 	while(i < FAMILY_MAXMEMBER){
 	 if(channelMember[fmindexi][0][i] == meindex){
 		 channelMember[fmindexi][0][i] = -1;
@@ -2531,7 +2522,7 @@ void JoinMemberIndex( int meindex, int fmindexi )
 	 i++;
 	}
 	i = 0;
-	// ¼ÓÈëÆµµÀ
+	// ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½
 	while(i < FAMILY_MAXMEMBER){
 	 if(channelMember[fmindexi][0][i] == -1){
 		 channelMember[fmindexi][0][i] = meindex;
@@ -2552,7 +2543,7 @@ void LeaveMemberIndex( int meindex, int fmindexi )
   }
 #ifdef _CHANNEL_MODIFY
 	i = 0;
-	// Çåµô¾ÉµÄÆµµÀ¼ÇÂ¼
+	// ï¿½ï¿½ï¿½ï¿½Éµï¿½Æµï¿½ï¿½ï¿½ï¿½Â¼
 	while(i < FAMILY_MAXMEMBER){
 	 if(channelMember[fmindexi][0][i] == meindex){
 		 channelMember[fmindexi][0][i] = -1;
@@ -2573,25 +2564,25 @@ int FAMILY_RidePet( int fd, int meindex, char* message )
 #endif
 	if (!CHAR_CHECKINDEX(meindex))return 0;
 
-	// Robin fix Õ½¶·ÖÐ²»¿ÉÆï
+	// Robin fix Õ½ï¿½ï¿½ï¿½Ð²ï¿½ï¿½ï¿½ï¿½ï¿½
 	if( CHAR_getWorkInt( meindex, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE )
 	{
-		CHAR_talkToCli( meindex, -1, "Õ½¶·ÖÐ²»¿ÉÆï³è£¡", CHAR_COLORYELLOW );
+		CHAR_talkToCli( meindex, -1, "Õ½ï¿½ï¿½ï¿½Ð²ï¿½ï¿½ï¿½ï¿½ï¿½è£¡", CHAR_COLORYELLOW );
 		return 0;
 	}
-	// Robin fix ½»Ò×ÖÐ²»¿ÉÆï
+	// Robin fix ï¿½ï¿½ï¿½ï¿½ï¿½Ð²ï¿½ï¿½ï¿½ï¿½ï¿½
 	if( CHAR_getWorkInt(meindex, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE){
-		CHAR_talkToCli( meindex, -1, "½»Ò×ÖÐ²»¿ÉÆï³è£¡", CHAR_COLORYELLOW );
+		CHAR_talkToCli( meindex, -1, "ï¿½ï¿½ï¿½ï¿½ï¿½Ð²ï¿½ï¿½ï¿½ï¿½ï¿½è£¡", CHAR_COLORYELLOW );
 		return 0;
 	}
 
 #ifdef _PETSKILL_BECOMEPIG
-    if( CHAR_getInt( meindex, CHAR_BECOMEPIG) > -1 ){ //´¦ì¶ÎÚÁ¦»¯×´Ì¬
+    if( CHAR_getInt( meindex, CHAR_BECOMEPIG) > -1 ){ //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 	    CHAR_setInt( meindex, CHAR_RIDEPET, -1 );
-		//³èÎïÑ¡ÏîµÄ×´Ì¬ÒÀÈ»Îª"Æï³Ë",ÕâÀïÐÞÕý¹ýÀ´
+		//ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½È»Îª"ï¿½ï¿½ï¿½",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		CHAR_complianceParameter( meindex );
 		CHAR_send_P_StatusString( meindex, CHAR_P_STRING_RIDEPET);
-		CHAR_talkToCli( meindex, -1, "Ä¿Ç°Äã´¦ÓÚÎÚÁ¦»¯×´Ì¬£¬²»ÄÜÆï³Ë³èÎï¡£", CHAR_COLORYELLOW );
+		CHAR_talkToCli( meindex, -1, "Ä¿Ç°ï¿½ã´¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¡£", CHAR_COLORYELLOW );
 		return 0;
 	}
 #endif
@@ -2603,37 +2594,37 @@ int FAMILY_RidePet( int fd, int meindex, char* message )
 		if( atoi(token2) != -1 ) {
 			petindex = CHAR_getCharPet( meindex, atoi( token2 ) );
 			if(!CHAR_CHECKINDEX(petindex))return 0;
-			//È¡Ïû½ûÖ¹¿¨ÆïÕ½
+			//È¡ï¿½ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½Õ½
 			//if( CHAR_getInt( meindex, CHAR_DEFAULTPET ) == atoi( token2 ) )	return 0;
 			if( CHAR_getInt( meindex, CHAR_RIDEPET) != -1 ) return 0;
 			if( CHAR_getInt( meindex, CHAR_LEARNRIDE) < CHAR_getInt( petindex, CHAR_LV )  )
 			{
 				char buff[255];
-				sprintf(buff,"ÄãÄ¿Ç°Ö»ÄÜÆï³ËµÈ¼¶Ð¡ÓÚ%d¼¶µÄ³è¡£",CHAR_getInt( meindex, CHAR_LEARNRIDE));
+				sprintf(buff,"ï¿½ï¿½Ä¿Ç°Ö»ï¿½ï¿½ï¿½ï¿½ËµÈ¼ï¿½Ð¡ï¿½ï¿½%dï¿½ï¿½ï¿½Ä³è¡£",CHAR_getInt( meindex, CHAR_LEARNRIDE));
 				CHAR_talkToCli( meindex, -1, buff, CHAR_COLORYELLOW );
 				return 0;
 			}
 			if( CHAR_getWorkInt( petindex, CHAR_WORKFIXAI ) < 100 )
 			{
-				CHAR_talkToCli( meindex, -1, "¸ÃÆï³èµÄÖÒÐ¡ÓÚ100", CHAR_COLORYELLOW );
+				CHAR_talkToCli( meindex, -1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½100", CHAR_COLORYELLOW );
 				return 0;
 			}
 	
 #ifdef _PET_BEATITUDE
 			if( CHAR_getInt(petindex, CHAR_BEATITUDE) > 0){
-				CHAR_talkToCli( meindex, -1, "ÌáÉý¹ýµÄ³èÎïÎÞ·¨Æï³è£¡", CHAR_COLORYELLOW );
+				CHAR_talkToCli( meindex, -1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½è£¡", CHAR_COLORYELLOW );
 				return 0;
 			}
 #endif
 
 #ifdef _PET_VALIDITY
 			if(CHAR_getInt ( petindex, CHAR_PETVALIDITY) > 0 && CHAR_getInt ( petindex, CHAR_PETVALIDITY) < time(NULL) ){
-				CHAR_talkToCli(meindex, -1, "¸Ã³èÎïÒÑ¾­Ê§Ð§ÁË£¡", CHAR_COLORYELLOW);
+				CHAR_talkToCli(meindex, -1, "ï¿½Ã³ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½Ê§Ð§ï¿½Ë£ï¿½", CHAR_COLORYELLOW);
 				int s_pet = CHAR_getWorkInt( meindex, CHAR_WORKSTANDBYPET);
 				s_pet ^= ( 1 << atoi( token2 ) );
 				CHAR_setWorkInt( meindex, CHAR_WORKSTANDBYPET, s_pet);
 
-				lssproto_SPET_send( fd, s_pet, TRUE);
+				GmsvServer_SPET_send( fd, s_pet, TRUE);
 				return FALSE;
 			}
 #endif
@@ -2642,7 +2633,7 @@ int FAMILY_RidePet( int fd, int meindex, char* message )
 			if( CHAR_getInt( meindex, CHAR_LV)+getRideLevel() < CHAR_getInt( petindex, CHAR_LV )  )
 			{ 
 				char buff[255];
-				sprintf(buff,"Äã×î¸ßÖ»ÄÜÆï³èµÈ¼¶±ÈÄã´ó%d¼¶µÄ³è¡£",getRideLevel());
+				sprintf(buff,"ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½%dï¿½ï¿½ï¿½Ä³è¡£",getRideLevel());
 				CHAR_talkToCli( meindex, -1, buff, CHAR_COLORYELLOW );
 				return 0;
 			}	
@@ -2650,7 +2641,7 @@ int FAMILY_RidePet( int fd, int meindex, char* message )
 			if( CHAR_getInt( meindex, CHAR_LV)+5 < CHAR_getInt( petindex, CHAR_LV )  )
 			{ 
 				char buff[255];
-				sprintf(buff,"Äã×î¸ßÖ»ÄÜÆï³èµÈ¼¶±ÈÄã´ó5¼¶µÄ³è¡£");
+				sprintf(buff,"ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½5ï¿½ï¿½ï¿½Ä³è¡£");
 				CHAR_talkToCli( meindex, -1, buff, CHAR_COLORYELLOW );
 				return 0;
 			}	
@@ -2673,11 +2664,6 @@ int FAMILY_RidePet( int fd, int meindex, char* message )
 				return 1;
 			}
 		}else {
-//			CHAR_setInt( meindex , CHAR_RIDEPET, -1 );
-//			CHAR_setInt( meindex , CHAR_BASEIMAGENUMBER , CHAR_getInt( meindex , CHAR_BASEBASEIMAGENUMBER) );
-//			CHAR_complianceParameter( meindex );
-//			CHAR_sendCToArroundCharacter( CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX ));
-//			CHAR_send_P_StatusString( meindex , CHAR_P_STRING_RIDEPET);
 		}
 	}
 	return 0;
@@ -2688,8 +2674,8 @@ void ACFixFMPK(int winindex, int loseindex, int data)
    int i = 0, charindex = 0;
    char msg1[256], msg2[256];
    
-   sprintf(msg1, "¹§Ï²Äú£¡¼Ò×åÉùÍûÌá¸ßÁË%8dµã£¡", (data / 100));
-   sprintf(msg2, "¼Ò×åÉùÍû¼õÉÙÁË%8dµã£¡", (data / 100));
+   sprintf(msg1, "ï¿½ï¿½Ï²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½%8dï¿½ã£¡", (data / 100));
+   sprintf(msg2, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½%8dï¿½ã£¡", (data / 100));
    for (i = 0; i < FAMILY_MAXMEMBER; i++)
    {
       charindex = familyMemberIndex[winindex][i];
@@ -2711,7 +2697,7 @@ void ACFixFMPK(int winindex, int loseindex, int data)
 
 void getNewFMList()
 {
-	saacproto_ACShowFMList_send( acfd );
+	SaacClient__ACShowFMList_send( acfd );
 }
 
 //int     channelMember[FAMILY_MAXNUM][FAMILY_MAXCHANNEL][FAMILY_MAXMEMBER];
@@ -2719,19 +2705,19 @@ void getNewFMList()
 
 void checkFamilyIndex( void )
 {
-	int i, j, k, charaindex, err1=0, err2=0;
+	int i, j, k, char_index, err1=0, err2=0;
 //	print(" checkFamilyIndex! ");
 	
 	for( i=0; i<FAMILY_MAXNUM; i++){
 		for( j=0; j<FAMILY_MAXMEMBER; j++){
-			charaindex = familyMemberIndex[i][j];
-			if( charaindex == -1 )	continue;
-			if( !CHAR_CHECKINDEX(charaindex) ){
+			char_index = familyMemberIndex[i][j];
+			if( char_index == -1 )	continue;
+			if( !CHAR_CHECKINDEX(char_index) ){
 				familyMemberIndex[i][j] = -1;
 				err1++;
 				continue;
 			}
-			if( CHAR_getWorkInt( charaindex, CHAR_WORKFMINDEXI ) != i )
+			if( CHAR_getWorkInt( char_index, CHAR_WORKFMINDEXI ) != i )
 			{
 				familyMemberIndex[i][j] = -1;
 				err1++;
@@ -2742,15 +2728,15 @@ void checkFamilyIndex( void )
 		for( j=0; j<FAMILY_MAXCHANNEL; j++ )
 			for( k=0; k<FAMILY_MAXMEMBER; k++)
 			{
-				charaindex = channelMember[i][j][k];
-				if( charaindex == -1 )  continue;
-				if( !CHAR_CHECKINDEX(charaindex) )
+				char_index = channelMember[i][j][k];
+				if( char_index == -1 )  continue;
+				if( !CHAR_CHECKINDEX(char_index) )
 				{
 					channelMember[i][j][k] = -1;
 					err2++;
 					continue;
 				}
-				if( CHAR_getWorkInt(charaindex, CHAR_WORKFMINDEXI) != i )
+				if( CHAR_getWorkInt(char_index, CHAR_WORKFMINDEXI) != i )
 				{
 					channelMember[i][j][k] = -1;
 					err2++;
@@ -2770,10 +2756,10 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
       //|| (CHAR_getInt(meindex, CHAR_FMLEADERFLAG) != FMMEMBER_LEADER)
    )
    {
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		-1, -1,
-		makeEscapeString( "Äã»¹Î´¼ÓÈë¼Ò×å£¬ËùÒÔ²»ÄÜÊ¹ÓÃà¡£¡", buf, sizeof(buf) ));
+		makeEscapeString( "ï¿½ã»¹Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å£¬ï¿½ï¿½ï¿½Ô²ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½à¡£ï¿½", buf, sizeof(buf) ));
       	return;
    }
    
@@ -2798,11 +2784,11 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
                return;
            }
        }
-       saacproto_ACShowMemberList_send( acfd, fmindex_wk);           
+       SaacClient__ACShowMemberList_send( acfd, fmindex_wk);           
 	    
-       sprintf( sendbuf, "               ¡º×å ³¤ Ðè Öª¡»\nÇëÐ¡ÐÄ´¦Àí×åÔ±µÄ×ÊÁÏ£¬Ò»¾­ÐÞ¸Äáá¾ÍÎÞ·¨»Ø¸´Ô­Ì¬£¬¾´ÇëÐ¡ÐÄ¡£");
+       sprintf( sendbuf, "               ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ Öªï¿½ï¿½\nï¿½ï¿½Ð¡ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½Ï£ï¿½Ò»ï¿½ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½Ø¸ï¿½Ô­Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½Ä¡ï¿½");
 	    
-       lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+       GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 	                 WINDOW_BUTTONTYPE_OK,
 	                 CHAR_WINDOWTYPE_FM_MESSAGE2,
 	                 -1,
@@ -2865,7 +2851,7 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 				} else
 				if( kind == 2 ) {
 					if(getRideMode()==2 || getRideMode()==4){
-						CHAR_talkToCli( meindex, -1, "ËãÁË°É£¬»¹ÊÇ±ðµã°É£¬µãÀ´Ò²Ã»ÓÃ!", CHAR_COLORYELLOW);
+						CHAR_talkToCli( meindex, -1, "ï¿½ï¿½ï¿½Ë°É£ï¿½ï¿½ï¿½ï¿½Ç±ï¿½ï¿½É£ï¿½ï¿½ï¿½ï¿½ï¿½Ò²Ã»ï¿½ï¿½!", CHAR_COLORYELLOW);
 						return;
 					}
 					switch( atoi(subtoken) ) {
@@ -2902,28 +2888,28 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 		}
 
 		if( letterNo == 0 ) {
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 				WINDOW_BUTTONTYPE_OK,
 				-1, -1,
-				makeEscapeString("\nÖ»ÓÐÓµÓÐ×¯Ô°µÄ×å³¤£¬²ÅÄÜÖÆ×÷à¡£¡", buf, sizeof(buf)));
+				makeEscapeString("\nÖ»ï¿½ï¿½Óµï¿½ï¿½×¯Ô°ï¿½ï¿½ï¿½å³¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à¡£ï¿½", buf, sizeof(buf)));
 	      		return;
 		}
 #ifndef _FAME_REG_TIME
 		else {
-			int emptyitemindexinchara = CHAR_findEmptyItemBox( meindex );
-			int itemindex = ITEM_makeItemAndRegist( letterNo );
+			int emptyitem_indexinchara = CHAR_findEmptyItemBox( meindex );
+			int item_index = ITEM_makeItemAndRegist( letterNo );
 			
-			if( itemindex == -1 )	return;
-			if( emptyitemindexinchara < 0 ) {
-				CHAR_talkToCli( meindex, -1, "µÀ¾ßÀ¸ÒÑÂú¡£", CHAR_COLORWHITE);
+			if( item_index == -1 )	return;
+			if( emptyitem_indexinchara < 0 ) {
+				CHAR_talkToCli( meindex, -1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", CHAR_COLORWHITE);
 				return;
 			}
 			
-			CHAR_setItemIndex( meindex, emptyitemindexinchara, itemindex );
-			ITEM_setWorkInt( itemindex, ITEM_WORKOBJINDEX,-1);
-			ITEM_setWorkInt( itemindex, ITEM_WORKCHARAINDEX, meindex);
-			CHAR_sendItemDataOne( meindex, emptyitemindexinchara);
-			snprintf( buf, sizeof( buf), "ÖÆ×÷%s³É¹¦¡£",ITEM_getChar( itemindex, ITEM_NAME));
+			CHAR_setItemIndex( meindex, emptyitem_indexinchara, item_index );
+			ITEM_setWorkInt( item_index, ITEM_WORKOBJINDEX,-1);
+			ITEM_setWorkInt( item_index, ITEM_WORKCHARAINDEX, meindex);
+			CHAR_sendItemDataOne( meindex, emptyitem_indexinchara);
+			snprintf( buf, sizeof( buf), "ï¿½ï¿½ï¿½ï¿½%sï¿½É¹ï¿½ï¿½ï¿½",ITEM_getChar( item_index, ITEM_NAME));
 			CHAR_talkToCli( meindex, -1, buf, CHAR_COLORWHITE);
 		}
 #endif
@@ -2937,7 +2923,7 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 	
 	fmindexi = CHAR_getWorkInt( meindex, CHAR_WORKFMINDEXI );
 
-	// ÒªÇó×å³¤ºòÑ¡ÈËÁÐ±í
+	// Òªï¿½ï¿½ï¿½å³¤ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½Ð±ï¿½
 	if( strcmp( token2, "L") == 0 ){
 		char subsub[128];
 	
@@ -2965,15 +2951,15 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 			}
 		}
 		sprintf( sendbuf, "L|CHANGE|L|%d%s", num, subbuf );
-		//lssproto_FM_send( fd, sendbuf);
+		//GmsvServer_FM_send( fd, sendbuf);
 		
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_LEADERSELECT,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_LEADERSELECT,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
 			sendbuf );
 		
 	}
-	// Ñ¯ÎÊ×å³¤ºòÑ¡ÈËÊÇ·ñÔ¸Òâ½ÓÊÜ
+	// Ñ¯ï¿½ï¿½ï¿½å³¤ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½Ç·ï¿½Ô¸ï¿½ï¿½ï¿½ï¿½ï¿½
 	if( strcmp( token2, "Q") == 0 )	
 	{
 		char token3[64], token4[64];
@@ -2997,19 +2983,19 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 		if( strcmp( token4, CHAR_getChar( toindex, CHAR_NAME)) != 0 )	return;
 		if( CheckLeaderQ(toindex) < 0 )	return;
 		
-		// Ë«·½¶¼¾ö¶¨ÈÃÎ»Ê±£¬CHAR_WORKLEADERCHANGE´æ·Å¶Ô·½µÄcharaindex
+		// Ë«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»Ê±ï¿½ï¿½CHAR_WORKLEADERCHANGEï¿½ï¿½Å¶Ô·ï¿½ï¿½ï¿½char_index
 		CHAR_setWorkInt( toindex, CHAR_WORKLEADERCHANGE, meindex);
 		CHAR_setWorkInt( meindex, CHAR_WORKLEADERCHANGE, toindex);
 		
 		sprintf( sendbuf, "%s|%d", makeEscapeString( CHAR_getChar( meindex, CHAR_NAME ), buf, sizeof(buf)), meindex );
 		
-		lssproto_WN_send( CHAR_getWorkInt( toindex, CHAR_WORKFD ), WINDOW_MESSAGETYPE_LEADERSELECTA,
+		GmsvServer_WN_send( CHAR_getWorkInt( toindex, CHAR_WORKFD ), WINDOW_MESSAGETYPE_LEADERSELECTA,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
 			sendbuf );
 
 	}
-	// ºòÑ¡ÈËµÄ´ð¸²
+	// ï¿½ï¿½Ñ¡ï¿½ËµÄ´ï¿½
 	if( strcmp( token2, "A") == 0 )
 	{
 		int leaderindex, answerflag;
@@ -3032,7 +3018,7 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 		
 		leaderindex = atoi( token4 );
 		
-		// ¼ì²éË«·½µÄCHAR_WORKLEADERCHANGEÊÇ·ñÏà·û
+		// ï¿½ï¿½ï¿½Ë«ï¿½ï¿½ï¿½ï¿½CHAR_WORKLEADERCHANGEï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 		if( CHAR_getWorkInt( meindex, CHAR_WORKLEADERCHANGE ) != leaderindex )	return;
 		if( !CHAR_CHECKINDEX(leaderindex) )	return;
 		if( strcmp( leadername, CHAR_getChar( leaderindex, CHAR_NAME) ) != 0 )	return;
@@ -3049,10 +3035,10 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 		{
 			CHAR_setWorkInt( meindex, CHAR_WORKLEADERCHANGE, 0);
 			CHAR_setWorkInt( leaderindex, CHAR_WORKLEADERCHANGE, 0);
-			lssproto_WN_send( CHAR_getWorkInt( leaderindex, CHAR_WORKFD) , WINDOW_MESSAGETYPE_MESSAGE,
+			GmsvServer_WN_send( CHAR_getWorkInt( leaderindex, CHAR_WORKFD) , WINDOW_MESSAGETYPE_MESSAGE,
 				WINDOW_BUTTONTYPE_OK,
 				-1, -1,
-				makeEscapeString( "\n¶Ô²»Æð£¡¶Ô·½²»Ô¸Òâ½ÓÊÜ£¡", buf, sizeof(buf)) );
+				makeEscapeString( "\nï¿½Ô²ï¿½ï¿½ð£¡¶Ô·ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½ï¿½Ü£ï¿½", buf, sizeof(buf)) );
 		   	return;
 		}
 		
@@ -3062,7 +3048,7 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 			sprintf( buf, "%d", CHAR_getInt( meindex, CHAR_FACEIMAGENUMBER ) );
 			// CoolFish: add charname 2001/9/27
 			sprintf( tmpbuf, "%s", CHAR_getChar( meindex, CHAR_NAME ) );
-			saacproto_ACFixFMData_send(acfd,
+			SaacClient__ACFixFMData_send(acfd,
 				CHAR_getChar(meindex, CHAR_FMNAME),
 	   			CHAR_getInt(meindex, CHAR_FMINDEX),
 			   	CHAR_getWorkInt(meindex, CHAR_WORKFMINDEXI), FM_FIX_FMLEADERCHANGE , buf,
@@ -3077,30 +3063,30 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
 void ACFMJob( int fd, int ret, char* data1, char* data2 )
 {
 	
-	int charaindex = CONNECT_getCharaindex( fd );
-	if( !CHAR_CHECKINDEX(charaindex) ) return;
+	int char_index = CONNECT_getCharaindex( fd );
+	if( !CHAR_CHECKINDEX(char_index) ) return;
 	
 	
         if( 1 ){
         	
-        	int leaderindex = CHAR_getWorkInt( charaindex, CHAR_WORKLEADERCHANGE );
+        	int leaderindex = CHAR_getWorkInt( char_index, CHAR_WORKLEADERCHANGE );
         	char buf[256], buf2[256];
 
-        	CHAR_setWorkInt( charaindex, CHAR_WORKLEADERCHANGE, 0 );
+        	CHAR_setWorkInt( char_index, CHAR_WORKLEADERCHANGE, 0 );
         	print("leaderindex:%d:%s\n", leaderindex,CHAR_getChar(leaderindex,CHAR_NAME) );
         	
         	if( !CHAR_CHECKINDEX(leaderindex) ) return;
-        	//if( CHAR_getWorkInt( leaderindex, CHAR_WORKLEADERCHANGE ) != charaindex ) return;
+        	//if( CHAR_getWorkInt( leaderindex, CHAR_WORKLEADERCHANGE ) != char_index ) return;
         	CHAR_setWorkInt( leaderindex, CHAR_WORKLEADERCHANGE, 0 );
         	
         	if( ret == 0 ){
-        		CHAR_talkToCli( charaindex, -1, "×å³¤ÈÃÎ»Ê§°Ü£¡", CHAR_COLORYELLOW );
-        		CHAR_talkToCli( leaderindex, -1, "×å³¤ÈÃÎ»Ê§°Ü£¡", CHAR_COLORYELLOW );
+        		CHAR_talkToCli( char_index, -1, "ï¿½å³¤ï¿½ï¿½Î»Ê§ï¿½Ü£ï¿½", CHAR_COLORYELLOW );
+        		CHAR_talkToCli( leaderindex, -1, "ï¿½å³¤ï¿½ï¿½Î»Ê§ï¿½Ü£ï¿½", CHAR_COLORYELLOW );
 	        	return;
 	        }
 	        
 	        // Robin 10/02 debug
-        	if( CHAR_getInt( leaderindex, CHAR_FMINDEX) != CHAR_getInt( charaindex, CHAR_FMINDEX)
+        	if( CHAR_getInt( leaderindex, CHAR_FMINDEX) != CHAR_getInt( char_index, CHAR_FMINDEX)
 #ifdef _FMVER21        	
 			// || CHAR_getInt( leaderindex, CHAR_FMLEADERFLAG) != FMMEMBER_LEADER )
 #else
@@ -3110,36 +3096,34 @@ void ACFMJob( int fd, int ret, char* data1, char* data2 )
 		{
 			sprintf( buf, "leaderindex:%d:%s\n", leaderindex, CHAR_getChar( leaderindex, CHAR_NAME) );
 			LogFamily(
-				CHAR_getChar(charaindex, CHAR_FMNAME),
-				CHAR_getInt(charaindex, CHAR_FMINDEX),
-				CHAR_getChar(charaindex, CHAR_NAME),
-				CHAR_getChar(charaindex, CHAR_CDKEY),
-				"LEADERCHANGE_ERROR(×å³¤ÈÃÎ»Ê§°Ü)",
+				CHAR_getChar(char_index, CHAR_FMNAME),
+				CHAR_getInt(char_index, CHAR_FMINDEX),
+				CHAR_getChar(char_index, CHAR_NAME),
+				CHAR_getChar(char_index, CHAR_CDKEY),
+				"LEADERCHANGE_ERROR(ï¿½å³¤ï¿½ï¿½Î»Ê§ï¿½ï¿½)",
 				buf
 			);
 			return;
 		}
 		
 		//CHAR_setInt( leaderindex, CHAR_FMLEADERFLAG, FMMEMBER_MEMBER);
-		//CHAR_setInt( charaindex, CHAR_FMLEADERFLAG, FMMEMBER_LEADER);
+		//CHAR_setInt( char_index, CHAR_FMLEADERFLAG, FMMEMBER_LEADER);
 		SetFMPetVarInit( leaderindex );
-		SetFMPetVarInit( charaindex );
+		SetFMPetVarInit( char_index );
 		CHAR_sendStatusString( leaderindex, "F");
-		CHAR_sendStatusString( charaindex, "F");
+		CHAR_sendStatusString( char_index, "F");
 		
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
-			makeEscapeString( "\n¹§Ï²Äã£¡ÄãÒÑ¾­ÊÇÐÂÈÎµÄ×å³¤ÁË¡£\nÇëºÃºÃµÄÅ¬Á¦°É£¡\n¶ÔÁË¡«¼ÇµÃÇëÏÈµ½´å³¤¼ÒµÄ¼Ò×å¹ÜÀíÔ±Ñ¡Ôñ\nÐÂµÄ¼Ò×åÊØ»¤ÊÞ£¬·ñÔò¼Ò×å½«»á±»½âÉ¢à¡£¡", buf, sizeof(buf)));
+			makeEscapeString( "\nï¿½ï¿½Ï²ï¿½ã£¡ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îµï¿½ï¿½å³¤ï¿½Ë¡ï¿½\nï¿½ï¿½ÃºÃµï¿½Å¬ï¿½ï¿½ï¿½É£ï¿½\nï¿½ï¿½ï¿½Ë¡ï¿½ï¿½Çµï¿½ï¿½ï¿½ï¿½Èµï¿½ï¿½å³¤ï¿½ÒµÄ¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±Ñ¡ï¿½ï¿½\nï¿½ÂµÄ¼ï¿½ï¿½ï¿½ï¿½Ø»ï¿½ï¿½Þ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å½«ï¿½á±»ï¿½ï¿½É¢à¡£ï¿½", buf, sizeof(buf)));
 			
-		sprintf( buf2, "\nÐÁ¿àÄãÁË£¡ÄãÒÑ¾­½«×å³¤µÄÎ»×Ó½»¸ø%sÁË¡£", CHAR_getChar( charaindex, CHAR_NAME) );
-		lssproto_WN_send( CHAR_getWorkInt( leaderindex, CHAR_WORKFD) , WINDOW_MESSAGETYPE_MESSAGE,
+		sprintf( buf2, "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½å³¤ï¿½ï¿½Î»ï¿½Ó½ï¿½ï¿½ï¿½%sï¿½Ë¡ï¿½", CHAR_getChar( char_index, CHAR_NAME) );
+		GmsvServer_WN_send( CHAR_getWorkInt( leaderindex, CHAR_WORKFD) , WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
 			makeEscapeString( buf2, buf, sizeof(buf)));
 
-//		print(" LeaderChange!! [%s]->[%s] ", CHAR_getChar(leaderindex, CHAR_CDKEY), CHAR_getChar(charaindex, CHAR_CDKEY) );
-		
 		sprintf( buf, "%s\t%s\t%s",
 			CHAR_getChar(leaderindex, CHAR_FMNAME),
 			CHAR_getChar(leaderindex, CHAR_NAME),
@@ -3147,32 +3131,24 @@ void ACFMJob( int fd, int ret, char* data1, char* data2 )
 		);
 		
 		LogFamily(
-			CHAR_getChar(charaindex, CHAR_FMNAME),
-			CHAR_getInt(charaindex, CHAR_FMINDEX),
-			CHAR_getChar(charaindex, CHAR_NAME),
-			CHAR_getChar(charaindex, CHAR_CDKEY),
-			"LEADERCHANGE(×å³¤ÈÃÎ»)",
+			CHAR_getChar(char_index, CHAR_FMNAME),
+			CHAR_getInt(char_index, CHAR_FMINDEX),
+			CHAR_getChar(char_index, CHAR_NAME),
+			CHAR_getChar(char_index, CHAR_CDKEY),
+			"LEADERCHANGE(ï¿½å³¤ï¿½ï¿½Î»)",
 			buf);
   }
 }
 #ifdef _MO_LNS_CHARSUOXU
 int Char_GetFm( int id, int x)
 {
-
 	int	fd = getfdFromCharaIndex( id);
-	if (x == 1) //»ñµÃ¼Ò×åÆøÊÆ
+	if (x == 1)
 		return fmdptop.fmMomentum[id];
-
-	else if (x == 2)//»ñµÃ¼Ò×åÉùÍûfmtopdp
+	else if (x == 2)
 		return fmdptop.fmtopdp[id];
-	else if (x == 3)//»ñµÃ¼Ò×å×Ê½ð
+	else if (x == 3)
 	{
-		//saacproto_ACGetFMData_send( fd, CHAR_getChar( id, CHAR_FMNAME),
-		//CHAR_getInt( id, CHAR_FMINDEX ),
-		//CHAR_getWorkInt( id, CHAR_WORKFMINDEXI ),
-		//1,
-		//CONNECT_getFdid(fd)
-		//);
 		return familyTax[CHAR_getWorkInt( id, CHAR_WORKFMINDEXI )];
 	}
 }

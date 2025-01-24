@@ -29,7 +29,7 @@ int NPC_Lua_SQL_Push(lua_State *_NLL)
 int NPC_Lua_SQL_PushPop(lua_State *_NLL)
 {
 	CheckEx(_NLL,7);
-	int npcindex,charaindex,row;
+	int npcindex,char_index,row;
 	char* sqlstr,*function,*filepath,*msg;
 
 	sqlstr = lua_tostring(_NLL, 1);
@@ -37,16 +37,16 @@ int NPC_Lua_SQL_PushPop(lua_State *_NLL)
 	filepath = lua_tostring(_NLL, 3);
 	function = lua_tostring(_NLL, 4);
 	npcindex = lua_tointeger(_NLL, 5);
-	charaindex = lua_tointeger(_NLL, 6);
+	char_index = lua_tointeger(_NLL, 6);
 	msg = lua_tostring(_NLL, 7);
-//	print("sqlstr=%s\n row=%d\n filepath=%s\n function=%s\n npcindex=%d\n charaindex=%d\n msg=%s\n",sqlstr,row,filepath,function,npcindex,charaindex,msg);
-	sasql_LUASQL(sqlstr,row,filepath,function,npcindex,charaindex,msg);
+//	print("sqlstr=%s\n row=%d\n filepath=%s\n function=%s\n npcindex=%d\n char_index=%d\n msg=%s\n",sqlstr,row,filepath,function,npcindex,char_index,msg);
+	sasql_LUASQL(sqlstr,row,filepath,function,npcindex,char_index,msg);
 }
 
 int NPC_Lua_SQL_PushPopAdv(lua_State *_NLL)
 {
 	CheckEx(_NLL,6);
-	int npcindex,charaindex;
+	int npcindex,char_index;
 	char* sqlstr,*function,*filepath,*msg;
 
 	sqlstr = lua_tostring(_NLL, 1);
@@ -57,16 +57,16 @@ int NPC_Lua_SQL_PushPopAdv(lua_State *_NLL)
 	}
 	function = lua_tostring(_NLL, 3);
 	npcindex = lua_tointeger(_NLL, 4);
-	charaindex = lua_tointeger(_NLL, 5);
+	char_index = lua_tointeger(_NLL, 5);
 	msg = lua_tostring(_NLL, 6);
 	int flg = 1;
-	sasql_LUASQLAdv(sqlstr,filepath,function,npcindex,charaindex,msg,flg);
+	sasql_LUASQLAdv(sqlstr,filepath,function,npcindex,char_index,msg,flg);
 }
 
 int NPC_Lua_SQL_QueryFirstRow(lua_State *_NLL)
 {
 	CheckEx(_NLL,6);
-	int npcindex,charaindex;
+	int npcindex,char_index;
 	char* sqlstr,*function,*filepath,*msg;
 
 	sqlstr = lua_tostring(_NLL, 1);
@@ -77,16 +77,16 @@ int NPC_Lua_SQL_QueryFirstRow(lua_State *_NLL)
 	}
 	function = lua_tostring(_NLL, 3);
 	npcindex = lua_tointeger(_NLL, 4);
-	charaindex = lua_tointeger(_NLL, 5);
+	char_index = lua_tointeger(_NLL, 5);
 	msg = lua_tostring(_NLL, 6);
 	int flg = 2;
-	sasql_LUASQLAdv(sqlstr,filepath,function,npcindex,charaindex,msg,flg);
+	sasql_LUASQLAdv(sqlstr,filepath,function,npcindex,char_index,msg,flg);
 }
 
 int NPC_Lua_SQL_FetchRow(lua_State *_NLL)
 {
 	CheckEx(_NLL,5);
-	int npcindex,charaindex;
+	int npcindex,char_index;
 	char* sqlstr,*function,*filepath,*msg;
 
 
@@ -97,16 +97,16 @@ int NPC_Lua_SQL_FetchRow(lua_State *_NLL)
 	}
 	function = lua_tostring(_NLL, 2);
 	npcindex = lua_tointeger(_NLL, 3);
-	charaindex = lua_tointeger(_NLL, 4);
+	char_index = lua_tointeger(_NLL, 4);
 	msg = lua_tostring(_NLL, 5);
 	int flg = 3;
-	sasql_LUASQLAdv("",filepath,function,npcindex,charaindex,msg,flg);
+	sasql_LUASQLAdv("",filepath,function,npcindex,char_index,msg,flg);
 }
 
 int NPC_Lua_SQL_FreeResult(lua_State *_NLL)
 {
 	CheckEx(_NLL,5);
-	int npcindex,charaindex;
+	int npcindex,char_index;
 	char* sqlstr,*function,*filepath,*msg;
 
 
@@ -117,10 +117,10 @@ int NPC_Lua_SQL_FreeResult(lua_State *_NLL)
 	}
 	function = lua_tostring(_NLL, 2);
 	npcindex = lua_tointeger(_NLL, 3);
-	charaindex = lua_tointeger(_NLL, 4);
+	char_index = lua_tointeger(_NLL, 4);
 	msg = lua_tostring(_NLL, 5);
 	int flg = 4;
-	sasql_LUASQLAdv("",filepath,function,npcindex,charaindex,msg,flg);
+	sasql_LUASQLAdv("",filepath,function,npcindex,char_index,msg,flg);
 }
 #endif
 

@@ -8,7 +8,7 @@
 #include "char.h"
 #include "autil.h"
 #ifdef __STONEAGE
-#include "lssproto_util.h"
+#include "server_util.h"
 #endif
 
 char *MesgSlice[SLICE_MAX];
@@ -220,7 +220,7 @@ void _util_SendMesg(char *file, int line, int fd, int func, char *buffer) {
 #endif
   util_EncodeMessage(t2, t1);
 #ifdef __STONEAGE
-  lssproto_Send(fd, t2);
+  GmsvServer_Send(fd, t2);
 #endif
 }
 

@@ -5,8 +5,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "npc_newvipshop.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "readmap.h"
 #include "battle.h"
 #include "log.h"
@@ -147,10 +147,10 @@ static void NPC_NewVipShop_selectWindow( int meindex, int toindex, int num,int s
 			OtherSaacConnect();
 			CHAR_talkToCli( toindex, -1, "点卷服务器未正常连接!", CHAR_COLORRED );
 		}else{
-			saacproto_QueryPoint_send( osfd, getfdFromCharaIndex( toindex ), CHAR_getChar(toindex, CHAR_CDKEY));
+			SaacClient_QueryPoint_send( osfd, getfdFromCharaIndex( toindex ), CHAR_getChar(toindex, CHAR_CDKEY));
 		}
 #else
-		saacproto_QueryPoint_send( acfd, getfdFromCharaIndex( toindex ), CHAR_getChar(toindex, CHAR_CDKEY));
+		SaacClient_QueryPoint_send( acfd, getfdFromCharaIndex( toindex ), CHAR_getChar(toindex, CHAR_CDKEY));
 #endif
 		CHAR_talkToCli(toindex, -1, "获取重回币中，请稍候...", CHAR_COLORRED);
 		CHAR_setWorkInt( toindex, CHAR_WORKSHOPRELEVANT, WINDOW_START);
@@ -220,7 +220,7 @@ static void NPC_NewVipShop_selectWindow( int meindex, int toindex, int num,int s
 		break;
 	}
 
-	lssproto_WN_send( fd, windowtype, buttontype, windowno,
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 }
 

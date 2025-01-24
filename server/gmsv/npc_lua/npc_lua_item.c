@@ -613,11 +613,11 @@ int NPC_Lua_Item_GetItemOwner(lua_State *_NLL)
 	if( !ITEM_CHECKINDEX( TM_Index)) {
 		LRetErrInt(_NLL , -1, "传入的索引是无效的！");
 	}
-	int charaindex = ITEM_getWorkInt(TM_Index, ITEM_WORKCHARAINDEX);
-	if( !CHAR_CHECKINDEX( charaindex)) {
+	int char_index = ITEM_getWorkInt(TM_Index, ITEM_WORKCHARAINDEX);
+	if( !CHAR_CHECKINDEX( char_index)) {
 		LRetErrInt(_NLL , -2, "道具主人的索引是无效的！");
 	}
-	LRetInt(_NLL, charaindex);
+	LRetInt(_NLL, char_index);
 }
 
 
@@ -633,12 +633,12 @@ int NPC_Lua_Item_SaveItemToString(lua_State *_NLL)
 {
 	char *itemdata = "\0";
 	CheckEx(_NLL, 1);
-	int itemindex = (int)lua_tointeger(_NLL, 1);
-	if(!ITEM_CHECKINDEX(itemindex))
+	int item_index = (int)lua_tointeger(_NLL, 1);
+	if(!ITEM_CHECKINDEX(item_index))
 	{
 		LRetErrInt(_NLL, -1, "传入的索引是无效的。");
 	}
-	itemdata = ITEM_makeStringFromItemIndex( itemindex,0);
+	itemdata = ITEM_makeStringFromItemIndex( item_index,0);
 	LRetMsg(_NLL, itemdata);
 }
 
@@ -665,16 +665,16 @@ int NPC_Lua_Item_LoadItemFromString(lua_State *_NLL)
 	CheckEx(_NLL, 1);
 	char *itemdata = (char *)lua_tostring(_NLL, 1);
 	ITEM_Item   itmone;
-	int itemindex;
+	int item_index;
 	BOOL ret = ITEM_makeExistItemsFromStringToArg( itemdata , &itmone, 0 );
 	if( ret == TRUE ){
-		itemindex = ITEM_initExistItemsOne( &itmone );
-		if( itemindex < 0 ){
+		item_index = ITEM_initExistItemsOne( &itmone );
+		if( item_index < 0 ){
 			LRetErrInt(_NLL, -1, "制作道具失败");
 			return;
 		}
 	}
-	LRetInt(_NLL, itemindex);
+	LRetInt(_NLL, item_index);
 }
 
 

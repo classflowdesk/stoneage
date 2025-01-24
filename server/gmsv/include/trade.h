@@ -5,15 +5,15 @@
 #include "util.h"
 #include "net.h"
 #ifdef _TRADE_PK
-typedef struct _tagTradeList{
-	int charaindex;
+typedef struct tagTradeList{
+	int char_index;
 	int fd;
 	int PetTi[5];
 	int ItemTi[15];
 	int ItemNum[15];
 	int Golds;
 	int use;
-}STradeList;
+} STradeList;
 #endif
 BOOL TRADE_Search(int fd, int meindex, char* message);
     

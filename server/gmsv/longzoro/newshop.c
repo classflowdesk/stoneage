@@ -5,7 +5,7 @@
 #include "autil.h"
 #include "enemy.h"
 #include "item.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 
 #ifdef _ONLINE_SHOP
 
@@ -113,7 +113,7 @@ BOOL OnlineShop_init()
 	return TRUE;
 }
 
-void OnlineShop_ShowList(int fd, int charaindex, int type, int page)
+void OnlineShop_ShowList(int fd, int char_index, int type, int page)
 {
 	if(type>ONLINESHOP_NUM)return;
 	int pagemax=(max[type-1]-1)/SHOPPAGEMAX+1;
@@ -142,25 +142,25 @@ void OnlineShop_ShowList(int fd, int charaindex, int type, int page)
 
 
 	if((type-1) == ONLINESHOP_AMPOINT){
-		lssproto_VIP_SHOP_send( fd, availability,CHAR_getInt(charaindex, CHAR_AMPOINT), type, page, pagemax ,token);
+		GmsvServer_VIP_SHOP_send( fd, availability,CHAR_getInt(char_index, CHAR_AMPOINT), type, page, pagemax ,token);
 	}else{
 #ifdef _ONLINE_SHOP_MYSQL
-		lssproto_VIP_SHOP_send( fd, availability,sasql_getVipPoint(charaindex), type, page, pagemax ,token);
+		GmsvServer_VIP_SHOP_send( fd, availability,sasql_getVipPoint(char_index), type, page, pagemax ,token);
 #else	
-	lssproto_VIP_SHOP_send( fd, availability,CHAR_getInt(charaindex, CHAR_BJ), type, page, pagemax ,token);
+	GmsvServer_VIP_SHOP_send( fd, availability,CHAR_getInt(char_index, CHAR_BJ), type, page, pagemax ,token);
 #endif
 	}
 }
 
-void OnlineShop_Buy(int fd, int charaindex, int type, int page, int id, int num)
+void OnlineShop_Buy(int fd, int char_index, int type, int page, int id, int num)
 {
 	switch(type-1){
 		case ONLINESHOP_PET:
 			{
 #ifdef _ONLINE_SHOP_MYSQL
-				int bj = sasql_getVipPoint(charaindex);
+				int bj = sasql_getVipPoint(char_index);
 #else	
-				int bj = CHAR_getInt(charaindex, CHAR_BJ);
+				int bj = CHAR_getInt(char_index, CHAR_BJ);
 #endif
 				int price = onlineshop[type-1][id].price * onlineshop[type-1][id].percentage / 100;
 				if(bj >= price * num){
@@ -174,17 +174,17 @@ void OnlineShop_Buy(int fd, int charaindex, int type, int page, int id, int num)
 							}
 						}
 						if( i == enemynum ){
-							CHAR_talkToCli( charaindex, -1, "该宠物不存在。", CHAR_COLORYELLOW);
+							CHAR_talkToCli( char_index, -1, "该宠物不存在。", CHAR_COLORYELLOW);
 						break;
 						}
 					
-						int ret = ENEMY_createPetFromEnemyIndex(charaindex, i);
+						int ret = ENEMY_createPetFromEnemyIndex(char_index, i);
 						if( !CHAR_CHECKINDEX( ret)){
-							CHAR_talkToCli( charaindex, -1, "宠物栏位不足。", CHAR_COLORYELLOW);
+							CHAR_talkToCli( char_index, -1, "宠物栏位不足。", CHAR_COLORYELLOW);
 						break;
 						}else{
 							for( i = 0; i < CHAR_MAXPETHAVE; i ++ ){
-								if( CHAR_getCharPet( charaindex, i ) == ret )break;
+								if( CHAR_getCharPet( char_index, i ) == ret )break;
 							}
 							if( i == CHAR_MAXPETHAVE )return;
 						
@@ -193,21 +193,21 @@ void OnlineShop_Buy(int fd, int charaindex, int type, int page, int id, int num)
 							CHAR_setInt( ret, CHAR_HP, CHAR_getWorkInt( ret, CHAR_WORKMAXHP ));
 							CHAR_complianceParameter( ret );
 							snprintf( token, sizeof( token ), "K%d", i );
-							CHAR_sendStatusString( charaindex, token );
+							CHAR_sendStatusString( char_index, token );
 							snprintf( token, sizeof( token ), "W%d", i );
-							CHAR_sendStatusString( charaindex, token );
+							CHAR_sendStatusString( char_index, token );
 #ifdef _ONLINE_SHOP_MYSQL
-							sasql_setVipPoint(charaindex, sasql_getVipPoint(charaindex) - price);
+							sasql_setVipPoint(char_index, sasql_getVipPoint(char_index) - price);
 #else
-							CHAR_setInt(charaindex, CHAR_BJ, CHAR_getInt(charaindex, CHAR_BJ) - price);
+							CHAR_setInt(char_index, CHAR_BJ, CHAR_getInt(char_index, CHAR_BJ) - price);
 #endif
 							char token[256];
 							sprintf(token, "成功购买 %s 宠物", CHAR_getChar(ret, CHAR_NAME));
-							CHAR_talkToCli( charaindex, -1, token, CHAR_COLORYELLOW);
+							CHAR_talkToCli( char_index, -1, token, CHAR_COLORYELLOW);
 						}
 					}
 				}else{
-					CHAR_talkToCli( charaindex, -1, "你的点数不足!", CHAR_COLORYELLOW);
+					CHAR_talkToCli( char_index, -1, "你的点数不足!", CHAR_COLORYELLOW);
 				}
 			}
 			break;
@@ -217,66 +217,66 @@ void OnlineShop_Buy(int fd, int charaindex, int type, int page, int id, int num)
 		case ONLINESHOP_MISSION:
 			{
 #ifdef _ONLINE_SHOP_MYSQL
-				int bj = sasql_getVipPoint(charaindex);
+				int bj = sasql_getVipPoint(char_index);
 #else	
-				int bj = CHAR_getInt(charaindex, CHAR_BJ);
+				int bj = CHAR_getInt(char_index, CHAR_BJ);
 #endif
 				int price = onlineshop[type-1][id].price * onlineshop[type-1][id].percentage / 100;
 				if(bj >= price * num){
 					int i;
 					for(i=0;i<num;i++){
-						int emptyitemindexinchara = CHAR_findEmptyItemBox( charaindex );
+						int emptyitem_indexinchara = CHAR_findEmptyItemBox( char_index );
 						
-						if( emptyitemindexinchara < 0 ){
-							CHAR_talkToCli( charaindex, -1, "物品栏位不足。", CHAR_COLORYELLOW);
+						if( emptyitem_indexinchara < 0 ){
+							CHAR_talkToCli( char_index, -1, "物品栏位不足。", CHAR_COLORYELLOW);
 							break;
 						}
 						
-						int itemindex = ITEM_makeItemAndRegist( onlineshop[type-1][id].id );
+						int item_index = ITEM_makeItemAndRegist( onlineshop[type-1][id].id );
 						
-						if( itemindex != -1 ){
+						if( item_index != -1 ){
 #ifdef _MO_LUA_ADDITEM_CALLBACK
 
-							NpcAdditemFunction(charaindex, onlineshop[type-1][id].id);
+							NpcAdditemFunction(char_index, onlineshop[type-1][id].id);
 
 #endif
-							 CHAR_setItemIndex( charaindex, emptyitemindexinchara, itemindex );
-							 ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
-							 ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX,charaindex);
-							 CHAR_sendItemDataOne( charaindex, emptyitemindexinchara);
+							 CHAR_setItemIndex( char_index, emptyitem_indexinchara, item_index );
+							 ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX,-1);
+							 ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX,char_index);
+							 CHAR_sendItemDataOne( char_index, emptyitem_indexinchara);
 #ifdef _ONLINE_SHOP_MYSQL
-							 sasql_setVipPoint(charaindex, sasql_getVipPoint(charaindex) - price);
+							 sasql_setVipPoint(char_index, sasql_getVipPoint(char_index) - price);
 #else
-							 CHAR_setInt(charaindex, CHAR_BJ, CHAR_getInt(charaindex, CHAR_BJ) - price);
+							 CHAR_setInt(char_index, CHAR_BJ, CHAR_getInt(char_index, CHAR_BJ) - price);
 #endif
 							char token[256];
-							sprintf(token, "成功购买 %s 道具", ITEM_getChar(itemindex, ITEM_NAME));
-							CHAR_talkToCli( charaindex, -1, token, CHAR_COLORYELLOW);
+							sprintf(token, "成功购买 %s 道具", ITEM_getChar(item_index, ITEM_NAME));
+							CHAR_talkToCli( char_index, -1, token, CHAR_COLORYELLOW);
 						}else{
-							CHAR_talkToCli( charaindex, -1, "该物品不存在!", CHAR_COLORYELLOW);       
+							CHAR_talkToCli( char_index, -1, "该物品不存在!", CHAR_COLORYELLOW);       
 							break;
 						}
 					}
 				}else{
-					CHAR_talkToCli( charaindex, -1, "你的点数不足!", CHAR_COLORYELLOW);
+					CHAR_talkToCli( char_index, -1, "你的点数不足!", CHAR_COLORYELLOW);
 				}
 			}
 			break;
 		case ONLINESHOP_OTHER:
 			{
 #ifdef _ONLINE_SHOP_MYSQL
-				int bj = sasql_getVipPoint(charaindex);
+				int bj = sasql_getVipPoint(char_index);
 #else	
-				int bj = CHAR_getInt(charaindex, CHAR_BJ);
+				int bj = CHAR_getInt(char_index, CHAR_BJ);
 #endif
 				int price = onlineshop[type-1][id].price * onlineshop[type-1][id].percentage / 100 * num;
 				if(bj >= price){
 #ifdef _ONLINE_SHOP_MYSQL
-					sasql_setVipPoint(charaindex, bj - price);
+					sasql_setVipPoint(char_index, bj - price);
 #else	
-					CHAR_setInt(charaindex, CHAR_BJ, bj - price);
+					CHAR_setInt(char_index, CHAR_BJ, bj - price);
 #endif
-					CHAR_setInt(charaindex, CHAR_AMPOINT, CHAR_getInt(charaindex, CHAR_AMPOINT) + onlineshop[type-1][id].id * num);
+					CHAR_setInt(char_index, CHAR_AMPOINT, CHAR_getInt(char_index, CHAR_AMPOINT) + onlineshop[type-1][id].id * num);
 				}
 				
 			}
@@ -284,14 +284,14 @@ void OnlineShop_Buy(int fd, int charaindex, int type, int page, int id, int num)
 
 		case ONLINESHOP_AMPOINT:
 			{
-				int ampoint = CHAR_getInt(charaindex, CHAR_AMPOINT);
+				int ampoint = CHAR_getInt(char_index, CHAR_AMPOINT);
 				int price = onlineshop[type-1][id].price * onlineshop[type-1][id].percentage / 100 * num;
 				if(ampoint >= price){
-					CHAR_setInt(charaindex, CHAR_AMPOINT, ampoint - price);
+					CHAR_setInt(char_index, CHAR_AMPOINT, ampoint - price);
 #ifdef _ONLINE_SHOP_MYSQL
-					sasql_setVipPoint(charaindex, sasql_getVipPoint(charaindex) + onlineshop[type-1][id].id * num);
+					sasql_setVipPoint(char_index, sasql_getVipPoint(char_index) + onlineshop[type-1][id].id * num);
 #else	
-					CHAR_setInt(charaindex, CHAR_BJ, CHAR_getInt(charaindex, CHAR_BJ) + onlineshop[type-1][id].id * num);
+					CHAR_setInt(char_index, CHAR_BJ, CHAR_getInt(char_index, CHAR_BJ) + onlineshop[type-1][id].id * num);
 #endif
 					
 				}
@@ -303,9 +303,9 @@ void OnlineShop_Buy(int fd, int charaindex, int type, int page, int id, int num)
 	int pagemax=(max[type-1]-1)/SHOPPAGEMAX+1;
 	for(i=0;i<ONLINESHOP_NUM-1;i++){
 #ifdef _ONLINE_SHOP_MYSQL
-		lssproto_VIP_SHOP_send( fd, 0, (type-1==ONLINESHOP_AMPOINT)?CHAR_getInt(charaindex, CHAR_AMPOINT):sasql_getVipPoint(charaindex), i, page, pagemax ,"");
+		GmsvServer_VIP_SHOP_send( fd, 0, (type-1==ONLINESHOP_AMPOINT)?CHAR_getInt(char_index, CHAR_AMPOINT):sasql_getVipPoint(char_index), i, page, pagemax ,"");
 #else	
-		lssproto_VIP_SHOP_send( fd, 0, (type-1==ONLINESHOP_AMPOINT)?CHAR_getInt(charaindex, CHAR_AMPOINT):CHAR_getInt(charaindex, CHAR_BJ), i, page, pagemax ,"");
+		GmsvServer_VIP_SHOP_send( fd, 0, (type-1==ONLINESHOP_AMPOINT)?CHAR_getInt(char_index, CHAR_AMPOINT):CHAR_getInt(char_index, CHAR_BJ), i, page, pagemax ,"");
 #endif
 		
 	}

@@ -31,21 +31,21 @@ enum{
 };
 
 int	MAGIC_Recovery_Battle(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int magicindex,
 	int mp
 );
 
 int	MAGIC_FieldAttChange_Battle(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int marray,
 	int mp
 );
 
 int	MAGIC_StatusChange_Battle(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int marray,
 	int mp
@@ -53,7 +53,7 @@ int	MAGIC_StatusChange_Battle(
 
 #ifdef _MAGIC_DEEPPOISON
 int	MAGIC_StatusChange_Battle2(
-	int charaindex,
+	int char_index,
 	int toindex,
 	int marray,
 	int mp
@@ -61,12 +61,12 @@ int	MAGIC_StatusChange_Battle2(
 #endif
 
 #ifdef _OTHER_MAGICSTAUTS
-int	MAGIC_MagicStatusChange_Battle( int charaindex, int toNo, int marray, int mp );
+int	MAGIC_MagicStatusChange_Battle( int char_index, int toNo, int marray, int mp );
 
 #endif
 
 int	MAGIC_MagicDef_Battle(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int marray,
 	int mp
@@ -142,14 +142,14 @@ void BATTLE_MultiParamChange(
 );
 
 int	MAGIC_FieldAttChange_Battle(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int marray,
 	int mp 
 );
 
 int	BATTLE_FieldAttChange(
-	int charaindex,
+	int char_index,
 	char *pArg
 );
 
@@ -172,7 +172,7 @@ void BATTLE_MultiStatusRecovery(
 );
 
 int	MAGIC_StatusRecovery_Battle(
-	int charaindex,
+	int char_index,
 	int toNo,
 	int marray,
 	int mp
@@ -204,7 +204,7 @@ void BATTLE_MultiCaptureUp(
 // ¿¢å§¾®ÈÕãâÍÙÔÊÔÂÈÈÖî
 //
 int	MAGIC_Ressurect_Battle(
-	int charaindex, // ¾®ØêÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
+	int char_index, // ¾®ØêÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
 	int toNo, 		// ¾®ØêÈÕÄ¾ÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
 	int marray, 	// magicindex
 	int mp 			// MP
@@ -218,7 +218,7 @@ int	MAGIC_Ressurect_Battle(
 // óìÁë¼°  ±îÃ«ÔÊÔÂÈÈÖî
 //
 int	MAGIC_AttReverse_Battle(
-	int charaindex, // ¾®ØêÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
+	int char_index, // ¾®ØêÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
 	int toNo, 		// ¾®ØêÈÕÄ¾ÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
 	int marray, 	// magicindex
 	int mp 			// MP
@@ -231,7 +231,7 @@ int	MAGIC_AttReverse_Battle(
 //   ¿­    ¼ÀÔÊÔÂÈÈÖî
 //
 int	MAGIC_CaptureUp_Battle(
-	int charaindex, // ¾®ØêÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
+	int char_index, // ¾®ØêÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
 	int toNo, 		// ¾®ØêÈÕÄ¾ÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
 	int marray, 	// magicindex
 	int mp 			// MP
@@ -262,7 +262,7 @@ void BATTLE_MultiResAndDef(
 // ãâÍÙ¡Ö  Ü·  »¿Ã«Ü¸ÒüÔÂÈÈÖî
 //
 int	MAGIC_ResAndDef_Battle(
-	int charaindex, // ¾®ØêÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
+	int char_index, // ¾®ØêÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
 	int toNo, 		// ¾®ØêÈÕÄ¾ÔÂÚĞ¼°ÄÌ¼ş·¸ÓÀÛÍµ©
 	int marray, 	// magicindex
 	int mp 			// MP
@@ -272,7 +272,7 @@ int	MAGIC_ResAndDef_Battle(
 //****************************************************************
 
 #ifdef _ATTACK_MAGIC
-int MAGIC_AttMagic_Battle( int charaindex , int toNo , int marray , int mp );
+int MAGIC_AttMagic_Battle( int char_index , int toNo , int marray , int mp );
 #ifdef _FIX_MAGICDAMAGE
 void BATTLE_MultiAttMagic( int battleindex, int attackNo, int toNo,
 						  int attIdx ,int FieldAttr ,int Power, int MagicLv);
@@ -280,14 +280,14 @@ void BATTLE_MultiAttMagic( int battleindex, int attackNo, int toNo,
 #else
 void BATTLE_MultiAttMagic( int battleindex , int attackNo , int toNo , int attIdx , int FieldAttr , int Power );
 #endif
-int MAGIC_AttMagic_Battle( int charaindex , int toNo , int marray , int mp );
+int MAGIC_AttMagic_Battle( int char_index , int toNo , int marray , int mp );
 
 #endif
 
 
 
 #ifdef _MAGIC_TOCALL
-int MAGIC_ToCallDragon_Battle( int charaindex , int toNo , int marray , int mp );
+int MAGIC_ToCallDragon_Battle( int char_index , int toNo , int marray , int mp );
 
 void BATTLE_MultiToCallDragonMagic( int battleindex, int attackNo, int toNo,
 						  int attIdx ,int FieldAttr ,int Power, int ImageNo);
@@ -298,7 +298,7 @@ void BATTLE_MultiToCallDragonMagic( int battleindex, int attackNo, int toNo,
 void BATTLE_MultiReLife( int battleindex, int attackNo, int toNo, int power, int RecevEffect );
 #endif
 #ifdef _MAGIC_WEAKEN
-int	MAGIC_ParamChange_Turn_Battle(int charaindex,int toNo,int marray,int mp);
+int	MAGIC_ParamChange_Turn_Battle(int char_index,int toNo,int marray,int mp);
 void BATTLE_MultiParamChangeTurn( int battleindex,int attackNo,int toNo,int status,int UseEffect,int RecevEffect,int turn, int Success);
 #endif
 int BATTLE_MagicEffect(	int battleindex,int attackNo,int ToList[],int MyEffect,int ToEffect );
@@ -308,11 +308,11 @@ int BATTLE_MagicEffect(	int battleindex,int attackNo,int ToList[],int MyEffect,i
 #ifdef _PROFESSION_SKILL			// WON ADD ÈËÎïÖ°Òµ¼¼ÄÜ
 void PROFESSION_MAGIC_ATTAIC( int battleindex, int attackNo, int toNo, int attIdx, int FieldAttr, int skill);
 int PROFESSION_MAGIC_ATTAIC_Effect( int battleindex, int attackNo, int ToList[], int AttackMgcNo );
-int analysis_profession_parameter( int attIdx, int skill, int toNo, int charaindex );
-void PROFESSION_MAGIC_GET_PRACTICE( float *hp_power, float *mp_power, float *dec_hp, float *dec_mp, int charaindex );
-void PROFESSION_MAGIC_TOLIST_SORT( int *list, int *listidx, int charaindex );
-void PROFESSION_MAGIC_CHANGE_STATUS( int charaindex, int hp_power, float mp_power, float *add_hp, float *add_mp );
-void PROFESSION_MAGIC_GET_IMG2( int toNo, int charaindex, int attIdx, char *pszOption );
+int analysis_profession_parameter( int attIdx, int skill, int toNo, int char_index );
+void PROFESSION_MAGIC_GET_PRACTICE( float *hp_power, float *mp_power, float *dec_hp, float *dec_mp, int char_index );
+void PROFESSION_MAGIC_TOLIST_SORT( int *list, int *listidx, int char_index );
+void PROFESSION_MAGIC_CHANGE_STATUS( int char_index, int hp_power, float mp_power, float *add_hp, float *add_mp );
+void PROFESSION_MAGIC_GET_IMG2( int toNo, int char_index, int attIdx, char *pszOption );
 #ifdef _PROFESSION_ADDSKILL
 int PROFESSION_MAGIC_GET_DAMAGE( int attackindex, int defindex, int magic_type, int power, int command );
 #else
@@ -320,7 +320,7 @@ int PROFESSION_MAGIC_GET_DAMAGE( int attackindex, int defindex, int magic_type, 
 #endif
 int PROFESSION_MAGIC_DODGE( int atk_index, int def_index, int magic_type );
 void PROFESSION_MAGIC_CHANG_IMG2( int img2, char *pszOption, int attIdx );
-int PROFESSION_MAGIC_CHANG_STATUS(int command,int battleindex, int charaindex, int charaidx, int power, int no);
+int PROFESSION_MAGIC_CHANG_STATUS(int command,int battleindex, int char_index, int charaidx, int power, int no);
 int PROFESSION_MAGIC_GET_ICE_MIRROR_DAMAGE( int attackindex, int defindex, int command, int power );
 #endif
 

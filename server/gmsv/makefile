@@ -6,16 +6,17 @@ export RANLIB=ranlib
 export SED=sed
 export SHELL=/bin/sh
 
-INCFLAGS=-I../include -I. -I./lua -I../../common
+INCFLAGS=-I./include -I../lua -I../common
 CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
 
 ifeq ($(shell uname),Linux)
 	SQL=-L/usr/lib/mysql/ -lmysqlclient -lz
-	TARGET=../../../csa/gmsv/gmsvjt
+	TARGET=../../csa/gmsv/gmsvjt
 endif
 
+COMMON_LIBS=../common/libsaacclient.a ../common/libgmsvserver.a ../common/libserverutil.a ../common/libutil.a
 SUBDIR=char npc net map item battle magic longzoro mylua lua npc_lua utils
-LIBS=net/libnet.a char/libchar.a npc/libnpc.a map/libmap.a item/libitem.a magic/libmagic.a battle/libbattle.a longzoro/custom.a mylua/libmylua.a npc_lua/libnpc_lua.a lua/libluajit.a utils/libutil.a ../../common/libcommon.a
+LIBS=net/libnet.a char/libchar.a npc/libnpc.a map/libmap.a item/libitem.a magic/libmagic.a battle/libbattle.a longzoro/custom.a mylua/libmylua.a npc_lua/libnpc_lua.a ../lua/libluajit.a $(COMMON_LIBS)
 
 SRC=main.c init.c config_file.c buf.c msignal.c shop.c object.c handletime.c function.c log.c autil.c descrypt.c const.c
 

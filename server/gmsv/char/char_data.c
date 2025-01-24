@@ -1,11 +1,14 @@
 #include "version.h"
+//
+#include "util.h"
+#include "saac_client.h"
+//
 #include <math.h>
 #ifdef _REDHAT_V9
 #include <errno.h>
 #endif
 #include "autil.h"
 #include "readmap.h"
-#include "util.h"
 #include "anim_tbl.h"
 #include "battle.h"
 #include "char.h"
@@ -15,7 +18,7 @@
 #include "log.h"
 #include "pet.h"
 #include "enemy.h"
-#ifdef _PERSONAL_FAME  // Arminius: �����������
+#ifdef _PERSONAL_FAME  // Arminius:
 #include "char_base.h"
 #include "config_file.h"
 #endif
@@ -25,7 +28,6 @@ extern int CheckCharMaxItem(int charindex);
 #include "defaultPlayer.h"
 #include "../ls2data.h"
 #include "family.h"
-#include "saacproto_cli.h"
 #ifdef  _PET_LIMITLEVEL
 void CHAR_CheckPetDoLimitlevel( int petindex , int toindex, int level);  
 #endif
@@ -156,21 +158,21 @@ static defaultCharacterGet CHAR_defaultCharacterGet[]=
 BOOL CHAR_getDefaultChar( Char*  nc  , int imagenumber )
 {
   int     i, j;
-  int     defcharaindex;
+  int     defchar_index;
 
   Char*   defaultchar;
   defaultchar = CHAR_defaultCharacterGet[arraysizeof(CHAR_defaultCharacterGet) - 1].initchardata;
 
   memset( nc,0,sizeof(Char) );
-  defcharaindex = 0;
+  defchar_index = 0;
     for( i = 0 ; i < arraysizeof( CHAR_defaultCharacterGet ) ; i  ++ ){
      if( CHAR_defaultCharacterGet[i].imagenumber == imagenumber ){
             defaultchar = CHAR_defaultCharacterGet[i].initchardata;
-            defcharaindex = i;
+            defchar_index = i;
             break;
      }
   }
-  nc->data[CHAR_IMAGETYPE] = CHAR_defaultCharacterGet[defcharaindex].imgtype;
+  nc->data[CHAR_IMAGETYPE] = CHAR_defaultCharacterGet[defchar_index].imgtype;
     nc->use = TRUE;
 
 #ifdef _CHAR_FIXDATADEF
@@ -268,9 +270,6 @@ BOOL CHAR_checkPlayerImageNumber( int imagenumber)
   else return TRUE;
 }
 /*------------------------------------------------------------
- * ӿ  �  į����������
- *
- * ӿ  �  į����Ʊ�����ɡ�Ѩ����ƥ����Ȼ�����
  * number = ����  ��
  * CG_CHR_MAKE_FACE + (number*100) + (  ��  number * 25) + (     į * 5 ) + ��  į
  *
@@ -515,10 +514,7 @@ BOOL CHAR_initInvinciblePlace( char* filename )
         errorprint;
         return FALSE;
     }
-
     CHAR_invareanum=0;
-
-    /*  ����  ��ئ�滥�ϵ�ؤ�¾�������Ʃ����    */
     while( fgets( line, sizeof( line ), f ) ){
 #ifdef _CRYPTO_DATA    
         if(crypto==TRUE){
@@ -718,7 +714,6 @@ BOOL CHAR_initAppearPosition( char* filename )
         errorprint;
         return FALSE;
     }
-
     CHAR_appearnum=0;
     while( fgets( line, sizeof( line ), f ) ){
 #ifdef _CRYPTO_DATA    
@@ -1210,38 +1205,38 @@ int CHAR_GetLevel()
 { 
   return arraysizeof( LevelUpTbl )-1;
 }
-int CHAR_GetLevelExp( int charaindex, int level)
+int CHAR_GetLevelExp( int char_index, int level)
 {
 #ifdef _NEWOPEN_MAXEXP
 #ifdef _USER_EXP_CF
   if(level>getMaxLevel()){
-    if(level>CHAR_getInt(charaindex, CHAR_LIMITLEVEL))
+    if(level>CHAR_getInt(char_index, CHAR_LIMITLEVEL))
       return -1;
   }else if(level>getYBLevel()){
-    if (CHAR_getInt(charaindex, CHAR_WHICHTYPE)==CHAR_TYPEPET 
+    if (CHAR_getInt(char_index, CHAR_WHICHTYPE)==CHAR_TYPEPET 
 #ifdef _PET_FUSION
-      || CHAR_getInt( charaindex, CHAR_FUSIONBEIT ) == 1
+      || CHAR_getInt( char_index, CHAR_FUSIONBEIT ) == 1
 #endif
       ) {
         
       if(getPettrans() != -1 ){
-        if(CHAR_getInt(charaindex,CHAR_TRANSMIGRATION)>=getPettrans())
+        if(CHAR_getInt(char_index,CHAR_TRANSMIGRATION)>=getPettrans())
           return getNeedLevelUpTbls(level);
       }else{
-        if(level<=CHAR_getInt(charaindex, CHAR_LIMITLEVEL))
+        if(level<=CHAR_getInt(char_index, CHAR_LIMITLEVEL))
           return getNeedLevelUpTbls(level);
       }
       return -1;
     }
 #ifdef _PLAYER_NPC
-    else if (CHAR_getInt( charaindex, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERNPC
-      || CHAR_getInt( charaindex, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERPETNPC){
+    else if (CHAR_getInt( char_index, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERNPC
+      || CHAR_getInt( char_index, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERPETNPC){
          return -1;
     }
 #endif
     
     else{
-      if(CHAR_getInt(charaindex,CHAR_TRANSMIGRATION)<getChartrans()){
+      if(CHAR_getInt(char_index,CHAR_TRANSMIGRATION)<getChartrans()){
         return -1;
       }
     }
@@ -1268,36 +1263,36 @@ int CHAR_GetOldLevelExp( int level)
   return LevelUpTbl[level];
 }
 
-int CHAR_LevelUpCheck( int charaindex , int toindex)
+int CHAR_LevelUpCheck( int char_index , int toindex)
 {
   int exp, level, nextexp, iRet = FALSE;
-  if( CHAR_CHECKINDEX( charaindex  ) == FALSE )return 0;
-  exp = CHAR_getInt( charaindex, CHAR_EXP );
+  if( CHAR_CHECKINDEX( char_index  ) == FALSE )return 0;
+  exp = CHAR_getInt( char_index, CHAR_EXP );
   while( 1 ){
-    level = CHAR_getInt( charaindex, CHAR_LV );
-    nextexp = CHAR_GetLevelExp( charaindex, level+1);
+    level = CHAR_getInt( char_index, CHAR_LV );
+    nextexp = CHAR_GetLevelExp( char_index, level+1);
     if( nextexp < 0 )
       break;
     // Arminius 7.30 pet limit lv
-    if (CHAR_getInt(charaindex, CHAR_WHICHTYPE)==CHAR_TYPEPET
+    if (CHAR_getInt(char_index, CHAR_WHICHTYPE)==CHAR_TYPEPET
 #ifdef _PLAYER_NPC
-      || CHAR_getInt( charaindex, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERNPC
-      || CHAR_getInt( charaindex, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERPETNPC
+      || CHAR_getInt( char_index, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERNPC
+      || CHAR_getInt( char_index, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERPETNPC
 #endif
       ) {
-      if (level >= CHAR_getInt(charaindex, CHAR_LIMITLEVEL) && 
-        CHAR_getInt(charaindex, CHAR_LIMITLEVEL) > 0 )  {
+      if (level >= CHAR_getInt(char_index, CHAR_LIMITLEVEL) && 
+        CHAR_getInt(char_index, CHAR_LIMITLEVEL) > 0 )  {
 #ifdef _NEWOPEN_MAXEXP
-        CHAR_setInt( charaindex, CHAR_EXP , 0);
+        CHAR_setInt( char_index, CHAR_EXP , 0);
 #else
 #ifdef  _PET_LIMITLEVEL
-        if( CHAR_getInt( charaindex, CHAR_PETID) == 718 
+        if( CHAR_getInt( char_index, CHAR_PETID) == 718 
 #ifdef _PET_2LIMITLEVEL
-          || CHAR_getInt( charaindex, CHAR_PETID) == 401 
+          || CHAR_getInt( char_index, CHAR_PETID) == 401 
 #endif
           )  {
-          nextexp = CHAR_GetLevelExp( charaindex, CHAR_getInt(charaindex, CHAR_LIMITLEVEL));
-          CHAR_setInt( charaindex, CHAR_EXP , nextexp );
+          nextexp = CHAR_GetLevelExp( char_index, CHAR_getInt(char_index, CHAR_LIMITLEVEL));
+          CHAR_setInt( char_index, CHAR_EXP , nextexp );
         }
 #endif
 #endif
@@ -1306,26 +1301,26 @@ int CHAR_LevelUpCheck( int charaindex , int toindex)
     }
     if( exp >= nextexp ){
       iRet ++;
-      if( CHAR_getInt( charaindex, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYER ){
-        CHAR_setInt( charaindex, CHAR_DUELPOINT,
-        CHAR_getInt( charaindex, CHAR_DUELPOINT) + (level+1)*10 );
+      if( CHAR_getInt( char_index, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYER ){
+        CHAR_setInt( char_index, CHAR_DUELPOINT,
+        CHAR_getInt( char_index, CHAR_DUELPOINT) + (level+1)*10 );
       }
 #ifdef  _PET_LIMITLEVEL
       else {
-        CHAR_CheckPetDoLimitlevel( charaindex, toindex, level );
+        CHAR_CheckPetDoLimitlevel( char_index, toindex, level );
       }
 #endif
       
 #ifdef _NEWOPEN_MAXEXP
       if( level >= CHAR_MAXUPLEVEL ){
       }else{
-        if( CHAR_HandleExp( charaindex) != -1 ){
-          exp = CHAR_getInt( charaindex, CHAR_EXP );
-          CHAR_setInt( charaindex, CHAR_LV, level+1 );
+        if( CHAR_HandleExp( char_index) != -1 ){
+          exp = CHAR_getInt( char_index, CHAR_EXP );
+          CHAR_setInt( char_index, CHAR_LV, level+1 );
         }
       }
 #else
-      CHAR_setInt( charaindex, CHAR_LV, level+1 );
+      CHAR_setInt( char_index, CHAR_LV, level+1 );
 #endif
     }else{
       break;
@@ -1555,7 +1550,7 @@ int CHAR_PetLevelUp(int petindex)
 #ifdef _FMVER21
           if (CHAR_getInt(ownerindex, CHAR_FMLEADERFLAG) > 0
              && CHAR_getInt(ownerindex, CHAR_FMLEADERFLAG) != FMMEMBER_APPLY){
-            saacproto_ACFixFMData_send(acfd,
+            SaacClient_ACFixFMData_send(acfd,
                CHAR_getChar(ownerindex, CHAR_FMNAME),
                CHAR_getInt(ownerindex, CHAR_FMINDEX),
                CHAR_getWorkInt(ownerindex, CHAR_WORKFMINDEXI),
@@ -1575,7 +1570,7 @@ int CHAR_PetLevelUp(int petindex)
               for(i=0;i<FAMILY_MAXHOME;i++){
                 // �κ�һ��ׯ԰������ս�ų�,����ֵһ�ı����ACҪ������������
                 if(fmpointlist.fm_inwar[i]){
-                  saacproto_ACShowTopFMList_send(acfd, FM_TOP_MOMENTUM);
+                  SaacClient_ACShowTopFMList_send(acfd, FM_TOP_MOMENTUM);
                   break;
                 }
               }
@@ -1586,7 +1581,7 @@ int CHAR_PetLevelUp(int petindex)
           // δ���ͨ��ʱֻ���³�Ա����ֵ
           else if(CHAR_getInt(ownerindex, CHAR_FMLEADERFLAG) == FMMEMBER_APPLY){
             sprintf(tmpbuf,"%d",CHAR_getInt(ownerindex,CHAR_FAME));
-            saacproto_ACFixFMData_send(acfd,
+            SaacClient_ACFixFMData_send(acfd,
               CHAR_getChar(ownerindex,CHAR_FMNAME),
               CHAR_getInt(ownerindex,CHAR_FMINDEX),
               CHAR_getWorkInt(ownerindex,CHAR_WORKFMINDEXI),
@@ -1596,7 +1591,7 @@ int CHAR_PetLevelUp(int petindex)
           }
 #endif
 #else
-          saacproto_ACFixFMData_send(acfd,
+          SaacClient_ACFixFMData_send(acfd,
             CHAR_getChar(ownerindex, CHAR_FMNAME),
             CHAR_getInt(ownerindex, CHAR_FMINDEX),
             CHAR_getWorkInt(ownerindex, CHAR_WORKFMINDEXI),
@@ -1641,7 +1636,7 @@ int CHAR_PetLevelUp(int petindex)
   return 0;
 }
 #ifdef _NPC_FUSION
-int PETFUSION_FusionPetSub( int charaindex, int Subindex1, int Subindex2, int *work, int *skill)
+int PETFUSION_FusionPetSub( int char_index, int Subindex1, int Subindex2, int *work, int *skill)
 {
   int i;
   int base[4]={0,0,0,0};
@@ -1656,7 +1651,7 @@ int PETFUSION_FusionPetSub( int charaindex, int Subindex1, int Subindex2, int *w
   for( i=0; i<4; i++)  {
     work[i] = 0;
   }
-  if( PET_getBaseAndSkill( charaindex, Subindex1, base, petskill, 0) == FALSE )
+  if( PET_getBaseAndSkill( char_index, Subindex1, base, petskill, 0) == FALSE )
     return 0;
   if( CHAR_getInt( Subindex1, CHAR_LV) < 120 ){//�ȼ�����
     for( i=0; i<4; i++)  {
@@ -1681,7 +1676,7 @@ int PETFUSION_FusionPetSub( int charaindex, int Subindex1, int Subindex2, int *w
   if( CHAR_getInt( Subindex2, CHAR_FUSIONBEIT) == 1 ||
     CHAR_getInt( Subindex2, CHAR_FUSIONRAISE) > 0 )return 0;//����Ƿ�Ϊ�ںϳ�
 
-  if( PET_getBaseAndSkill( charaindex, Subindex2, base, NULL, 0) == FALSE )
+  if( PET_getBaseAndSkill( char_index, Subindex2, base, NULL, 0) == FALSE )
     return 0;
   if( CHAR_getInt( Subindex2, CHAR_LV) < 120 ){//�ȼ�����
     for( i=0; i<4; i++)  {
@@ -1698,7 +1693,7 @@ int PETFUSION_FusionPetSub( int charaindex, int Subindex1, int Subindex2, int *w
   return 2;
 }
 
-BOOL PETFUSION_FusionPetMain( int charaindex, int Mainindex, int *work, int *skill)
+BOOL PETFUSION_FusionPetMain( int char_index, int Mainindex, int *work, int *skill)
 {
   int i;
   int base[4]={0,0,0,0};
@@ -1710,7 +1705,7 @@ BOOL PETFUSION_FusionPetMain( int charaindex, int Mainindex, int *work, int *ski
   if( CHAR_getInt( Mainindex, CHAR_FUSIONBEIT) == 1 ||
     CHAR_getInt( Mainindex, CHAR_FUSIONRAISE) > 0 )return FALSE;//����Ƿ�Ϊ�ںϳ�
 
-  if( PET_getBaseAndSkill( charaindex, Mainindex, base, petskill, 0) == FALSE )
+  if( PET_getBaseAndSkill( char_index, Mainindex, base, petskill, 0) == FALSE )
     return -1;
   if( CHAR_getInt( Mainindex, CHAR_LV) < 120 ){//�ȼ�����
     for( i=0; i<4; i++)  {
@@ -1780,32 +1775,32 @@ BOOL PETFUSION_DelPet( int toindex, int Mainindex, int Subindex1, int Subindex2,
   return FALSE;
 }
 
-int PETFUSION_Evolution( int charaindex, int petindex)
+int PETFUSION_Evolution( int char_index, int petindex)
 {
   char buf[256], buf1[256];
   int newindex=-1;
   CHAR_setInt( petindex, CHAR_FUSIONTIMELIMIT, -1);
 
   sprintf( buf, "����%s��������", CHAR_getChar( petindex, CHAR_NAME));
-  newindex = EVOLUTION_createPetFromEnemyIndex( charaindex, petindex, 0);
+  newindex = EVOLUTION_createPetFromEnemyIndex( char_index, petindex, 0);
   if( !CHAR_CHECKINDEX( newindex) ){
-    CHAR_talkToCli( charaindex, -1, "���������������", CHAR_COLORYELLOW);
+    CHAR_talkToCli( char_index, -1, "���������������", CHAR_COLORYELLOW);
     return -1;
   }
   sprintf( buf1, "��%s����", CHAR_getChar( newindex, CHAR_NAME));
   strcat( buf, buf1);
-  CHAR_talkToCli( charaindex, -1, buf, CHAR_COLORYELLOW);
+  CHAR_talkToCli( char_index, -1, buf, CHAR_COLORYELLOW);
 
   LogPetFeed(
-    CHAR_getChar( charaindex, CHAR_NAME),
-    CHAR_getChar( charaindex, CHAR_CDKEY),
+    CHAR_getChar( char_index, CHAR_NAME),
+    CHAR_getChar( char_index, CHAR_CDKEY),
     CHAR_getChar( petindex, CHAR_NAME),
     petindex,
     CHAR_getInt( petindex, CHAR_LV),
     buf, // Key
-    CHAR_getInt( charaindex, CHAR_FLOOR),
-    CHAR_getInt( charaindex, CHAR_X),
-    CHAR_getInt( charaindex, CHAR_Y),
+    CHAR_getInt( char_index, CHAR_FLOOR),
+    CHAR_getInt( char_index, CHAR_X),
+    CHAR_getInt( char_index, CHAR_Y),
     CHAR_getChar( petindex, CHAR_UNIQUECODE) );
 
   return newindex;
@@ -1930,24 +1925,24 @@ int PETTRANS_PetTransManStatus( int toindex, int petindex1, int petindex2)
 #endif
 
 #ifdef _CHIKULA_STONE
-void CHAR_AutoChikulaStone( int charaindex, int Dflg)
+void CHAR_AutoChikulaStone( int char_index, int Dflg)
 {
   int Myhp, i, dnums;
-  if( !CHAR_CHECKINDEX( charaindex) ) return;
-  if( CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE ) return;
+  if( !CHAR_CHECKINDEX( char_index) ) return;
+  if( CHAR_getWorkInt( char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE ) return;
   switch( Dflg ){
   case 1:  //HP
-    Myhp = CHAR_getInt( charaindex, CHAR_HP);
-    dnums = CHAR_getWorkInt( charaindex, CHAR_WORKCHIKULAHP);
+    Myhp = CHAR_getInt( char_index, CHAR_HP);
+    dnums = CHAR_getWorkInt( char_index, CHAR_WORKCHIKULAHP);
     Myhp += dnums;
-    if( Myhp > CHAR_getWorkInt( charaindex, CHAR_WORKMAXHP) ){
-      Myhp = CHAR_getWorkInt( charaindex, CHAR_WORKMAXHP);
+    if( Myhp > CHAR_getWorkInt( char_index, CHAR_WORKMAXHP) ){
+      Myhp = CHAR_getWorkInt( char_index, CHAR_WORKMAXHP);
     }
-    CHAR_setInt( charaindex, CHAR_HP, Myhp);
-    CHAR_complianceParameter( charaindex );
-    CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_HP);
+    CHAR_setInt( char_index, CHAR_HP, Myhp);
+    CHAR_complianceParameter( char_index );
+    CHAR_send_P_StatusString( char_index, CHAR_P_STRING_HP);
     for( i=0; i<CHAR_MAXPETHAVE; i++)  {
-      int petindex = CHAR_getCharPet( charaindex, i);
+      int petindex = CHAR_getCharPet( char_index, i);
       if( !CHAR_CHECKINDEX( petindex) ) continue;
       Myhp = CHAR_getInt( petindex, CHAR_HP);
       Myhp += dnums;
@@ -1955,77 +1950,77 @@ void CHAR_AutoChikulaStone( int charaindex, int Dflg)
         Myhp = CHAR_getWorkInt( petindex, CHAR_WORKMAXHP);
       }
       CHAR_setInt( petindex, CHAR_HP, Myhp);
-      CHAR_send_K_StatusString( charaindex, i, CHAR_K_STRING_HP|CHAR_K_STRING_AI);
+      CHAR_send_K_StatusString( char_index, i, CHAR_K_STRING_HP|CHAR_K_STRING_AI);
     }
     break;
   case 2://MP
-    Myhp = CHAR_getInt( charaindex, CHAR_MP);
-    dnums = CHAR_getWorkInt( charaindex, CHAR_WORKCHIKULAMP);
+    Myhp = CHAR_getInt( char_index, CHAR_MP);
+    dnums = CHAR_getWorkInt( char_index, CHAR_WORKCHIKULAMP);
     Myhp += dnums;
-    if( Myhp > CHAR_getWorkInt( charaindex, CHAR_WORKMAXMP) ){
-      Myhp = CHAR_getWorkInt( charaindex, CHAR_WORKMAXMP);
+    if( Myhp > CHAR_getWorkInt( char_index, CHAR_WORKMAXMP) ){
+      Myhp = CHAR_getWorkInt( char_index, CHAR_WORKMAXMP);
     }
-    CHAR_setInt( charaindex, CHAR_MP, Myhp);
-    CHAR_complianceParameter( charaindex );
-    CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_MP);
+    CHAR_setInt( char_index, CHAR_MP, Myhp);
+    CHAR_complianceParameter( char_index );
+    CHAR_send_P_StatusString( char_index, CHAR_P_STRING_MP);
     break;
   }
 }
 #endif
 
 #ifdef _STATUS_WATERWORD //ˮ����״̬
-void CHAR_CheckWaterStatus( int charaindex)
+void CHAR_CheckWaterStatus( int char_index)
 {
-  if( !CHAR_CHECKINDEX( charaindex) ) return;
-  if( CHAR_getWorkInt( charaindex, CHAR_WORKSTATUSWATER) == -1 ){
+  if( !CHAR_CHECKINDEX( char_index) ) return;
+  if( CHAR_getWorkInt( char_index, CHAR_WORKSTATUSWATER) == -1 ){
     return;
   }
-  if( CHAR_getWorkInt( charaindex, CHAR_WORKSTATUSWATER) > 0 ){
-    CHAR_setWorkInt( charaindex, CHAR_WORKSTATUSWATER,
-    CHAR_getWorkInt( charaindex, CHAR_WORKSTATUSWATER) -1 );
+  if( CHAR_getWorkInt( char_index, CHAR_WORKSTATUSWATER) > 0 ){
+    CHAR_setWorkInt( char_index, CHAR_WORKSTATUSWATER,
+    CHAR_getWorkInt( char_index, CHAR_WORKSTATUSWATER) -1 );
 
-    if( CHAR_getWorkInt( charaindex, CHAR_WORKSTATUSWATER) != 0 &&
-      CHAR_getWorkInt( charaindex, CHAR_WORKSTATUSWATER)%10 == 0 ){
+    if( CHAR_getWorkInt( char_index, CHAR_WORKSTATUSWATER) != 0 &&
+      CHAR_getWorkInt( char_index, CHAR_WORKSTATUSWATER)%10 == 0 ){
       char buf1[256];
       sprintf( buf1, "ˮ�к���ʱ��ʣ��%d�֡�",
-        CHAR_getWorkInt( charaindex, CHAR_WORKSTATUSWATER));
-      CHAR_talkToCli( charaindex, -1, buf1, CHAR_COLORYELLOW);
+        CHAR_getWorkInt( char_index, CHAR_WORKSTATUSWATER));
+      CHAR_talkToCli( char_index, -1, buf1, CHAR_COLORYELLOW);
     }
   }
 
-  if( CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE ){
+  if( CHAR_getWorkInt( char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE ){
     return;
   }
-  if( CHAR_getWorkInt( charaindex, CHAR_WORKMAPFLOORTYPE) == 1 &&
-    CHAR_getWorkInt( charaindex, CHAR_WORKSTATUSWATER) <= 0 ){//ˮ����
+  if( CHAR_getWorkInt( char_index, CHAR_WORKMAPFLOORTYPE) == 1 &&
+    CHAR_getWorkInt( char_index, CHAR_WORKSTATUSWATER) <= 0 ){//ˮ����
     char token[256];
     int defhp=0;
-    int maxhp = CHAR_getWorkInt( charaindex, CHAR_WORKMAXHP);
-    int myhp = CHAR_getInt( charaindex, CHAR_HP);
+    int maxhp = CHAR_getWorkInt( char_index, CHAR_WORKMAXHP);
+    int myhp = CHAR_getInt( char_index, CHAR_HP);
     defhp = (maxhp*0.033);
     if( defhp <= 0 ) defhp = 1;
     myhp = myhp - defhp;
     sprintf( token, "���޷���������%d HP��", defhp);
-    CHAR_talkToCli( charaindex, -1, token, CHAR_COLORYELLOW);
+    CHAR_talkToCli( char_index, -1, token, CHAR_COLORYELLOW);
 
     if( myhp <= 0 ){
       myhp = 1;
-      if(CHAR_getInt(charaindex,CHAR_FLOOR) == 151 || CHAR_getInt(charaindex,CHAR_FLOOR) == 160
-        || CHAR_getInt(charaindex,CHAR_FLOOR) == 161 ) CHAR_warpToSpecificPoint(charaindex,702,213,27);
-      else CHAR_warpToSpecificPoint( charaindex, 200,102,1021);
+      if(CHAR_getInt(char_index,CHAR_FLOOR) == 151 || CHAR_getInt(char_index,CHAR_FLOOR) == 160
+        || CHAR_getInt(char_index,CHAR_FLOOR) == 161 ) CHAR_warpToSpecificPoint(char_index,702,213,27);
+      else CHAR_warpToSpecificPoint( char_index, 200,102,1021);
     }
-    CHAR_setInt( charaindex, CHAR_HP, myhp);
-    CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_HP);
+    CHAR_setInt( char_index, CHAR_HP, myhp);
+    CHAR_send_P_StatusString( char_index, CHAR_P_STRING_HP);
   }
 
 }
 #endif
 
-int CHAR_findSurplusPetBox( int charaindex )
+int CHAR_findSurplusPetBox( int char_index )
 {
   int i, remnants=0;
   for( i=0; i<CHAR_MAXPETHAVE; i++){
-      int petindex = CHAR_getCharPet( charaindex, i);
+      int petindex = CHAR_getCharPet( char_index, i);
     if( !CHAR_CHECKINDEX( petindex) ) remnants++;
   }
 
@@ -2034,9 +2029,9 @@ int CHAR_findSurplusPetBox( int charaindex )
 }
 
 #ifdef _FM_METAMO
-void CHAR_ReMetamo( int charaindex )
+void CHAR_ReMetamo( int char_index )
 {
-  int oldMetamo=CHAR_getInt( charaindex , CHAR_BASEIMAGENUMBER);
+  int oldMetamo=CHAR_getInt( char_index , CHAR_BASEIMAGENUMBER);
   if( oldMetamo>=100700 && oldMetamo<100819){
     int newMetamo;
     int hbMetamo[]={
@@ -2046,17 +2041,17 @@ void CHAR_ReMetamo( int charaindex )
        100190,100185,100200,100210,100230,100220,
     };
     newMetamo=hbMetamo[(oldMetamo-100700)/5];
-    CHAR_setInt( charaindex , CHAR_BASEIMAGENUMBER , newMetamo );
-    CHAR_setInt( charaindex , CHAR_BASEBASEIMAGENUMBER , newMetamo );
-    CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex , CHAR_WORKOBJINDEX ));
-    CHAR_send_P_StatusString( charaindex , CHAR_P_STRING_BASEBASEIMAGENUMBER);
-    CHAR_complianceParameter( charaindex );
+    CHAR_setInt( char_index , CHAR_BASEIMAGENUMBER , newMetamo );
+    CHAR_setInt( char_index , CHAR_BASEBASEIMAGENUMBER , newMetamo );
+    CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index , CHAR_WORKOBJINDEX ));
+    CHAR_send_P_StatusString( char_index , CHAR_P_STRING_BASEBASEIMAGENUMBER);
+    CHAR_complianceParameter( char_index );
   }
 }
 #endif
 
 #ifdef _NEW_PLAYER_RIDE
-void CHAR_PlayerRide( int charaindex )
+void CHAR_PlayerRide( int char_index )
 {
     int i,j;
     int MetamoList[5][13]={
@@ -2069,7 +2064,7 @@ void CHAR_PlayerRide( int charaindex )
     };
     for(i=0;i<4;i++)
         for(j=0;j<12;j++)
-         if(CHAR_getInt( charaindex, CHAR_BASEIMAGENUMBER) == MetamoList[i][j]){
+         if(CHAR_getInt( char_index, CHAR_BASEIMAGENUMBER) == MetamoList[i][j]){
              if(strstr( getPlayerRide(), "�����ͻ�����")){
                setNewplayergivepet(3,MetamoList[i][12]);
                setNewplayergivepet(4,MetamoList[4][j]);

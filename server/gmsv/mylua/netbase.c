@@ -25,9 +25,9 @@ static int endOne(lua_State *L)
 
 static int userip(lua_State *L) 
 {
-	int charaindex = luaL_checkint(L, 1);
+	int char_index = luaL_checkint(L, 1);
 
-	int sockfd = getfdFromCharaIndex(charaindex);
+	int sockfd = getfdFromCharaIndex(char_index);
 
 	unsigned long ip;
 	int a,b,c,d;
@@ -47,9 +47,9 @@ static int userip(lua_State *L)
 #ifdef _NEWCLISETSERVID
 static int getServid(lua_State *L) 
 {
-	int charaindex = luaL_checkint(L, 1);
+	int char_index = luaL_checkint(L, 1);
 
-	int sockfd = getfdFromCharaIndex(charaindex);
+	int sockfd = getfdFromCharaIndex(char_index);
 
 	lua_pushinteger(L, CONNECT_getServid(sockfd));
 	return 1;

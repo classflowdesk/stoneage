@@ -5,8 +5,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "config_file.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "npc_fmletter.h"
 #include "family.h"
 #include "log.h"
@@ -121,7 +121,7 @@ void NPC_FmLetterTalked( int meindex , int talkerindex , char *szMes ,int color 
 		NPC_FmLetter_selectWindow( meindex, talkerindex, 1 );
 	else
 		//NPC_FmLetter_selectWindow( meindex, talkerindex, 2 );
-		lssproto_WN_send( getfdFromCharaIndex( talkerindex ), WINDOW_MESSAGETYPE_MESSAGE,
+		GmsvServer_WN_send( getfdFromCharaIndex( talkerindex ), WINDOW_MESSAGETYPE_MESSAGE,
 			WINDOW_BUTTONTYPE_OK,
 			-1, -1,
 			makeEscapeString( "\n只有本庄园的族长才能制作邀请函及同意书！", buf, sizeof(buf)));
@@ -159,7 +159,7 @@ static void NPC_FmLetter_selectWindow( int meindex, int toindex, int num)
 	
 	fd = getfdFromCharaIndex( toindex);
 	if( fd != -1 ) {
-		lssproto_WN_send( fd, w.windowtype, 
+		GmsvServer_WN_send( fd, w.windowtype, 
 						w.buttontype,
 						w.windowno+100,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -216,75 +216,75 @@ void NPC_FmLetterWindowTalked( int meindex, int talkerindex,
 		
 		// Robin
 		if( newwin == 5 )	{
-			int	emptyitemindexinchara = CHAR_findEmptyItemBox( talkerindex );
-			int	itemindex = ITEM_makeItemAndRegist( w.letter );
+			int	emptyitem_indexinchara = CHAR_findEmptyItemBox( talkerindex );
+			int	item_index = ITEM_makeItemAndRegist( w.letter );
 
-			if( emptyitemindexinchara < 0 )	return;
+			if( emptyitem_indexinchara < 0 )	return;
 
-			if( itemindex != -1 ){
+			if( item_index != -1 ){
 
 
 				char    msgbuf[128];
-				CHAR_setItemIndex( talkerindex, emptyitemindexinchara, itemindex );
+				CHAR_setItemIndex( talkerindex, emptyitem_indexinchara, item_index );
 				/*  Work犯□正毛涩烂    */
-				ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
-				ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, talkerindex);
-				CHAR_sendItemDataOne( talkerindex, emptyitemindexinchara);
+				ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX,-1);
+				ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, talkerindex);
+				CHAR_sendItemDataOne( talkerindex, emptyitem_indexinchara);
 				LogItem(
 					CHAR_getChar( talkerindex, CHAR_NAME ), /* 平乓仿   */
 					CHAR_getChar( talkerindex, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-					itemindex,
+					item_index,
 #else
-					ITEM_getInt( itemindex, ITEM_ID ),  /* 失奶  丞  寞 */
+					ITEM_getInt( item_index, ITEM_ID ),  /* 失奶  丞  寞 */
 #endif
 					"AddLetter(制作邀请函)",
 					CHAR_getInt( talkerindex,CHAR_FLOOR),
 					CHAR_getInt( talkerindex,CHAR_X ),
 					CHAR_getInt( talkerindex,CHAR_Y ),
-					ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-					ITEM_getChar( itemindex, ITEM_NAME),
-					ITEM_getInt( itemindex, ITEM_ID)
+					ITEM_getChar( item_index, ITEM_UNIQUECODE),
+					ITEM_getChar( item_index, ITEM_NAME),
+					ITEM_getInt( item_index, ITEM_ID)
 				);
 				snprintf( msgbuf, sizeof( msgbuf), "制作%s成功。",
-					ITEM_getChar( itemindex, ITEM_NAME));
+					ITEM_getChar( item_index, ITEM_NAME));
 				CHAR_talkToCli( talkerindex, -1,msgbuf, CHAR_COLORWHITE);
 			}
 		}
 
 		// Robin
 		if( newwin == 6 )	{
-			int	emptyitemindexinchara = CHAR_findEmptyItemBox( talkerindex );
-			int	itemindex = ITEM_makeItemAndRegist( w.letter );
+			int	emptyitem_indexinchara = CHAR_findEmptyItemBox( talkerindex );
+			int	item_index = ITEM_makeItemAndRegist( w.letter );
 
-			if( emptyitemindexinchara < 0 )	return;
+			if( emptyitem_indexinchara < 0 )	return;
 
-			if( itemindex != -1 ){
+			if( item_index != -1 ){
 
 				char    msgbuf[128];
-				CHAR_setItemIndex( talkerindex, emptyitemindexinchara, itemindex );
+				CHAR_setItemIndex( talkerindex, emptyitem_indexinchara, item_index );
 				/*  Work犯□正毛涩烂    */
-				ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
-				ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, talkerindex);
-				CHAR_sendItemDataOne( talkerindex, emptyitemindexinchara);
+				ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX,-1);
+				ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, talkerindex);
+				CHAR_sendItemDataOne( talkerindex, emptyitem_indexinchara);
 				LogItem(
 					CHAR_getChar( talkerindex, CHAR_NAME ), /* 平乓仿   */
 					CHAR_getChar( talkerindex, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-					itemindex,
+					item_index,
 #else
-					ITEM_getInt( itemindex, ITEM_ID ),  /* 失奶  丞  寞 */
+					ITEM_getInt( item_index, ITEM_ID ),  /* 失奶  丞  寞 */
 #endif
 					"AddLetter(制作邀请函)",
 					CHAR_getInt( talkerindex,CHAR_FLOOR),
 					CHAR_getInt( talkerindex,CHAR_X ),
 					CHAR_getInt( talkerindex,CHAR_Y ),
-					ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-					ITEM_getChar( itemindex, ITEM_NAME),
-					ITEM_getInt( itemindex, ITEM_ID)
+					ITEM_getChar( item_index, ITEM_UNIQUECODE),
+					ITEM_getChar( item_index, ITEM_NAME),
+					ITEM_getInt( item_index, ITEM_ID)
 				);
 				snprintf( msgbuf, sizeof( msgbuf), "制作%s成功。",
-					ITEM_getChar( itemindex, ITEM_NAME));
+					ITEM_getChar( item_index, ITEM_NAME));
 				CHAR_talkToCli( talkerindex, -1,msgbuf, CHAR_COLORWHITE);
 			}
 		}
@@ -297,7 +297,7 @@ void NPC_FmLetterWindowTalked( int meindex, int talkerindex,
 
 		//fd = getfdFromCharaIndex( talkerindex);
 		if( fd != -1 ) {
-			lssproto_WN_send( fd, w.windowtype, 
+			GmsvServer_WN_send( fd, w.windowtype, 
 							w.buttontype,
 							w.windowno+100,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -312,7 +312,7 @@ void NPC_FmLetterWindowTalked( int meindex, int talkerindex,
  * 涩烂白央奶伙毛  氏匹隙烂今木凶windowno及犯□正毛本永玄允月
  * 
  * 娄醒“
- *		meindex		int		仇及NPC及charaindex
+ *		meindex		int		仇及NPC及char_index
  *		windowno	int		它奴件玉它  寞
  *		
  */

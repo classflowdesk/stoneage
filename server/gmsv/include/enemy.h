@@ -193,8 +193,8 @@ int ENEMY_getEnemyNum(void);
 BOOL ENEMY_initEnemy(const char* filename);
 BOOL ENEMY_reinitEnemy(void);
 int ENEMY_createEnemy(int array, int baselevel);
-int *ENEMY_getEnemy(int charaindex, int x, int y);
-int ENEMY_createPetFromEnemyIndex( int charaindex, int array);
+int *ENEMY_getEnemy(int char_index, int x, int y);
+int ENEMY_createPetFromEnemyIndex( int char_index, int array);
 int ENEMY_createPet(int array, int vital, int str, int tgh, int dex);
 int ENEMY_getEnemyArrayFromId(int enemy_id);
 int ENEMY_getEnemyArrayFromTempNo(int EnemyTempNo);
@@ -215,7 +215,7 @@ INLINE char *ENEMYTEMP_getInt_getChar( int index, ENEMYTEMP_DATACHAR element);
 int ENEMYTEMP_getInt_getEnemyNum( void);
 BOOL ENEMYTEMP_getInt_initEnemy( char* filename );
 BOOL ENEMYTEMP_getInt_reinitEnemy( void );
-int ENEMYTEMP_getEnemyTempArray( int enemyindex);
+int ENEMYTEMP_getEnemyTempArray( int enemy_index);
 int ENEMYTEMP_getEnemyTempArrayFromTempNo( int EnemyTempNo);
 int ENEMYTEMP_getEnemyTempArrayFromInitnum( int EnemyTempNo);
 
@@ -231,10 +231,10 @@ BOOL GROUP_initGroup( char* filename );
 BOOL GROUP_reinitGroup( void );
 
 #ifdef _PET_EVOLUTION
-int EVOLUTION_createPetFromEnemyIndex( int charaindex, int baseindex, int flg);
-int PET_CheckIncubate( int charaindex);
+int EVOLUTION_createPetFromEnemyIndex( int char_index, int baseindex, int flg);
+int PET_CheckIncubate( int char_index);
 BOOL PETFUSION_getIndexForChar( int toindex, int *MainIndex, int *Subindex1,int *Subindex2, char *data);
-int NPC_getFusionTableForBase( int charaindex, int petindex1, int petindex2 );
+int NPC_getFusionTableForBase( int char_index, int petindex1, int petindex2 );
 int NPC_getPetArrayForNo( int PetCode);
 BOOL PET_getEvolutionAns( int petindex, int *base);
 #endif

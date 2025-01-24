@@ -13,7 +13,7 @@
 
 // CoolFish: Family 2001/7/29
 #include "family.h"
-#include "saacproto_cli.h"
+#include "saac_client.h"
 
 #define IS_2BYTEWORD(_a_) ((char)(0x80) <= (_a_) && (_a_) <= (char)(0xFF))
 
@@ -282,7 +282,7 @@ int NPC_Util_getDirFromTwoPoint(POINT *pstart, POINT *pend) {
 }
 
 int NPC_Util_countHaveItem(int meindex, int itemid) {
-  int i, count = 0, itemindex;
+  int i, count = 0, item_index;
   if (!CHAR_CHECKINDEX(meindex))
     return -1;
 #ifdef _NEW_ITEM_
@@ -291,8 +291,8 @@ int NPC_Util_countHaveItem(int meindex, int itemid) {
 #else
   for (i = 0; i < CHAR_MAXITEMHAVE; i++) {
 #endif
-    itemindex = CHAR_getItemIndex(meindex, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = CHAR_getItemIndex(meindex, i);
+    if (!ITEM_CHECKINDEX(item_index))
       continue;
     if (ITEM_getInt(meindex, ITEM_ID) == itemid)
       count++;
@@ -429,69 +429,69 @@ void NPC_Util_AnnounceFloor(int floorid, char *msg) {
   }
 }
 
-BOOL NPC_Util_moveItemToChar(int charindex, int itemindex, BOOL net) {
+BOOL NPC_Util_moveItemToChar(int charindex, int item_index, BOOL net) {
   int emptyindex, oind, cind;
   emptyindex = CHAR_findEmptyItemBox(charindex);
   if (emptyindex < 0)
     return FALSE;
 
-  if (!ITEM_CHECKINDEX(itemindex))
+  if (!ITEM_CHECKINDEX(item_index))
     return FALSE;
-  oind = ITEM_getWorkInt(itemindex, ITEM_WORKOBJINDEX);
-  cind = ITEM_getWorkInt(itemindex, ITEM_WORKCHARAINDEX);
+  oind = ITEM_getWorkInt(item_index, ITEM_WORKOBJINDEX);
+  cind = ITEM_getWorkInt(item_index, ITEM_WORKCHARAINDEX);
 
   if (oind >= 0) {
     CHAR_ObjectDelete(oind);
-    CHAR_setItemIndex(charindex, emptyindex, itemindex);
-    ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
-    ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, charindex);
+    CHAR_setItemIndex(charindex, emptyindex, item_index);
+    ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
+    ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, charindex);
     if (net)
       CHAR_sendItemDataOne(charindex, emptyindex);
     return TRUE;
   } else if (cind >= 0) {
     int itemgrp[2];
-    int itemindexinchara;
+    int item_indexinchara;
     if (cind == charindex)
       return FALSE;
-    itemindexinchara = NPC_Util_SearchItemInChar(cind, itemindex);
-    if (itemindexinchara == -1)
+    item_indexinchara = NPC_Util_SearchItemInChar(cind, item_index);
+    if (item_indexinchara == -1)
       return FALSE;
-    CHAR_setItemIndex(cind, itemindexinchara, -1);
+    CHAR_setItemIndex(cind, item_indexinchara, -1);
     CHAR_complianceParameter(cind);
-    itemgrp[0] = itemindexinchara;
-    CHAR_setItemIndex(charindex, emptyindex, itemindex);
+    itemgrp[0] = item_indexinchara;
+    CHAR_setItemIndex(charindex, emptyindex, item_index);
     itemgrp[1] = emptyindex;
     if (net)
       CHAR_sendItemData(charindex, itemgrp, arraysizeof(itemgrp));
-    ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
-    ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, charindex);
+    ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
+    ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, charindex);
     return TRUE;
   }
   return FALSE;
 }
 
-BOOL NPC_Util_moveItemToMap(int itemindex, int fl, int x, int y, BOOL net) {
+BOOL NPC_Util_moveItemToMap(int item_index, int fl, int x, int y, BOOL net) {
   int oind, cind;
 
-  if (!ITEM_CHECKINDEX(itemindex))
+  if (!ITEM_CHECKINDEX(item_index))
     return FALSE;
 
-  oind = ITEM_getWorkInt(itemindex, ITEM_WORKOBJINDEX);
-  cind = ITEM_getWorkInt(itemindex, ITEM_WORKCHARAINDEX);
+  oind = ITEM_getWorkInt(item_index, ITEM_WORKOBJINDEX);
+  cind = ITEM_getWorkInt(item_index, ITEM_WORKCHARAINDEX);
 
   if (oind >= 0) {
     return MAP_objmove(oind, OBJECT_getFloor(oind), OBJECT_getX(oind),
                        OBJECT_getY(oind), fl, x, y);
   } else if (cind >= 0) {
-    int itemindexinchara = NPC_Util_SearchItemInChar(cind, itemindex);
-    if (itemindexinchara == -1)
+    int item_indexinchara = NPC_Util_SearchItemInChar(cind, item_index);
+    if (item_indexinchara == -1)
       return FALSE;
 
-    CHAR_setItemIndex(cind, itemindexinchara, -1);
+    CHAR_setItemIndex(cind, item_indexinchara, -1);
     CHAR_complianceParameter(cind);
     if (net)
-      CHAR_sendItemDataOne(cind, itemindexinchara);
-    if (CHAR_DropItemAbsolute(itemindex, fl, x, y, TRUE) < 0) {
+      CHAR_sendItemDataOne(cind, item_indexinchara);
+    if (CHAR_DropItemAbsolute(item_index, fl, x, y, TRUE) < 0) {
       return FALSE;
     } else {
       return TRUE;
@@ -509,8 +509,8 @@ int NPC_Util_GiveAllItemToChar(int give, int take) {
 #else
   for (i = 0; i < CHAR_MAXITEMHAVE; i++) {
 #endif
-    int itemindex = CHAR_getItemIndex(give, i);
-    BOOL aho = NPC_Util_moveItemToChar(take, itemindex, FALSE);
+    int item_index = CHAR_getItemIndex(give, i);
+    BOOL aho = NPC_Util_moveItemToChar(take, item_index, FALSE);
     if (aho) {
       count++;
     }
@@ -523,19 +523,19 @@ int NPC_Util_GiveAllItemToChar(int give, int take) {
 }
 
 BOOL NPC_Util_createItemToChar(int charindex, int itemid, BOOL net) {
-  int emptyitemindexinchara, itemindex;
-  emptyitemindexinchara = CHAR_findEmptyItemBox(charindex);
+  int emptyitem_indexinchara, item_index;
+  emptyitem_indexinchara = CHAR_findEmptyItemBox(charindex);
 
-  if (emptyitemindexinchara < 0)
+  if (emptyitem_indexinchara < 0)
     return FALSE;
-  itemindex = ITEM_makeItemAndRegist(itemid);
-  if (itemindex != -1) {
-    CHAR_setItemIndex(charindex, emptyitemindexinchara, itemindex);
-    ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
-    ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, charindex);
+  item_index = ITEM_makeItemAndRegist(itemid);
+  if (item_index != -1) {
+    CHAR_setItemIndex(charindex, emptyitem_indexinchara, item_index);
+    ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
+    ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, charindex);
 
     if (net) {
-      CHAR_sendItemDataOne(charindex, emptyitemindexinchara);
+      CHAR_sendItemDataOne(charindex, emptyitem_indexinchara);
     }
     return TRUE;
   }
@@ -831,12 +831,12 @@ int NPC_Util_GetNumFromArg(int meindex, char *in) {
  * ߯Ի��
  *
  */
-int NPC_Util_SearchItemInChar(int charindex, int itemindex) {
+int NPC_Util_SearchItemInChar(int charindex, int item_index) {
   int i;
 
   if (!CHAR_CHECKINDEX(charindex))
     return -2;
-  if (!ITEM_CHECKINDEX(itemindex))
+  if (!ITEM_CHECKINDEX(item_index))
     return -2;
 #ifdef _NEW_ITEM_
   int itemMax = CheckCharMaxItem(charindex);
@@ -850,7 +850,7 @@ int NPC_Util_SearchItemInChar(int charindex, int itemindex) {
        ;
        i++) {
     int ii = CHAR_getItemIndex(charindex, i);
-    if (ii == itemindex) {
+    if (ii == item_index) {
       return i;
     }
   }
@@ -1145,7 +1145,7 @@ void cutDotsTail(char *s) {
 }
 
 int NPC_Util_FrontItem(int meindex) {
-  int front_x, front_y, objindex, itemindex;
+  int front_x, front_y, objindex, item_index;
   OBJECT obj;
 
   CHAR_getCoordinationDir(CHAR_getInt(meindex, CHAR_DIR),
@@ -1155,9 +1155,9 @@ int NPC_Util_FrontItem(int meindex) {
        obj; obj = NEXT_OBJECT(obj)) {
     objindex = GET_OBJINDEX(obj);
     if (OBJECT_getType(objindex) == OBJTYPE_ITEM) {
-      itemindex = OBJECT_getIndex(objindex);
-      if (ITEM_CHECKINDEX(itemindex)) {
-        return itemindex;
+      item_index = OBJECT_getIndex(objindex);
+      if (ITEM_CHECKINDEX(item_index)) {
+        return item_index;
       } else {
         return -1;
       }
@@ -1168,7 +1168,7 @@ int NPC_Util_FrontItem(int meindex) {
 }
 
 int NPC_Util_FrontChar(int meindex) {
-  int front_x, front_y, objindex, enemyindex;
+  int front_x, front_y, objindex, enemy_index;
   OBJECT obj;
   CHAR_getCoordinationDir(CHAR_getInt(meindex, CHAR_DIR),
                           CHAR_getInt(meindex, CHAR_X),
@@ -1177,16 +1177,16 @@ int NPC_Util_FrontChar(int meindex) {
        obj; obj = NEXT_OBJECT(obj)) {
     objindex = GET_OBJINDEX(obj);
     if (OBJECT_getType(objindex) == OBJTYPE_CHARA) {
-      enemyindex = OBJECT_getIndex(objindex);
-      if (CHAR_CHECKINDEX(enemyindex)) {
-        return enemyindex;
+      enemy_index = OBJECT_getIndex(objindex);
+      if (CHAR_CHECKINDEX(enemy_index)) {
+        return enemy_index;
       }
     }
   }
   return -1;
 }
 static int NPCUtil_enemytbl[NPC_ENEMY_ENEMYNUMBER + 1];
-int *NPC_Util_getEnemy(int meindex, int charaindex) {
+int *NPC_Util_getEnemy(int meindex, int char_index) {
   int i;
   char argstr[NPC_UTIL_GETARGSTR_BUFSIZE];
   char buf[64];
@@ -1450,7 +1450,7 @@ void AddFMAdv(int talker, int shiftbit) {
       CHAR_getInt(talker, CHAR_FMLEADERFLAG) != FMMEMBER_APPLY) {
     // CoolFish: 2001/10/03
     int fd = getfdFromCharaIndex(talker);
-    saacproto_ACFixFMData_send(
+    SaacClient_ACFixFMData_send(
         acfd, CHAR_getChar(talker, CHAR_FMNAME),
         CHAR_getInt(talker, CHAR_FMINDEX),
         CHAR_getWorkInt(talker, CHAR_WORKFMINDEXI), FM_FIX_FMADV, buf,
@@ -1468,7 +1468,7 @@ void AddFMAdv(int talker, int shiftbit) {
       for (i = 0; i < FAMILY_MAXHOME; i++) {
         // �κ�һ��ׯ԰������ս�ų�,����ֵһ�ı����ACҪ������������
         if (fmpointlist.fm_inwar[i]) {
-          saacproto_ACShowTopFMList_send(acfd, FM_TOP_MOMENTUM);
+          SaacClient_ACShowTopFMList_send(acfd, FM_TOP_MOMENTUM);
           break;
         }
       }
@@ -1480,7 +1480,7 @@ void AddFMAdv(int talker, int shiftbit) {
   else if (CHAR_getInt(talker, CHAR_FMLEADERFLAG) == FMMEMBER_APPLY) {
     int fd = getfdFromCharaIndex(talker);
     sprintf(buf, "%d", CHAR_getInt(talker, CHAR_FAME));
-    saacproto_ACFixFMData_send(
+    SaacClient_ACFixFMData_send(
         acfd, CHAR_getChar(talker, CHAR_FMNAME),
         CHAR_getInt(talker, CHAR_FMINDEX),
         CHAR_getWorkInt(talker, CHAR_WORKFMINDEXI), FM_FIX_FAME, buf, "",
@@ -1488,7 +1488,7 @@ void AddFMAdv(int talker, int shiftbit) {
   }
 #endif
 #else
-  saacproto_ACFixFMData_send(acfd, CHAR_getChar(talker, CHAR_FMNAME),
+  SaacClient_ACFixFMData_send(acfd, CHAR_getChar(talker, CHAR_FMNAME),
                              CHAR_getInt(talker, CHAR_FMINDEX),
                              CHAR_getWorkInt(talker, CHAR_WORKFMINDEXI),
                              FM_FIX_FMADV, buf, "",
@@ -1575,7 +1575,7 @@ int addNpcFamilyTax(int meindex, int talkerindex, int income) {
                                       token, sizeof(token)) == FALSE)
         return 0;
       fmindexi = atoi(token);
-      saacproto_ACFixFMData_send(acfd, fmname, fmindex, fmindexi, FM_FIX_FMGOLD,
+      SaacClient_ACFixFMData_send(acfd, fmname, fmindex, fmindexi, FM_FIX_FMGOLD,
                                  buf2, "",
                                  CHAR_getWorkInt(meindex, CHAR_WORKFMCHARINDEX),
                                  CONNECT_getFdid(clifd));

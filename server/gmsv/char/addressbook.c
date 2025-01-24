@@ -1,14 +1,14 @@
 #define __ADDRESSBOOK_C_
 #include "version.h"
-
-#include <strings.h>
+//
+#include "gmsv_server.h"
+#include "saac_client.h"
+//
 #include "addressbook.h"
 #include "char.h"
 #include "handletime.h"
 #include "buf.h"
 #include "net.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
 #include "object.h"
 #include "battle.h"
 #include "config_file.h"
@@ -54,7 +54,7 @@
 char ADDRESSBOOK_returnstring[25*128];
 
 static int ADDRESSBOOK_findBlankEntry( int cindex );
-static BOOL ADDRESSBOOK_makeEntryFromCharaindex( int charaindex,
+static BOOL ADDRESSBOOK_makeEntryFromCharaindex( int char_index,
                          ADDRESSBOOK_entry* ae);
 
 /*------------------------------------------------------------
@@ -141,7 +141,7 @@ BOOL ADDRESSBOOK_sendMessage( int cindex, int aindex, char* text , int color )
       
       fd = getfdFromCharaIndex( i);
       if( fd != -1 ) {
-        lssproto_MSG_send( fd , index_to_my_info , textbuffer , color );
+        GmsvServer_MSG_send( fd , index_to_my_info , textbuffer , color );
         /* 夫弘午曰 */
         LogHelper( LOG_TALK, "CD=%s\tNM=%s\tT=%s" , mycd, mycharaname, textbuffer );
       
@@ -159,7 +159,7 @@ BOOL ADDRESSBOOK_sendMessage( int cindex, int aindex, char* text , int color )
     }
   }
   /* 苇勾井日卅井匀凶凛反］失市它件玄扔□田□卞霜月 */
-  saacproto_Message_send( acfd, mycd, mycharaname, 
+  SaacClient_Message_send( acfd, mycd, mycharaname, 
               ae->cdkey, ae->charname, textbuffer, color);
   CHAR_setInt(cindex, CHAR_SENDMAILCOUNT, CHAR_getInt(cindex, CHAR_SENDMAILCOUNT) + 1);
 
@@ -212,14 +212,14 @@ BOOL ADDRESSBOOK_sendMessage_FromOther(
         snprintf( tmpmsg, sizeof( tmpmsg), ADDRESSBOOK_RETURNED2,
               tocharaname, tocharaname);
 
-        saacproto_Message_send( acfd, ADDRESSBOOK_SYSTEM , ADDRESSBOOK_SYSTEM, 
+        SaacClient_Message_send( acfd, ADDRESSBOOK_SYSTEM , ADDRESSBOOK_SYSTEM, 
                     fromcdkey, fromcharaname, tmpmsg, CHAR_COLORYELLOW);
 
       }
       else {
         int fd = getfdFromCharaIndex( i);
         if( fd != -1 ) {
-          lssproto_MSG_send( fd , index_to_my_info , text , color );
+          GmsvServer_MSG_send( fd , index_to_my_info , text , color );
           LogHelper( LOG_TALK, "CD=%s\tNM=%s\tT=%s" , fromcdkey,
                               fromcharaname, text );
         }
@@ -285,7 +285,7 @@ BOOL ADDRESSBOOK_addEntry( int meindex )
   }
 
   for( i = 0; i < CONNECT_WINDOWBUFSIZE; i ++ ) {
-        CONNECT_setTradecardcharaindex( fd,i,-1);
+        CONNECT_setTradecardchar_index( fd,i,-1);
     }
 
   CHAR_getCoordinationDir( CHAR_getInt( meindex, CHAR_DIR ) ,
@@ -332,7 +332,7 @@ BOOL ADDRESSBOOK_addEntry( int meindex )
       continue;
     }
 
-        CONNECT_setTradecardcharaindex( fd,cnt,index);
+        CONNECT_setTradecardchar_index( fd,cnt,index);
     cnt ++;
     if( cnt == CONNECT_WINDOWBUFSIZE ) break;
   }
@@ -347,7 +347,7 @@ BOOL ADDRESSBOOK_addEntry( int meindex )
   }
   if( cnt == 1 ) {
     ADDRESSBOOK_addAddressBook( meindex,
-                                    CONNECT_getTradecardcharaindex(fd,0) );
+                                    CONNECT_getTradecardchar_index(fd,0) );
     return TRUE;
   }else if( cnt > 1 ) {
     int    strlength;
@@ -356,9 +356,9 @@ BOOL ADDRESSBOOK_addEntry( int meindex )
     strcpy( msgbuf, "1\n和谁交换名片呢？\n");
     strlength = strlen( msgbuf);
     for( i = 0;
-             CONNECT_getTradecardcharaindex(fd,i) != -1 
+             CONNECT_getTradecardchar_index(fd,i) != -1 
       && i< CONNECT_WINDOWBUFSIZE; i ++ ){
-      char  *a = CHAR_getChar( CONNECT_getTradecardcharaindex(fd,i),
+      char  *a = CHAR_getChar( CONNECT_getTradecardchar_index(fd,i),
                                        CHAR_NAME);
       char  buf[256];
       snprintf( buf, sizeof( buf),"%s\n", a);
@@ -370,7 +370,7 @@ BOOL ADDRESSBOOK_addEntry( int meindex )
       strcpy( &msgbuf[strlength], buf);
       strlength += strlen(buf);
     }
-    lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
+    GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
             WINDOW_BUTTONTYPE_CANCEL,
             CHAR_WINDOWTYPE_SELECTTRADECARD,
             -1,
@@ -397,31 +397,31 @@ static int ADDRESSBOOK_findBlankEntry( int cindex )
   return -1;
 }
 
-static BOOL ADDRESSBOOK_makeEntryFromCharaindex( int charaindex,
+static BOOL ADDRESSBOOK_makeEntryFromCharaindex( int char_index,
                          ADDRESSBOOK_entry* ae)
 {
   char *cdkey;
 
-  if( !CHAR_CHECKINDEX(charaindex) ) return FALSE;
+  if( !CHAR_CHECKINDEX(char_index) ) return FALSE;
 
   memset( ae,0,sizeof(ADDRESSBOOK_entry) );
-  cdkey = CHAR_getChar( charaindex, CHAR_CDKEY);
+  cdkey = CHAR_getChar( char_index, CHAR_CDKEY);
   if( cdkey == "\0" ){
     print( "ADDRESSBOOK_makeEntryFromCharaindex:"
          " strange! getcdkeyFromCharaIndex returns NULL!"
-         " charaindex: %d\n" , charaindex );
+         " char_index: %d\n" , char_index );
     return FALSE;
   }
   strcpysafe( ae->cdkey , sizeof( ae->cdkey ),cdkey);
 
   strcpysafe( ae->charname,sizeof( ae->charname),
-        CHAR_getChar(charaindex,CHAR_NAME) );
-  ae->level       = CHAR_getInt( charaindex , CHAR_LV );
-  ae->duelpoint   = CHAR_getInt( charaindex, CHAR_DUELPOINT);
-  ae->graphicsno  = CHAR_getInt( charaindex , CHAR_FACEIMAGENUMBER );
+        CHAR_getChar(char_index,CHAR_NAME) );
+  ae->level       = CHAR_getInt( char_index , CHAR_LV );
+  ae->duelpoint   = CHAR_getInt( char_index, CHAR_DUELPOINT);
+  ae->graphicsno  = CHAR_getInt( char_index , CHAR_FACEIMAGENUMBER );
   ae->online = getServernumber();
   ae->use = TRUE;
-  ae->transmigration = CHAR_getInt( charaindex, CHAR_TRANSMIGRATION);
+  ae->transmigration = CHAR_getInt( char_index, CHAR_TRANSMIGRATION);
 
   return TRUE;
 }
@@ -463,7 +463,7 @@ void ADDRESSBOOK_notifyLoginLogout( int cindex , int flg )
   }
 
   if( flg == 0 ){
-    saacproto_Broadcast_send( acfd,cd, nm, "offline", 1);
+    SaacClient_Broadcast_send( acfd,cd, nm, "offline", 1);
   }else if( flg == 1 ) {
     for( i = 0 ; i < ADDRESSBOOK_MAX; i++ ){
       int j;
@@ -488,12 +488,12 @@ void ADDRESSBOOK_notifyLoginLogout( int cindex , int flg )
         ae->online = 0;
         snprintf( buff, sizeof(buff), "%s_%s", ae->cdkey, ae->charname);
         makeEscapeString( buff, escapebuf, sizeof(escapebuf));
-        saacproto_DBGetEntryString_send( acfd, DB_ADDRESSBOOK, escapebuf, 0,0);
+        SaacClient_DBGetEntryString_send( acfd, DB_ADDRESSBOOK, escapebuf, 0,0);
       }
     }
     ADDRESSBOOK_sendAddressbookTable(cindex);
-    saacproto_Broadcast_send( acfd,cd, nm, "online", 1);
-    saacproto_MessageFlush_send( acfd, cd, nm);
+    SaacClient_Broadcast_send( acfd,cd, nm, "online", 1);
+    SaacClient_MessageFlush_send( acfd, cd, nm);
   }
 }
 
@@ -568,7 +568,7 @@ BOOL ADDRESSBOOK_sendAddressbookTable( int cindex )
     int fd;
     fd = getfdFromCharaIndex( cindex );
     if( fd == -1 ) return FALSE;
-    lssproto_AB_send( fd, ADDRESSBOOK_returnstring );
+    GmsvServer_AB_send( fd, ADDRESSBOOK_returnstring );
   }
   return TRUE;
 }
@@ -631,7 +631,7 @@ BOOL ADDRESSBOOK_sendAddressbookTableOne( int cindex, int num )
     int fd;
     fd = getfdFromCharaIndex( cindex );
     if( fd == -1 ) return FALSE;
-    lssproto_ABI_send( fd, num, ADDRESSBOOK_returnstring );
+    GmsvServer_ABI_send( fd, num, ADDRESSBOOK_returnstring );
   }
   return TRUE;
 }
@@ -833,7 +833,7 @@ void ADDRESSBOOK_DispatchMessage( char *cd, char *nm, char *value, int mode)
     }
     if( i == playernum ) {
       online = 0;
-      saacproto_Broadcast_send( acfd,cd, nm, "offline", 1);
+      SaacClient_Broadcast_send( acfd,cd, nm, "offline", 1);
     }
   }
 */

@@ -11,8 +11,8 @@
 void sasql_close( void );
 BOOL sasql_init( void );
 
-int sasql_getVipPoint( int charaindex );
-int sasql_setVipPoint( int charaindex, int point );
+int sasql_getVipPoint( int char_index );
+int sasql_setVipPoint( int char_index, int point );
 int sasql_getVipPointForCdkey( char *id );
 int sasql_setVipPointForCdkey( char *id, int point );
 BOOL sasql_addPauctionInfo( char *cdkey, char *name, char *effect, int cost, int type, char *info, char *string );
@@ -22,23 +22,23 @@ int sasql_getMyPauction( char *token, int id, char *cdkey );
 BOOL sasql_delPauctionBuy( int id, char *cdkey );
 int sasql_PauctionOK( int id, char *cdkey );
 
-int sasql_getPayPoint( int charaindex );
-int sasql_setPayPoint( int charaindex, int point );
+int sasql_getPayPoint( int char_index );
+int sasql_setPayPoint( int char_index, int point );
 
 #ifdef _GAMBLE_POINT
-int sasql_getGamblePoint( int charaindex );
-int sasql_setGamblePoint( int charaindex, int point );
+int sasql_getGamblePoint( int char_index );
+int sasql_setGamblePoint( int char_index, int point );
 #endif
 #ifdef _TRIAL_POINT
-int sasql_getTrialPoint( int charaindex );
-int sasql_setTrialPoint( int charaindex, int point );
+int sasql_getTrialPoint( int char_index );
+int sasql_setTrialPoint( int char_index, int point );
 #endif
 
 #ifdef _NEW_SQL_MONEY
-int sasql_getSQLPoint( int charaindex );
-int sasql_setSQLPoint( int charaindex, int point );
-int sasql_getGoldPoint( int charaindex );
-int sasql_setGoldPoint( int charaindex, int point );
+int sasql_getSQLPoint( int char_index );
+int sasql_setSQLPoint( int char_index, int point );
+int sasql_getGoldPoint( int char_index );
+int sasql_setGoldPoint( int char_index, int point );
 int sasql_setSQLPointByCdkey( char* cdkey, int point );
 int sasql_getSQLPointByCdkey( char* cdkey );
 int sasql_setGoldPointByCdkey( char* cdkey, int point );
@@ -63,8 +63,8 @@ int sasql_ampoint( char *ID, int point, int flag );
 
 #endif
 #ifdef _MO_LNS_MYSQLSUOXU
-void sasql_LUASQLAdv(char* sqlstr,char* filepath,char* function,int npcindex ,int charaindex,char* msg,int flg);
-void sasql_LUASQL(char* sqlstr,int row,char* filepath,char* function,int npcindex ,int charaindex,char* msg);
+void sasql_LUASQLAdv(char* sqlstr,char* filepath,char* function,int npcindex ,int char_index,char* msg,int flg);
+void sasql_LUASQL(char* sqlstr,int row,char* filepath,char* function,int npcindex ,int char_index,char* msg);
 
 char* sasql_Lua_QueryR(int row,char *sqlstr);
 char* sasql_LuaAdv_QueryR(char *sqlstr,int flg);

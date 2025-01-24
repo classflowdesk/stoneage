@@ -1,4 +1,4 @@
-export CC=gcc -m32
+export CC=gcc
 export RM=rm -f
 export AR=ar cr
 export MV=mv
@@ -6,9 +6,9 @@ export RANLIB=ranlib
 export SED=sed
 export SHELL=/bin/sh
 
-INCFLAGS=-I. -I../../include -I.. -I../lua -I../../../common
+INCFLAGS=-I../include -I../../lua -I../../common
 
-CFLAGS=-w -O3 -Wall -pipe $(INCFLAGS)
+CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
 
 ifeq ($(shell uname),Linux)
 	SQLSRC=sasql_linux.c
@@ -20,7 +20,7 @@ SRC=move.c crypto.c characters.c luckstar.c newshop.c playerquestion.c $(SQLSRC)
 OBJ=$(SRC:.c=.o)
 
 ifeq (0,$(MAKELEVEL))
-CC=gcc -m32
+CC=gcc
 RM=rm -f
 AR=ar cr
 MV=mv

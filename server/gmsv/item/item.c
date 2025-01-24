@@ -1,4 +1,7 @@
 #include "version.h"
+//
+#include "common.h"
+//
 #include "autil.h"
 #include "battle.h"
 #include "buf.h"
@@ -454,23 +457,23 @@ int _ITEM_initExistItemsOne(char *file, int line, ITEM_Item *item) {
     if (Sindex < 1)
       Sindex = 1;
     if (!ITEM_gExists[Sindex].use) {
-      int charaindex;
-      charaindex = ITEM_gExists[Sindex].item.workint[ITEM_WORKCHARAINDEX];
-      if (CHAR_CHECKINDEX(charaindex) &&
-          CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+      int char_index;
+      char_index = ITEM_gExists[Sindex].item.workint[ITEM_WORKCHARAINDEX];
+      if (CHAR_CHECKINDEX(char_index) &&
+          CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
         int j;
-        for (j = 0; j < CheckCharMaxItem(charaindex); j++) {
-          if (CHAR_getItemIndex(charaindex, j) == Sindex) {
+        for (j = 0; j < CheckCharMaxItem(char_index); j++) {
+          if (CHAR_getItemIndex(char_index, j) == Sindex) {
             print("item.c: error! chara have this item char_index[%d] "
                   "item_index[%d] Name(%s)POS(%d)NAME(%s)\n",
-                  charaindex, Sindex, CHAR_getUseName(charaindex), j,
+                  char_index, Sindex, CHAR_getUseName(char_index), j,
                   ITEM_gExists[Sindex].item.string[ITEM_NAME].string);
             print("from %s:%d\n", file, line);
             ITEM_gExists[Sindex].use = TRUE;
             break;
           }
         }
-        if (j != CheckCharMaxItem(charaindex))
+        if (j != CheckCharMaxItem(char_index))
           continue;
       }
       memcpy(&ITEM_gExists[Sindex].item, item, sizeof(ITEM_Item));
@@ -1195,7 +1198,7 @@ BOOL ITEM_readItemConfFile(char *filename) {
 
 
 
-CHAR_EquipPlace ITEM_getEquipPlace(int charaindex, int itemid) {
+CHAR_EquipPlace ITEM_getEquipPlace(int char_index, int itemid) {
   ITEM_CATEGORY cat;
   cat = ITEM_getInt(itemid, ITEM_TYPE);
   switch (cat) {
@@ -1213,7 +1216,7 @@ CHAR_EquipPlace ITEM_getEquipPlace(int charaindex, int itemid) {
     int i = 0;
     for (i = 0; i < CHAR_SKILLMAXHAVE; i++) {
       char *skill_name = "\0";
-      int skillid = CHAR_getCharSkill(charaindex, i);
+      int skillid = CHAR_getCharSkill(char_index, i);
       int Pskillid = PROFESSION_SKILL_getskillArray(skillid);
       if (Pskillid <= 0)
         continue;
@@ -1222,11 +1225,11 @@ CHAR_EquipPlace ITEM_getEquipPlace(int charaindex, int itemid) {
         continue;
 
       if ((strcmp(skill_name, "PROFESSION_DUAL_WEAPON")) == 0) {
-        int get_item = BATTLE_GetWepon(charaindex);
+        int get_item = BATTLE_GetWepon(char_index);
 
         if (get_item != ITEM_BOW) {
-          int right_hand = CHAR_getItemIndex(charaindex, CHAR_ARM);
-          int left_hand = CHAR_getItemIndex(charaindex, CHAR_EQSHIELD);
+          int right_hand = CHAR_getItemIndex(char_index, CHAR_ARM);
+          int left_hand = CHAR_getItemIndex(char_index, CHAR_EQSHIELD);
 
           if (right_hand < 0)
             return CHAR_ARM;
@@ -1262,7 +1265,7 @@ CHAR_EquipPlace ITEM_getEquipPlace(int charaindex, int itemid) {
   case ITEM_BOW:
 #ifdef _ITEM_EQUITSPACE
 #ifndef _TRUMP_EQUIPMENT
-    if (CHAR_getItemIndex(charaindex, CHAR_EQSHIELD) > 0)
+    if (CHAR_getItemIndex(char_index, CHAR_EQSHIELD) > 0)
       return -1;
 #endif
 #endif
@@ -1275,7 +1278,7 @@ CHAR_EquipPlace ITEM_getEquipPlace(int charaindex, int itemid) {
     break;
   case ITEM_WSHIELD:
 #ifndef _TRUMP_EQUIPMENT
-    if (BATTLE_GetWepon(charaindex) != ITEM_BOW)
+    if (BATTLE_GetWepon(char_index) != ITEM_BOW)
 #endif
       return CHAR_EQSHIELD;
     break;
@@ -1746,7 +1749,7 @@ void ITEM_equipEffect(int index) {
     if (CHAR_getWorkInt(index, CHAR_PLAYER_EFFECT) > 0) {
       char msg[256];
       sprintf(msg, "2|%d", CHAR_getWorkInt(index, CHAR_PLAYER_EFFECT));
-      lssproto_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
+      GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
     }
   }
 #endif
@@ -1755,7 +1758,7 @@ void ITEM_equipEffect(int index) {
     if (CHAR_getWorkInt(index, CHAR_PLAYER_EFFECT_MANOR) > 0) {
       char msg[256];
       sprintf(msg, "3|%d", CHAR_getWorkInt(index, CHAR_PLAYER_EFFECT_MANOR));
-      lssproto_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
+      GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
     }
   }
 #endif
@@ -1764,7 +1767,7 @@ void ITEM_equipEffect(int index) {
     if (CHAR_getInt(index, CHAR_TRUMP_EFFECT) > 0) {
       char msg[256];
       sprintf(msg, "5|%d", CHAR_getInt(index, CHAR_TRUMP_EFFECT));
-      lssproto_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
+      GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
     }
   }
 #endif
@@ -1774,7 +1777,7 @@ void ITEM_equipEffect(int index) {
     if (CHAR_getInt(index, CHAR_TITLE_DEFAULT) > 0) {
       char msg[256];
       sprintf(msg, "4|%d", CHAR_getInt(index, CHAR_TITLE_DEFAULT));
-      lssproto_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
+      GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
     }
   }
 #endif
@@ -1786,7 +1789,7 @@ void ITEM_equipEffect(int index) {
     if (badge) {
       char msg[256];
       sprintf(msg, "1|%d", badge);
-      lssproto_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
+      GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(index), msg);
     }
   }
 #endif
@@ -2129,12 +2132,12 @@ INLINE ITEM_Item *ITEM_getItemPointer(int index) {
   return &ITEM_gExists[index].item;
 }
 
-int ITEM_isTargetValid(int charaindex, int item_index, int toindex) {
+int ITEM_isTargetValid(int char_index, int item_index, int toindex) {
   int itemtarget;
   int Myside;
   itemtarget = ITEM_getInt(item_index, ITEM_TARGET);
 
-  Myside = CHAR_getWorkInt(charaindex, CHAR_WORKBATTLESIDE);
+  Myside = CHAR_getWorkInt(char_index, CHAR_WORKBATTLESIDE);
   if ((toindex >= 0x0) && (toindex <= 0x13))
     return 0;
 
@@ -2163,12 +2166,12 @@ int ITEM_isTargetValid(int charaindex, int item_index, int toindex) {
 // Nuke end
 
 #ifdef _ITEM_CHECKWARES
-BOOL CHAR_CheckInItemForWares(int charaindex, int flg) {
+BOOL CHAR_CheckInItemForWares(int char_index, int flg) {
   int item_index, i;
   char token[256];
 
-  for (i = 0; i < CheckCharMaxItem(charaindex); i++) {
-    item_index = CHAR_getItemIndex(charaindex, i);
+  for (i = 0; i < CheckCharMaxItem(char_index); i++) {
+    item_index = CHAR_getItemIndex(char_index, i);
     if (!ITEM_CHECKINDEX(item_index))
       continue;
     if (ITEM_getInt(item_index, ITEM_TYPE) == ITEM_WARES) {
@@ -2176,11 +2179,11 @@ BOOL CHAR_CheckInItemForWares(int charaindex, int flg) {
         return FALSE;
       }
       sprintf(token, "����%s", ITEM_getChar(item_index, ITEM_NAME));
-      CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
+      CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
 
-      CHAR_setItemIndex(charaindex, i, -1);
+      CHAR_setItemIndex(char_index, i, -1);
       ITEM_endExistItemsOne(item_index);
-      CHAR_sendItemDataOne(charaindex, i);
+      CHAR_sendItemDataOne(char_index, i);
     }
   }
   return TRUE;
@@ -2226,18 +2229,18 @@ int ITEM_getItemDamageCrusheED(int item_index) {
   return ((int)(crushe * 100) / maxcrushe);
 }
 #endif
-void ITEM_RsetEquit(int charaindex) {
+void ITEM_RsetEquit(int char_index) {
   int i, item_index, ti = -1;
   for (i = 0; i < CHAR_STARTITEMARRAY; i++) {
-    item_index = CHAR_getItemIndex(charaindex, i);
+    item_index = CHAR_getItemIndex(char_index, i);
     if (!ITEM_CHECKINDEX(item_index))
       continue;
-    if (i == ITEM_getEquipPlace(charaindex, item_index))
+    if (i == ITEM_getEquipPlace(char_index, item_index))
       continue;
-    if ((ti = CHAR_findEmptyItemBox(charaindex)) == -1)
+    if ((ti = CHAR_findEmptyItemBox(char_index)) == -1)
       return;
-    CHAR_setItemIndex(charaindex, i, -1);
-    CHAR_setItemIndex(charaindex, ti, item_index);
+    CHAR_setItemIndex(char_index, i, -1);
+    CHAR_setItemIndex(char_index, ti, item_index);
   }
 }
 

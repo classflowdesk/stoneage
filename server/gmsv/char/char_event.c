@@ -5,13 +5,13 @@
 #include "net.h"
 #include "item.h"
 #include "object.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "util.h"
 #include "char_data.h"
 #include "readmap.h"
 #include "map_deal.h"
 #include "item.h"
-#include "saacproto_cli.h"
+#include "saac_client.h"
 #include "npccreate.h"
 #include "handletime.h"
 #include "anim_tbl.h"
@@ -242,12 +242,12 @@ void CHAR_playerWatchfunc( int objmeindex, int objmoveindex,
 	
 }
 
-void CHAR_sendWallDamage( int charaindex,int x, int y, int damage )
+void CHAR_sendWallDamage( int char_index,int x, int y, int damage )
 {
     int     fd;
     char    cabuf[256]="";
 
-    fd = getfdFromCharaIndex(charaindex);
+    fd = getfdFromCharaIndex(char_index);
     if( fd == -1 )return;
 
     CHAR_makeCADAMAGEStringFromSpecifiedCoordinate(
@@ -269,21 +269,21 @@ static struct ParamShow
     {CHAR_CONFUSION,    CHAR_RECOVERCONFUSIONSTRING},
 };
 
-void CHAR_recoveryStatus( int charaindex )
+void CHAR_recoveryStatus( int char_index )
 {
     int     i;
     int     cure=FALSE;
-    if( !CHAR_CHECKINDEX(charaindex) )return;
+    if( !CHAR_CHECKINDEX(char_index) )return;
 
     for( i=0 ; i < arraysizeof(pShow) ; i ++ ){
-        if( CHAR_getInt(charaindex,pShow[i].paramindex) > 0 ){
+        if( CHAR_getInt(char_index,pShow[i].paramindex) > 0 ){
             int old;
-            old = CHAR_setInt(charaindex,pShow[i].paramindex,
-                              CHAR_getInt(charaindex,
+            old = CHAR_setInt(char_index,pShow[i].paramindex,
+                              CHAR_getInt(char_index,
                                           pShow[i].paramindex) - 1 );
             if( old == 1 ){
-                if( CHAR_getInt(charaindex,CHAR_WHICHTYPE) == CHAR_TYPEPLAYER){
-                    CHAR_talkToCli( charaindex,-1, pShow[i].offmessage,
+                if( CHAR_getInt(char_index,CHAR_WHICHTYPE) == CHAR_TYPEPLAYER){
+                    CHAR_talkToCli( char_index,-1, pShow[i].offmessage,
                                     CHAR_COLORWHITE );
                 }
                 cure = TRUE;
@@ -291,9 +291,9 @@ void CHAR_recoveryStatus( int charaindex )
         }
     }
     if( cure ){
-        CHAR_sendStatusString( charaindex, "P" );
+        CHAR_sendStatusString( char_index, "P" );
         CHAR_sendCToArroundCharacter( CHAR_getWorkInt(
-            charaindex, CHAR_WORKOBJINDEX) );
+            char_index, CHAR_WORKOBJINDEX) );
     }
 }
 
@@ -339,7 +339,7 @@ static BOOL CHAR_clairvoyance_enemy(int objindex,char* buf )
 
 static char CHAR_clairvoyanceString[STRINGBUFSIZ];
 
-static void CHAR_clairvoyance( int charaindex )
+static void CHAR_clairvoyance( int char_index )
 {
     char    onebuf[128];
     int     stringlen=0;
@@ -355,18 +355,18 @@ static void CHAR_clairvoyance( int charaindex )
         CHAR_clairvoyance_player,
         CHAR_clairvoyance_enemy,
     };
-    if( CHAR_getWorkInt( charaindex, CHAR_WORKLOOPSTARTSEC)%10 != 0 )
+    if( CHAR_getWorkInt( char_index, CHAR_WORKLOOPSTARTSEC)%10 != 0 )
         return;
 
-    clairvoyancelevel = CHAR_getInt(charaindex,CHAR_RADARSTRENGTH );
+    clairvoyancelevel = CHAR_getInt(char_index,CHAR_RADARSTRENGTH );
 
     if( clairvoyancelevel <= 0 )return;
     if( clairvoyancelevel > arraysizeof( clairvoyancefunc ) )
         clairvoyancelevel = arraysizeof( clairvoyancefunc );
 
-    centerx = CHAR_getInt(charaindex,CHAR_X);
-    centery = CHAR_getInt(charaindex,CHAR_Y);
-    fl = CHAR_getInt(charaindex,CHAR_FLOOR);
+    centerx = CHAR_getInt(char_index,CHAR_X);
+    centery = CHAR_getInt(char_index,CHAR_Y);
+    fl = CHAR_getInt(char_index,CHAR_FLOOR);
 
 
     for( i = centerx - CHAR_CLAIRVOYANCEWIDTH/2 ;
@@ -381,7 +381,7 @@ static void CHAR_clairvoyance( int charaindex )
 
                 if( OBJECT_getType(objindex) == OBJTYPE_NOUSE )continue;
                 if( OBJECT_getType(objindex) == OBJTYPE_CHARA
-                    && OBJECT_getIndex(objindex) == charaindex) continue;
+                    && OBJECT_getIndex(objindex) == char_index) continue;
                 for( loop = 0 ; loop < clairvoyancelevel ; loop ++ ){
                     BOOL    ret;
                     char    id;
@@ -405,44 +405,44 @@ static void CHAR_clairvoyance( int charaindex )
 RETURN:
     if( stringlen >= 1 ){
         int fd;
-        fd = getfdFromCharaIndex( charaindex );
+        fd = getfdFromCharaIndex( char_index );
         dchop( CHAR_clairvoyanceString, "|" );
         if( fd != -1 )
-            lssproto_R_send( fd, CHAR_clairvoyanceString );
+            GmsvServer_R_send( fd, CHAR_clairvoyanceString );
     }else if( !sendclairvoyance ){
         int fd;
-        fd = getfdFromCharaIndex( charaindex );
+        fd = getfdFromCharaIndex( char_index );
         if( fd != -1 )
-            lssproto_R_send( fd, "" );
+            GmsvServer_R_send( fd, "" );
     }
 }
 
-void CHAR_loopFunc( int charaindex )
+void CHAR_loopFunc( int char_index )
 {
-    CHAR_recoveryStatus( charaindex );
-    CHAR_clairvoyance( charaindex );
+    CHAR_recoveryStatus( char_index );
+    CHAR_clairvoyance( char_index );
 }
 
-void CHAR_playerresurrect( int charaindex, int hp )
+void CHAR_playerresurrect( int char_index, int hp )
 {
-    CHAR_setInt(charaindex,CHAR_BASEIMAGENUMBER,
-                CHAR_getInt(charaindex,CHAR_BASEBASEIMAGENUMBER));
-    CHAR_setFlg(charaindex,CHAR_ISDIE,      0);
-    CHAR_setFlg(charaindex,CHAR_ISATTACKED, 1);
-    CHAR_setFlg(charaindex,CHAR_ISOVERED, 0);
-    if( hp >= CHAR_getWorkInt(charaindex,CHAR_WORKMAXHP) )
-        hp = CHAR_getWorkInt(charaindex,CHAR_WORKMAXHP);
+    CHAR_setInt(char_index,CHAR_BASEIMAGENUMBER,
+                CHAR_getInt(char_index,CHAR_BASEBASEIMAGENUMBER));
+    CHAR_setFlg(char_index,CHAR_ISDIE,      0);
+    CHAR_setFlg(char_index,CHAR_ISATTACKED, 1);
+    CHAR_setFlg(char_index,CHAR_ISOVERED, 0);
+    if( hp >= CHAR_getWorkInt(char_index,CHAR_WORKMAXHP) )
+        hp = CHAR_getWorkInt(char_index,CHAR_WORKMAXHP);
     else if( hp <= 0 )
         hp = 1;
-    CHAR_setInt(charaindex,CHAR_HP, hp);
+    CHAR_setInt(char_index,CHAR_HP, hp);
 }
 
-int CHAR_die( int charaindex )
+int CHAR_die( int char_index )
 {
-	CHAR_DischargeParty( charaindex, 0);
+	CHAR_DischargeParty( char_index, 0);
     {
         int bymonster = 0;
-        int attackindex = CHAR_getWorkInt(charaindex,
+        int attackindex = CHAR_getWorkInt(char_index,
                                           CHAR_WORKLASTATTACKCHARAINDEX);
         if( attackindex == -2  )
             bymonster = 0;
@@ -457,57 +457,57 @@ int CHAR_die( int charaindex )
         if( bymonster == 0 || bymonster == 1 ){
             int i;
             for( i=0 ; i<CHAR_EQUIPPLACENUM ; i++ )
-                CHAR_DropItem(charaindex,i);
+                CHAR_DropItem(char_index,i);
         }else{
             int eqindex[CHAR_EQUIPPLACENUM];
             int itemhavenum=0;
             int i;
 
             for( i=0 ; i<CHAR_EQUIPPLACENUM ; i++ )
-                if( ITEM_CHECKINDEX(CHAR_getItemIndex(charaindex,i)) )
+                if( ITEM_CHECKINDEX(CHAR_getItemIndex(char_index,i)) )
                     eqindex[itemhavenum++] = i;
 
             if( itemhavenum >= 1 ){
                 int  randomindex = RAND(0,itemhavenum-1);
-                CHAR_DropItem(charaindex,eqindex[randomindex]);
+                CHAR_DropItem(char_index,eqindex[randomindex]);
 
             }
         }
 
-        CHAR_DropMoney(charaindex,
-                       CHAR_getInt(charaindex,CHAR_GOLD)/2 );
-        CHAR_setInt(charaindex,CHAR_GOLD,0);
+        CHAR_DropMoney(char_index,
+                       CHAR_getInt(char_index,CHAR_GOLD)/2 );
+        CHAR_setInt(char_index,CHAR_GOLD,0);
     }
-    CHAR_complianceParameter(charaindex);
-    CHAR_sendCToArroundCharacter( CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX) );
-    CHAR_setInt(charaindex,CHAR_DEADCOUNT,
-                CHAR_getInt(charaindex,CHAR_DEADCOUNT)+1);
+    CHAR_complianceParameter(char_index);
+    CHAR_sendCToArroundCharacter( CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX) );
+    CHAR_setInt(char_index,CHAR_DEADCOUNT,
+                CHAR_getInt(char_index,CHAR_DEADCOUNT)+1);
     {
         int i;
         BOOL old=FALSE;
         for( i=0 ; i<arraysizeof(pShow);i++)
-            if( CHAR_setInt( charaindex, pShow[i].paramindex, 0 ) > 0 ){
+            if( CHAR_setInt( char_index, pShow[i].paramindex, 0 ) > 0 ){
                 old = TRUE;
             }
-        if( CHAR_setInt( charaindex, CHAR_POISON, 0 ) > 0 )old=TRUE;
+        if( CHAR_setInt( char_index, CHAR_POISON, 0 ) > 0 )old=TRUE;
         if( old )
-            CHAR_sendCToArroundCharacter( CHAR_getInt(charaindex, CHAR_WORKOBJINDEX));
+            CHAR_sendCToArroundCharacter( CHAR_getInt(char_index, CHAR_WORKOBJINDEX));
     }
-    CHAR_sendStatusString( charaindex, "P");
-    CHAR_sendStatusString( charaindex, "I");
-    CHAR_setFlg(charaindex,CHAR_ISDIE,1);
-    CHAR_setFlg(charaindex,CHAR_ISATTACKED,0);
+    CHAR_sendStatusString( char_index, "P");
+    CHAR_sendStatusString( char_index, "I");
+    CHAR_setFlg(char_index,CHAR_ISDIE,1);
+    CHAR_setFlg(char_index,CHAR_ISATTACKED,0);
     return 0;
 }
 
-void CHAR_playerTalkedfunc( int charaindex, int talkindex,char* message, int color, int channel )
+void CHAR_playerTalkedfunc( int char_index, int talkindex,char* message, int color, int channel )
 {
     int     fd;
     char    lastbuf[4096];
     char    mesgbuf[4096];
     char    escapebuf[4096];
-    int fmindex = CHAR_getInt( charaindex, CHAR_FMINDEX );
-    fd = getfdFromCharaIndex( charaindex );
+    int fmindex = CHAR_getInt( char_index, CHAR_FMINDEX );
+    fd = getfdFromCharaIndex( char_index );
     if( fd == -1 )return;
     if( (channel>-1) && (fmindex>0) ){
 		if( channel == 0 ){
@@ -559,5 +559,5 @@ void CHAR_playerTalkedfunc( int charaindex, int talkindex,char* message, int col
 				escapebuf,sizeof(escapebuf) ));
 #endif
 	}
-	lssproto_TK_send( fd, CHAR_getWorkInt( talkindex, CHAR_WORKOBJINDEX ),lastbuf, color);
+	GmsvServer_TK_send( fd, CHAR_getWorkInt( talkindex, CHAR_WORKOBJINDEX ),lastbuf, color);
 }

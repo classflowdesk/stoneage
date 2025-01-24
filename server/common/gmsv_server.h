@@ -290,8 +290,8 @@ void GmsvServer_M_send(int fd, int fl, int x1, int y1, int x2, int y2,
                        char *data);
 void GmsvServer_C_recv(int fd, int index);
 void GmsvServer_C_send(int fd, char *data);
-void GmsvServer_CA_send(int fd, char *data);
-void GmsvServer_CD_send(int fd, char *data);
+void GmsvServer_CA_send(const int fd, char *data);
+void GmsvServer_CD_send(const int fd, char *data);
 void GmsvServer_R_send(int fd, char *data);
 void GmsvServer_S_recv(int fd, char *category);
 void GmsvServer_S_send(int fd, char *data);

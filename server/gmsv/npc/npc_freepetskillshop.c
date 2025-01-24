@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "pet_skill.h"
 #include "readmap.h"
 #include "battle.h"
@@ -131,7 +131,7 @@ static void NPC_FreePetSkillShop_selectWindow( int meindex, int toindex, int num
 			buttontype = WINDOW_BUTTONTYPE_NEXT;
 			windowno = SELECTSKILL_START;
 			CHAR_setWorkInt( toindex, CHAR_WORKSHOPRELEVANT, 2);
-			lssproto_WN_send( fd, windowtype, buttontype, windowno,
+			GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token	);
 		}
 		  }
@@ -334,7 +334,7 @@ BOOL NPC_FreePetSkillMakeStr(int meindex,int toindex,int select)
 
 	if(select==0){
 		sprintf(token,"0|0");
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_PETSKILLSHOP, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_PETSKILLSHOP, 
 			WINDOW_BUTTONTYPE_NONE, 
 			CHAR_WINDOWTYPE_WINDOWPETSKILLSHOP,
 			CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -383,7 +383,7 @@ BOOL NPC_FreePetSkillMakeStr(int meindex,int toindex,int select)
 			}
 		}
 		CHAR_setWorkInt( toindex, CHAR_WORKSHOPRELEVANT, 3);
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_PETSKILLSHOP, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_PETSKILLSHOP, 
 				WINDOW_BUTTONTYPE_NONE, 
 				SELECTSKILL_TEACH,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -397,12 +397,12 @@ extern int CheckCharMaxItem(int charindex);
 BOOL NPC_SkillShopItemCheck(int meindex,int talker,int itemNo, int cou)
 {
 	int i;
-	int itemindex=-1;
+	int item_index=-1;
 	int num=0;
 	for( i=CHAR_STARTITEMARRAY;i< CheckCharMaxItem(talker) ;i++ ){
-		itemindex = CHAR_getItemIndex( talker , i );
-		if( ITEM_CHECKINDEX( itemindex) )	{
-			if( itemNo == ITEM_getInt(itemindex ,ITEM_ID ) )	{
+		item_index = CHAR_getItemIndex( talker , i );
+		if( ITEM_CHECKINDEX( item_index) )	{
+			if( itemNo == ITEM_getInt(item_index ,ITEM_ID ) )	{
 				num++;
 			}
 		}

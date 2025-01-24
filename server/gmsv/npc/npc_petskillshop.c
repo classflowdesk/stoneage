@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "pet_skill.h"
 #include "readmap.h"
 #include "battle.h"
@@ -187,7 +187,7 @@ BOOL NPC_PetSkillMakeStr(int meindex,int toindex,int select)
 
 	if(select==0){
 		sprintf(token,"0|0");
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_PETSKILLSHOP, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_PETSKILLSHOP, 
 			WINDOW_BUTTONTYPE_NONE, 
 			CHAR_WINDOWTYPE_WINDOWPETSKILLSHOP,
 			CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -242,7 +242,7 @@ BOOL NPC_PetSkillMakeStr(int meindex,int toindex,int select)
 			strcat(token,token2);
 			}
 		}
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_PETSKILLSHOP, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_PETSKILLSHOP, 
 				WINDOW_BUTTONTYPE_NONE, 
 				CHAR_WINDOWTYPE_WINDOWPETSKILLSHOP,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

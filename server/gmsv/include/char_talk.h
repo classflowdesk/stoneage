@@ -45,7 +45,7 @@ typedef struct tagMAGIC_LuaFunc
 }MAGIC_LuaFunc;
 
 BOOL MAGIC_addLUAListFunction( lua_State *L, const char *luafuncname, const char *luafunctable, int gmlevel, char *usestring );
-BOOL MAGIC_getLUAListFunction( char *luafuncname, int gmlevel, int charaindex, char *data );
+BOOL MAGIC_getLUAListFunction( char *luafuncname, int gmlevel, int char_index, char *data );
 
 #endif
 

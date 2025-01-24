@@ -1,5 +1,9 @@
 #include "version.h"
-#include "linux_platform.h"
+//
+#include "util.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
+//
 #include "battle.h"
 #include "buf.h"
 #include "char.h"
@@ -12,7 +16,6 @@
 #include "item.h"
 #include "item_gen.h"
 #include "log.h"
-#include "lssproto_serv.h"
 #include "magic_base.h"
 #include "msignal.h"
 #include "net.h"
@@ -22,9 +25,7 @@
 #include "petmail.h"
 #include "readmap.h"
 #include "readnpc.h"
-#include "saacproto_cli.h"
 #include "title.h"
-#include "util.h"
 #ifdef _TALK_MOVE_FLOOR
 #include "longzoro/move.h"
 #endif
@@ -88,16 +89,16 @@ BOOL parseCommandLine(int argc, char **argv) {
 #ifdef _CRYPTO_DATA
       if (opendir("allblues") == NULL) {
         if (mkdir("allblues", 0777) == 0) {
-          printf("�����ļ��� allblues\n");
+          printf("mkdir allblues\n");
         }
       }
       if (opendir("allblues/data") == NULL) {
         if (mkdir("allblues/data", 0777) == 0) {
-          printf("�����ļ��� data\n");
+          printf("mkdir allblues/data\n");
         }
       }
       List("data");
-      printf("data��������ɣ������allblues�ļ���\n");
+      printf("init data allblues.\n");
       return FALSE;
 #endif
       break;
@@ -492,7 +493,7 @@ BOOL init(int argc, char **argv, char **env) {
   if (!PETSKILL_initPetskill(getPetskillfile()))
     goto CLOSEBIND;
   print("succeed.\n");
-#ifdef _PROFESSION_SKILL // WON ADD ����ְҵ����
+#ifdef _PROFESSION_SKILL // WON ADD
   print("Start to init profession skill.....");
   if (!PROFESSION_initSkill(getProfession()))
     goto CLOSEBIND;
@@ -632,7 +633,7 @@ BOOL init(int argc, char **argv, char **env) {
     print("succeed.\n");
 #endif
   print("��ʼ�� NPC ������...... ");
-  if (lssproto_InitServer(lsrpcClientWriteFunc, LSGENWORKINGBUFFER) < 0)
+  if (InitWorkSpace(gmsvWorkSpace, lsrpcClientWriteFunc, CHARDATASIZE, LSGENWORKINGBUFFER) < 0)
     goto CLOSEBIND;
   print("succeed.\n");
   print("Start to connect host...... ");
@@ -651,16 +652,16 @@ BOOL init(int argc, char **argv, char **env) {
     goto CLOSEAC;
   CONNECT_setCtype(acfd, AC);
   print("Start to init client of SAAC ...... ");
-  if (saacproto_InitClient(lsrpcClientWriteFunc, LSGENWORKINGBUFFER, acfd) < 0)
+  if (SaacClient_InitClient(lsrpcClientWriteFunc, LSGENWORKINGBUFFER, acfd) < 0)
     goto CLOSEAC;
   print("succeed.\n");
   print("GameServerName, AccountServerPassword...... ");
   {
 #if _ATTESTAION_ID == 1
-    saacproto_ACServerLogin_send(acfd, _ATTESTAION_ID, getGameservername(),
+    SaacClient_ACServerLogin_send(acfd, _ATTESTAION_ID, getGameservername(),
                                  getAccountserverpasswd());
 #else
-    saacproto_ACServerLogin_send(acfd, getGameservername(),
+    SaacClient_ACServerLogin_send(acfd, getGameservername(),
                                  getAccountserverpasswd());
 #endif
   }
@@ -668,13 +669,13 @@ BOOL init(int argc, char **argv, char **env) {
 #ifdef _OTHER_SAAC_LINK
   OtherSaacConnect();
 #endif
-  if (isExistFile(getLsgenlogfilename())) {
-    lssproto_SetServerLogFiles(getLsgenlogfilename(), getLsgenlogfilename());
-    saacproto_SetClientLogFiles(getLsgenlogfilename(), getLsgenlogfilename());
+  if (IsExistFile(getLsgenlogfilename())) {
+    SetLogFiles(gmsvWorkSpace, getLsgenlogfilename(), getLsgenlogfilename());
+    SetLogFiles(saacWorkSpace, getLsgenlogfilename(), getLsgenlogfilename());
   }
   print("succeed to init lss && saac log files.\n");
 #ifdef _LOTTERY_SYSTEM
-  saacproto_LotterySystem_send();
+  SaacClient_LotterySystem_send();
 #endif
   print("Start to load log conf file...... ");
   {

@@ -2,7 +2,7 @@
 #include <time.h>
 #include "char.h"
 #include "object.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npcutil.h"
 #include "handletime.h"
 
@@ -105,7 +105,7 @@ void NPC_DengonWindowTalked( int index, int talker,
                 int fd;
                 fd = getfdFromCharaIndex( talker );
                 if( fd == -1 )return;
-		        lssproto_WN_send(fd, WINDOW_MESSAGETYPE_WIDEMESSAGEANDLINEINPUT,
+		        GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_WIDEMESSAGEANDLINEINPUT,
         					buttontype,
         					CHAR_WINDOWTYPE_DENGON,
 							CHAR_getWorkInt( index, CHAR_WORKOBJINDEX),
@@ -123,7 +123,7 @@ void NPC_DengonWindowTalked( int index, int talker,
                 int fd;
                 fd = getfdFromCharaIndex( talker );
                 if( fd == -1 )return;
-		        lssproto_WN_send(fd, WINDOW_MESSAGETYPE_WIDEMESSAGEANDLINEINPUT,
+		        GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_WIDEMESSAGEANDLINEINPUT,
         					WINDOW_BUTTONTYPE_OKCANCEL|
         					WINDOW_BUTTONTYPE_PREV,
         					CHAR_WINDOWTYPE_DENGON,
@@ -150,7 +150,7 @@ void NPC_DengonLooked( int meindex, int lookedindex )
         int fd;
         fd = getfdFromCharaIndex( lookedindex );
         if( fd == -1 )return;
-        lssproto_WN_send(fd, WINDOW_MESSAGETYPE_WIDEMESSAGEANDLINEINPUT,
+        GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_WIDEMESSAGEANDLINEINPUT,
         					WINDOW_BUTTONTYPE_OKCANCEL|
         					WINDOW_BUTTONTYPE_PREV,
         					CHAR_WINDOWTYPE_DENGON,

@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_bus.h"
 #include "handletime.h"
 
@@ -60,9 +60,9 @@ NPC_BUS_MSG		busmsg[] = {
 
 static int NPC_BusSetPoint( int meindex, char *argstr);
 static void NPC_BusSetDestPoint( int meindex, char *argstr);
-static BOOL NPC_BusCheckDeniedItem( int meindex, int charaindex, char *argstr);
-static BOOL NPC_BusCheckLevel( int meindex, int charaindex, char *argstr);
-static int NPC_BusCheckStone( int meindex, int charaindex, char *argstr);
+static BOOL NPC_BusCheckDeniedItem( int meindex, int char_index, char *argstr);
+static BOOL NPC_BusCheckLevel( int meindex, int char_index, char *argstr);
+static int NPC_BusCheckStone( int meindex, int char_index, char *argstr);
 static void NPC_BusSendMsg( int meindex, int talkerindex, int tablenum);
 static int NPC_BusGetRoutePointNum( int meindex, char *argstr );
 static void NPC_Bus_walk( int meindex);
@@ -490,7 +490,7 @@ static void NPC_BusSetDestPoint( int meindex, char *argstr)
  * 隙烂今木凶失奶  丞毛  匀化中月井民尼永弁允月
  *   匀化中凶日分户
  **************************************/
-static BOOL NPC_BusCheckDeniedItem( int meindex, int charaindex, char *argstr)
+static BOOL NPC_BusCheckDeniedItem( int meindex, int char_index, char *argstr)
 {
 	char	buf[1024];
 	BOOL	found = TRUE;
@@ -507,10 +507,10 @@ static BOOL NPC_BusCheckDeniedItem( int meindex, int charaindex, char *argstr)
 			ret = getStringFromIndexWithDelim( buf, ",", i, buf2, sizeof(buf2));
 			if( ret == FALSE ) break;
 			itemid = atoi( buf2);
-			for( j = 0; j < CheckCharMaxItem(charaindex); j ++) {
-				int itemindex = CHAR_getItemIndex( charaindex, j);
-				if( ITEM_CHECKINDEX( itemindex)) {
-					if( ITEM_getInt( itemindex, ITEM_ID) == itemid) {
+			for( j = 0; j < CheckCharMaxItem(char_index); j ++) {
+				int item_index = CHAR_getItemIndex( char_index, j);
+				if( ITEM_CHECKINDEX( item_index)) {
+					if( ITEM_getInt( item_index, ITEM_ID) == itemid) {
 						found = FALSE;
 						break;
 					}
@@ -524,7 +524,7 @@ static BOOL NPC_BusCheckDeniedItem( int meindex, int charaindex, char *argstr)
  * 隙烂今木凶失奶  丞毛  匀化中月井民尼永弁允月
  *   匀化中卅中午分户
  **************************************/
-BOOL NPC_BusCheckAllowItem( int meindex, int charaindex, BOOL pickupmode)
+BOOL NPC_BusCheckAllowItem( int meindex, int char_index, BOOL pickupmode)
 {
 	char	buf[1024];
 	BOOL	found = TRUE;
@@ -548,19 +548,19 @@ BOOL NPC_BusCheckAllowItem( int meindex, int charaindex, BOOL pickupmode)
 			if( ret == FALSE ) break;
 			itemid = atoi( buf2);
 			getflg = FALSE;
-			for( j = 0; j < CheckCharMaxItem(charaindex); j ++) {
-				int itemindex = CHAR_getItemIndex( charaindex, j);
-				if( ITEM_CHECKINDEX( itemindex)) {
-					if( ITEM_getInt( itemindex, ITEM_ID) == itemid) {
+			for( j = 0; j < CheckCharMaxItem(char_index); j ++) {
+				int item_index = CHAR_getItemIndex( char_index, j);
+				if( ITEM_CHECKINDEX( item_index)) {
+					if( ITEM_getInt( item_index, ITEM_ID) == itemid) {
 						if( pickupmode && pickup && !getflg) {
-							CHAR_DelItem( charaindex, j);
+							CHAR_DelItem( char_index, j);
 							getflg = TRUE;
 						}
 						break;
 					}
 				}
 			}
-			if( j == CheckCharMaxItem(charaindex) ) {
+			if( j == CheckCharMaxItem(char_index) ) {
 				found = FALSE;
 				break;
 			}
@@ -572,7 +572,7 @@ BOOL NPC_BusCheckAllowItem( int meindex, int charaindex, BOOL pickupmode)
 /**************************************
  * 隙烂今木凶伊矛伙动晓井民尼永弁允月
  **************************************/
-static BOOL NPC_BusCheckLevel( int meindex, int charaindex, char *argstr)
+static BOOL NPC_BusCheckLevel( int meindex, int char_index, char *argstr)
 {
 	int		level;
 	
@@ -581,7 +581,7 @@ static BOOL NPC_BusCheckLevel( int meindex, int charaindex, char *argstr)
 	if( level == -1 ) {
 		return TRUE;
 	}
-	if( CHAR_getInt( charaindex, CHAR_LV) >= level ) return TRUE;
+	if( CHAR_getInt( char_index, CHAR_LV) >= level ) return TRUE;
 	
 	return FALSE;
 }
@@ -589,7 +589,7 @@ static BOOL NPC_BusCheckLevel( int meindex, int charaindex, char *argstr)
  * 豢嗯毛民尼永弁允月
  * -1 蛲   0动晓”    ］井勾  邰Stone
  **************************************/
-static int NPC_BusCheckStone( int meindex, int charaindex, char *argstr)
+static int NPC_BusCheckStone( int meindex, int char_index, char *argstr)
 {
 	int		gold;
 	
@@ -598,7 +598,7 @@ static int NPC_BusCheckStone( int meindex, int charaindex, char *argstr)
 	if( gold == -1 ) {
 		return 0;
 	}
-	if( CHAR_getInt( charaindex, CHAR_GOLD) >= gold ) return gold;
+	if( CHAR_getInt( char_index, CHAR_GOLD) >= gold ) return gold;
 	
 	return -1;
 }
@@ -651,7 +651,7 @@ static int NPC_BusGetRoutePointNum( int meindex, char *argstr )
 	}
 	return( i -1);
 }
-BOOL NPC_BusCheckJoinParty( int meindex, int charaindex, BOOL msgflg)
+BOOL NPC_BusCheckJoinParty( int meindex, int char_index, BOOL msgflg)
 {
     //int		fd;
 	char	argstr[NPC_UTIL_GETARGSTR_BUFSIZE];
@@ -659,73 +659,73 @@ BOOL NPC_BusCheckJoinParty( int meindex, int charaindex, BOOL msgflg)
 	NPC_Util_GetArgStr( meindex, argstr, sizeof( argstr));
 
 	/* ㄠ弘伉永玉动  及心 */
-	if( !NPC_Util_charIsInFrontOfChar( charaindex, meindex, 1 )) return FALSE; 
+	if( !NPC_Util_charIsInFrontOfChar( char_index, meindex, 1 )) return FALSE; 
 	/*     昙乐反蛐  允月 */
 	if( CHAR_getWorkInt( meindex, NPC_WORK_MODE) != 0 ) {
-		if( msgflg) NPC_BusSendMsg( meindex, charaindex, NPC_BUS_MSG_GETTINGON);
+		if( msgflg) NPC_BusSendMsg( meindex, char_index, NPC_BUS_MSG_GETTINGON);
 		return FALSE;
 	}
 	/* 天□化不分匀凶日分户 */
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE ) != CHAR_PARTY_NONE) {
-		if( msgflg) NPC_BusSendMsg( meindex, charaindex, NPC_BUS_MSG_NOTPARTY);
+	if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE ) != CHAR_PARTY_NONE) {
+		if( msgflg) NPC_BusSendMsg( meindex, char_index, NPC_BUS_MSG_NOTPARTY);
 		return FALSE;
 	}
 	/* 由□  奴及谛醒毛民尼永弁允月 */
 	if( CHAR_getEmptyPartyArray( meindex) == -1 ) {
-		if( msgflg) NPC_BusSendMsg( meindex, charaindex, NPC_BUS_MSG_OVERPARTY);
+		if( msgflg) NPC_BusSendMsg( meindex, char_index, NPC_BUS_MSG_OVERPARTY);
 		return FALSE;
 	}
 	/* 失奶  丞及民尼永弁毛允月(嗟鞅失奶  丞) */
-	if( !NPC_BusCheckDeniedItem( meindex, charaindex, argstr)) {
-		if( msgflg) NPC_BusSendMsg( meindex, charaindex, NPC_BUS_MSG_DENIEDITEM);
+	if( !NPC_BusCheckDeniedItem( meindex, char_index, argstr)) {
+		if( msgflg) NPC_BusSendMsg( meindex, char_index, NPC_BUS_MSG_DENIEDITEM);
 		return FALSE;
 	}
 #ifdef _ITEM_CHECKWARES
-	if( CHAR_CheckInItemForWares( charaindex, 0) == FALSE )	{
-		CHAR_talkToCli( charaindex, -1, "无法携带货物上车。", CHAR_COLORYELLOW);
+	if( CHAR_CheckInItemForWares( char_index, 0) == FALSE )	{
+		CHAR_talkToCli( char_index, -1, "无法携带货物上车。", CHAR_COLORYELLOW);
 		return FALSE;
 	}
 #endif
 	/* 失奶  丞及民尼永弁毛允月(  邰失奶  丞) */
-	if( !NPC_BusCheckAllowItem( meindex, charaindex, FALSE)) {
-		if( msgflg) NPC_BusSendMsg( meindex, charaindex, NPC_BUS_MSG_ALLOWITEM);
+	if( !NPC_BusCheckAllowItem( meindex, char_index, FALSE)) {
+		if( msgflg) NPC_BusSendMsg( meindex, char_index, NPC_BUS_MSG_ALLOWITEM);
 		return FALSE;
 	}
 	/* 伊矛伙及民尼永弁毛允月 */
-	if( !NPC_BusCheckLevel( meindex, charaindex, argstr)) {
-		if( msgflg) NPC_BusSendMsg( meindex, charaindex, NPC_BUS_MSG_LEVEL);
+	if( !NPC_BusCheckLevel( meindex, char_index, argstr)) {
+		if( msgflg) NPC_BusSendMsg( meindex, char_index, NPC_BUS_MSG_LEVEL);
 		return FALSE;
 	}
 	/* 奶矛件玄  井民尼永弁允月 */
-//	if( CHAR_getInt( charaindex, CHAR_NOWEVENT) != 0 ||
-//		CHAR_getInt( charaindex, CHAR_NOWEVENT2) != 0 ||
-//		CHAR_getInt( charaindex, CHAR_NOWEVENT3) != 0 )
+//	if( CHAR_getInt( char_index, CHAR_NOWEVENT) != 0 ||
+//		CHAR_getInt( char_index, CHAR_NOWEVENT2) != 0 ||
+//		CHAR_getInt( char_index, CHAR_NOWEVENT3) != 0 )
 //	{
-//		if( msgflg) NPC_BusSendMsg( meindex, charaindex, NPC_BUS_MSG_EVENT);
+//		if( msgflg) NPC_BusSendMsg( meindex, char_index, NPC_BUS_MSG_EVENT);
 //		return FALSE;
 //	}
 	/* 豢嗯及民尼永弁毛允月  云嗯毛潸月及匹］  蔽民尼永弁卞允月仇午″   */
-	ret = NPC_BusCheckStone( meindex, charaindex, argstr);
+	ret = NPC_BusCheckStone( meindex, char_index, argstr);
 	if( ret == -1 ) {
-		if( msgflg) NPC_BusSendMsg( meindex, charaindex, NPC_BUS_MSG_GOLD);
+		if( msgflg) NPC_BusSendMsg( meindex, char_index, NPC_BUS_MSG_GOLD);
 		return FALSE;
 	}
 	if( ret != 0 ) {
 		char msgbuf[128];
 		/* 豢嗯毛午月 */
-		CHAR_setInt( charaindex, CHAR_GOLD, 
-					CHAR_getInt( charaindex, CHAR_GOLD) - ret);
+		CHAR_setInt( char_index, CHAR_GOLD, 
+					CHAR_getInt( char_index, CHAR_GOLD) - ret);
 		/* 霜耨 */
-		CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_GOLD);
+		CHAR_send_P_StatusString( char_index, CHAR_P_STRING_GOLD);
 		snprintf( msgbuf, sizeof( msgbuf), "支付了%d Stone！", ret);
-		CHAR_talkToCli( charaindex, -1, msgbuf, CHAR_COLORYELLOW);
+		CHAR_talkToCli( char_index, -1, msgbuf, CHAR_COLORYELLOW);
 	}
 	/* 由□  奴卞  月 */
-	//CHAR_JoinParty_Main( charaindex, meindex);
+	//CHAR_JoinParty_Main( char_index, meindex);
 	
-	//fd = getfdFromCharaIndex( charaindex );
+	//fd = getfdFromCharaIndex( char_index );
 	
-	//lssproto_PR_send( fd, 1, 1);
+	//GmsvServer_PR_send( fd, 1, 1);
 	
 	
 	return TRUE;

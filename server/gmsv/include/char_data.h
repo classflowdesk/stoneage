@@ -74,10 +74,10 @@ BOOL CHAR_ElderSetPosition( int elderindex ,int fl,int x ,int y);
 int GetEnemyExp( int level );
 
 int CHAR_GetLevel();
-int CHAR_GetLevelExp( int charaindex, int level );
+int CHAR_GetLevelExp( int char_index, int level );
 int CHAR_GetOldLevelExp( int level);
 
-int CHAR_LevelUpCheck( int charaindex , int toindex);
+int CHAR_LevelUpCheck( int char_index , int toindex);
 
 int CHAR_PetLevelUp( int petindex );
 
@@ -88,10 +88,10 @@ int CHAR_PetTakeLevelUp( int petindex, int lv);	//强制宠物升级
 int CHAR_PetTakeDrop( int petindex, int floor, int ox, int oy);	//强制丢弃宠物升级
 
 #ifdef _NPC_FUSION
-int PETFUSION_FusionPetSub( int charaindex, int Subindex1, int Subindex2, int *work, int *skill);
-BOOL PETFUSION_FusionPetMain( int charaindex, int Mainindex, int *work, int *skill);
+int PETFUSION_FusionPetSub( int char_index, int Subindex1, int Subindex2, int *work, int *skill);
+BOOL PETFUSION_FusionPetMain( int char_index, int Mainindex, int *work, int *skill);
 BOOL PETFUSION_DelPet( int toindex, int Mainindex, int Subindex1, int Subindex2, int flg);
-int PETFUSION_Evolution( int charaindex, int petindex);
+int PETFUSION_Evolution( int char_index, int petindex);
 #endif
 int PETTRANS_PetTransManStatus( int toindex, int petindex1, int petindex2);
 #ifdef _PET_2TRANS
@@ -101,24 +101,24 @@ int NPC_PetTransManGetAns( int total1, int total2, int LV, int rank);
 #endif //_PET_2TRANS
 
 #ifdef _CHIKULA_STONE
-void CHAR_AutoChikulaStone( int charaindex, int Dflg);
+void CHAR_AutoChikulaStone( int char_index, int Dflg);
 #endif
 
 #ifdef _STATUS_WATERWORD //水世界状态
-void CHAR_CheckWaterStatus( int charaindex);
+void CHAR_CheckWaterStatus( int char_index);
 #endif
 
-int CHAR_findSurplusPetBox( int charaindex );
+int CHAR_findSurplusPetBox( int char_index );
 
 #ifdef _USER_EXP_CF
 void setNeedLevelUpTbls(int level,int exp);
 void setMaxLevel(int level);
 #endif 
 #ifdef _FM_METAMO
-void CHAR_ReMetamo( int charaindex );
+void CHAR_ReMetamo( int char_index );
 #endif 
 #ifdef _NEW_PLAYER_RIDE
-void CHAR_PlayerRide( int charaindex );
+void CHAR_PlayerRide( int char_index );
 #endif 
 #ifdef _JZ_NEWSCRIPT_LUA
 #define CHAR_PetLevelUpExInfc(petindex, lv) CHAR_PetLevelUp(petindex );

@@ -6,19 +6,19 @@
 void CHAR_allpostwalk( int index );
 BOOL CHAR_allprewalk( int index,int* dir,int* mode);
 
-void CHAR_recoveryStatus( int charaindex );
+void CHAR_recoveryStatus( int char_index );
 void CHAR_loopFunc( int index );
 void CHAR_playerWatchfunc( int meindex, int moveindex, CHAR_ACTION act,
                            int x, int y, int dir, int* opt, int optlen );
 
-void CHAR_sendWallDamage( int charaindex,int x, int y, int damage );
-void CHAR_playerresurrect( int charaindex, int hp );
+void CHAR_sendWallDamage( int char_index,int x, int y, int damage );
+void CHAR_playerresurrect( int char_index, int hp );
 
-int CHAR_die( int charaindex );
-void CHAR_playerTalkedfunc( int charaindex, int talkindex,char* message,
+int CHAR_die( int char_index );
+void CHAR_playerTalkedfunc( int char_index, int talkindex,char* message,
                             int color, int channel );
 
-void CHAR_recoveryStatus( int charaindex );
+void CHAR_recoveryStatus( int char_index );
 BOOL CHAR_makeCADefaultString( int objindex,char* buf,int buflen, int act );
 BOOL CHAR_makeCAOPT1String( int objindex,char* buf,
                                         int buflen, int act,int opt1 );

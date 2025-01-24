@@ -13,8 +13,7 @@
 #include "item_gen.h"
 #include "log.h"
 #include "magic_base.h"
-#include "saacproto_cli.h"
-#include "utils/file.h"
+#include "saac_client.h"
 #ifdef _NEW_ITEM_
 extern int CheckCharMaxItem(int charindex);
 #endif
@@ -666,7 +665,7 @@ char mergech[][16] = {"ʯ",   "ľ",    "��",   "��",  "Ƥ",   "���
                       "��",  "ˮ",    "��",   "��"};
 #endif
 
-int ITEM_mergeItem(int charaindex, ITEM_Item *items, int num, int money,
+int ITEM_mergeItem(int char_index, ITEM_Item *items, int num, int money,
                    int petid, int searchtable, int petindex, int alchemist) {
   int i;
   // shan add
@@ -684,16 +683,16 @@ int ITEM_mergeItem(int charaindex, ITEM_Item *items, int num, int money,
   int nowtime = time(NULL);
 
   // #ifdef _VERSION_80
-  if (nowtime - CHAR_getWorkInt(charaindex, CHAR_WORKLASTMERGETIME) < 1) {
-    CHAR_setWorkInt(charaindex, CHAR_WORKLASTMERGETIME, nowtime);
-    CHAR_talkToCli(charaindex, -1, "合成料理过于频繁，休息一下比较好哟。",
+  if (nowtime - CHAR_getWorkInt(char_index, CHAR_WORKLASTMERGETIME) < 1) {
+    CHAR_setWorkInt(char_index, CHAR_WORKLASTMERGETIME, nowtime);
+    CHAR_talkToCli(char_index, -1, "合成料理过于频繁，休息一下比较好哟。",
                    CHAR_COLORRED);
     // print(" �ϳ�Ƶ�� ");
     return items[RAND(0, (num - 1))].data[ITEM_ID];
   }
   // #endif
 
-  CHAR_setWorkInt(charaindex, CHAR_WORKLASTMERGETIME, nowtime);
+  CHAR_setWorkInt(char_index, CHAR_WORKLASTMERGETIME, nowtime);
   for (i = 0; i < arraysizeof(ingindtable); i++) {
     int j;
     for (j = 0; j < MAX_ITEM_ATOMS_SIZE; j++) {
@@ -721,39 +720,39 @@ int ITEM_mergeItem(int charaindex, ITEM_Item *items, int num, int money,
     int k;
     for (k = 0; k < 25; k++) {
       if (strcmp(items[i].string[ITEM_INGNAME0].string, mergech[k]) == 0) {
-        int value = CHAR_getInt(charaindex, CHAR_MATERIAL01 + k) +
+        int value = CHAR_getInt(char_index, CHAR_MATERIAL01 + k) +
                     (items[i].data[ITEM_INGVALUE0] / (150 - (rand() % 100)));
         if (value > 100000)
           value = 100000;
-        CHAR_setInt(charaindex, CHAR_MATERIAL01 + k, value);
+        CHAR_setInt(char_index, CHAR_MATERIAL01 + k, value);
       }
       if (strcmp(items[i].string[ITEM_INGNAME1].string, mergech[k]) == 0) {
-        int value = CHAR_getInt(charaindex, CHAR_MATERIAL01 + k) +
+        int value = CHAR_getInt(char_index, CHAR_MATERIAL01 + k) +
                     (items[i].data[ITEM_INGVALUE1] / (150 - (rand() % 100)));
         if (value > 100000)
           value = 100000;
-        CHAR_setInt(charaindex, CHAR_MATERIAL01 + k, value);
+        CHAR_setInt(char_index, CHAR_MATERIAL01 + k, value);
       }
       if (strcmp(items[i].string[ITEM_INGNAME2].string, mergech[k]) == 0) {
-        int value = CHAR_getInt(charaindex, CHAR_MATERIAL01 + k) +
+        int value = CHAR_getInt(char_index, CHAR_MATERIAL01 + k) +
                     (items[i].data[ITEM_INGVALUE2] / (150 - (rand() % 100)));
         if (value > 100000)
           value = 100000;
-        CHAR_setInt(charaindex, CHAR_MATERIAL01 + k, value);
+        CHAR_setInt(char_index, CHAR_MATERIAL01 + k, value);
       }
       if (strcmp(items[i].string[ITEM_INGNAME3].string, mergech[k]) == 0) {
-        int value = CHAR_getInt(charaindex, CHAR_MATERIAL01 + k) +
+        int value = CHAR_getInt(char_index, CHAR_MATERIAL01 + k) +
                     (items[i].data[ITEM_INGVALUE3] / (150 - (rand() % 100)));
         if (value > 100000)
           value = 100000;
-        CHAR_setInt(charaindex, CHAR_MATERIAL01 + k, value);
+        CHAR_setInt(char_index, CHAR_MATERIAL01 + k, value);
       }
       if (strcmp(items[i].string[ITEM_INGNAME4].string, mergech[k]) == 0) {
-        int value = CHAR_getInt(charaindex, CHAR_MATERIAL01 + k) +
+        int value = CHAR_getInt(char_index, CHAR_MATERIAL01 + k) +
                     (items[i].data[ITEM_INGVALUE4] / (150 - (rand() % 100)));
         if (value > 100000)
           value = 100000;
-        CHAR_setInt(charaindex, CHAR_MATERIAL01 + k, value);
+        CHAR_setInt(char_index, CHAR_MATERIAL01 + k, value);
       }
     }
 #endif
@@ -965,7 +964,7 @@ int ITEM_mergeItem(int charaindex, ITEM_Item *items, int num, int money,
                             CHAR_FMLEADERFLAG) != FMMEMBER_APPLY) {
               // CoolFish: 2001/10/03
               int fd = getfdFromCharaIndex(ownerindex);
-              saacproto_ACFixFMData_send(
+              SaacClient_ACFixFMData_send(
                   acfd, CHAR_getChar(ownerindex, CHAR_FMNAME),
                   CHAR_getInt(ownerindex, CHAR_FMINDEX),
                   CHAR_getWorkInt(ownerindex, CHAR_WORKFMINDEXI),
@@ -976,7 +975,7 @@ int ITEM_mergeItem(int charaindex, ITEM_Item *items, int num, int money,
               // CHAR_getWorkInt(ownerindex, CHAR_WORKFMCHARINDEX), 0);
             }
 #else
-            saacproto_ACFixFMData_send(
+            SaacClient_ACFixFMData_send(
                 acfd, CHAR_getChar(ownerindex, CHAR_FMNAME),
                 CHAR_getInt(ownerindex, CHAR_FMINDEX),
                 CHAR_getWorkInt(ownerindex, CHAR_WORKFMINDEXI),
@@ -1011,7 +1010,7 @@ int ITEM_mergeItem(int charaindex, ITEM_Item *items, int num, int money,
                             CHAR_FMLEADERFLAG) != FMMEMBER_APPLY) {
               // CoolFish: 2001/10/03
               int fd = getfdFromCharaIndex(ownerindex);
-              saacproto_ACFixFMData_send(
+              SaacClient_ACFixFMData_send(
                   acfd, CHAR_getChar(ownerindex, CHAR_FMNAME),
                   CHAR_getInt(ownerindex, CHAR_FMINDEX),
                   CHAR_getWorkInt(ownerindex, CHAR_WORKFMINDEXI),
@@ -1021,7 +1020,7 @@ int ITEM_mergeItem(int charaindex, ITEM_Item *items, int num, int money,
                   CONNECT_getFdid(fd));
             }
 #else
-            saacproto_ACFixFMData_send(
+            SaacClient_ACFixFMData_send(
                 acfd, CHAR_getChar(ownerindex, CHAR_FMNAME),
                 CHAR_getInt(ownerindex, CHAR_FMINDEX),
                 CHAR_getWorkInt(ownerindex, CHAR_WORKFMINDEXI),
@@ -1037,7 +1036,7 @@ int ITEM_mergeItem(int charaindex, ITEM_Item *items, int num, int money,
         }
 #ifdef _MAX_MERGE_LEVEL
         if (ITEMTBL_getInt(created, ITEM_LEVEL) >= getMaxMergeLevel()) {
-          CHAR_talkToCli(charaindex, -1,
+          CHAR_talkToCli(char_index, -1,
                          "�޷��ϳɳ�Խ�趨��װ��Ŷ��",
                          CHAR_COLORRED);
           return items[RAND(0, (num - 1))].data[ITEM_ID];
@@ -1080,14 +1079,14 @@ int ITEM_merge_test(void) {
   return 0;
 }
 
-int ITEM_mergeItem_merge(int charaindex, int petid, char *data, int petindex,
+int ITEM_mergeItem_merge(int char_index, int petid, char *data, int petindex,
                          int alchemist) {
   BOOL result = FALSE;
   int i;
   int ret;
   int cnt = 0;
-  int itemindexs[CHAR_MAXITEMHAVE - CHAR_STARTITEMARRAY];
-  int haveitemindexs[CHAR_MAXITEMHAVE - CHAR_STARTITEMARRAY];
+  int item_indexs[CHAR_MAXITEMHAVE - CHAR_STARTITEMARRAY];
+  int haveitem_indexs[CHAR_MAXITEMHAVE - CHAR_STARTITEMARRAY];
   // Nuke +2 1026: Avoid merge cheat
   int itemflag[CHAR_MAXITEMHAVE - CHAR_STARTITEMARRAY];
   int j, collision = 0;
@@ -1099,59 +1098,59 @@ int ITEM_mergeItem_merge(int charaindex, int petid, char *data, int petindex,
   memset(itemflag, 0, sizeof(itemflag));
 
   {
-    int emptyindex = CHAR_findEmptyItemBox(charaindex);
+    int emptyindex = CHAR_findEmptyItemBox(char_index);
     if (emptyindex == -1) {
-      CHAR_talkToCli(charaindex, -1, "合成时，最少需要一格空物品栏位。",
+      CHAR_talkToCli(char_index, -1, "合成时，最少需要一格空物品栏位。",
                      CHAR_COLORYELLOW);
       return -1;
     }
   }
 
-  for (i = CHAR_STARTITEMARRAY; i < CheckCharMaxItem(charaindex); i++) {
-    int haveitemindex;
+  for (i = CHAR_STARTITEMARRAY; i < CheckCharMaxItem(char_index); i++) {
+    int haveitem_index;
     ret = getStringFromIndexWithDelim(data, "|", i - CHAR_STARTITEMARRAY + 1,
                                       buff, sizeof(buff));
     if (ret == FALSE)
       break;
-    haveitemindex = atoi(buff);
-    if (CHAR_CHECKITEMINDEX(charaindex, haveitemindex)) {
-      int itemindex = CHAR_getItemIndex(charaindex, haveitemindex);
-      if (ITEM_CHECKINDEX(itemindex)) {
+    haveitem_index = atoi(buff);
+    if (CHAR_CHECKITEMINDEX(char_index, haveitem_index)) {
+      int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+      if (ITEM_CHECKINDEX(item_index)) {
 #ifdef _ITEM_INSLAY
         char *code;
-        if ((code = ITEM_getChar(itemindex, ITEM_TYPECODE)) == "\0") {
+        if ((code = ITEM_getChar(item_index, ITEM_TYPECODE)) == "\0") {
           if (strcmp(code, "\0")) {
             char token[256];
             snprintf(token, sizeof(token), "�ƺ���%sû����Ȥ��",
-                     ITEM_getChar(itemindex, ITEM_NAME));
-            CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
+                     ITEM_getChar(item_index, ITEM_NAME));
+            CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
             return FALSE;
           }
         }
 #endif
         if (ITEM_getmergeItemFromFromITEMtabl(
-                ITEM_getInt(itemindex, ITEM_ID)) == TRUE) { // ����Ƿ�ɺϳ�
+                ITEM_getInt(item_index, ITEM_ID)) == TRUE) { // ����Ƿ�ɺϳ�
           ITEM_Item *item;
-          item = ITEM_getItemPointer(itemindex);
+          item = ITEM_getItemPointer(item_index);
           if (item != NULL) {
-            ITEM_makeItem(&items[cnt], ITEM_getInt(itemindex, ITEM_ID));
-            itemindexs[cnt] = itemindex;
-            haveitemindexs[cnt] = haveitemindex;
+            ITEM_makeItem(&items[cnt], ITEM_getInt(item_index, ITEM_ID));
+            item_indexs[cnt] = item_index;
+            haveitem_indexs[cnt] = haveitem_index;
             // Nuke start 1026
             for (j = 0; j < cnt; j++)
-              if (itemflag[j] == itemindex) {
+              if (itemflag[j] == item_index) {
                 print("\nMerge Collision!!!");
                 collision = 1;
               }
-            itemflag[cnt] = itemindex;
+            itemflag[cnt] = item_index;
             // Nuke end
             cnt++;
           }
         } else {
           char msgbuf[128];
           snprintf(msgbuf, sizeof(msgbuf), "�ƺ���%sû����Ȥ��",
-                   ITEM_getChar(itemindex, ITEM_NAME));
-          CHAR_talkToCli(charaindex, -1, msgbuf, CHAR_COLORWHITE);
+                   ITEM_getChar(item_index, ITEM_NAME));
+          CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORWHITE);
         }
       }
     }
@@ -1166,49 +1165,49 @@ int ITEM_mergeItem_merge(int charaindex, int petid, char *data, int petindex,
     if (items[0].data[ITEM_TYPE] == ITEM_DISH) {
       randtable = 1;
     }
-    ret = ITEM_mergeItem(charaindex, items, cnt, 0, petid, randtable, petindex,
+    ret = ITEM_mergeItem(char_index, items, cnt, 0, petid, randtable, petindex,
                          alchemist);
     if (ret == -10)
-      CHAR_talkToCli(charaindex, -1, "非法的合成方法", CHAR_COLORWHITE);
-    CHAR_setInt(charaindex, CHAR_MERGEITEMCOUNT,
-                CHAR_getInt(charaindex, CHAR_MERGEITEMCOUNT) + 1);
+      CHAR_talkToCli(char_index, -1, "非法的合成方法", CHAR_COLORWHITE);
+    CHAR_setInt(char_index, CHAR_MERGEITEMCOUNT,
+                CHAR_getInt(char_index, CHAR_MERGEITEMCOUNT) + 1);
     for (i = 0; i < cnt; i++) {
 #ifdef _ITEM_PILENUMS
       int pilenum = 0;
-      int itemindex = CHAR_getItemIndex(charaindex, haveitemindexs[i]);
-      if (!ITEM_CHECKINDEX(itemindex))
+      int item_index = CHAR_getItemIndex(char_index, haveitem_indexs[i]);
+      if (!ITEM_CHECKINDEX(item_index))
         continue;
-      pilenum = ITEM_getInt(itemindex, ITEM_USEPILENUMS);
+      pilenum = ITEM_getInt(item_index, ITEM_USEPILENUMS);
       pilenum -= 1;
-      ITEM_setInt(itemindex, ITEM_USEPILENUMS, pilenum);
+      ITEM_setInt(item_index, ITEM_USEPILENUMS, pilenum);
       if (pilenum <= 0) {
 #endif
-        CHAR_setItemIndex(charaindex, haveitemindexs[i], -1);
-        CHAR_sendItemDataOne(charaindex, haveitemindexs[i]);
-        LogItem(CHAR_getChar(charaindex, CHAR_NAME), /* ƽ�ҷ�   */
-                CHAR_getChar(charaindex, CHAR_CDKEY),
+        CHAR_setItemIndex(char_index, haveitem_indexs[i], -1);
+        CHAR_sendItemDataOne(char_index, haveitem_indexs[i]);
+        LogItem(CHAR_getChar(char_index, CHAR_NAME), /* ƽ�ҷ�   */
+                CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-                itemindexs[i],
+                item_indexs[i],
 #else
-               ITEM_getInt(itemindexs[i], ITEM_ID), /* ʧ��  ة  į */
+               ITEM_getInt(item_indexs[i], ITEM_ID), /* ʧ��  ة  į */
 #endif
-                "mergedel(�ϳ���ɾ���ĵ���)", CHAR_getInt(charaindex, CHAR_FLOOR),
-                CHAR_getInt(charaindex, CHAR_X),
-                CHAR_getInt(charaindex, CHAR_Y),
-                ITEM_getChar(itemindexs[i], ITEM_UNIQUECODE),
-                ITEM_getChar(itemindexs[i], ITEM_NAME),
-                ITEM_getInt(itemindexs[i], ITEM_ID));
-        ITEM_endExistItemsOne(itemindexs[i]);
+                "mergedel(�ϳ���ɾ���ĵ���)", CHAR_getInt(char_index, CHAR_FLOOR),
+                CHAR_getInt(char_index, CHAR_X),
+                CHAR_getInt(char_index, CHAR_Y),
+                ITEM_getChar(item_indexs[i], ITEM_UNIQUECODE),
+                ITEM_getChar(item_indexs[i], ITEM_NAME),
+                ITEM_getInt(item_indexs[i], ITEM_ID));
+        ITEM_endExistItemsOne(item_indexs[i]);
 #ifdef _ITEM_PILENUMS
       }
 #endif
     }
-    CHAR_sendItemData(charaindex, haveitemindexs, cnt);
+    CHAR_sendItemData(char_index, haveitem_indexs, cnt);
     if (ret >= 0) {
       int rc;
-      int createitemindex = ITEM_makeItemAndRegist(ret);
+      int createitem_index = ITEM_makeItemAndRegist(ret);
       // shan begin
-      if (createitemindex != -1) {
+      if (createitem_index != -1) {
         if (petindex != -1) {
           if (CHAR_getInt(petindex, CHAR_PETFAMILY) == 1) {
             int ownerindex = CHAR_getWorkInt(petindex, CHAR_WORKPLAYERINDEX);
@@ -1230,14 +1229,14 @@ int ITEM_mergeItem_merge(int charaindex, int petid, char *data, int petindex,
               char charbuf1[512] = "", charbuf2[1024] = "", charbuf[128] = "";
               char argbuf[256];
               int arg1 = 0, arg2 = 0;
-              if (ITEM_getInt(createitemindex, ITEM_TYPE) == 20) {
-                if ((p = strstr(ITEM_getChar(createitemindex, ITEM_ARGUMENT),
+              if (ITEM_getInt(createitem_index, ITEM_TYPE) == 20) {
+                if ((p = strstr(ITEM_getChar(createitem_index, ITEM_ARGUMENT),
                                 "��"))) {
                   strcpy(argbuf, (p + 2));
                   arg1 = atoi(argbuf);
                   arg1 = arg1 * FOOD_MP_RATE / 100;
                 }
-                if ((p = strstr(ITEM_getChar(createitemindex, ITEM_ARGUMENT),
+                if ((p = strstr(ITEM_getChar(createitem_index, ITEM_ARGUMENT),
                                 "��"))) {
                   strcpy(argbuf, (p + 2));
                   arg2 = atoi(argbuf);
@@ -1252,44 +1251,44 @@ int ITEM_mergeItem_merge(int charaindex, int petid, char *data, int petindex,
                 }
                 sprintf(charbuf, "(��������)");
                 strcpy(charbuf2,
-                       ITEM_getChar(createitemindex, ITEM_EFFECTSTRING));
+                       ITEM_getChar(createitem_index, ITEM_EFFECTSTRING));
                 strncat(charbuf2, charbuf, 10);
-                ITEM_setChar(createitemindex, ITEM_ARGUMENT, charbuf1);
-                ITEM_setChar(createitemindex, ITEM_EFFECTSTRING, charbuf2);
+                ITEM_setChar(createitem_index, ITEM_ARGUMENT, charbuf1);
+                ITEM_setChar(createitem_index, ITEM_EFFECTSTRING, charbuf2);
               }
             }
           }
         }
       }
       // shan end
-      ITEM_setInt(createitemindex, ITEM_MERGEFLG, TRUE);
-      if (createitemindex != -1) {
-        rc = CHAR_addItemSpecificItemIndex(charaindex, createitemindex);
-        if (rc >= 0 && rc < CheckCharMaxItem(charaindex)) {
-          CHAR_sendItemDataOne(charaindex, rc);
-          LogItem(CHAR_getChar(charaindex, CHAR_NAME),
-                  CHAR_getChar(charaindex, CHAR_CDKEY),
+      ITEM_setInt(createitem_index, ITEM_MERGEFLG, TRUE);
+      if (createitem_index != -1) {
+        rc = CHAR_addItemSpecificItemIndex(char_index, createitem_index);
+        if (rc >= 0 && rc < CheckCharMaxItem(char_index)) {
+          CHAR_sendItemDataOne(char_index, rc);
+          LogItem(CHAR_getChar(char_index, CHAR_NAME),
+                  CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-                  createitemindex,
+                  createitem_index,
 #else
-                   ITEM_getInt(createitemindex, ITEM_ID),
+                   ITEM_getInt(createitem_index, ITEM_ID),
 #endif
-                  "mergeadd(�ϳɳ����ĵ���)", CHAR_getInt(charaindex, CHAR_FLOOR),
-                  CHAR_getInt(charaindex, CHAR_X),
-                  CHAR_getInt(charaindex, CHAR_Y),
-                  ITEM_getChar(createitemindex, ITEM_UNIQUECODE),
-                  ITEM_getChar(createitemindex, ITEM_NAME),
-                  ITEM_getInt(createitemindex, ITEM_ID));
+                  "mergeadd(�ϳɳ����ĵ���)", CHAR_getInt(char_index, CHAR_FLOOR),
+                  CHAR_getInt(char_index, CHAR_X),
+                  CHAR_getInt(char_index, CHAR_Y),
+                  ITEM_getChar(createitem_index, ITEM_UNIQUECODE),
+                  ITEM_getChar(createitem_index, ITEM_NAME),
+                  ITEM_getInt(createitem_index, ITEM_ID));
           result = TRUE;
         } else {
-          ITEM_endExistItemsOne(createitemindex);
+          ITEM_endExistItemsOne(createitem_index);
         }
       }
     }
   }
   int MAX = 27;
   for (i = 0; i <= MAX; i++) {
-    CHAR_sendItemDataOne(charaindex, i);
+    CHAR_sendItemDataOne(char_index, i);
   }
   return result;
 }
@@ -1308,9 +1307,9 @@ static int ITEM_getTableNum(int num) {
 
 #ifdef _ITEM_INSLAY
 #ifdef _EXPANSION_ITEM_INSLAY
-int PETSKILL_ITEM_inslay(int charindex, int inslayindex, int itemindex, int num)
+int PETSKILL_ITEM_inslay(int charindex, int inslayindex, int item_index, int num)
 #else
-int PETSKILL_ITEM_inslay(int charindex, int inslayindex, int itemindex)
+int PETSKILL_ITEM_inslay(int charindex, int inslayindex, int item_index)
 #endif
 {
   char *inslaystr, *code = NULL;
@@ -1337,11 +1336,11 @@ int PETSKILL_ITEM_inslay(int charindex, int inslayindex, int itemindex)
     return FALSE;
   if (!ITEM_CHECKINDEX(inslayindex))
     return FALSE;
-  if (!ITEM_CHECKINDEX(itemindex))
+  if (!ITEM_CHECKINDEX(item_index))
     return FALSE;
-  if (itemindex == inslayindex)
+  if (item_index == inslayindex)
     return FALSE;
-  if ((code = ITEM_getChar(itemindex, ITEM_TYPECODE)) == "\0") {
+  if ((code = ITEM_getChar(item_index, ITEM_TYPECODE)) == "\0") {
     print(" ITEM_TYPECODE == NULL error !!\n");
     return FALSE;
   }
@@ -1396,7 +1395,7 @@ int PETSKILL_ITEM_inslay(int charindex, int inslayindex, int itemindex)
   for (i = 0; i < arraysizeof(worktyp) - 1; i++) {
     int pwork1, pwork2;
     pwork1 = ITEM_getInt(inslayindex, worktyp[i]);
-    pwork2 = ITEM_getInt(itemindex, worktyp[i]);
+    pwork2 = ITEM_getInt(item_index, worktyp[i]);
     ITEM_setInt(inslayindex, worktyp[i], pwork1 + pwork2);
     worknum[i] = pwork1 + pwork2;
   }
@@ -1406,21 +1405,21 @@ int PETSKILL_ITEM_inslay(int charindex, int inslayindex, int itemindex)
     char *funstr; // ITEM_MAGICID
     char *magicname;
 
-    if (ITEM_getInt(itemindex, ITEM_MAGICID) > 0) { // ħ�� ID
+    if (ITEM_getInt(item_index, ITEM_MAGICID) > 0) { // ħ�� ID
       int magicid, mp;
-      magicid = ITEM_getInt(itemindex, ITEM_MAGICID);
+      magicid = ITEM_getInt(item_index, ITEM_MAGICID);
       ITEM_setInt(inslayindex, ITEM_MAGICID, magicid);
-      mp = ITEM_getInt(itemindex, ITEM_MAGICUSEMP);
+      mp = ITEM_getInt(item_index, ITEM_MAGICUSEMP);
       ITEM_setInt(inslayindex, ITEM_MAGICUSEMP, mp);
     }
     for (i = ITEM_FIRSTFUNCTION; i < ITEM_LASTFUNCTION; i++) { // function
       ITEM_setChar(inslayindex, i, "\0");
-      if ((funstr = ITEM_getChar(itemindex, i)) != NULL) {
+      if ((funstr = ITEM_getChar(item_index, i)) != NULL) {
         ITEM_setChar(inslayindex, i, funstr);
       }
     }
 
-    if ((funstr = ITEM_getChar(itemindex, ITEM_ARGUMENT)) != NULL) { // ����
+    if ((funstr = ITEM_getChar(item_index, ITEM_ARGUMENT)) != NULL) { // ����
       ITEM_setChar(inslayindex, ITEM_ARGUMENT, "\0");
       ITEM_setChar(inslayindex, ITEM_ARGUMENT, funstr);
     }
@@ -1453,15 +1452,15 @@ int PETSKILL_ITEM_inslay(int charindex, int inslayindex, int itemindex)
 #endif
 
 #ifdef _PETSKILL_FIXITEM
-int PETSKILL_ITEM_FixItem(int charindex, int fixindex, int *itemindex) {
+int PETSKILL_ITEM_FixItem(int charindex, int fixindex, int *item_index) {
   int index, i;
   char *buf2;
   int crushes, maxcrushes;
 #define MAXFIXNUM 2
   index = 0;
   for (i = 0; i < MAXFIXNUM; i++) {
-    if (fixindex != itemindex[i]) {
-      index = itemindex[i];
+    if (fixindex != item_index[i]) {
+      index = item_index[i];
       break;
     }
   }

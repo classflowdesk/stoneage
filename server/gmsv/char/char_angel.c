@@ -1,5 +1,9 @@
 #include "version.h"
 #ifdef _ANGEL_SUMMON
+//
+#include "gmsv_server.h"
+#include "saac_client.h"
+//
 #include <sys/stat.h>   // shan
 #include <ctype.h>
 #include <sys/time.h>
@@ -7,13 +11,11 @@
 #include "char_base.h"
 #include "char_data.h"
 #include "char.h"
-#include "lssproto_serv.h"
 #include "item.h"
 #include "item_event.h"
 #include "buf.h"
 #include "object.h"
 #include "map_deal.h"
-#include "saacproto_cli.h"
 #include "readmap.h"
 #include "handletime.h"
 #include "char_event.h"
@@ -44,19 +46,19 @@ struct MissionTable missiontable[MAXMISSIONTABLE];
 
 extern int AngelReady;
 
-char* getMissionNameInfo( int charaindex, char* nameinfo)
+char* getMissionNameInfo( int char_index, char* nameinfo)
 {
-  sprintf( nameinfo, "%s:%s", CHAR_getChar( charaindex, CHAR_CDKEY), CHAR_getChar( charaindex, CHAR_NAME) );
+  sprintf( nameinfo, "%s:%s", CHAR_getChar( char_index, CHAR_CDKEY), CHAR_getChar( char_index, CHAR_NAME) );
   return nameinfo;
 }
 
-int checkIfAngel( int charaindex)
+int checkIfAngel( int char_index)
 {
   int i;
   char nameinfo[512];
 
-  //sprintf( nameinfo, "%s:%s", CHAR_getChar( charaindex, CHAR_CDKEY), CHAR_getChar( charaindex, CHAR_NAME) );
-  getMissionNameInfo( charaindex, nameinfo);
+  //sprintf( nameinfo, "%s:%s", CHAR_getChar( char_index, CHAR_CDKEY), CHAR_getChar( char_index, CHAR_NAME) );
+  getMissionNameInfo( char_index, nameinfo);
   for( i =0; i <MAXMISSIONTABLE; i++) {
     if( missiontable[i].angelinfo[0] == '\0')
       continue;
@@ -70,13 +72,13 @@ int checkIfAngel( int charaindex)
   return -1;
 }
 
-int checkIfOnlyAngel( int charaindex)
+int checkIfOnlyAngel( int char_index)
 {
   int i;
   char nameinfo[512];
 
-  //sprintf( nameinfo, "%s:%s", CHAR_getChar( charaindex, CHAR_CDKEY), CHAR_getChar( charaindex, CHAR_NAME) );
-  getMissionNameInfo( charaindex, nameinfo);
+  //sprintf( nameinfo, "%s:%s", CHAR_getChar( char_index, CHAR_CDKEY), CHAR_getChar( char_index, CHAR_NAME) );
+  getMissionNameInfo( char_index, nameinfo);
   for( i =0; i <MAXMISSIONTABLE; i++) {
     if( missiontable[i].angelinfo[0] == '\0')
       continue;
@@ -87,13 +89,13 @@ int checkIfOnlyAngel( int charaindex)
   return -1;
 }
 
-int checkIfOnlyHero( int charaindex)
+int checkIfOnlyHero( int char_index)
 {
   int i;
   char nameinfo[512];
 
-  //sprintf( nameinfo, "%s:%s", CHAR_getChar( charaindex, CHAR_CDKEY), CHAR_getChar( charaindex, CHAR_NAME) );
-  getMissionNameInfo( charaindex, nameinfo);
+  //sprintf( nameinfo, "%s:%s", CHAR_getChar( char_index, CHAR_CDKEY), CHAR_getChar( char_index, CHAR_NAME) );
+  getMissionNameInfo( char_index, nameinfo);
   for( i =0; i <MAXMISSIONTABLE; i++) {
     if( missiontable[i].angelinfo[0] == '\0')
       continue;
@@ -136,14 +138,14 @@ void addAngelData( int angelindex, int heroindex, int mission, int flag)
   getMissionNameInfo( heroindex, heroinfo);
   
   sprintf( buf, "%s|%s|%d|%d", angelinfo, heroinfo, mission, flag );;
-  //saacproto_ACMissionTable_send( acfd, -1, 2, buf, angelindex);
-  saacproto_ACMissionTable_send( acfd, -1, 2, buf, angelinfo);
+  //SaacClient_ACMissionTable_send( acfd, -1, 2, buf, angelindex);
+  SaacClient_ACMissionTable_send( acfd, -1, 2, buf, angelinfo);
 
   return;
 }
 
-//void selectAngel( int charaindex)
-void selectAngel( int charaindex, int heroindex, int mission, int gm_cmd)
+//void selectAngel( int char_index)
+void selectAngel( int char_index, int heroindex, int mission, int gm_cmd)
 {
   // gm_cmd 表示是否由GM指令产生, 
 
@@ -156,20 +158,20 @@ void selectAngel( int charaindex, int heroindex, int mission, int gm_cmd)
   if( AngelReady <= 0 && gm_cmd == FALSE)
     return;
 
-  sprintf( msg, " 使者资格检查: %s %s ", CHAR_getChar( charaindex, CHAR_CDKEY), CHAR_getChar( charaindex, CHAR_NAME));
+  sprintf( msg, " 使者资格检查: %s %s ", CHAR_getChar( char_index, CHAR_CDKEY), CHAR_getChar( char_index, CHAR_NAME));
   print( msg);
   LogAngel( msg);
 
   // 天使条件检查
   if( gm_cmd == FALSE )
   {
-    if( checkIfAngel( charaindex) != -1) // 是否天使或勇者
+    if( checkIfAngel( char_index) != -1) // 是否天使或勇者
     {
       print(" ANGEL已经是天使或勇者了 ");
       return;
     }
     
-    if( CHAR_getInt( charaindex, CHAR_LV) < 30 || !NPC_EventCheckFlg( charaindex, 4 ) )
+    if( CHAR_getInt( char_index, CHAR_LV) < 30 || !NPC_EventCheckFlg( char_index, 4 ) )
     {
       print(" ANGEL资格不符 ");
       return;
@@ -197,7 +199,7 @@ void selectAngel( int charaindex, int heroindex, int mission, int gm_cmd)
       findindex = (findindex+1) % max_char;
       if( !CHAR_CHECKINDEX( findindex) ) continue;
       if( CHAR_getInt( findindex, CHAR_WHICHTYPE ) != CHAR_TYPEPLAYER ) continue;
-      if( findindex == charaindex ) continue;
+      if( findindex == char_index ) continue;
       if( checkIfAngel( findindex) != -1)  continue; // 是否天使或勇者
       if( CHAR_getInt( findindex, CHAR_LV) < 80 || !NPC_EventCheckFlg( findindex, 4 ) ) continue; // 勇者的条件
       if( rand()%3 == 0 )  continue; // 勇者的机率 2/3
@@ -266,11 +268,11 @@ void selectAngel( int charaindex, int heroindex, int mission, int gm_cmd)
   }
 
 
-  addAngelData( charaindex, heroindex, mission, MISSION_WAIT_ANSWER); // 传到AC
+  addAngelData( char_index, heroindex, mission, MISSION_WAIT_ANSWER); // 传到AC
 
   // 清除旗标 event8 224~255 为精灵召唤专用
-  CHAR_setInt( charaindex, CHAR_NOWEVENT8, 0);
-  CHAR_setInt( charaindex, CHAR_ENDEVENT8, 0);
+  CHAR_setInt( char_index, CHAR_NOWEVENT8, 0);
+  CHAR_setInt( char_index, CHAR_ENDEVENT8, 0);
   CHAR_setInt( heroindex, CHAR_NOWEVENT8, 0);
   CHAR_setInt( heroindex, CHAR_ENDEVENT8, 0);
 
@@ -280,9 +282,9 @@ void selectAngel( int charaindex, int heroindex, int mission, int gm_cmd)
   {
     sprintf( msg, " 产生 %s 天使候补: %s %s Lv:%d 勇者候补: %s %s Lv:%d 任务:%d ci=%d hi=%d ",
         gm_cmd ? ("(GM指令)") : (" "),
-        CHAR_getChar( charaindex, CHAR_CDKEY), CHAR_getChar( charaindex, CHAR_NAME), CHAR_getInt( charaindex, CHAR_LV),
+        CHAR_getChar( char_index, CHAR_CDKEY), CHAR_getChar( char_index, CHAR_NAME), CHAR_getInt( char_index, CHAR_LV),
         CHAR_getChar( heroindex, CHAR_CDKEY), CHAR_getChar( heroindex, CHAR_NAME), CHAR_getInt( heroindex, CHAR_LV),
-        mission, charaindex, heroindex);
+        mission, char_index, heroindex);
     print( msg);
     LogAngel( msg);
   }
@@ -290,7 +292,7 @@ void selectAngel( int charaindex, int heroindex, int mission, int gm_cmd)
 
 void sendAngelCleanToCli( int fd)
 {
-  lssproto_WN_send( fd, //getfdFromCharaIndex(charaindex),
+  GmsvServer_WN_send( fd, //getfdFromCharaIndex(char_index),
       WINDOW_MESSAGETYPE_ANGELMESSAGE, -1,
       CHAR_WINDOWTYPE_ANGEL_CLEAN,
       -1,  "");
@@ -419,11 +421,11 @@ int AngelCreate( int angelindex)
   // 更新至AC Server
   //sprintf( nameinfo, "%s:%s", CHAR_getChar( angelindex, CHAR_CDKEY), CHAR_getChar( angelindex, CHAR_NAME ) );
   sprintf( msgbuf, "%s|%d", missiontable[mindex].angelinfo, missionlist[missiontable[mindex].mission].limittime );
-  saacproto_ACMissionTable_send( acfd, MISSION_DOING, 4, msgbuf, "");
+  SaacClient_ACMissionTable_send( acfd, MISSION_DOING, 4, msgbuf, "");
 
   //CHAR_talkToCli( angelindex, -1, "天之声：非常感谢你答应帮忙，那我就将信物交给你了，请将勇者的信物转交给勇者。", CHAR_COLORYELLOW);
 
-  lssproto_WN_send( getfdFromCharaIndex(angelindex), WINDOW_MESSAGETYPE_MESSAGE, 
+  GmsvServer_WN_send( getfdFromCharaIndex(angelindex), WINDOW_MESSAGETYPE_MESSAGE, 
       WINDOW_BUTTONTYPE_YES, -1, -1,
       "非常感谢你答应帮忙，那我就将信物交给你了，请将勇者的信物转交给勇者。");
 
@@ -462,9 +464,9 @@ int AngelCreate( int angelindex)
 
 
 // 使用使者信物时
-void Use_AngelToken( int charaindex, int toindex, int haveitemindex )
+void Use_AngelToken( int char_index, int toindex, int haveitem_index )
 {
-  int itemindex;
+  int item_index;
   char nameinfo[1024];
   int mindex;
   char msg[1024];
@@ -472,25 +474,25 @@ void Use_AngelToken( int charaindex, int toindex, int haveitemindex )
 
   print(" 使用使者信物 ");
   
-  if( !CHAR_CHECKINDEX( charaindex) )  return;
-  itemindex = CHAR_getItemIndex( charaindex, haveitemindex);
-  if( !ITEM_CHECKINDEX( itemindex) ) return;
+  if( !CHAR_CHECKINDEX( char_index) )  return;
+  item_index = CHAR_getItemIndex( char_index, haveitem_index);
+  if( !ITEM_CHECKINDEX( item_index) ) return;
 
-  mindex = checkIfAngel( charaindex);
-  //sprintf( nameinfo, "%s:%s", CHAR_getChar(charaindex, CHAR_CDKEY), CHAR_getChar(charaindex, CHAR_NAME));
-  getMissionNameInfo( charaindex, nameinfo);
+  mindex = checkIfAngel( char_index);
+  //sprintf( nameinfo, "%s:%s", CHAR_getChar(char_index, CHAR_CDKEY), CHAR_getChar(char_index, CHAR_NAME));
+  getMissionNameInfo( char_index, nameinfo);
 
   if( mindex == -1 || 
-    ( strcmp( nameinfo, ITEM_getChar( itemindex, ITEM_ANGELINFO)) && strcmp( nameinfo, ITEM_getChar( itemindex, ITEM_HEROINFO)) ) ) {
+    ( strcmp( nameinfo, ITEM_getChar( item_index, ITEM_ANGELINFO)) && strcmp( nameinfo, ITEM_getChar( item_index, ITEM_HEROINFO)) ) ) {
     // 路人甲使用时
-    CHAR_talkToCli( charaindex, -1, "这并不是属於你的信物，不可随便使用喔。", CHAR_COLORRED);
+    CHAR_talkToCli( char_index, -1, "这并不是属於你的信物，不可随便使用喔。", CHAR_COLORRED);
     return;
   }
 
-  if( strcmp( ITEM_getChar( itemindex, ITEM_ANGELINFO), missiontable[mindex].angelinfo)
-    || strcmp( ITEM_getChar( itemindex, ITEM_HEROINFO), missiontable[mindex].heroinfo) ) {
+  if( strcmp( ITEM_getChar( item_index, ITEM_ANGELINFO), missiontable[mindex].angelinfo)
+    || strcmp( ITEM_getChar( item_index, ITEM_HEROINFO), missiontable[mindex].heroinfo) ) {
 
-    CHAR_talkToCli( charaindex, -1, "这是无用的信物，还是丢掉吧。", CHAR_COLORRED);
+    CHAR_talkToCli( char_index, -1, "这是无用的信物，还是丢掉吧。", CHAR_COLORRED);
     return;
   }
 
@@ -505,19 +507,19 @@ void Use_AngelToken( int charaindex, int toindex, int haveitemindex )
       getStringFromIndexWithDelim( missiontable[mindex].heroinfo, ":", 2, tokenbuf, sizeof(tokenbuf));
       sprintf( msg, "你的使命是将勇者的信物交给 %s ，%s，时间还剩余%d小时%d分。",
         tokenbuf, missionlist[missiontable[mindex].mission].detail, hour, min);
-      CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORRED);
+      CHAR_talkToCli( char_index, -1, msg, CHAR_COLORRED);
     }
     else if( missiontable[mindex].flag == MISSION_HERO_COMPLETE ) {
       // 可以去领奖了
       getStringFromIndexWithDelim( missiontable[mindex].heroinfo, ":", 2, tokenbuf, sizeof(tokenbuf));
       sprintf( msg, "勇者 %s 的使命已经完成了，你可以去领奖了，时间还剩余%d小时%d分。",
         tokenbuf, hour, min);
-      CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORRED);
+      CHAR_talkToCli( char_index, -1, msg, CHAR_COLORRED);
     }
     else if( missiontable[mindex].flag == MISSION_TIMEOVER ) {
       // 时间超过了
       sprintf( msg, "很可惜，使者和勇者并没有在时限内完成使命，下次再加油吧。");
-      CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORRED);
+      CHAR_talkToCli( char_index, -1, msg, CHAR_COLORRED);
     }
     return;
   }
@@ -527,8 +529,8 @@ void Use_AngelToken( int charaindex, int toindex, int haveitemindex )
     char cdkey[64], name[64];
     int fl =0, fx =0, fy =0;
 
-    if( checkUnlawWarpFloor( CHAR_getInt( charaindex, CHAR_FLOOR) ) ) {
-        CHAR_talkToCli( charaindex, -1, "你所在的地方无法传送。", CHAR_COLORYELLOW );
+    if( checkUnlawWarpFloor( CHAR_getInt( char_index, CHAR_FLOOR) ) ) {
+        CHAR_talkToCli( char_index, -1, "你所在的地方无法传送。", CHAR_COLORYELLOW );
         return;
     }
 
@@ -548,7 +550,7 @@ void Use_AngelToken( int charaindex, int toindex, int haveitemindex )
       fy = CHAR_getInt( i, CHAR_Y);
 
       if( checkUnlawWarpFloor( fl) ) {
-        CHAR_talkToCli( charaindex, -1, "对象所在的地方无法传送。", CHAR_COLORYELLOW );
+        CHAR_talkToCli( char_index, -1, "对象所在的地方无法传送。", CHAR_COLORYELLOW );
         return;
       }
 
@@ -557,46 +559,46 @@ void Use_AngelToken( int charaindex, int toindex, int haveitemindex )
     if( fl <= 0 )
     {
       sprintf( msg, "使者 %s 目前不在线上或不在本伺服器上。", name);
-      CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORRED);
+      CHAR_talkToCli( char_index, -1, msg, CHAR_COLORRED);
       return;
     }
     
     sprintf( msg, "传送至使者 %s 身边。", name);
-    CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORYELLOW);
-    CHAR_warpToSpecificPoint( charaindex, fl, fx, fy);
+    CHAR_talkToCli( char_index, -1, msg, CHAR_COLORYELLOW);
+    CHAR_warpToSpecificPoint( char_index, fl, fx, fy);
   }
 
 }
 
 // 使用勇者信物时
-void Use_HeroToken( int charaindex, int toindex, int haveitemindex )
+void Use_HeroToken( int char_index, int toindex, int haveitem_index )
 {
-  int itemindex;
+  int item_index;
   int mindex;
   char nameinfo[64];
   char msg[1024];
 
 //  print(" 使用勇者信物 ");
 
-  if( !CHAR_CHECKINDEX( charaindex) )  return;
-  itemindex = CHAR_getItemIndex( charaindex, haveitemindex);
-  if( !ITEM_CHECKINDEX( itemindex) ) return;
+  if( !CHAR_CHECKINDEX( char_index) )  return;
+  item_index = CHAR_getItemIndex( char_index, haveitem_index);
+  if( !ITEM_CHECKINDEX( item_index) ) return;
 
-  mindex = checkIfAngel( charaindex);
-  //sprintf( nameinfo, "%s:%s", CHAR_getChar(charaindex, CHAR_CDKEY), CHAR_getChar(charaindex, CHAR_NAME));
-  getMissionNameInfo( charaindex, nameinfo);
+  mindex = checkIfAngel( char_index);
+  //sprintf( nameinfo, "%s:%s", CHAR_getChar(char_index, CHAR_CDKEY), CHAR_getChar(char_index, CHAR_NAME));
+  getMissionNameInfo( char_index, nameinfo);
 
   if( mindex == -1 ||
-    ( strcmp( nameinfo, ITEM_getChar( itemindex, ITEM_ANGELINFO)) && strcmp( nameinfo, ITEM_getChar( itemindex, ITEM_HEROINFO)) ) ) {
+    ( strcmp( nameinfo, ITEM_getChar( item_index, ITEM_ANGELINFO)) && strcmp( nameinfo, ITEM_getChar( item_index, ITEM_HEROINFO)) ) ) {
     // 路人甲使用时
-    CHAR_talkToCli( charaindex, -1, "这并不是属於你的信物，不可随便使用喔。", CHAR_COLORRED);
+    CHAR_talkToCli( char_index, -1, "这并不是属於你的信物，不可随便使用喔。", CHAR_COLORRED);
     return;
   }
 
-  if(  strcmp( ITEM_getChar( itemindex, ITEM_ANGELINFO), missiontable[mindex].angelinfo)
-    || strcmp( ITEM_getChar( itemindex, ITEM_HEROINFO), missiontable[mindex].heroinfo) ){
+  if(  strcmp( ITEM_getChar( item_index, ITEM_ANGELINFO), missiontable[mindex].angelinfo)
+    || strcmp( ITEM_getChar( item_index, ITEM_HEROINFO), missiontable[mindex].heroinfo) ){
 
-    CHAR_talkToCli( charaindex, -1, "这是无用的信物，还是丢掉吧。", CHAR_COLORRED);
+    CHAR_talkToCli( char_index, -1, "这是无用的信物，还是丢掉吧。", CHAR_COLORRED);
     return;
   }
 
@@ -612,18 +614,18 @@ void Use_HeroToken( int charaindex, int toindex, int haveitemindex )
       // 显示任务资料
       sprintf( msg, "你的使命是 %s，时间还剩余%d小时%d分。",
         missionlist[missiontable[mindex].mission].detail, hour, min);
-      CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORRED);
+      CHAR_talkToCli( char_index, -1, msg, CHAR_COLORRED);
     }
     else if( missiontable[mindex].flag == MISSION_HERO_COMPLETE ) {
       // 可以去领奖了
       sprintf( msg, "你的使命已经完成了，可以去领奖了，时间还剩余%d小时%d分。",
         hour, min);
-      CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORRED);
+      CHAR_talkToCli( char_index, -1, msg, CHAR_COLORRED);
     }
     else if( missiontable[mindex].flag == MISSION_TIMEOVER ) {
       // 时间超过了
       sprintf( msg, "很可惜，使者和勇者并没有在时限内完成使命，下次再加油吧。");
-      CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORRED);
+      CHAR_talkToCli( char_index, -1, msg, CHAR_COLORRED);
     }
     return;
 
@@ -634,19 +636,19 @@ void Use_HeroToken( int charaindex, int toindex, int haveitemindex )
     char cdkey[64], name[64];
     int fl =0, fx =0, fy =0;
 
-    if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE) != CHAR_PARTY_NONE ) {
-        CHAR_talkToCli( charaindex, -1, "组队中无法传送。", CHAR_COLORYELLOW );
+    if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE) != CHAR_PARTY_NONE ) {
+        CHAR_talkToCli( char_index, -1, "组队中无法传送。", CHAR_COLORYELLOW );
         return;
     }
     
-    if( checkUnlawWarpFloor( CHAR_getInt( charaindex, CHAR_FLOOR) ) ) {
-        CHAR_talkToCli( charaindex, -1, "你所在的地方无法传送。", CHAR_COLORYELLOW );
+    if( checkUnlawWarpFloor( CHAR_getInt( char_index, CHAR_FLOOR) ) ) {
+        CHAR_talkToCli( char_index, -1, "你所在的地方无法传送。", CHAR_COLORYELLOW );
         return;
     }
 
-    //if( CHAR_CheckInItemForWares( charaindex, 0) == FALSE ){
-    if( CheckDropatLogout( charaindex) == TRUE ) {
-      CHAR_talkToCli( charaindex, -1, "携带登出後消失的道具时无法使用。", CHAR_COLORYELLOW);
+    //if( CHAR_CheckInItemForWares( char_index, 0) == FALSE ){
+    if( CheckDropatLogout( char_index) == TRUE ) {
+      CHAR_talkToCli( char_index, -1, "携带登出後消失的道具时无法使用。", CHAR_COLORYELLOW);
       return;
     }
 
@@ -666,7 +668,7 @@ void Use_HeroToken( int charaindex, int toindex, int haveitemindex )
       fy = CHAR_getInt( i, CHAR_Y);
 
       if( checkUnlawWarpFloor( fl) ) {
-        CHAR_talkToCli( charaindex, -1, "对象所在的地方无法传送过去。", CHAR_COLORYELLOW );
+        CHAR_talkToCli( char_index, -1, "对象所在的地方无法传送过去。", CHAR_COLORYELLOW );
         return;
       }
 
@@ -675,17 +677,17 @@ void Use_HeroToken( int charaindex, int toindex, int haveitemindex )
     if( fl <= 0 )
     {
       sprintf( msg, "勇者 %s 目前不在线上或不在本伺服器上。", name);
-      CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORRED);
+      CHAR_talkToCli( char_index, -1, msg, CHAR_COLORRED);
       return;
     }
     
     sprintf( msg, "传送至勇者 %s 身边。", name);
-    CHAR_talkToCli( charaindex, -1, msg, CHAR_COLORYELLOW);
-    CHAR_warpToSpecificPoint( charaindex, fl, fx, fy);
+    CHAR_talkToCli( char_index, -1, msg, CHAR_COLORYELLOW);
+    CHAR_warpToSpecificPoint( char_index, fl, fx, fy);
 
   }
   else { // 路人甲使用时
-    CHAR_talkToCli( charaindex, -1, "这并不是属於你的信物，不可随便使用喔。", CHAR_COLORRED);
+    CHAR_talkToCli( char_index, -1, "这并不是属於你的信物，不可随便使用喔。", CHAR_COLORRED);
     return;
   }
 

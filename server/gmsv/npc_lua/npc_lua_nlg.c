@@ -504,7 +504,7 @@ int NPC_Lua_NLG_ShowWindowTalked(lua_State *_NLL)
 		TM_MeIndex = (int)lua_tointeger(_NLL, 6);
 	}
 
-	lssproto_WN_send(TM_fd, TM_windowtype, TM_buttontype, TM_seqno, CHAR_getWorkInt( TM_MeIndex, CHAR_WORKOBJINDEX), TM_data);
+	GmsvServer_WN_send(TM_fd, TM_windowtype, TM_buttontype, TM_seqno, CHAR_getWorkInt( TM_MeIndex, CHAR_WORKOBJINDEX), TM_data);
 	LRetInt(_NLL, 0);
 }
 
@@ -829,7 +829,7 @@ int NPC_Lua_NLG_UpStateBySecond(lua_State *_NLL)
 #else
 	snprintf(TM_Buff, sizeof(TM_Buff), "FAME|%d", CHAR_getInt(TM_Index,CHAR_FAME)/100);
 #endif
-	lssproto_S2_send(TM_fd,TM_Buff);
+	GmsvServer_S2_send(TM_fd,TM_Buff);
 	LRetInt(_NLL, 0);
 }
 
@@ -1032,14 +1032,14 @@ int NPC_Lua_NLG_UpItem(lua_State *_NLL)
 	CheckEx(_NLL, 1);
 	CheckIndexNull(_NLL, 1);
 	
-	int charaindex = (int)lua_tointeger(_NLL,1);
-	if( !CHAR_CHECKINDEX( charaindex)){
+	int char_index = (int)lua_tointeger(_NLL,1);
+	if( !CHAR_CHECKINDEX( char_index)){
 		return 0;
 	}
 	int MAX = 27;
 	int i= 0;
 	for ( i = 0; i <= MAX; i++){
-		CHAR_sendItemDataOne( charaindex, i);
+		CHAR_sendItemDataOne( char_index, i);
 	}
 	return 0;
 }
@@ -1096,18 +1096,18 @@ int NPC_Lua_NLG_DelItemByIndex(lua_State *_NLL)
 	CheckEx(_NLL, 2);
 	CheckIndexNull(_NLL, 1);
 	CheckIndexNull(_NLL, 2);
-	int charaindex = (int)lua_tointeger(_NLL, 1);
-	if( CHAR_CHECKINDEX( charaindex ) == FALSE ){
+	int char_index = (int)lua_tointeger(_NLL, 1);
+	if( CHAR_CHECKINDEX( char_index ) == FALSE ){
 		LRetInt(_NLL, -1);
 		return -1;
 	}
-	int haveitemindex = (int)lua_tointeger(_NLL, 2);
-	int itemindex = CHAR_getItemIndex( charaindex, haveitemindex);
-	if(!ITEM_CHECKINDEX(itemindex)) {
+	int haveitem_index = (int)lua_tointeger(_NLL, 2);
+	int item_index = CHAR_getItemIndex( char_index, haveitem_index);
+	if(!ITEM_CHECKINDEX(item_index)) {
 		LRetInt(_NLL, -1);
 		return -1;
 	}
-	CHAR_DelItem( charaindex, haveitemindex);
+	CHAR_DelItem( char_index, haveitem_index);
 	LRetInt(_NLL, 0);
 }
 
@@ -1569,16 +1569,16 @@ int NPC_Lua_NLG_GiveItemByIndex(lua_State *_NLL)
 		LRetErrInt(_NLL , -1, "道具传入的索引是无效的！");
 		return;
 	}
-	int emptyitemindexinchara = CHAR_findEmptyItemBox( TM_Index);
-	if( emptyitemindexinchara < 0 ) {
+	int emptyitem_indexinchara = CHAR_findEmptyItemBox( TM_Index);
+	if( emptyitem_indexinchara < 0 ) {
 		LRetErrInt(_NLL , -1, "目标道具栏位已满！");
 		return;
 	}
-	CHAR_setItemIndex( TM_Index, emptyitemindexinchara, TM_ItemIndex );
+	CHAR_setItemIndex( TM_Index, emptyitem_indexinchara, TM_ItemIndex );
 	ITEM_setWorkInt(TM_ItemIndex, ITEM_WORKOBJINDEX,-1);
 	ITEM_setWorkInt(TM_ItemIndex, ITEM_WORKCHARAINDEX, TM_Index);
-	CHAR_sendItemDataOne( TM_Index, emptyitemindexinchara);
-	LRetInt(_NLL, emptyitemindexinchara);
+	CHAR_sendItemDataOne( TM_Index, emptyitem_indexinchara);
+	LRetInt(_NLL, emptyitem_indexinchara);
 }
 
 int NPC_Lua_NLG_WarpToSpecificPoint(lua_State *_NLL)
@@ -1617,19 +1617,19 @@ int NPC_Lua_NLG_StayEncount(lua_State *_NLL)
 {
 	CheckEx(_NLL, 1);
 	CheckIndexNull(_NLL, 1);
-	int fd,charaindex = (int)lua_tointeger(_NLL, 1);
-	fd = CHAR_getWorkInt( charaindex, CHAR_WORKFD);
+	int fd,char_index = (int)lua_tointeger(_NLL, 1);
+	fd = CHAR_getWorkInt( char_index, CHAR_WORKFD);
 	setStayEncount(fd);
-	CHAR_talkToCli(charaindex, -1, "你感受到周边突然充满了杀气！", CHAR_COLORYELLOW);
+	CHAR_talkToCli(char_index, -1, "你感受到周边突然充满了杀气！", CHAR_COLORYELLOW);
 #ifdef _USER_CHARLOOPS
 	{
 		Char 	*ch;
-		ch  = CHAR_getCharPointer( charaindex);
+		ch  = CHAR_getCharPointer( char_index);
 		if( ch == NULL ) return;
 		strcpysafe( ch->charfunctable[CHAR_LOOPFUNCTEMP1].string,
 			sizeof( ch->charfunctable[CHAR_LOOPFUNCTEMP1]), "CHAR_BattleStayLoop");//战斗
-		CHAR_setInt( charaindex, CHAR_LOOPINTERVAL, 2500);
-		CHAR_constructFunctable( charaindex);
+		CHAR_setInt( char_index, CHAR_LOOPINTERVAL, 2500);
+		CHAR_constructFunctable( char_index);
 	}
 #endif
 	LRetBool(_NLL,TRUE);
@@ -1646,7 +1646,7 @@ int NPC_Lua_NLG_HealerAllHeal(lua_State *_NLL)
 extern int getArrayInt(lua_State *L, int idx);
 int NPC_Lua_NLG_CreateVsEnemyAB (lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int npcindex = luaL_checkint(L, 2);
 	int enemytable[11];
 	int i;
@@ -1666,13 +1666,13 @@ int NPC_Lua_NLG_CreateVsEnemyAB (lua_State *L)
 			enemytable[i] = -1;
 		}
 	}
-	int ret = BATTLE_CreateVsEnemyNew(charaindex, npcindex, enemytable);
+	int ret = BATTLE_CreateVsEnemyNew(char_index, npcindex, enemytable);
 	if( ret == 0 ) {
 		if(npcindex>-1){
 			CHAR_setWorkInt( npcindex, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_INIT );
 			CHAR_sendBattleEffect( npcindex, ON);
 		}
-		lua_pushinteger(L, CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEINDEX));
+		lua_pushinteger(L, CHAR_getWorkInt( char_index, CHAR_WORKBATTLEINDEX));
 		return 1;
 	}else{
 		return 0;

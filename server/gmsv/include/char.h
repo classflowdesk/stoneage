@@ -60,21 +60,21 @@ void CHAR_login(int clifd, char* data, int saveindex);
 #define	CHAR_warpToSpecificPoint(cindex, fl, x, y)\
 _CHAR_warpToSpecificPoint(__FILE__, __LINE__, cindex, fl, x, y)
 
-BOOL _CHAR_warpToSpecificPoint(char *file, int line, int charaindex, int fl, int x, int y);
+BOOL _CHAR_warpToSpecificPoint(char *file, int line, int char_index, int fl, int x, int y);
 
 
 BOOL CHAR_charSaveFromConnectAndChar(int fd, Char* ch, int unlock);
-BOOL CHAR_charSaveFromConnect( int charaindex,int unlock );
-#define	CHAR_logout( charaindex, save)	_CHAR_logout( __FILE__, __LINE__, charaindex, save)
-BOOL _CHAR_logout( char *file, int line, int charaindex, BOOL save);
+BOOL CHAR_charSaveFromConnect( int char_index,int unlock );
+#define	CHAR_logout( char_index, save)	_CHAR_logout( __FILE__, __LINE__, char_index, save)
+BOOL _CHAR_logout( char *file, int line, int char_index, BOOL save);
 
 /*==================== watch event    ====================*/
 void CHAR_sendWatchEvent( int objindex, int chac, int* opt,int optlen,BOOL myflg );
 
 /*====================旦平伙====================*/
-BOOL CHAR_Skillupsend(int charaindex );
-void CHAR_SkillUp(  int charaindex, int skillid );
-void CHAR_useSkill( int charaindex, int dir ,int skindex );
+BOOL CHAR_Skillupsend(int char_index );
+void CHAR_SkillUp(  int char_index, int skillid );
+void CHAR_useSkill( int char_index, int dir ,int skindex );
 
 typedef enum
 {
@@ -101,11 +101,11 @@ void CHAR_walk_init( int fd, int x, int y, char *direction, BOOL mapsendmode);
 CHAR_WALKRET CHAR_walk(int index, int dir, int mode);
 #ifdef _MO_LNS_NLGSUOXU
 CHAR_WALKRET CHAR_walk_jjc( int index, int floor, int ox, int oy, int dir);
-CHAR_WALKRET CHAR_walk_jc( int charaindex, int of, int ox, int oy, int dir );//检查前方障碍
+CHAR_WALKRET CHAR_walk_jc( int char_index, int of, int ox, int oy, int dir );//检查前方障碍
 #endif
 char* CHAR_makeOptionString( Char* ch );
 char* CHAR_makeStatusString( int index, char* category );
-void CHAR_LoginBesideSetWorkInt( int charaindex, int clifd);
+void CHAR_LoginBesideSetWorkInt( int char_index, int clifd);
 #define CHAR_makeObjectCString( objindex, buf, buflen) _CHAR_makeObjectCString( __FILE__, __LINE__, objindex, buf, buflen)
 BOOL _CHAR_makeObjectCString( char *file, int line, int objindex, char* buf, int buflen );
 
@@ -114,14 +114,14 @@ BOOL _CHAR_makeObjectCString( char *file, int line, int objindex, char* buf, int
 BOOL _CHAR_makeObjectCStringNew( char *file, int line, int objindex, int playerindex, char* buf, int buflen );
 #endif
 
-//BOOL CHAR_sendStatusString( int charaindex, char* category );
+//BOOL CHAR_sendStatusString( int char_index, char* category );
 #define CHAR_sendStatusString( A, B) _CHAR_sendStatusString( A, B, __FILE__, __LINE__ )
-BOOL _CHAR_sendStatusString( int charaindex, char* category, char* file, int line );
-BOOL CHAR_sendItemData( int charaindex, int *itemgroup, int num);
-BOOL CHAR_sendItemDataOne( int charaindex, int haveitemindex);
-BOOL CHAR_send_P_StatusString( int charaindex, unsigned int indextable );
-BOOL CHAR_send_N_StatusString( int charaindex, int num, unsigned int indextable );
-BOOL CHAR_send_K_StatusString( int charaindex, int num, unsigned int indextable );
+BOOL _CHAR_sendStatusString( int char_index, char* category, char* file, int line );
+BOOL CHAR_sendItemData( int char_index, int *itemgroup, int num);
+BOOL CHAR_sendItemDataOne( int char_index, int haveitem_index);
+BOOL CHAR_send_P_StatusString( int char_index, unsigned int indextable );
+BOOL CHAR_send_N_StatusString( int char_index, int num, unsigned int indextable );
+BOOL CHAR_send_K_StatusString( int char_index, int num, unsigned int indextable );
 
 void CHAR_inputOwnTitle( int index ,char* name );
 
@@ -139,21 +139,21 @@ int CHAR_findEmptyItemBoxNo( int index );
 void CHAR_moveEquipItem( int index, int fromindex, int toindex );
 #ifdef _PET_ITEM
 void CHAR_movePetItem( int index, int petid, int fromindex, int toindex );
-void CHAR_sendPetItemData( int charaindex, int petid);
+void CHAR_sendPetItemData( int char_index, int petid);
 #endif
-void CHAR_ItemUse( int charaindex, int to_charaindex, int haveitemindex );
-void CHAR_DropItem( int charaindex,  int itemindex );
-int CHAR_DropItemAbsolute( int itemindex, int floor, int x, int y,BOOL net);
-BOOL CHAR_DropItemFXY( int charaindex, int itemcharaindex, int fl,
+void CHAR_ItemUse( int char_index, int to_char_index, int haveitem_index );
+void CHAR_DropItem( int char_index,  int item_index );
+int CHAR_DropItemAbsolute( int item_index, int floor, int x, int y,BOOL net);
+BOOL CHAR_DropItemFXY( int char_index, int itemchar_index, int fl,
 							  int x, int y, int* objindex );
-int  CHAR_addItemSpecificItemIndex( int charaindex, int itemindex );
+int  CHAR_addItemSpecificItemIndex( int char_index, int item_index );
 
-void CHAR_PickUpItem( int charaindex, int dir );
-void CHAR_DropMoney( int charaindex,  int amount );
-int CHAR_addItem( int charaindex, int itemid );
+void CHAR_PickUpItem( int char_index, int dir );
+void CHAR_DropMoney( int char_index,  int amount );
+int CHAR_addItem( int char_index, int itemid );
 int CHAR_addItemToChar( Char* ch, int itemid );
 
-int CHAR_pickupFollowPet( int charaindex, int petindex );
+int CHAR_pickupFollowPet( int char_index, int petindex );
 
 #ifdef _GAMBLE_ROULETTE
 int NPC_MAPCLEANGOLD( int meindex , int floor);
@@ -167,29 +167,29 @@ int SetCasinoMap(int npcindex, int casinotype, int mapdropflag);
 int CasinoPay(int npcindex, int wincasinotype);
 #endif
 void CHAR_sendCSpecifiedObjindex( int fd, int index);
-void CHAR_sendSpecifiedobjindexCToCharaindex(int charaindex,int objindex);
+void CHAR_sendSpecifiedobjindexCToCharaindex(int char_index,int objindex);
 
-void CHAR_sendCToArroundCharacter( int charaindex );
+void CHAR_sendCToArroundCharacter( int char_index );
 
-void CHAR_sendArroundCharaData( int charaindex );
+void CHAR_sendArroundCharaData( int char_index );
 
 void CHAR_sendCDArroundChar( int fl, int x, int y, int objindex );
 void CHAR_sendCDArroundChar_Main( int fl, int x, int y, int objindex, BOOL mode );
 
 
-void CHAR_Look( int charaindex, int dir );
+void CHAR_Look( int char_index, int dir );
 
 void CHAR_initChatMagic(void);
 
-char* CHAR_appendNameAndTitle( int charaindex, char* src, char* buf,
+char* CHAR_appendNameAndTitle( int char_index, char* src, char* buf,
                                int buflen );
 void CHAR_Talk( int fd, int index,char* message,int color, int area );
 
 void CHAR_Loop( void );
 
 #ifdef _PET_ITEM
-void CHAR_sendPetItemData( int charaindex, int petid);
-void CHAR_sendPetItemEmpty( int charaindex, int petid);
+void CHAR_sendPetItemData( int char_index, int petid);
+void CHAR_sendPetItemEmpty( int char_index, int petid);
 #endif
 
 #define		WINDOW_BUTTONTYPE_NONE		(0)
@@ -633,74 +633,74 @@ typedef struct _DailyFileType
 //extern struct DailyFileType dailyfile[MAXDAILYLIST];
 
 #endif
-int getPartyNum(int charaindex);
-BOOL CHAR_talkToCli( int talkedcharaindex,int talkcharaindex, char* message, CHAR_COLOR color );
-void CHAR_talkToCliAndParty( int talkedcharaindex,int talkcharaindex,char* message, CHAR_COLOR color );
+int getPartyNum(int char_index);
+BOOL CHAR_talkToCli( int talkedchar_index,int talkchar_index, char* message, CHAR_COLOR color );
+void CHAR_talkToCliAndParty( int talkedchar_index,int talkchar_index,char* message, CHAR_COLOR color );
 void CHAR_talkToAll(int talkindex, char* message, CHAR_COLOR color);
 void CHAR_getCoordinationDir( int dir , int x, int y ,int c,
                               int *xout , int *yout );
 BOOL CHAR_createCharacter( int type, int floor, int x, int y, int dir,
-                           int* charaindex, int* objindex, BOOL seemap );
-void CHAR_CharaDelete( int charaindex );
+                           int* char_index, int* objindex, BOOL seemap );
+void CHAR_CharaDelete( int char_index );
 void CHAR_ObjectDelete( int objindex );
-int CHAR_makeDBKey( int charaindex, char *pszBuffer, int size );
-int CHAR_getEmptyPartyArray( int charaindex);
-BOOL CHAR_JoinParty( int charaindex );
-BOOL CHAR_JoinParty_Main( int charaindex, int targetindex);
-BOOL CHAR_JoinParty_Main_New( int charaindex, int targetindex,int flg);
-BOOL CHAR_DischargeParty( int charaindex, int flg);
-BOOL CHAR_DischargeParty_New( int charaindex, int flg);
-BOOL CHAR_DischargePartyNoMsg( int charaindex);
+int CHAR_makeDBKey( int char_index, char *pszBuffer, int size );
+int CHAR_getEmptyPartyArray( int char_index);
+BOOL CHAR_JoinParty( int char_index );
+BOOL CHAR_JoinParty_Main( int char_index, int targetindex);
+BOOL CHAR_JoinParty_Main_New( int char_index, int targetindex,int flg);
+BOOL CHAR_DischargeParty( int char_index, int flg);
+BOOL CHAR_DischargeParty_New( int char_index, int flg);
+BOOL CHAR_DischargePartyNoMsg( int char_index);
 BOOL CHAR_setMyPosition_main( int index, int x, int y, int setdir, BOOL CAFlg);
 BOOL CHAR_setMyPosition( int index, int x, int y, BOOL CAFlg);
 
-void CHAR_CharaDeleteHavePet( int charaindex);
-int CHAR_sendAction( int charaindex, int action, int mode);
+void CHAR_CharaDeleteHavePet( int char_index);
+int CHAR_sendAction( int char_index, int action, int mode);
 void CHAR_sendLeader( int objindex, int leader);
 void CHAR_sendBattleWatch( int objindex, int onoff);
-void CHAR_sendBattleEffect( int charaindex, int onoff);
+void CHAR_sendBattleEffect( int char_index, int onoff);
 
 // shan
-void CHAR_sendTradeEffect( int charaindex, int onoff);
+void CHAR_sendTradeEffect( int char_index, int onoff);
 #ifdef _MIND_ICON
-void CHAR_sendMindEffect( int charaindex, int onoff);
+void CHAR_sendMindEffect( int char_index, int onoff);
 #endif
 #ifdef _ITEM_CRACKER
-void CHAR_sendCrackerEffect( int charaindex, int onoff);
+void CHAR_sendCrackerEffect( int char_index, int onoff);
 #endif
 
 void CHAR_inputUserPetName( int index , int havepetindex, char* name );
 int CHAR_getPartyIndex( int index, int num);
-void CHAR_processWindow(int charaindex, int seqno, int select,
+void CHAR_processWindow(int char_index, int seqno, int select,
 						int objindex, char* data );
-void CHAR_AddCharm( int charaindex, int iValue );
+void CHAR_AddCharm( int char_index, int iValue );
 void CHAR_PetAddVariableAi( int petindex, int iValue );
-void CHAR_PartyUpdate( int charaindex, int senddata );
-char *CHAR_getUseName( int charaindex );
-char *CHAR_getUseID( int charaindex );
+void CHAR_PartyUpdate( int char_index, int senddata );
+char *CHAR_getUseName( int char_index );
+char *CHAR_getUseID( int char_index );
 EXTERN int EnemyMoveNum;	/*   凛卞  嫖  仃月衬及醒 */
 
 #define DB_DUELPOINT	"db_duel"			// 犯亘巨伙禾奶件玄犯□正矛□旦
 #define DB_ADDRESSBOOK	"db_addressbook"	// 失玉伊旦皮永弁犯□正矛□旦
 
-BOOL CHAR_send_DpDBUpdate( int charaindex );
-BOOL CHAR_send_DpDBUpdate_AddressBook( int charaindex, int mode );
+BOOL CHAR_send_DpDBUpdate( int char_index );
+BOOL CHAR_send_DpDBUpdate_AddressBook( int char_index, int mode );
 
 
-void CHAR_sendPMEToArroundCharacter( int charaindex, int petindex, int flg, int no );
+void CHAR_sendPMEToArroundCharacter( int char_index, int petindex, int flg, int no );
 void CHAR_sendPMEToArroundCharacterFLXY( int petindex, 
 								int fl, int x, int y, int dir, int flg, int no );
 
 void CHAR_sendSEoArroundCharacter( int fl, int x, int y, int senumber, int sw );
 
 BOOL CHAR_initEffectSetting( char* filename );
-void CHAR_checkEffect( int charaindex);
+void CHAR_checkEffect( int char_index);
 void CHAR_checkEffectLoop( void);
 void CHAR_initDebugChatCdkey( void);
 int CHAR_setChatMagicCDKey( int mode, char *cdkey);
 
 
-float GetRecoveryRate( int charaindex );
+float GetRecoveryRate( int char_index );
 int storeCharaData( void );
 #ifdef _MAGIC_REHPAI	//补血AI
 int Magic_RideGetHP( int toindex, int petindex, int flg);
@@ -734,7 +734,7 @@ int                    CHAR_effectnum;
 #endif
 
 #ifdef _ITEM_PILENUMS
-int CHAR_getMyMaxPilenum( int charaindex);
+int CHAR_getMyMaxPilenum( int char_index);
 #endif
 
 #ifdef _PET_LOSTPET
@@ -746,24 +746,24 @@ void InitHeroList( void);
 
 
 #ifdef _STREET_VENDOR
-void CHAR_sendStreetVendor(int charaindex,char *message);
-void CHAR_sendStreetVendorDataToCli(int charaindex,int toindex);
-void CHAR_sendStreetVendorOneDataToCli(int charaindex,int toindex,int sendindex);
+void CHAR_sendStreetVendor(int char_index,char *message);
+void CHAR_sendStreetVendorDataToCli(int char_index,int toindex);
+void CHAR_sendStreetVendorOneDataToCli(int char_index,int toindex,int sendindex);
 #endif
 
 BOOL checkUnlawWarpFloor( int floor);
 
 #ifdef _HELP_NEWHAND
-void CHAR_loginAddItemForNew( int charaindex );
+void CHAR_loginAddItemForNew( int char_index );
 #endif
 
 #ifdef _JOBDAILY
-void CHAR_JobDaily(int charaindex,char *data);
+void CHAR_JobDaily(int char_index,char *data);
 #endif
 
 #ifdef _TEACHER_SYSTEM
-void CHAR_Teacher_system(int charaindex,char *data);
-void CHAR_Teacher_system_View(int charaindex,int iOnLine,char *data);
+void CHAR_Teacher_system(int char_index,char *data);
+void CHAR_Teacher_system_View(int char_index,int iOnLine,char *data);
 #endif
 
 #ifdef _TIME_TICKET
@@ -772,21 +772,21 @@ int check_TimeTicketMap(int floor);
 #endif
 
 #ifdef _ANGEL_SUMMON
-int checkIfAngel( int charaindex);
-int checkIfOnlyAngel( int charaindex);
-void selectAngel( int charaindex, int heroindex, int mission, int gm_cmd);
-char* getMissionNameInfo( int charaindex, char* nameinfo);
+int checkIfAngel( int char_index);
+int checkIfOnlyAngel( int char_index);
+void selectAngel( int char_index, int heroindex, int mission, int gm_cmd);
+char* getMissionNameInfo( int char_index, char* nameinfo);
 void CHAR_sendAngelMark( int objindex, int flag);
-void Use_AngelToken( int charaindex, int toindex, int haveitemindex );
-void Use_HeroToken( int charaindex, int toindex, int haveitemindex );
+void Use_AngelToken( int char_index, int toindex, int haveitem_index );
+void Use_HeroToken( int char_index, int toindex, int haveitem_index );
 int AngelCreate( int angelindex);
 void sendAngelCleanToCli( int fd);
 #endif
 #ifdef _ITEM_CHECKDROPATLOGOUT
-BOOL CheckDropatLogout(int charaindex );
+BOOL CheckDropatLogout(int char_index );
 #endif
 #ifdef _ROOKIE_ITEM
-void CHAR_CheckUserItem( int charaindex );
+void CHAR_CheckUserItem( int char_index );
 #endif
 #endif
 

@@ -19,18 +19,18 @@ int numrow = 0;
 int numfields = 0;
 static int setVipPoint(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int point = luaL_checkint(L, 2);
 
-  sasql_setVipPoint(charaindex, point);
+  sasql_setVipPoint(char_index, point);
 	return 1;
 }
 
 static int getVipPoint(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, sasql_getVipPoint(charaindex));
+	lua_pushinteger(L, sasql_getVipPoint(char_index));
 	return 1;
 }
 
@@ -54,18 +54,18 @@ static int getVipPointForCdkey(lua_State *L)
 
 static int setPayPoint(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int point = luaL_checkint(L, 2);
 
-  sasql_setPayPoint(charaindex, point);
+  sasql_setPayPoint(char_index, point);
 	return 1;
 }
 
 static int getPayPoint(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, sasql_getPayPoint(charaindex));
+	lua_pushinteger(L, sasql_getPayPoint(char_index));
 	return 1;
 }
 
@@ -73,18 +73,18 @@ static int getPayPoint(lua_State *L)
 #ifdef _GAMBLE_POINT
 static int setGamblePoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int point = luaL_checkint(L, 2);
 
-  sasql_setGamblePoint(charaindex, point);
+  sasql_setGamblePoint(char_index, point);
 	return 1;
 }
 
 static int getGamblePoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, sasql_getGamblePoint(charaindex));
+	lua_pushinteger(L, sasql_getGamblePoint(char_index));
 	return 1;
 }
 #endif
@@ -92,18 +92,18 @@ static int getGamblePoint(lua_State *L)
 #ifdef _TRIAL_POINT
 static int setTrialPoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int point = luaL_checkint(L, 2);
 
-  sasql_setTrialPoint(charaindex, point);
+  sasql_setTrialPoint(char_index, point);
 	return 1;
 }
 
 static int getTrialPoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, sasql_getTrialPoint(charaindex));
+	lua_pushinteger(L, sasql_getTrialPoint(char_index));
 	return 1;
 }
 #endif
@@ -111,18 +111,18 @@ static int getTrialPoint(lua_State *L)
 #ifdef _GLORY_POINT
 static int setGloryPoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int point = luaL_checkint(L, 2);
 
-  sasql_setGloryPoint(charaindex, point);
+  sasql_setGloryPoint(char_index, point);
 	return 1;
 }
 
 static int getGloryPoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, sasql_getGloryPoint(charaindex));
+	lua_pushinteger(L, sasql_getGloryPoint(char_index));
 	return 1;
 }
 #endif
@@ -199,35 +199,35 @@ static int data(lua_State *L)
 #ifdef _NEW_SQL_MONEY
 static int setSQLPoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int point = luaL_checkint(L, 2);
 
-  sasql_setSQLPoint(charaindex, point);
+  sasql_setSQLPoint(char_index, point);
 	return 1;
 }
 
 static int getSQLPoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, sasql_getSQLPoint(charaindex));
+	lua_pushinteger(L, sasql_getSQLPoint(char_index));
 	return 1;
 }
 
 static int setGoldPoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int point = luaL_checkint(L, 2);
 
-  sasql_setGoldPoint(charaindex, point);
+  sasql_setGoldPoint(char_index, point);
 	return 1;
 }
 
 static int getGoldPoint(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
-	lua_pushinteger(L, sasql_getGoldPoint(charaindex));
+	lua_pushinteger(L, sasql_getGoldPoint(char_index));
 	return 1;
 }
 static int setSQLPointByCdkey(lua_State *L)

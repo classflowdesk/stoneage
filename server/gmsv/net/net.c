@@ -1,8 +1,10 @@
 #define __NET_C__
 #include "version.h"
-#include "linux_platform.h"
-#include <errno.h>
-//
+// common libs
+#include "gmsv_server.h"
+#include "saac_client.h"
+#include "util.h"
+// gmsv
 #include "net.h"
 #include "buf.h"
 #include "char.h"
@@ -11,11 +13,8 @@
 #include "handletime.h"
 #include "item_event.h"
 #include "log.h"
-#include "lssproto_serv.h"
 #include "msignal.h"
 #include "object.h"
-#include "saacproto_cli.h"
-#include "util.h"
 // Arminius 7.31 cursed stone
 #include "battle.h"
 #include "char_talk.h"
@@ -175,7 +174,7 @@ typedef struct tagCONNECT {
   LoginType state;        /* �ػ�������̼����� */
   int nstatecount;
   char charname[CHARNAMELEN]; /* ����̼��w��ƽ�ҷo */
-  int charaindex; /* char?�d�߼��̼������͵��z
+  int char_index; /* char?�d�߼��̼������͵��z
                    * ����̼�ԉ�����ɬ�ý�ľ�©z-1�������ɻ���
                    * ?�d��ئ���ݩz
                    */
@@ -250,13 +249,13 @@ typedef struct tagCONNECT {
   // Arminius 7.31: cursed stone
   int stayencount;
 
-  int battlecharaindex[CONNECT_WINDOWBUFSIZE];
-  int duelcharaindex[CONNECT_WINDOWBUFSIZE];
-  int tradecardcharaindex[CONNECT_WINDOWBUFSIZE];
-  int joinpartycharaindex[CONNECT_WINDOWBUFSIZE];
+  int battlechar_index[CONNECT_WINDOWBUFSIZE];
+  int duelchar_index[CONNECT_WINDOWBUFSIZE];
+  int tradecardchar_index[CONNECT_WINDOWBUFSIZE];
+  int joinpartychar_index[CONNECT_WINDOWBUFSIZE];
 
   // CoolFish: Trade 2001/4/18
-  int tradecharaindex[CONNECT_WINDOWBUFSIZE];
+  int tradechar_index[CONNECT_WINDOWBUFSIZE];
   int errornum;
   int fdid;
   int close_request; // the second have this
@@ -646,7 +645,7 @@ ANY_THREAD BOOL initConnectOne(int sockfd, struct sockaddr_in *sin, int len) {
   Connect[sockfd].state = NULLCONNECT;
   Connect[sockfd].nstatecount = 0;
   memset(Connect[sockfd].charname, 0, sizeof(Connect[sockfd].charname));
-  Connect[sockfd].charaindex = -1;
+  Connect[sockfd].char_index = -1;
 
   Connect[sockfd].CAbufsiz = 0;
   Connect[sockfd].CDbufsiz = 0;
@@ -789,15 +788,15 @@ ANY_THREAD BOOL _CONNECT_endOne(char *file, int fromline, int sockfd, int line) 
   }
   Connect[sockfd].use = FALSE;
   if (Connect[sockfd].ctype == CLI &&
-      CHAR_CHECKINDEX(Connect[sockfd].charaindex) == TRUE) {
+      CHAR_CHECKINDEX(Connect[sockfd].char_index) == TRUE) {
     CONNECT_UNLOCK_ARG2(sockfd, line);
 #ifdef _OFFLINE_SYSTEM
-    if (CHAR_getWorkInt(Connect[sockfd].charaindex, CHAR_WORK_OFFLINE) != 0) {
-      CHAR_setWorkInt(Connect[sockfd].charaindex, CHAR_WORKFD, -1);
+    if (CHAR_getWorkInt(Connect[sockfd].char_index, CHAR_WORK_OFFLINE) != 0) {
+      CHAR_setWorkInt(Connect[sockfd].char_index, CHAR_WORKFD, -1);
     } else
 #endif
     {
-      if (!CHAR_logout(Connect[sockfd].charaindex, TRUE)) {
+      if (!CHAR_logout(Connect[sockfd].char_index, TRUE)) {
       }
       print("Connect cd key=%s.\n", Connect[sockfd].cdkey);
     }
@@ -861,7 +860,7 @@ ANY_THREAD BOOL _CONNECT_endOne(char *file, int fromline, int sockfd, int line) 
     }
   }
 #endif
-  Connect[sockfd].charaindex = -1;
+  Connect[sockfd].char_index = -1;
   Connect[sockfd].wbuse = 0;
   Connect[sockfd].rbuse = 0;
   Connect[sockfd].CAbufsiz = 0;
@@ -881,7 +880,7 @@ SINGLETHREAD BOOL initConnect(int size) {
 
   for (i = 0; i < size; i++) {
     memset(&Connect[i], 0, sizeof(CONNECT));
-    Connect[i].charaindex = -1;
+    Connect[i].char_index = -1;
     Connect[i].rb = calloc(1, RBSIZE);
 
     if (Connect[i].rb == NULL) {
@@ -1007,13 +1006,13 @@ ANY_THREAD void endConnect(void) {
 
 ANY_THREAD BOOL CONNECT_appendCAbuf(int fd, char *data, int size) {
 #ifdef _MASK_ENCOUNTER
-  int charaindex = CONNECT_getCharaindex(fd);
-  if (charaindex > -1) {
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) != CHAR_PARTY_CLIENT) {
+  int char_index = CONNECT_getCharaindex(fd);
+  if (char_index > -1) {
+    if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) != CHAR_PARTY_CLIENT) {
       if (getStayEncount(fd))
         return FALSE;
     } else {
-      int oyaindex = CHAR_getWorkInt(charaindex, CHAR_WORKPARTYINDEX1);
+      int oyaindex = CHAR_getWorkInt(char_index, CHAR_WORKPARTYINDEX1);
       if (getStayEncount(getfdFromCharaIndex(oyaindex)))
         return FALSE;
     }
@@ -1225,7 +1224,7 @@ ANY_THREAD void CONNECT_setCharaindex(int fd, int a) {
     return;
   }
   CONNECT_LOCK(fd);
-  Connect[fd].charaindex = a;
+  Connect[fd].char_index = a;
   CONNECT_UNLOCK(fd);
 }
 ANY_THREAD int CONNECT_getCharaindex(int fd) {
@@ -1234,7 +1233,7 @@ ANY_THREAD int CONNECT_getCharaindex(int fd) {
   }
   int a;
   CONNECT_LOCK(fd);
-  a = Connect[fd].charaindex;
+  a = Connect[fd].char_index;
   CONNECT_UNLOCK(fd);
   return a;
 }
@@ -1359,69 +1358,69 @@ ANY_THREAD int CONNECT_getFdid(int fd) {
   CONNECT_UNLOCK(fd);
   return a;
 }
-ANY_THREAD void CONNECT_setDuelcharaindex(int fd, int i, int a) {
+ANY_THREAD void CONNECT_setDuelchar_index(int fd, int i, int a) {
   if (fd < 0 || fd >= ConnectLen) {
     return;
   }
   CONNECT_LOCK(fd);
-  Connect[fd].duelcharaindex[i] = a;
+  Connect[fd].duelchar_index[i] = a;
   CONNECT_UNLOCK(fd);
 }
-ANY_THREAD int CONNECT_getDuelcharaindex(int fd, int i) {
+ANY_THREAD int CONNECT_getDuelchar_index(int fd, int i) {
   if (fd < 0 || fd >= ConnectLen) {
     return -1;
   }
   int a;
   CONNECT_LOCK(fd);
-  a = Connect[fd].duelcharaindex[i];
+  a = Connect[fd].duelchar_index[i];
   CONNECT_UNLOCK(fd);
   return a;
 }
-ANY_THREAD void CONNECT_setBattlecharaindex(int fd, int i, int a) {
+ANY_THREAD void CONNECT_setBattlechar_index(int fd, int i, int a) {
   if (fd < 0 || fd >= ConnectLen) {
     return;
   }
   CONNECT_LOCK(fd);
-  Connect[fd].battlecharaindex[i] = a;
+  Connect[fd].battlechar_index[i] = a;
   CONNECT_UNLOCK(fd);
 }
-ANY_THREAD int CONNECT_getBattlecharaindex(int fd, int i) {
+ANY_THREAD int CONNECT_getBattlechar_index(int fd, int i) {
   if (fd < 0 || fd >= ConnectLen) {
     return -1;
   }
   int a;
   CONNECT_LOCK(fd);
-  a = Connect[fd].battlecharaindex[i];
+  a = Connect[fd].battlechar_index[i];
   CONNECT_UNLOCK(fd);
   return a;
 }
-ANY_THREAD void CONNECT_setJoinpartycharaindex(int fd, int i, int a) {
+ANY_THREAD void CONNECT_setJoinpartychar_index(int fd, int i, int a) {
   if (fd < 0 || fd >= ConnectLen) {
     return;
   }
   CONNECT_LOCK(fd);
-  Connect[fd].joinpartycharaindex[i] = a;
+  Connect[fd].joinpartychar_index[i] = a;
   CONNECT_UNLOCK(fd);
 }
-ANY_THREAD int CONNECT_getJoinpartycharaindex(int fd, int i) {
+ANY_THREAD int CONNECT_getJoinpartychar_index(int fd, int i) {
   if (fd < 0 || fd >= ConnectLen) {
     return -1;
   }
   int a;
   CONNECT_LOCK(fd);
 
-  a = Connect[fd].joinpartycharaindex[i];
+  a = Connect[fd].joinpartychar_index[i];
   CONNECT_UNLOCK(fd);
   return a;
 }
 
 // CoolFish: Trade 2001/4/18
-ANY_THREAD void CONNECT_setTradecharaindex(int fd, int i, int a) {
+ANY_THREAD void CONNECT_setTradechar_index(int fd, int i, int a) {
   if (fd < 0 || fd >= ConnectLen) {
     return;
   }
   CONNECT_LOCK(fd);
-  Connect[fd].tradecharaindex[i] = a;
+  Connect[fd].tradechar_index[i] = a;
   CONNECT_UNLOCK(fd);
 }
 
@@ -1509,21 +1508,21 @@ ANY_THREAD void CONNECT_getTradeTmp(int fd, char *trademsg, int trademsglen) {
   CONNECT_UNLOCK(fd);
 }
 
-ANY_THREAD void CONNECT_setTradecardcharaindex(int fd, int i, int a) {
+ANY_THREAD void CONNECT_setTradecardchar_index(int fd, int i, int a) {
   if (fd < 0 || fd >= ConnectLen) {
     return;
   }
   CONNECT_LOCK(fd);
-  Connect[fd].joinpartycharaindex[i] = a;
+  Connect[fd].joinpartychar_index[i] = a;
   CONNECT_UNLOCK(fd);
 }
-ANY_THREAD int CONNECT_getTradecardcharaindex(int fd, int i) {
+ANY_THREAD int CONNECT_getTradecardchar_index(int fd, int i) {
   if (fd < 0 || fd >= ConnectLen) {
     return -1;
   }
   int a;
   CONNECT_LOCK(fd);
-  a = Connect[fd].joinpartycharaindex[i];
+  a = Connect[fd].joinpartychar_index[i];
   CONNECT_UNLOCK(fd);
   return a;
 }
@@ -1532,45 +1531,24 @@ ANY_THREAD void CONNECT_setCloseRequest(int fd, int count) {
   if (fd < 0 || fd >= ConnectLen) {
     return;
   }
-  //    print("\n�ر���������Ϊ FILE:%s,LINE:%d ", file, line);
   CONNECT_LOCK(fd);
   Connect[fd].close_request = count;
-  // Nuke
-  //    print("\n�ر���������Ϊ %d ",fd);
   CONNECT_UNLOCK(fd);
 }
 
-/*------------------------------------------------------------
- * CAcheck �ʤɤ˻Ȥ���ؿ����ºݤ����롣
- * ����
- *  fd      int     �ե�����ǥ�������ץ�
- * �֤���
- *  �ʤ�
- ------------------------------------------------------------*/
 ANY_THREAD void CAsend(int fd) {
   char buf[sizeof(Connect[0].CAbuf)];
   int bufuse = 0;
-
   if (CONNECT_getCAbuf(fd, buf, sizeof(buf), &bufuse) < 0)
     return;
   if (bufuse == 0)
     return;
-
   // print("\nshan--->(CAsend)->%s fd->%d", buf, fd);
-
-  /*�Ǹ�Υǥ�ߥ� ',' ��'\0' �Ȥ�����*/
   buf[bufuse - 1] = '\0';
-  lssproto_CA_send(fd, buf);
-
+  GmsvServer_CA_send(fd, buf);
   CONNECT_setCAbufsiz(fd, 0);
 }
 
-/*------------------------------------------------------------
- * CA�����롣
- * ����
- * �֤���
- *  �ʤ�
- ------------------------------------------------------------*/
 ANY_THREAD void CAcheck(void) {
   int i;
 #ifdef _SYSTEM_SPEAD
@@ -1578,8 +1556,6 @@ ANY_THREAD void CAcheck(void) {
 #else
   unsigned int interval_us = getCAsendinterval_ms() * 1000;
 #endif
-
-  /* Connect�������з���֧�¾��պ����Ϸ�ئ�� */
   for (i = 0; i < ConnectLen; i++) {
     struct timeval t;
     if (!CONNECT_getUse_debug(i, 1008))
@@ -1591,24 +1567,14 @@ ANY_THREAD void CAcheck(void) {
     }
   }
 }
-ANY_THREAD void CAflush(int charaindex) {
+ANY_THREAD void CAflush(int char_index) {
   int i;
-  i = getfdFromCharaIndex(charaindex);
+  i = getfdFromCharaIndex(char_index);
   if (i == -1)
     return;
   CAsend(i);
 }
 
-/*------------------------------------------------------------
- * CDbuf ���ɲä��롣
- * ����
- *  fd      int     �ե�����ǥ�������ץ�
- *  data    char*   �ǡ���
- *  size    int     �ǡ����Υ�����
- * �֤���
- *  ����    TRUE(1)
- *  ����    FALSE(0)
- ------------------------------------------------------------*/
 ANY_THREAD BOOL CONNECT_appendCDbuf(int fd, char *data, int size) {
   CONNECT_LOCK(fd);
 
@@ -1641,7 +1607,7 @@ ANY_THREAD void CDsend(int fd) {
   if (bufuse == 0)
     return;
   buf[bufuse - 1] = '\0';
-  lssproto_CD_send(fd, buf);
+  GmsvServer_CD_send(fd, buf);
   CONNECT_setCDbufsiz(fd, 0);
 }
 
@@ -1663,9 +1629,9 @@ ANY_THREAD void CDcheck(void) {
   }
 }
 
-ANY_THREAD void CDflush(int charaindex) {
+ANY_THREAD void CDflush(int char_index) {
   int i;
-  i = getfdFromCharaIndex(charaindex);
+  i = getfdFromCharaIndex(char_index);
   if (i == -1)
     return;
   CDsend(i);
@@ -1745,14 +1711,14 @@ ANY_THREAD int getfdFromCdkey(const char *cd) {
   return -1;
 }
 
-ANY_THREAD int getfdFromCharaIndex(int charaindex) {
+ANY_THREAD int getfdFromCharaIndex(int char_index) {
 #if 1
   int ret;
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return -1;
-  if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) != CHAR_TYPEPLAYER)
+  if (CHAR_getInt(char_index, CHAR_WHICHTYPE) != CHAR_TYPEPLAYER)
     return -1;
-  ret = CHAR_getWorkInt(charaindex, CHAR_WORKFD);
+  ret = CHAR_getWorkInt(char_index, CHAR_WORKFD);
   if (ret < 0 || ret >= ConnectLen)
     return -1;
   return ret;
@@ -1760,7 +1726,7 @@ ANY_THREAD int getfdFromCharaIndex(int charaindex) {
   int i;
   for (i = 0; i < ConnectLen; i++) {
     CONNECT_LOCK(i);
-    if (Connect[i].use == TRUE && Connect[i].charaindex == charaindex) {
+    if (Connect[i].use == TRUE && Connect[i].char_index == char_index) {
       CONNECT_UNLOCK(i);
       return i;
     }
@@ -1770,11 +1736,11 @@ ANY_THREAD int getfdFromCharaIndex(int charaindex) {
 #endif
 }
 
-ANY_THREAD int getcdkeyFromCharaIndex(int charaindex, char *out, int outlen) {
+ANY_THREAD int getcdkeyFromCharaIndex(int char_index, char *out, int outlen) {
   int i;
   for (i = 0; i < ConnectLen; i++) {
     CONNECT_LOCK(i);
-    if (Connect[i].use == TRUE && Connect[i].charaindex == charaindex) {
+    if (Connect[i].use == TRUE && Connect[i].char_index == char_index) {
       snprintf(out, outlen, "%s", Connect[i].cdkey);
       CONNECT_UNLOCK(i);
       return 0;
@@ -1802,8 +1768,8 @@ ANY_THREAD int getCharindexFromFdid(int fdid) {
   for (i = 0; i < ConnectLen; i++) {
     CONNECT_LOCK(i);
     if (Connect[i].use == TRUE && Connect[i].fdid == fdid &&
-        Connect[i].charaindex >= 0) {
-      const int char_index = Connect[i].charaindex;
+        Connect[i].char_index >= 0) {
+      const int char_index = Connect[i].char_index;
       CONNECT_UNLOCK(i);
       return char_index;
     }
@@ -1816,7 +1782,7 @@ ANY_THREAD int getFdidFromCharaIndex(int charind) {
   int i;
   for (i = 0; i < ConnectLen; i++) {
     CONNECT_LOCK(i);
-    if (Connect[i].use == TRUE && Connect[i].charaindex == charind) {
+    if (Connect[i].use == TRUE && Connect[i].char_index == charind) {
       const int fdid = Connect[i].fdid;
       CONNECT_UNLOCK(i);
       return fdid;
@@ -1943,26 +1909,26 @@ void CONNECT_SysEvent_Loop(void) {
     }
 #endif
     int playernum = CHAR_getPlayerMaxNum();
-    int charaindex;
-    for (charaindex = 0; charaindex < playernum; charaindex++) {
-      if (!CHAR_CHECKINDEX(charaindex))
+    int char_index;
+    for (char_index = 0; char_index < playernum; char_index++) {
+      if (!CHAR_CHECKINDEX(char_index))
         continue;
 #ifdef _CANCEL_STREET_VENDOR
       char token[256];
-      if (CHAR_getWorkInt(charaindex, CHAR_WORKSTREETVENDOR) == 3) {
-        if (CHAR_getWorkInt(charaindex, CHAR_WORK_STREET_VENDOR_TIME) <
+      if (CHAR_getWorkInt(char_index, CHAR_WORKSTREETVENDOR) == 3) {
+        if (CHAR_getWorkInt(char_index, CHAR_WORK_STREET_VENDOR_TIME) <
             time(NULL) - 90) {
-          int toindex = CHAR_getWorkInt(charaindex, CHAR_WORKSTREETVENDOR_WHO);
+          int toindex = CHAR_getWorkInt(char_index, CHAR_WORKSTREETVENDOR_WHO);
           // �����趨Ϊ��̯,�����״̬
-          CHAR_setWorkInt(charaindex, CHAR_WORKSTREETVENDOR, -1);
+          CHAR_setWorkInt(char_index, CHAR_WORKSTREETVENDOR, -1);
           CHAR_setWorkInt(toindex, CHAR_WORKSTREETVENDOR, 1);
           // �������ͼʾ
-          CHAR_sendTradeEffect(charaindex, 0);
+          CHAR_sendTradeEffect(char_index, 0);
           CHAR_sendTradeEffect(toindex, 0);
           CHAR_setWorkInt(toindex, CHAR_WORKSTREETVENDOR_WHO, -1);
-          CHAR_setWorkInt(charaindex, CHAR_WORKSTREETVENDOR_WHO, -1);
-          lssproto_STREET_VENDOR_send(charaindex, "C|");
-          CHAR_talkToCli(charaindex, -1, "�鿴��̯ʱ�����,�����Զ�ȡ����Ĳ鿴",
+          CHAR_setWorkInt(char_index, CHAR_WORKSTREETVENDOR_WHO, -1);
+          GmsvServer_STREET_VENDOR_send(char_index, "C|");
+          CHAR_talkToCli(char_index, -1, "�鿴��̯ʱ�����,�����Զ�ȡ����Ĳ鿴",
                          CHAR_COLORYELLOW);
         }
       }
@@ -1970,31 +1936,31 @@ void CONNECT_SysEvent_Loop(void) {
       if (chikulatime % 6 == 0) { // ÿ60��
 
 #ifdef _PETSKILL_BECOMEPIG
-        if (CHAR_getInt(charaindex, CHAR_BECOMEPIG) > -1) { // ���������״̬
+        if (CHAR_getInt(char_index, CHAR_BECOMEPIG) > -1) { // ���������״̬
 
-          if ((CHAR_getInt(charaindex, CHAR_BECOMEPIG) - 1) <=
+          if ((CHAR_getInt(char_index, CHAR_BECOMEPIG) - 1) <=
               0) { // ����ʱ�������
-            CHAR_setInt(charaindex, CHAR_BECOMEPIG, 0);
+            CHAR_setInt(char_index, CHAR_BECOMEPIG, 0);
 
-            if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+            if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
                 BATTLE_CHARMODE_NONE) { // ������ս��״̬��
-              CHAR_setInt(charaindex, CHAR_BECOMEPIG, -1); // ��������״̬
-              CHAR_complianceParameter(charaindex);
+              CHAR_setInt(char_index, CHAR_BECOMEPIG, -1); // ��������״̬
+              CHAR_complianceParameter(char_index);
               CHAR_sendCToArroundCharacter(
-                  CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX));
-              CHAR_send_P_StatusString(charaindex,
+                  CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
+              CHAR_send_P_StatusString(char_index,
                                        CHAR_P_STRING_BASEBASEIMAGENUMBER);
-              CHAR_talkToCli(charaindex, -1, "������ʧЧ�ˡ�", CHAR_COLORWHITE);
+              CHAR_talkToCli(char_index, -1, "������ʧЧ�ˡ�", CHAR_COLORWHITE);
             }
           } else {
-            CHAR_setInt(charaindex, CHAR_BECOMEPIG,
-                        CHAR_getInt(charaindex, CHAR_BECOMEPIG) - 10);
+            CHAR_setInt(char_index, CHAR_BECOMEPIG,
+                        CHAR_getInt(char_index, CHAR_BECOMEPIG) - 10);
           }
         }
 #endif
 
 #ifdef _SPECIAL_MAP
-        int floor = CHAR_getInt(charaindex, CHAR_FLOOR);
+        int floor = CHAR_getInt(char_index, CHAR_FLOOR);
         int x;
         for (x = 0; x < 32; x++) {
           if (floor == getSpecialMap(x)) {
@@ -2005,13 +1971,13 @@ void CONNECT_SysEvent_Loop(void) {
 #endif
         {
 #ifdef _BOUND_TIME
-          if (CHAR_getInt(charaindex, CHAR_BOUNDTIME) <= NowTimes) {
+          if (CHAR_getInt(char_index, CHAR_BOUNDTIME) <= NowTimes) {
             int fl = 0, x = 0, y = 0;
-            CHAR_getElderPosition(CHAR_getInt(charaindex, CHAR_LASTTALKELDER),
+            CHAR_getElderPosition(CHAR_getInt(char_index, CHAR_LASTTALKELDER),
                                   &fl, &x, &y);
-            CHAR_warpToSpecificPoint(charaindex, fl, x, y);
+            CHAR_warpToSpecificPoint(char_index, fl, x, y);
 
-            CHAR_talkToCli(charaindex, -1,
+            CHAR_talkToCli(char_index, -1,
                            "���������Ȩʱ���ѵ������԰����ͻؼ�¼�"
                            "㣡",
                            CHAR_COLORYELLOW);
@@ -2024,32 +1990,32 @@ void CONNECT_SysEvent_Loop(void) {
 
 #ifdef _ITEM_ADDEXP // vincent ��������
 #ifdef _PET_ADD_EXP
-        if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+        if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
           int exptime;
-          if (CHAR_getWorkInt(charaindex, CHAR_WORKITEM_ADDEXP) > 0) {
+          if (CHAR_getWorkInt(char_index, CHAR_WORKITEM_ADDEXP) > 0) {
             exptime =
-                CHAR_getWorkInt(charaindex, CHAR_WORKITEM_ADDEXPTIME) - 300;
+                CHAR_getWorkInt(char_index, CHAR_WORKITEM_ADDEXPTIME) - 300;
 
             if (exptime <= 0) {
-              CHAR_setWorkInt(charaindex, CHAR_WORKITEM_ADDEXP, 0);
-              CHAR_setWorkInt(charaindex, CHAR_WORKITEM_ADDEXPTIME, 0);
-              CHAR_talkToCli(charaindex, -1, "����ѧϰ�����������ʧ��!",
+              CHAR_setWorkInt(char_index, CHAR_WORKITEM_ADDEXP, 0);
+              CHAR_setWorkInt(char_index, CHAR_WORKITEM_ADDEXPTIME, 0);
+              CHAR_talkToCli(char_index, -1, "����ѧϰ�����������ʧ��!",
                              CHAR_COLORYELLOW);
             } else {
-              CHAR_setWorkInt(charaindex, CHAR_WORKITEM_ADDEXPTIME, exptime);
+              CHAR_setWorkInt(char_index, CHAR_WORKITEM_ADDEXPTIME, exptime);
               // print("\n ���ADDEXPTIME %d ", exptime);
 
               if ((exptime % (60 * 60)) < 300 && exptime >= (60 * 60)) {
                 char msg[1024];
                 sprintf(msg, "��������ѧϰ���������ʣ��Լ %d Сʱ��",
                         (int)(exptime / (60 * 60)));
-                CHAR_talkToCli(charaindex, -1, msg, CHAR_COLORYELLOW);
+                CHAR_talkToCli(char_index, -1, msg, CHAR_COLORYELLOW);
               }
             }
           }
           int i;
           for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-            int petindex = CHAR_getCharPet(charaindex, i);
+            int petindex = CHAR_getCharPet(char_index, i);
             if (!CHAR_CHECKINDEX(petindex))
               continue;
             if (CHAR_getWorkInt(petindex, CHAR_WORKITEM_ADDEXP) > 0) {
@@ -2059,7 +2025,7 @@ void CONNECT_SysEvent_Loop(void) {
               if (exptime <= 0) {
                 CHAR_setWorkInt(petindex, CHAR_WORKITEM_ADDEXP, 0);
                 CHAR_setWorkInt(petindex, CHAR_WORKITEM_ADDEXPTIME, 0);
-                CHAR_talkToCli(charaindex, -1, "����ѧϰ�����������ʧ��!",
+                CHAR_talkToCli(char_index, -1, "����ѧϰ�����������ʧ��!",
                                CHAR_COLORYELLOW);
               } else {
                 CHAR_setWorkInt(petindex, CHAR_WORKITEM_ADDEXPTIME, exptime);
@@ -2070,25 +2036,25 @@ void CONNECT_SysEvent_Loop(void) {
                   sprintf(msg, "����%s����ѧϰ���������ʣ��Լ %d Сʱ��",
                           CHAR_getChar(petindex, CHAR_NAME),
                           (int)(exptime / (60 * 60)));
-                  CHAR_talkToCli(charaindex, -1, msg, CHAR_COLORYELLOW);
+                  CHAR_talkToCli(char_index, -1, msg, CHAR_COLORYELLOW);
                 }
               }
             }
           }
         }
 #else
-        if (CHAR_getWorkInt(charaindex, CHAR_WORKITEM_ADDEXP) > 0 &&
-            CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+        if (CHAR_getWorkInt(char_index, CHAR_WORKITEM_ADDEXP) > 0 &&
+            CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
           int exptime;
-          exptime = CHAR_getWorkInt(charaindex, CHAR_WORKITEM_ADDEXPTIME) - 300;
+          exptime = CHAR_getWorkInt(char_index, CHAR_WORKITEM_ADDEXPTIME) - 300;
 
           if (exptime <= 0) {
-            CHAR_setWorkInt(charaindex, CHAR_WORKITEM_ADDEXP, 0);
-            CHAR_setWorkInt(charaindex, CHAR_WORKITEM_ADDEXPTIME, 0);
-            CHAR_talkToCli(charaindex, -1, "����ѧϰ�����������ʧ��!",
+            CHAR_setWorkInt(char_index, CHAR_WORKITEM_ADDEXP, 0);
+            CHAR_setWorkInt(char_index, CHAR_WORKITEM_ADDEXPTIME, 0);
+            CHAR_talkToCli(char_index, -1, "����ѧϰ�����������ʧ��!",
                            CHAR_COLORYELLOW);
           } else {
-            CHAR_setWorkInt(charaindex, CHAR_WORKITEM_ADDEXPTIME, exptime);
+            CHAR_setWorkInt(char_index, CHAR_WORKITEM_ADDEXPTIME, exptime);
             // print("\n ���ADDEXPTIME %d ", exptime);
 
             if ((exptime % (60 * 60)) < 300 && exptime >= (60 * 60)) {
@@ -2097,77 +2063,77 @@ void CONNECT_SysEvent_Loop(void) {
                       (int)(exptime / (60 * 60)));
               // sprintf( msg, "����ѧϰ���������ʣ��Լ %d �֡�", (int)(exptime/(60))
               // );
-              CHAR_talkToCli(charaindex, -1, msg, CHAR_COLORYELLOW);
+              CHAR_talkToCli(char_index, -1, msg, CHAR_COLORYELLOW);
             }
           }
-          CHAR_setInt(charaindex, CHAR_ADDEXPPOWER,
-                      CHAR_getWorkInt(charaindex, CHAR_WORKITEM_ADDEXP));
-          CHAR_setInt(charaindex, CHAR_ADDEXPTIME,
-                      CHAR_getWorkInt(charaindex, CHAR_WORKITEM_ADDEXPTIME));
+          CHAR_setInt(char_index, CHAR_ADDEXPPOWER,
+                      CHAR_getWorkInt(char_index, CHAR_WORKITEM_ADDEXP));
+          CHAR_setInt(char_index, CHAR_ADDEXPTIME,
+                      CHAR_getWorkInt(char_index, CHAR_WORKITEM_ADDEXPTIME));
         }
 #endif
 
 #endif
 #ifdef _ITEM_METAMO
-        if (CHAR_getWorkInt(charaindex, CHAR_WORKITEMMETAMO) < NowTime.tv_sec &&
-            CHAR_getWorkInt(charaindex, CHAR_WORKITEMMETAMO) != 0) {
-          CHAR_setWorkInt(charaindex, CHAR_WORKITEMMETAMO, 0);
-          CHAR_setWorkInt(charaindex, CHAR_WORKNPCMETAMO,
+        if (CHAR_getWorkInt(char_index, CHAR_WORKITEMMETAMO) < NowTime.tv_sec &&
+            CHAR_getWorkInt(char_index, CHAR_WORKITEMMETAMO) != 0) {
+          CHAR_setWorkInt(char_index, CHAR_WORKITEMMETAMO, 0);
+          CHAR_setWorkInt(char_index, CHAR_WORKNPCMETAMO,
                           0); // ��npc�Ի���ı���ҲҪ�����
-          CHAR_complianceParameter(charaindex);
+          CHAR_complianceParameter(char_index);
           CHAR_sendCToArroundCharacter(
-              CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX));
-          CHAR_send_P_StatusString(charaindex,
+              CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
+          CHAR_send_P_StatusString(char_index,
                                    CHAR_P_STRING_BASEBASEIMAGENUMBER);
-          CHAR_talkToCli(charaindex, -1, "����ʧЧ�ˡ�", CHAR_COLORWHITE);
+          CHAR_talkToCli(char_index, -1, "����ʧЧ�ˡ�", CHAR_COLORWHITE);
         }
 
 #endif
 #ifdef _ITEM_TIME_LIMIT
         ITEM_TimeLimit(
-            charaindex); // (�ɿ���) shan time limit of item. code:shan
+            char_index); // (�ɿ���) shan time limit of item. code:shan
 
 #endif
 
       } //%30
 
 #ifdef _PETSKILL_BECOMEPIG
-      if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+      if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
           BATTLE_CHARMODE_NONE) { // ������ս��״̬��
 
-        if (CHAR_getInt(charaindex, CHAR_BECOMEPIG) > -1) { // ���������״̬
+        if (CHAR_getInt(char_index, CHAR_BECOMEPIG) > -1) { // ���������״̬
           char temp[256];
-          CHAR_setInt(charaindex, CHAR_BECOMEPIG,
-                      CHAR_getInt(charaindex, CHAR_BECOMEPIG) - 1);
+          CHAR_setInt(char_index, CHAR_BECOMEPIG,
+                      CHAR_getInt(char_index, CHAR_BECOMEPIG) - 1);
           sprintf(temp, "����ʱ��:%d��",
-                  CHAR_getInt(charaindex, CHAR_BECOMEPIG));
-          CHAR_talkToCli(charaindex, -1, temp, CHAR_COLORWHITE);
+                  CHAR_getInt(char_index, CHAR_BECOMEPIG));
+          CHAR_talkToCli(char_index, -1, temp, CHAR_COLORWHITE);
         }
       }
 
 #endif
       // 10��
 #ifdef _MAP_TIME
-      if (CHAR_getWorkInt(charaindex, CHAR_WORK_MAP_TIME) > 0 &&
-          CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+      if (CHAR_getWorkInt(char_index, CHAR_WORK_MAP_TIME) > 0 &&
+          CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
               BATTLE_CHARMODE_NONE) {
-        CHAR_setWorkInt(charaindex, CHAR_WORK_MAP_TIME,
-                        CHAR_getWorkInt(charaindex, CHAR_WORK_MAP_TIME) - 10);
+        CHAR_setWorkInt(char_index, CHAR_WORK_MAP_TIME,
+                        CHAR_getWorkInt(char_index, CHAR_WORK_MAP_TIME) - 10);
 
-        if (CHAR_getWorkInt(charaindex, CHAR_WORK_MAP_TIME) <= 0) {
+        if (CHAR_getWorkInt(char_index, CHAR_WORK_MAP_TIME) <= 0) {
           // ʱ�䵽��,�������
-          CHAR_talkToCli(charaindex, -1, "����Ϊ�ܲ��˸��ȶ������������ѷ���ڡ�",
+          CHAR_talkToCli(char_index, -1, "����Ϊ�ܲ��˸��ȶ������������ѷ���ڡ�",
                          CHAR_COLORRED);
-          CHAR_warpToSpecificPoint(charaindex, 30008, 39, 38);
-          CHAR_setInt(charaindex, CHAR_HP, 1);
-          CHAR_AddCharm(charaindex, -3);
-          CHAR_send_P_StatusString(charaindex, CHAR_P_STRING_HP);
-          CHAR_send_P_StatusString(charaindex, CHAR_P_STRING_CHARM);
+          CHAR_warpToSpecificPoint(char_index, 30008, 39, 38);
+          CHAR_setInt(char_index, CHAR_HP, 1);
+          CHAR_AddCharm(char_index, -3);
+          CHAR_send_P_StatusString(char_index, CHAR_P_STRING_HP);
+          CHAR_send_P_StatusString(char_index, CHAR_P_STRING_CHARM);
         } else {
           char szMsg[64];
           sprintf(szMsg, "������ȵĻ�������ֻ���ٴ� %d �롣",
-                  CHAR_getWorkInt(charaindex, CHAR_WORK_MAP_TIME));
-          CHAR_talkToCli(charaindex, -1, szMsg, CHAR_COLORRED);
+                  CHAR_getWorkInt(char_index, CHAR_WORK_MAP_TIME));
+          CHAR_talkToCli(char_index, -1, szMsg, CHAR_COLORRED);
         }
       }
 #endif
@@ -2181,7 +2147,7 @@ void CONNECT_SysEvent_Loop(void) {
 #endif
         if (!CONNECT_getUse(i))
           continue;
-      if (!CHAR_CHECKINDEX(Connect[i].charaindex))
+      if (!CHAR_CHECKINDEX(Connect[i].char_index))
         continue;
 
       {
@@ -2209,10 +2175,10 @@ void CONNECT_SysEvent_Loop(void) {
         // here ԭ������
         if (Connect[i].stayencount) {
           if (Connect[i].BDTime < time(NULL)) {
-            if (CHAR_getWorkInt(Connect[i].charaindex, CHAR_WORKBATTLEMODE) ==
+            if (CHAR_getWorkInt(Connect[i].char_index, CHAR_WORKBATTLEMODE) ==
                 BATTLE_CHARMODE_NONE) {
-              lssproto_EN_recv(i, CHAR_getInt(Connect[i].charaindex, CHAR_X),
-                               CHAR_getInt(Connect[i].charaindex, CHAR_Y));
+              GmsvServer_EN_recv(i, CHAR_getInt(Connect[i].char_index, CHAR_X),
+                               CHAR_getInt(Connect[i].char_index, CHAR_Y));
               Connect[i].BDTime = time(NULL);
             }
           }
@@ -2221,7 +2187,7 @@ void CONNECT_SysEvent_Loop(void) {
 #endif
 #ifdef _CHIKULA_STONE
         if (chikulatime % 3 == 0 && getChiStone(i) > 0) { // �Զ���Ѫ
-          CHAR_AutoChikulaStone(Connect[i].charaindex, getChiStone(i));
+          CHAR_AutoChikulaStone(Connect[i].char_index, getChiStone(i));
         }
 
 #endif
@@ -2229,7 +2195,7 @@ void CONNECT_SysEvent_Loop(void) {
         if (chikulatime % 6 == 0) { // ˮ����״̬
 
 #ifdef _STATUS_WATERWORD
-          CHAR_CheckWaterStatus(Connect[i].charaindex);
+          CHAR_CheckWaterStatus(Connect[i].char_index);
 #endif
           // Nuke 0626: No enemy
 
@@ -2246,7 +2212,7 @@ void CONNECT_SysEvent_Loop(void) {
         // ÿ10��
 #ifdef _TYPE_TOXICATION // �ж�
         if (Connect[i].toxication > 0) {
-          CHAR_ComToxicationHp(Connect[i].charaindex);
+          CHAR_ComToxicationHp(Connect[i].char_index);
         }
 
 #endif
@@ -2289,11 +2255,11 @@ void CONNECT_SysEvent_Loop(void) {
             if (Connect[i].nu_decrease < 0)
               Connect[i].nu_decrease = 0;
           }
-          lssproto_NU_send(i, 0);
+          GmsvServer_NU_send(i, 0);
           /*
                     r = 22 - Connect[ i ].nu_decrease;
                     r = ( r >= 15 ) ? r : 15;
-                    lssproto_NU_send( i, r );
+                    GmsvServer_NU_send( i, r );
                     Connect[ i ].nu += r;
           */
         }
@@ -2530,7 +2496,7 @@ SINGLETHREAD BOOL netloop_faster(void) {
             continue;
           if (i == acfd)
             continue;
-          if (Connect[i].charaindex != -1)
+          if (Connect[i].char_index != -1)
             continue;
           char mess[64] = "E�ŷ�����æ�����Ժ����ԡ�";
           if (!from_acsv)
@@ -2601,7 +2567,7 @@ SINGLETHREAD BOOL netloop_faster(void) {
           total_item_use = ITEM_getITEM_sUseItemNum();
           for (i = 0; i < ConnectLen; i++) {
             if ((Connect[i].use) && (i != acfd)) {
-              if (CHAR_CHECKINDEX(Connect[i].charaindex))
+              if (CHAR_CHECKINDEX(Connect[i].char_index))
                 player_online++;
             }
           }
@@ -2719,7 +2685,7 @@ SINGLETHREAD BOOL netloop_faster(void) {
         if ( h_counter > 60*60 ){//36000 Լ 3600��=60����
         h_counter=0;
         print("\nSyu log LoadHerolist");
-        saacproto_UpdataStele_send ( acfd , "FirstLoad", "LoadHerolist" , "����"
+        SaacClient_UpdataStele_send ( acfd , "FirstLoad", "LoadHerolist" , "����"
         , 0 , 0 , 0 , 999 ) ;
         }
         #endif
@@ -3095,7 +3061,7 @@ SINGLETHREAD BOOL netloop_faster(void) {
 #ifdef _DEBUG
           printf("��ȡSAAC����:%s\n", rbmess);
 #endif
-          if (saacproto_ClientDispatchMessage(fdremember, rbmess) < 0) {
+          if (SaacClient_ClientDispatchMessage(fdremember, rbmess) < 0) {
             print("\nSAAC���������ݳ���!!!\n");
           }
         }
@@ -3104,13 +3070,13 @@ SINGLETHREAD BOOL netloop_faster(void) {
 #ifdef _DEBUG
           printf("��ȡ�������:%s\n", rbmess);
 #endif
-          if (saacproto_ClientDispatchMessage(fdremember, rbmess) < 0) {
+          if (SaacClient_ClientDispatchMessage(fdremember, rbmess) < 0) {
             print("\n������������ݳ���!!!\n");
           }
         }
 #endif
         else {
-          int retval = lssproto_ServerDispatchMessage(fdremember, rbmess);
+          int retval = GmsvServer_ServerDispatchMessage(fdremember, rbmess);
           if (retval == -1) {
             if (++Connect[fdremember].errornum > allowerrornum)
               break;
@@ -3292,7 +3258,7 @@ ANY_THREAD void outputNetProcLog(int fd, int mode) {
         break;
       }
 
-      if (Connect[i].charaindex >= 0) {
+      if (Connect[i].char_index >= 0) {
         login++;
       }
     }
@@ -3374,7 +3340,7 @@ ANY_THREAD void outputNetProcLog(int fd, int mode) {
   if (mode == 0) {
     LogHelper(LOG_PROC, buffer);
   } else if (mode == 1) {
-    lssproto_ProcGet_send(fd, buffer);
+    GmsvServer_ProcGet_send(fd, buffer);
   }
 }
 
@@ -3431,7 +3397,7 @@ void sigusr1(int i) {
 void sigusr2(int i) {
   signal(SIGUSR2, sigusr2);
   print("\nReceived Shutdown signal...\n\n");
-  lssproto_Shutdown_recv(0, "hogehoge", 5); // 5������ά��
+  GmsvServer_Shutdown_recv(0, "hogehoge", 5); // 5������ά��
 }
 
 unsigned long CONNECT_get_userip(int fd) {
@@ -3661,7 +3627,7 @@ int getToxication(int fd) {
 #endif
 
 #ifdef _BATTLE_TIMESPEED
-void RescueEntryBTime(int charaindex, int fd, unsigned int lowTime,
+void RescueEntryBTime(int char_index, int fd, unsigned int lowTime,
                       unsigned int battletime) {
   if (fd < 0 || fd >= ConnectLen) {
     return;
@@ -3672,7 +3638,7 @@ void RescueEntryBTime(int charaindex, int fd, unsigned int lowTime,
   // Connect[fd].CBTime+battletime
 }
 
-BOOL CheckDefBTime(int charaindex, int fd, unsigned int lowTime,
+BOOL CheckDefBTime(int char_index, int fd, unsigned int lowTime,
                    unsigned int battletime,
                    unsigned int addTime) // lowTime�ӳ�ʱ��
 {
@@ -3694,11 +3660,11 @@ BOOL CheckDefBTime(int charaindex, int fd, unsigned int lowTime,
       delayTime = lowTime - NowTime;
       delayTime = ( delayTime <= 0 ) ? 1 : delayTime;
       r = ( -4 ) * ( delayTime + 2 );
-      lssproto_NU_send( fd, r );
+      GmsvServer_NU_send( fd, r );
       Connect[ fd ].nu += r;
     }
   */
-  lssproto_NU_send(fd, 0);
+  GmsvServer_NU_send(fd, 0);
   // Connect[fd].BDTime = (NowTime+20)+delayTime;
 #ifdef _FIX_CHARLOOPS
   if (getCharloops() > 0)
@@ -3742,7 +3708,7 @@ BOOL OtherSaacConnect(void) {
       print("���\n");
       initConnectOne(osfd, NULL, 0);
       if (!CONNECT_acfdInitRB(osfd) || !CONNECT_acfdInitWB(osfd) ||
-          saacproto_InitClient(lsrpcClientWriteFunc, LSGENWORKINGBUFFER, osfd) <
+          SaacClient_InitClient(lsrpcClientWriteFunc, LSGENWORKINGBUFFER, osfd) <
               0) {
         CONNECT_endOne_debug(osfd);
         osfd = -1;
@@ -3750,7 +3716,7 @@ BOOL OtherSaacConnect(void) {
       }
       CONNECT_setCtype(osfd, SQL);
 
-      saacproto_ACServerLogin_send(osfd, _ATTESTAION_ID, getGameserverID(),
+      SaacClient_ACServerLogin_send(osfd, _ATTESTAION_ID, getGameserverID(),
                                    getAccountserverpasswd());
     }
   }
@@ -4092,7 +4058,7 @@ void procAcceptEpoll() {
           continue;
         if (i == bindedfd)
           continue;
-        if (Connect[i].charaindex != -1)
+        if (Connect[i].char_index != -1)
           continue;
         char mess[64] = "E�ŷ�����æ�����Ժ����ԡ�";
         write(i, mess, strlen(mess) + 1);

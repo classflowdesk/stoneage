@@ -19,7 +19,7 @@ extern int lastfunctime;
 
 #define DME() print("<DME(%d)%d:%d>", fd, __LINE__, func)
 extern int cliretfunc;
-int lssproto_ServerDispatchMessage(int fd, char *encoded) {
+int GmsvServer_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _DEFEND_BIGBAO
   if (CONNECT_getState(fd) == NOTLOGIN) {
     if (strlen(encoded) > getBigBao()) {
@@ -51,7 +51,6 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
   print("\nraw=%s\n", raw);
 #endif
   if (!util_SplitMessage(raw, SEPARATOR)) {
-    // print("\nDME1:package=%s\n",raw);
     DME();
     return -2;
   }
@@ -107,7 +106,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_W_recv(fd, x, y, direction);
+    GmsvServer_W_recv(fd, x, y, direction);
     util_DiscardMessage();
     return 0;
   }
@@ -137,7 +136,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_W2_recv(fd, x, y, direction);
+    GmsvServer_W2_recv(fd, x, y, direction);
     util_DiscardMessage();
     return 0;
   }
@@ -172,7 +171,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_EV_recv(fd, event, seqno, x, y, dir);
+    GmsvServer_EV_recv(fd, event, seqno, x, y, dir);
     util_DiscardMessage();
     return 0;
   }
@@ -200,7 +199,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_DU_recv(fd, x, y);
+    GmsvServer_DU_recv(fd, x, y);
     util_DiscardMessage();
     return 0;
   }
@@ -226,7 +225,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_EO_recv(fd, dummy);
+    GmsvServer_EO_recv(fd, dummy);
     util_DiscardMessage();
     return 0;
   }
@@ -253,7 +252,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_BU_recv(fd, dummy);
+    GmsvServer_BU_recv(fd, dummy);
     util_DiscardMessage();
     return 0;
   }
@@ -281,7 +280,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_JB_recv(fd, x, y);
+    GmsvServer_JB_recv(fd, x, y);
     util_DiscardMessage();
     return 0;
   }
@@ -309,7 +308,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_LB_recv(fd, x, y);
+    GmsvServer_LB_recv(fd, x, y);
     util_DiscardMessage();
     return 0;
   }
@@ -335,7 +334,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_B_recv(fd, command);
+    GmsvServer_B_recv(fd, command);
     util_DiscardMessage();
     return 0;
   }
@@ -363,7 +362,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_SKD_recv(fd, dir, index);
+    GmsvServer_SKD_recv(fd, dir, index);
     util_DiscardMessage();
     return 0;
   }
@@ -396,7 +395,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_ID_recv(fd, x, y, haveitemindex, toindex);
+    GmsvServer_ID_recv(fd, x, y, haveitemindex, toindex);
     util_DiscardMessage();
     return 0;
   }
@@ -426,7 +425,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_PI_recv(fd, x, y, dir);
+    GmsvServer_PI_recv(fd, x, y, dir);
     util_DiscardMessage();
     return 0;
   }
@@ -456,7 +455,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_DI_recv(fd, x, y, itemindex);
+    GmsvServer_DI_recv(fd, x, y, itemindex);
     util_DiscardMessage();
     return 0;
   }
@@ -486,7 +485,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_DG_recv(fd, x, y, amount);
+    GmsvServer_DG_recv(fd, x, y, amount);
     util_DiscardMessage();
     return 0;
   }
@@ -516,7 +515,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_DP_recv(fd, x, y, petindex);
+    GmsvServer_DP_recv(fd, x, y, petindex);
     util_DiscardMessage();
     return 0;
   }
@@ -545,7 +544,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_MI_recv(fd, fromindex, toindex);
+    GmsvServer_MI_recv(fd, fromindex, toindex);
     util_DiscardMessage();
     return 0;
   }
@@ -576,7 +575,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_MSG_recv(fd, index, message, color);
+    GmsvServer_MSG_recv(fd, index, message, color);
     util_DiscardMessage();
     return 0;
   }
@@ -613,7 +612,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_PMSG_recv(fd, index, petindex, itemindex, message, color);
+    GmsvServer_PMSG_recv(fd, index, petindex, itemindex, message, color);
     util_DiscardMessage();
     return 0;
   }
@@ -637,7 +636,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_AB_recv(fd);
+    GmsvServer_AB_recv(fd);
     util_DiscardMessage();
     return 0;
   }
@@ -663,7 +662,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_DAB_recv(fd, index);
+    GmsvServer_DAB_recv(fd, index);
     util_DiscardMessage();
     return 0;
   }
@@ -691,7 +690,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_AAB_recv(fd, x, y);
+    GmsvServer_AAB_recv(fd, x, y);
     util_DiscardMessage();
     return 0;
   }
@@ -717,7 +716,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_L_recv(fd, dir);
+    GmsvServer_L_recv(fd, dir);
     util_DiscardMessage();
     return 0;
   }
@@ -752,7 +751,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_TK_recv(fd, x, y, message, color, area);
+    GmsvServer_TK_recv(fd, x, y, message, color, area);
     util_DiscardMessage();
     return 0;
   }
@@ -787,7 +786,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_M_recv(fd, fl, x1, y1, x2, y2);
+    GmsvServer_M_recv(fd, fl, x1, y1, x2, y2);
     util_DiscardMessage();
     return 0;
   }
@@ -813,7 +812,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_C_recv(fd, index);
+    GmsvServer_C_recv(fd, index);
     util_DiscardMessage();
     return 0;
   }
@@ -839,7 +838,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_S_recv(fd, category);
+    GmsvServer_S_recv(fd, category);
     util_DiscardMessage();
     return 0;
   }
@@ -865,7 +864,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_FS_recv(fd, flg);
+    GmsvServer_FS_recv(fd, flg);
     util_DiscardMessage();
     return 0;
   }
@@ -891,7 +890,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_HL_recv(fd, flg);
+    GmsvServer_HL_recv(fd, flg);
     util_DiscardMessage();
     return 0;
   }
@@ -921,7 +920,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_PR_recv(fd, x, y, request);
+    GmsvServer_PR_recv(fd, x, y, request);
     util_DiscardMessage();
     return 0;
   }
@@ -947,7 +946,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_KS_recv(fd, petarray);
+    GmsvServer_KS_recv(fd, petarray);
     util_DiscardMessage();
     return 0;
   }
@@ -974,7 +973,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_SPET_recv(fd, standbypet);
+    GmsvServer_SPET_recv(fd, standbypet);
     util_DiscardMessage();
     return 0;
   }
@@ -999,7 +998,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     sprintf(errordata, "%d:%s", type, data);
 #endif
-    lssproto_RCLICK_recv(fd, type, data);
+    GmsvServer_RCLICK_recv(fd, type, data);
     util_DiscardMessage();
     return 0;
   }
@@ -1030,7 +1029,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_AC_recv(fd, x, y, actionno);
+    GmsvServer_AC_recv(fd, x, y, actionno);
     util_DiscardMessage();
     return 0;
   }
@@ -1063,7 +1062,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_MU_recv(fd, x, y, array, toindex);
+    GmsvServer_MU_recv(fd, x, y, array, toindex);
     util_DiscardMessage();
     return 0;
   }
@@ -1099,7 +1098,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_PS_recv(fd, havepetindex, havepetskill, toindex, data);
+    GmsvServer_PS_recv(fd, havepetindex, havepetskill, toindex, data);
 
     util_DiscardMessage();
     return 0;
@@ -1126,7 +1125,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_ST_recv(fd, titleindex);
+    GmsvServer_ST_recv(fd, titleindex);
     util_DiscardMessage();
     return 0;
   }
@@ -1152,7 +1151,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_DT_recv(fd, titleindex);
+    GmsvServer_DT_recv(fd, titleindex);
     util_DiscardMessage();
     return 0;
   }
@@ -1178,7 +1177,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_FT_recv(fd, data);
+    GmsvServer_FT_recv(fd, data);
     util_DiscardMessage();
     return 0;
   }
@@ -1204,7 +1203,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_SKUP_recv(fd, skillid);
+    GmsvServer_SKUP_recv(fd, skillid);
     util_DiscardMessage();
     return 0;
   }
@@ -1233,7 +1232,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_KN_recv(fd, havepetindex, data);
+    GmsvServer_KN_recv(fd, havepetindex, data);
     util_DiscardMessage();
     return 0;
   }
@@ -1273,7 +1272,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_WN_recv(fd, x, y, seqno, objindex, select, data);
+    GmsvServer_WN_recv(fd, x, y, seqno, objindex, select, data);
     util_DiscardMessage();
     return 0;
   }
@@ -1303,7 +1302,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_SP_recv(fd, x, y, dir);
+    GmsvServer_SP_recv(fd, x, y, dir);
     util_DiscardMessage();
     return 0;
   }
@@ -1377,7 +1376,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       util_DiscardMessage();
       return -1;
     }
-    lssproto_ClientLogin_recv(fd, cdkey, passwd, mac, servid, ip);
+    GmsvServer_ClientLogin_recv(fd, cdkey, passwd, mac, servid, ip);
     util_DiscardMessage();
     return 0;
   }
@@ -1434,7 +1433,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_CreateNewChar_recv(fd, dataplacenum, charname, imgno, faceimgno,
+    GmsvServer_CreateNewChar_recv(fd, dataplacenum, charname, imgno, faceimgno,
                                 vital, str, tgh, dex, earth, water, fire, wind,
                                 hometown);
     util_DiscardMessage();
@@ -1464,7 +1463,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_CharDelete_recv(fd, charname, passwd);
+    GmsvServer_CharDelete_recv(fd, charname, passwd);
     util_DiscardMessage();
     return 0;
   }
@@ -1483,7 +1482,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       util_DiscardMessage();
       return -1;
     }
-    lssproto_upshopdata_recv(fd, shop[0]);
+    GmsvServer_upshopdata_recv(fd, shop[0]);
     util_DiscardMessage();
     return 0;
   }
@@ -1510,7 +1509,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_CharLogin_recv(fd, charname);
+    GmsvServer_CharLogin_recv(fd, charname);
     util_DiscardMessage();
     return 0;
   }
@@ -1529,7 +1528,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     strcpy(errordata, "");
 #endif
-    lssproto_CharList_recv(fd);
+    GmsvServer_CharList_recv(fd);
     util_DiscardMessage();
     return 0;
   }
@@ -1559,7 +1558,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_CharLogout_recv(fd, Flg);
+    GmsvServer_CharLogout_recv(fd, Flg);
     util_DiscardMessage();
     return 0;
   }
@@ -1580,7 +1579,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     strcpy(errordata, "");
 #endif
-    lssproto_ProcGet_recv(fd);
+    GmsvServer_ProcGet_recv(fd);
     util_DiscardMessage();
     return 0;
   }
@@ -1599,7 +1598,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     strcpy(errordata, "");
 #endif
-    lssproto_PlayerNumGet_recv(fd);
+    GmsvServer_PlayerNumGet_recv(fd);
     util_DiscardMessage();
     return 0;
   }
@@ -1625,7 +1624,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_Echo_recv(fd, test);
+    GmsvServer_Echo_recv(fd, test);
     util_DiscardMessage();
     return 0;
   }
@@ -1645,7 +1644,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
   #ifdef _DEBUG_RET_CLI
                   printf("[接收]LSSPROTO_SHUTDOWN_RECV-passwd:%s,min:%d\n",
   passwd,min); #endif
-  //		lssproto_Shutdown_recv(fd, passwd, min);
+  //		GmsvServer_Shutdown_recv(fd, passwd, min);
                   util_DiscardMessage();
                   return 0;
           }
@@ -1672,7 +1671,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_TD_recv(fd, message);
+    GmsvServer_TD_recv(fd, message);
     util_DiscardMessage();
     return 0;
   }
@@ -1698,7 +1697,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_FM_recv(fd, message);
+    GmsvServer_FM_recv(fd, message);
     util_DiscardMessage();
     return 0;
   }
@@ -1727,7 +1726,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_PETST_recv(fd, nPet, sPet);
+    GmsvServer_PETST_recv(fd, nPet, sPet);
     util_DiscardMessage();
     return 0;
   }
@@ -1741,7 +1740,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     strcpy(errordata, "");
 #endif
-    lssproto_CS_recv(fd);
+    GmsvServer_CS_recv(fd);
     util_DiscardMessage();
     return 0;
   }
@@ -1769,7 +1768,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_KTEAM_recv(fd, sindex);
+    GmsvServer_KTEAM_recv(fd, sindex);
     util_DiscardMessage();
     return 0;
   }
@@ -1801,7 +1800,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_MA_recv(fd, x, y, nMind);
+    GmsvServer_MA_recv(fd, x, y, nMind);
     util_DiscardMessage();
     return 0;
   }
@@ -1829,7 +1828,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_CHATROOM_recv(fd, test);
+    GmsvServer_CHATROOM_recv(fd, test);
     util_DiscardMessage();
     return 0;
   }
@@ -1844,7 +1843,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     strcpy(errordata, "");
 #endif
-    lssproto_RESIST_recv(fd);
+    GmsvServer_RESIST_recv(fd);
     util_DiscardMessage();
     return 0;
   }
@@ -1873,7 +1872,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_BATTLESKILL_recv(fd, iNum);
+    GmsvServer_BATTLESKILL_recv(fd, iNum);
     util_DiscardMessage();
     return 0;
   }
@@ -1901,7 +1900,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_STREET_VENDOR_recv(fd, message);
+    GmsvServer_STREET_VENDOR_recv(fd, message);
     util_DiscardMessage();
     return 0;
   }
@@ -1929,7 +1928,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_JOBDAILY_recv(fd, buffer);
+    GmsvServer_JOBDAILY_recv(fd, buffer);
     util_DiscardMessage();
     return 0;
   }
@@ -1952,7 +1951,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     sprintf(errordata, "%s", message);
 #endif
-    lssproto_TEACHER_SYSTEM_recv(fd, message);
+    GmsvServer_TEACHER_SYSTEM_recv(fd, message);
     util_DiscardMessage();
     return 0;
   }
@@ -1996,7 +1995,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     sprintf(errordata, "%d:%d:%d:%d:%d", x, y, petindex, fromindex, toindex);
 #endif
-    lssproto_PETITEM_recv(fd, x, y, petindex, fromindex, toindex);
+    GmsvServer_PETITEM_recv(fd, x, y, petindex, fromindex, toindex);
     util_DiscardMessage();
     return 0;
   }
@@ -2025,10 +2024,10 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    // lssproto_ASSESS_ABILITY_send( fd,
+    // GmsvServer_ASSESS_ABILITY_send( fd,
     // "10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|10000|"
     // );
-    lssproto_ASSESS_ABILITY_recv(fd);
+    GmsvServer_ASSESS_ABILITY_recv(fd);
     util_DiscardMessage();
     return 0;
   }
@@ -2053,7 +2052,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     sprintf(errordata, "%d:%d", type, page);
 #endif
-    lssproto_VIP_SHOP_recv(fd, type, page);
+    GmsvServer_VIP_SHOP_recv(fd, type, page);
     util_DiscardMessage();
     return 0;
   }
@@ -2081,7 +2080,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     sprintf(errordata, "%d:%d:%d:%d", type, page, id, num);
 #endif
-    lssproto_VIP_SHOP_buy_recv(fd, type, page, id, num);
+    GmsvServer_VIP_SHOP_buy_recv(fd, type, page, id, num);
     util_DiscardMessage();
     return 0;
   }
@@ -2109,7 +2108,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     sprintf(errordata, "%d:%d:%d:%d", type, page, id, num);
 #endif
-    lssproto_VIP_SHOP_buy_recv(fd, type, page, id, num);
+    GmsvServer_VIP_SHOP_buy_recv(fd, type, page, id, num);
     util_DiscardMessage();
     return 0;
   }
@@ -2125,7 +2124,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
 #ifdef _ABSOLUTE_DEBUG
     sprintf(errordata, "");
 #endif
-    lssproto_SaMenu_recv(fd, index);
+    GmsvServer_SaMenu_recv(fd, index);
     util_DiscardMessage();
     return 0;
   }
@@ -2166,7 +2165,7 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
       printf("%s\n", errordata);
     }
 #endif
-    lssproto_FamilyBadge_recv(fd);
+    GmsvServer_FamilyBadge_recv(fd);
     util_DiscardMessage();
     return 0;
   }
@@ -2277,10 +2276,8 @@ int lssproto_ServerDispatchMessage(int fd, char *encoded) {
   DME();
   return -1;
 }
-/*
-   servertoclient XYD( int x, int y, int dir );
-*/
-void lssproto_XYD_send(int fd, int x, int y, int dir) {
+
+void GmsvServer_XYD_send(int fd, int x, int y, int dir) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2297,7 +2294,7 @@ void lssproto_XYD_send(int fd, int x, int y, int dir) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_XYD_SEND, buffer);
 }
-void lssproto_EV_send(int fd, int seqno, int result) {
+void GmsvServer_EV_send(int fd, int seqno, int result) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2313,7 +2310,7 @@ void lssproto_EV_send(int fd, int seqno, int result) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_EV_SEND, buffer);
 }
-void lssproto_EN_send(int fd, int result, int field) {
+void GmsvServer_EN_send(int fd, int result, int field) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2330,7 +2327,7 @@ void lssproto_EN_send(int fd, int result, int field) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_EN_SEND, buffer);
 }
-void lssproto_RS_send(int fd, char *data) {
+void GmsvServer_RS_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2345,7 +2342,7 @@ void lssproto_RS_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_RS_SEND, buffer);
 }
-void lssproto_RD_send(int fd, char *data) {
+void GmsvServer_RD_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2360,7 +2357,7 @@ void lssproto_RD_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_RD_SEND, buffer);
 }
-void lssproto_B_send(int fd, char *command) {
+void GmsvServer_B_send(int fd, char *command) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
   if (strlen(command) == 0) {
@@ -2378,7 +2375,7 @@ void lssproto_B_send(int fd, char *command) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_B_SEND, buffer);
 }
-void lssproto_I_send(int fd, char *data) {
+void GmsvServer_I_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2393,7 +2390,7 @@ void lssproto_I_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_I_SEND, buffer);
 }
-void lssproto_SI_send(int fd, int fromindex, int toindex) {
+void GmsvServer_SI_send(int fd, int fromindex, int toindex) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2410,11 +2407,11 @@ void lssproto_SI_send(int fd, int fromindex, int toindex) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_SI_SEND, buffer);
 }
-void lssproto_MSG_send(int fd, int aindex, char *text, int color) {
+void GmsvServer_MSG_send(int fd, int aindex, char *text, int color) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]lssproto_MSG_send-aindex:%d,text:%s,color:%d\n", aindex, text,
+  printf("[发送]GmsvServer_MSG_send-aindex:%d,text:%s,color:%d\n", aindex, text,
          color);
 #endif
   char buffer[65500];
@@ -2428,7 +2425,7 @@ void lssproto_MSG_send(int fd, int aindex, char *text, int color) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_MSG_SEND, buffer);
 }
-void lssproto_PME_send(int fd, int objindex, int graphicsno, int x, int y,
+void GmsvServer_PME_send(int fd, int objindex, int graphicsno, int x, int y,
                        int dir, int flg, int no, char *cdata) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
@@ -2453,7 +2450,7 @@ void lssproto_PME_send(int fd, int objindex, int graphicsno, int x, int y,
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_PME_SEND, buffer);
 }
-void lssproto_AB_send(int fd, char *data) {
+void GmsvServer_AB_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2468,7 +2465,7 @@ void lssproto_AB_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_AB_SEND, buffer);
 }
-void lssproto_ABI_send(int fd, int num, char *data) {
+void GmsvServer_ABI_send(int fd, int num, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2484,7 +2481,7 @@ void lssproto_ABI_send(int fd, int num, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_ABI_SEND, buffer);
 }
-void lssproto_TK_send(int fd, int index, char *message, int color) {
+void GmsvServer_TK_send(int fd, int index, char *message, int color) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2502,7 +2499,7 @@ void lssproto_TK_send(int fd, int index, char *message, int color) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_TK_SEND, buffer);
 }
-void lssproto_MC_send(int fd, int fl, int x1, int y1, int x2, int y2,
+void GmsvServer_MC_send(int fd, int fl, int x1, int y1, int x2, int y2,
                       int tilesum, int objsum, int eventsum, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
@@ -2528,7 +2525,7 @@ void lssproto_MC_send(int fd, int fl, int x1, int y1, int x2, int y2,
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_MC_SEND, buffer);
 }
-void lssproto_M_send(int fd, int fl, int x1, int y1, int x2, int y2,
+void GmsvServer_M_send(int fd, int fl, int x1, int y1, int x2, int y2,
                      char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
@@ -2550,7 +2547,7 @@ void lssproto_M_send(int fd, int fl, int x1, int y1, int x2, int y2,
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_M_SEND, buffer);
 }
-void lssproto_C_send(int fd, char *data) {
+void GmsvServer_C_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2565,7 +2562,8 @@ void lssproto_C_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_C_SEND, buffer);
 }
-void lssproto_CA_send(int fd, char *data) {
+
+void GmsvServer_CA_send(const int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2580,7 +2578,8 @@ void lssproto_CA_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_CA_SEND, buffer);
 }
-void lssproto_CD_send(int fd, char *data) {
+
+void GmsvServer_CD_send(const int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2595,7 +2594,7 @@ void lssproto_CD_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_CD_SEND, buffer);
 }
-void lssproto_R_send(int fd, char *data) {
+void GmsvServer_R_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2610,7 +2609,7 @@ void lssproto_R_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_R_SEND, buffer);
 }
-void lssproto_S_send(int fd, char *data) {
+void GmsvServer_S_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2625,7 +2624,7 @@ void lssproto_S_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_S_SEND, buffer);
 }
-void lssproto_D_send(int fd, int category, int dx, int dy, char *data) {
+void GmsvServer_D_send(int fd, int category, int dx, int dy, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2644,7 +2643,7 @@ void lssproto_D_send(int fd, int category, int dx, int dy, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_D_SEND, buffer);
 }
-void lssproto_FS_send(int fd, int flg) {
+void GmsvServer_FS_send(int fd, int flg) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2659,7 +2658,7 @@ void lssproto_FS_send(int fd, int flg) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_FS_SEND, buffer);
 }
-void lssproto_HL_send(int fd, int flg) {
+void GmsvServer_HL_send(int fd, int flg) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2674,7 +2673,7 @@ void lssproto_HL_send(int fd, int flg) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_HL_SEND, buffer);
 }
-void lssproto_PR_send(int fd, int request, int result) {
+void GmsvServer_PR_send(int fd, int request, int result) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2691,7 +2690,7 @@ void lssproto_PR_send(int fd, int request, int result) {
   util_SendMesg(fd, LSSPROTO_PR_SEND, buffer);
 }
 #ifdef _PETS_SELECTCON
-void lssproto_PETS_send(int fd, int petarray, int result) {
+void GmsvServer_PETS_send(int fd, int petarray, int result) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2708,7 +2707,7 @@ void lssproto_PETS_send(int fd, int petarray, int result) {
   util_SendMesg(fd, LSSPROTO_PETST_SEND, buffer);
 }
 #endif
-void lssproto_KS_send(int fd, int petarray, int result) {
+void GmsvServer_KS_send(int fd, int petarray, int result) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2724,7 +2723,7 @@ void lssproto_KS_send(int fd, int petarray, int result) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_KS_SEND, buffer);
 }
-void lssproto_SPET_send(int fd, int standbypet, int result) {
+void GmsvServer_SPET_send(int fd, int standbypet, int result) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2741,7 +2740,7 @@ void lssproto_SPET_send(int fd, int standbypet, int result) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_SPET_SEND, buffer);
 }
-void lssproto_PS_send(int fd, int result, int havepetindex, int havepetskill,
+void GmsvServer_PS_send(int fd, int result, int havepetindex, int havepetskill,
                       int toindex) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
@@ -2762,7 +2761,7 @@ void lssproto_PS_send(int fd, int result, int havepetindex, int havepetskill,
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_PS_SEND, buffer);
 }
-void lssproto_SKUP_send(int fd, int point) {
+void GmsvServer_SKUP_send(int fd, int point) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2777,7 +2776,7 @@ void lssproto_SKUP_send(int fd, int point) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_SKUP_SEND, buffer);
 }
-void lssproto_WN_send(int fd, int windowtype, int buttontype, int seqno,
+void GmsvServer_WN_send(int fd, int windowtype, int buttontype, int seqno,
                       int objindex, char *data) {
   char buffer[65500];
 #ifdef _DEBUG_SEND_CLI
@@ -2797,7 +2796,7 @@ void lssproto_WN_send(int fd, int windowtype, int buttontype, int seqno,
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_WN_SEND, buffer);
 }
-void lssproto_EF_send(int fd, int effect, int level, char *option) {
+void GmsvServer_EF_send(int fd, int effect, int level, char *option) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2815,7 +2814,7 @@ void lssproto_EF_send(int fd, int effect, int level, char *option) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_EF_SEND, buffer);
 }
-void lssproto_SE_send(int fd, int x, int y, int senumber, int sw) {
+void GmsvServer_SE_send(int fd, int x, int y, int senumber, int sw) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2834,7 +2833,7 @@ void lssproto_SE_send(int fd, int x, int y, int senumber, int sw) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_SE_SEND, buffer);
 }
-void lssproto_ClientLogin_send(int fd, char *result) {
+void GmsvServer_ClientLogin_send(int fd, char *result) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2849,7 +2848,7 @@ void lssproto_ClientLogin_send(int fd, char *result) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_CLIENTLOGIN_SEND, buffer);
 }
-void _lssproto_CreateNewChar_send(int fd, char *result, char *data, char *file,
+void _GmsvServer_CreateNewChar_send(int fd, char *result, char *data, char *file,
                                   int line) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
@@ -2866,7 +2865,7 @@ void _lssproto_CreateNewChar_send(int fd, char *result, char *data, char *file,
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_CREATENEWCHAR_SEND, buffer);
 }
-void lssproto_CharDelete_send(int fd, char *result, char *data) {
+void GmsvServer_CharDelete_send(int fd, char *result, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2882,7 +2881,7 @@ void lssproto_CharDelete_send(int fd, char *result, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_CHARDELETE_SEND, buffer);
 }
-void lssproto_CharLogin_send(int fd, char *result, char *data) {
+void GmsvServer_CharLogin_send(int fd, char *result, char *data) {
 
   if (CONNECT_checkfd(fd) == FALSE)
     return;
@@ -2899,7 +2898,7 @@ void lssproto_CharLogin_send(int fd, char *result, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_CHARLOGIN_SEND, buffer);
 }
-void lssproto_CharList_send(int fd, char *result, char *data) {
+void GmsvServer_CharList_send(int fd, char *result, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2915,7 +2914,7 @@ void lssproto_CharList_send(int fd, char *result, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_CHARLIST_SEND, buffer);
 }
-void lssproto_CharLogout_send(int fd, char *result, char *data) {
+void GmsvServer_CharLogout_send(int fd, char *result, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2931,7 +2930,7 @@ void lssproto_CharLogout_send(int fd, char *result, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_CHARLOGOUT_SEND, buffer);
 }
-void lssproto_ProcGet_send(int fd, char *data) {
+void GmsvServer_ProcGet_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2948,7 +2947,7 @@ void lssproto_ProcGet_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_PROCGET_SEND, buffer);
 }
-void lssproto_PlayerNumGet_send(int fd, int logincount, int player) {
+void GmsvServer_PlayerNumGet_send(int fd, int logincount, int player) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2965,7 +2964,7 @@ void lssproto_PlayerNumGet_send(int fd, int logincount, int player) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_PLAYERNUMGET_SEND, buffer);
 }
-void lssproto_Echo_send(int fd, char *test) {
+void GmsvServer_Echo_send(int fd, char *test) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2981,7 +2980,7 @@ void lssproto_Echo_send(int fd, char *test) {
   util_SendMesg(fd, LSSPROTO_ECHO_SEND, buffer);
 }
 // CoolFish: Trade 2001/4/18
-void lssproto_TD_send(int fd, char *message) {
+void GmsvServer_TD_send(int fd, char *message) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -2997,7 +2996,7 @@ void lssproto_TD_send(int fd, char *message) {
   util_SendMesg(fd, LSSPROTO_TD_SEND, buffer);
 }
 #ifdef _CHATROOMPROTOCOL // (不可开) Syu ADD 聊天室频道
-void lssproto_CHATROOM_send(int fd, char *message) {
+void GmsvServer_CHATROOM_send(int fd, char *message) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3014,7 +3013,7 @@ void lssproto_CHATROOM_send(int fd, char *message) {
 }
 #endif
 #ifdef _NEWREQUESTPROTOCOL // (不可开) Syu ADD 新增Protocol要求细项
-void lssproto_RESIST_send(int fd, char *message) {
+void GmsvServer_RESIST_send(int fd, char *message) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3031,7 +3030,7 @@ void lssproto_RESIST_send(int fd, char *message) {
 }
 #endif
 #ifdef _OUTOFBATTLESKILL // (不可开) Syu ADD 非战斗时技能Protocol
-void lssproto_BATTLESKILL_send(int fd, char *message) {
+void GmsvServer_BATTLESKILL_send(int fd, char *message) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3048,7 +3047,7 @@ void lssproto_BATTLESKILL_send(int fd, char *message) {
 }
 #endif
 #ifdef _FAMILYBADGE_
-void lssproto_CHAREFFECT_send(int fd, char *message) {
+void GmsvServer_CHAREFFECT_send(int fd, char *message) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3064,7 +3063,7 @@ void lssproto_CHAREFFECT_send(int fd, char *message) {
   util_SendMesg(fd, LSSPROTO_CHAREFFECT_SEND, buffer);
 }
 #endif
-void lssproto_NU_send(int fd, int nu) {
+void GmsvServer_NU_send(int fd, int nu) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3079,7 +3078,7 @@ void lssproto_NU_send(int fd, int nu) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_NU_SEND, buffer);
 }
-void lssproto_FM_send(int fd, char *message) {
+void GmsvServer_FM_send(int fd, char *message) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3094,7 +3093,7 @@ void lssproto_FM_send(int fd, char *message) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_FM_SEND, buffer);
 }
-void lssproto_WO_send(int fd, int effect) {
+void GmsvServer_WO_send(int fd, int effect) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3110,11 +3109,11 @@ void lssproto_WO_send(int fd, int effect) {
   util_SendMesg(fd, LSSPROTO_WO_SEND, buffer);
 }
 #ifdef _ITEM_CRACKER
-void lssproto_IC_send(int fd, int x, int y) {
+void GmsvServer_IC_send(int fd, int x, int y) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]lssproto_IC_send-x:%d,y:%d\n", x, y);
+  printf("[发送]GmsvServer_IC_send-x:%d,y:%d\n", x, y);
 #endif
   char buffer[65500];
   int checksum = 0;
@@ -3128,7 +3127,7 @@ void lssproto_IC_send(int fd, int x, int y) {
 }
 #endif
 #ifdef _MAGIC_NOCAST // 精灵:沉默
-void lssproto_NC_send(int fd, int flg) {
+void GmsvServer_NC_send(int fd, int flg) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3145,7 +3144,7 @@ void lssproto_NC_send(int fd, int flg) {
 }
 #endif
 #ifdef _STREET_VENDOR
-void lssproto_STREET_VENDOR_send(int fd, char *message) {
+void GmsvServer_STREET_VENDOR_send(int fd, char *message) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3162,7 +3161,7 @@ void lssproto_STREET_VENDOR_send(int fd, char *message) {
 }
 #endif
 #ifdef _RIGHTCLICK
-void lssproto_RCLICK_send(int fd, int type, char *data) {
+void GmsvServer_RCLICK_send(int fd, int type, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3181,7 +3180,7 @@ void lssproto_RCLICK_send(int fd, int type, char *data) {
 }
 #endif
 #ifdef _JOBDAILY
-void lssproto_JOBDAILY_send(int fd, char *data) {
+void GmsvServer_JOBDAILY_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3198,7 +3197,7 @@ void lssproto_JOBDAILY_send(int fd, char *data) {
 }
 #endif
 #ifdef _TEACHER_SYSTEM
-void lssproto_TEACHER_SYSTEM_send(int fd, char *data) {
+void GmsvServer_TEACHER_SYSTEM_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3215,7 +3214,7 @@ void lssproto_TEACHER_SYSTEM_send(int fd, char *data) {
 }
 #endif
 #ifdef _ADD_STATUS_2
-void lssproto_S2_send(int fd, char *data) {
+void GmsvServer_S2_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
@@ -3232,12 +3231,12 @@ void lssproto_S2_send(int fd, char *data) {
 }
 #endif
 #ifdef _ONLINE_SHOP
-void lssproto_VIP_SHOP_send(int fd, int num, int BJ, int type, int shoppage,
+void GmsvServer_VIP_SHOP_send(int fd, int num, int BJ, int type, int shoppage,
                             int page, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]lssproto_VIP_SHOP_send-num:%d,BJ:%d,type:%d,shoppage:%d,page:%"
+  printf("[发送]GmsvServer_VIP_SHOP_send-num:%d,BJ:%d,type:%d,shoppage:%d,page:%"
          "d,data:%s\n",
          num, BJ, type, shoppage, page, data);
 #endif
@@ -3257,11 +3256,11 @@ void lssproto_VIP_SHOP_send(int fd, int num, int BJ, int type, int shoppage,
 }
 #endif
 #ifdef _ASSESS_ABILITY
-void lssproto_ASSESS_ABILITY_send(int fd, char *data) {
+void GmsvServer_ASSESS_ABILITY_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]lssproto_ASSESS_ABILITY_send-data:%s\n", data);
+  printf("[发送]GmsvServer_ASSESS_ABILITY_send-data:%s\n", data);
 #endif
   char buffer[65500];
   int checksum = 0;
@@ -3273,11 +3272,11 @@ void lssproto_ASSESS_ABILITY_send(int fd, char *data) {
   util_SendMesg(fd, LSSPROTO_ASSESS_ABILITY_SEND, buffer);
 }
 #endif
-void lssproto_DENGON_send(int fd, char *data, int color, int num) {
+void GmsvServer_DENGON_send(int fd, char *data, int color, int num) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]lssproto_DENGON_send-data:%s,%d,%d\n", data, color, num);
+  printf("[发送]GmsvServer_DENGON_send-data:%s,%d,%d\n", data, color, num);
 #endif
   char buffer[65500];
   int checksum = 0;
@@ -3290,11 +3289,11 @@ void lssproto_DENGON_send(int fd, char *data, int color, int num) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_DENGON_SEND, buffer);
 }
-void lssproto_SAMENU_send(int fd, int index, char *data) {
+void GmsvServer_SAMENU_send(int fd, int index, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]lssproto_SAMENU_send-data:%d,%s\n", index, data);
+  printf("[发送]GmsvServer_SAMENU_send-data:%d,%s\n", index, data);
 #endif
   char buffer[65500];
   int checksum = 0;
@@ -3306,7 +3305,7 @@ void lssproto_SAMENU_send(int fd, int index, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_SAMENU_SEND, buffer);
 }
-void lssproto_UpShopData_send(int fd, char *data, char *md5, int id) {
+void GmsvServer_UpShopData_send(int fd, char *data, char *md5, int id) {
   unsigned long len = strlen(data);
   unsigned long comprLen = 1024 * 100 - 55;
   char compr[1024 * 100] = {0};
@@ -3349,7 +3348,7 @@ void lssproto_UpShopData_send(int fd, char *data, char *md5, int id) {
     CONNECT_endOne_debug(fd);
   }
 }
-void lssproto_ShopOK_send(int fd) {
+void GmsvServer_ShopOK_send(int fd) {
   char buffer[1024 * 64];
   strcpy(buffer, "");
   int checksum = 0;
@@ -3358,11 +3357,11 @@ void lssproto_ShopOK_send(int fd) {
   util_SendMesg(fd, LSSPROTO_SHOPOK_SEND, buffer);
 }
 #ifdef _FAMILYBADGE_
-void lssproto_FamilyBadge_send(int fd, char *data) {
+void GmsvServer_FamilyBadge_send(int fd, char *data) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]lssproto_FamilyBadge_send-data:%s\n", data);
+  printf("[发送]GmsvServer_FamilyBadge_send-data:%s\n", data);
 #endif
   char buffer[65500];
   int checksum = 0;
@@ -3375,7 +3374,7 @@ void lssproto_FamilyBadge_send(int fd, char *data) {
 }
 #endif
 #ifdef _NEW_TITLE
-void lssproto_CharTitle_send(int fd, char *data) // 发送新数据
+void GmsvServer_CharTitle_send(int fd, char *data) // 发送新数据
 {
   char buffer[1024 * 64];
   int checksum = 0;
@@ -3388,11 +3387,11 @@ void lssproto_CharTitle_send(int fd, char *data) // 发送新数据
   char msg[256];
   int fd_charaindex = CONNECT_getCharaindex(fd);
   sprintf(msg, "4|%d", CHAR_getInt(fd_charaindex, CHAR_TITLE_DEFAULT));
-  lssproto_CHAREFFECT_send(getfdFromCharaIndex(fd_charaindex), msg);
+  GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(fd_charaindex), msg);
 }
 #endif
 #ifdef _VISUAL_BEATITUDE
-void lssproto_VisualBeatitude_send(int fd, char *data) {
+void GmsvServer_VisualBeatitude_send(int fd, char *data) {
   char buffer[1024 * 64];
   int checksum = 0;
   strcpy(buffer, "");
@@ -3404,7 +3403,7 @@ void lssproto_VisualBeatitude_send(int fd, char *data) {
 }
 #endif
 #ifdef _RED_MEMOY_
-void lssproto_RedMemoy_send(int fd, int type, int time, int vip, char *name,
+void GmsvServer_RedMemoy_send(int fd, int type, int time, int vip, char *name,
                             int index) {
   if (CONNECT_checkfd(fd) == FALSE)
     return;
@@ -3423,7 +3422,7 @@ void lssproto_RedMemoy_send(int fd, int type, int time, int vip, char *name,
 }
 #endif
 #ifdef _MOVE_SCREEN
-void lssproto_MoveScreen_send(int fd, BOOL bMoveScreenMove, int iXY) {
+void GmsvServer_MoveScreen_send(int fd, BOOL bMoveScreenMove, int iXY) {
   char szBuffer[65500];
   int iChecksum = 0;
 #ifdef _DEBUG_SEND_CLI
@@ -3444,7 +3443,7 @@ void lssproto_MoveScreen_send(int fd, BOOL bMoveScreenMove, int iXY) {
 }
 #endif
 #ifdef _THEATER
-void lssproto_TheaterData_send(int fd, char *pData) {
+void GmsvServer_TheaterData_send(int fd, char *pData) {
   int iChecksum = 0;
   char szBuffer[65500];
 #ifdef _DEBUG_SEND_CLI
@@ -3463,7 +3462,7 @@ void lssproto_TheaterData_send(int fd, char *pData) {
 }
 #endif
 #ifdef _NPC_MAGICCARD
-void lssproto_MagiccardAction_send(int fd, char *data) {
+void GmsvServer_MagiccardAction_send(int fd, char *data) {
   char buffer[65500];
   int checksum = 0;
 #ifdef _DEBUG_SEND_CLI
@@ -3480,7 +3479,7 @@ void lssproto_MagiccardAction_send(int fd, char *data) {
   util_mkint(buffer, checksum);
   util_SendMesg(fd, LSSPROTO_MAGICCARD_ACTION_SEND, buffer);
 }
-void lssproto_MagiccardDamage_send(int fd, int position, int damage,
+void GmsvServer_MagiccardDamage_send(int fd, int position, int damage,
                                    int offsetx, int offsety) {
   char buffer[65500];
   int checksum = 0;
@@ -3505,11 +3504,11 @@ void lssproto_MagiccardDamage_send(int fd, int position, int damage,
 }
 #endif
 #ifdef _NPC_DANCE
-void lssproto_DancemanOption_send(int fd, int option) {
+void GmsvServer_DancemanOption_send(int fd, int option) {
   char buffer[65500];
   int checksum = 0;
 #ifdef _DEBUG_SEND_CLI
-  printf("[发送]lssproto_DancemanOption_send-fd:%d,option:%d\n", fd, option);
+  printf("[发送]GmsvServer_DancemanOption_send-fd:%d,option:%d\n", fd, option);
 #endif
   strcpy(buffer, "");
   CONNECT_getCdkey(fd, PersonalKey, 4096);

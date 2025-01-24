@@ -7,7 +7,7 @@
 #include "handletime.h"
 #include "map_deal.h"
 #include "addressbook.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "pet.h"
 #include "petmail.h"
 #include "npcutil.h"
@@ -28,7 +28,7 @@ extern int CheckCharMaxItem(int charindex);
 #define         PETMAIL_JS_TIMEOUT              (2*60)
 
 static int PETMAIL_getIdleTime( int index);
-static void PETMAIL_sendPetmail( int index, int tocharaindex);
+static void PETMAIL_sendPetmail( int index, int tochar_index);
 static void PETMAIL_IdleProc1( int index);
 static void PETMAIL_IdleProc2( int index);
 static void PETMAIL_IdleProc3( int index);
@@ -36,7 +36,7 @@ static void PETMAIL_IdleProc4( int index);
 static void PETMAIL_IdleProc5( int index);
 
 static void PETMAIL_ReturnWait( int index);
-static void PETMAIL_returnMail( int index, int tocharaindex);
+static void PETMAIL_returnMail( int index, int tochar_index);
 static int PETMAIL_offmsg_max;        
 #define		PETMAILOFFMSGFILE			"petmail.txt"
 
@@ -44,21 +44,21 @@ static int PETMAIL_offmsg_max;
 static int PetMailTotalnums = 0;
 
 BOOL PETMAIL_sendPetMail( int cindex, int aindex, 
-					int havepetindex, int haveitemindex, char* text , int color )
+					int havepetindex, int haveitem_index, char* text , int color )
 {
 	struct  tm tm1;
 	Char 	*ch;
 	ADDRESSBOOK_entry *ae;
 	int		petindex;
-	int		itemindex =-1;
-	int tocharaindex,playernum,i;
+	int		item_index =-1;
+	int tochar_index,playernum,i;
 
 	//判断 人物 宠物 道具 对象名片
 	if( !CHAR_CHECKINDEX( cindex) )return FALSE;
-	if( haveitemindex != -1 ) {
-		itemindex = CHAR_getItemIndex( cindex, haveitemindex);
-		if( ITEM_CHECKINDEX( itemindex)) {
-			if( ITEM_getInt( itemindex, ITEM_CANPETMAIL) == 0 ) {
+	if( haveitem_index != -1 ) {
+		item_index = CHAR_getItemIndex( cindex, haveitem_index);
+		if( ITEM_CHECKINDEX( item_index)) {
+			if( ITEM_getInt( item_index, ITEM_CANPETMAIL) == 0 ) {
 				print( "err? crack?\n");
 				return FALSE;
 			}
@@ -115,7 +115,7 @@ if (getPetMailFlg()==1){
 }
 #endif
 #ifdef _LOCK_PET_ITEM
-			char *arg = ITEM_getChar(itemindex, ITEM_NAME);
+			char *arg = ITEM_getChar(item_index, ITEM_NAME);
 			if(arg[0] == '*'){
 				CHAR_talkToCli( cindex, -1, "绑定物品无法传递", CHAR_COLORYELLOW );
 				return	FALSE;
@@ -249,21 +249,21 @@ if (getPetMailFlg()==1){
 			CHAR_getChar( petindex, CHAR_UNIQUECODE)  
 		);
 #endif
-		if( haveitemindex != -1 ) {
-			CHAR_setItemIndex( cindex, haveitemindex, -1);
-			CHAR_setItemIndex( petindex, CHAR_STARTITEMARRAY, itemindex);
-			CHAR_sendItemDataOne( cindex, haveitemindex);
+		if( haveitem_index != -1 ) {
+			CHAR_setItemIndex( cindex, haveitem_index, -1);
+			CHAR_setItemIndex( petindex, CHAR_STARTITEMARRAY, item_index);
+			CHAR_sendItemDataOne( cindex, haveitem_index);
 			LogItem(
 				CHAR_getChar( cindex, CHAR_NAME ),
 				CHAR_getChar( cindex, CHAR_CDKEY ),
-				itemindex,
+				item_index,
 				"pm_have(宠邮->寄送的道具)",
 				CHAR_getInt( cindex,CHAR_FLOOR),
 				CHAR_getInt( cindex,CHAR_X ),
 	 			CHAR_getInt( cindex,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-						ITEM_getChar( itemindex, ITEM_NAME),
-						ITEM_getInt( itemindex, ITEM_ID)
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+						ITEM_getChar( item_index, ITEM_NAME),
+						ITEM_getInt( item_index, ITEM_ID)
 
 			);
 
@@ -275,9 +275,9 @@ if (getPetMailFlg()==1){
 		}
 		{
 			char token[256];
-			tocharaindex = PETMAIL_CheckPlayerExist( petindex, 0);
+			tochar_index = PETMAIL_CheckPlayerExist( petindex, 0);
 			sprintf( token, "寄送宠物邮件(%s)给%s。",
-				CHAR_getUseName( petindex), CHAR_getUseName( tocharaindex) );
+				CHAR_getUseName( petindex), CHAR_getUseName( tochar_index) );
 			CHAR_talkToCli( cindex, -1, token, CHAR_COLORYELLOW);
 		}
 		return TRUE;
@@ -550,11 +550,11 @@ static int PETMAIL_getIdleTime( int index)
 #undef		PETMAIL_IDLEUNITTIME
 }
 
-static void PETMAIL_sendPetmail( int index, int tocharaindex)
+static void PETMAIL_sendPetmail( int index, int tochar_index)
 {
 	int index_to_my_info;
-	int		itemindex,ret;
-	index_to_my_info =  ADDRESSBOOK_getIndexInAddressbook( tocharaindex, 
+	int		item_index,ret;
+	index_to_my_info =  ADDRESSBOOK_getIndexInAddressbook( tochar_index, 
 						CHAR_getChar( index, CHAR_OWNERCDKEY),
 						CHAR_getChar( index, CHAR_OWNERCHARANAME));
 	
@@ -566,15 +566,15 @@ static void PETMAIL_sendPetmail( int index, int tocharaindex)
 					"由於对方没有您的名片，所以信件被退回了。",
 					CHAR_getChar( index, CHAR_OWNERCHARANAME),
 					CHAR_getUseName( index));
-		CHAR_talkToCli( tocharaindex, -1, msgbuf, CHAR_COLORWHITE);
+		CHAR_talkToCli( tochar_index, -1, msgbuf, CHAR_COLORWHITE);
 	}
 	//Syu Add 06/16
-	else if( CHAR_getInt(tocharaindex,CHAR_FLOOR) >=8200 &&
-		CHAR_getInt(tocharaindex,CHAR_FLOOR) <= 8213 ){
+	else if( CHAR_getInt(tochar_index,CHAR_FLOOR) >=8200 &&
+		CHAR_getInt(tochar_index,CHAR_FLOOR) <= 8213 ){
 		char	msgbuf[512];
 		snprintf( msgbuf, sizeof( msgbuf), 					
 					"英雄战场不得寄送道具！" );
-		CHAR_talkToCli( tocharaindex, -1, msgbuf, CHAR_COLORWHITE);
+		CHAR_talkToCli( tochar_index, -1, msgbuf, CHAR_COLORWHITE);
 	}
 	else {
 		struct  tm tm1;
@@ -582,44 +582,44 @@ static void PETMAIL_sendPetmail( int index, int tocharaindex)
 		char	escapebuf[128];
 		int		fd;
 		PETMAIL_offmsg *offmsg;
-		itemindex = CHAR_getItemIndex( index, CHAR_STARTITEMARRAY);
-		ret = CHAR_addItemSpecificItemIndex( tocharaindex, itemindex);
+		item_index = CHAR_getItemIndex( index, CHAR_STARTITEMARRAY);
+		ret = CHAR_addItemSpecificItemIndex( tochar_index, item_index);
 		if( ret < 0 ||
 #ifdef _NEW_ITEM_
-			ret >= CheckCharMaxItem(tocharaindex)
+			ret >= CheckCharMaxItem(tochar_index)
 #else
 			ret >= CHAR_MAXITEMHAVE
 #endif
 			){
 			CHAR_DropItem( index, CHAR_STARTITEMARRAY);
 			LogItem(
-				CHAR_getChar( tocharaindex, CHAR_NAME ), 
-				CHAR_getChar( tocharaindex, CHAR_CDKEY ),
-				itemindex,
+				CHAR_getChar( tochar_index, CHAR_NAME ), 
+				CHAR_getChar( tochar_index, CHAR_CDKEY ),
+				item_index,
 				"pm_putground(宠邮->道具栏已满，放置地上)",
 				CHAR_getInt( index,CHAR_FLOOR),
 				CHAR_getInt( index,CHAR_X ),
 	 			CHAR_getInt( index,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-						ITEM_getChar( itemindex, ITEM_NAME),
-						ITEM_getInt( itemindex, ITEM_ID)
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+						ITEM_getChar( item_index, ITEM_NAME),
+						ITEM_getInt( item_index, ITEM_ID)
 
 			);
 		}
 		else {
 			CHAR_setItemIndex( index, CHAR_STARTITEMARRAY, -1);
-			CHAR_sendItemDataOne( tocharaindex, ret);
+			CHAR_sendItemDataOne( tochar_index, ret);
 			LogItem(
-				CHAR_getChar( tocharaindex, CHAR_NAME ),
-				CHAR_getChar( tocharaindex, CHAR_CDKEY ),
-				itemindex,
+				CHAR_getChar( tochar_index, CHAR_NAME ),
+				CHAR_getChar( tochar_index, CHAR_CDKEY ),
+				item_index,
 				"pm_getitem(宠邮->收到的道具)",
 				CHAR_getInt( index,CHAR_FLOOR),
 				CHAR_getInt( index,CHAR_X ),
 	 			CHAR_getInt( index,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-						ITEM_getChar( itemindex, ITEM_NAME),
-						ITEM_getInt( itemindex, ITEM_ID)
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+						ITEM_getChar( item_index, ITEM_NAME),
+						ITEM_getInt( item_index, ITEM_ID)
 			);
 		}
 		offmsg = PETMAIL_getOffmsg( 
@@ -634,10 +634,10 @@ static void PETMAIL_sendPetmail( int index, int tocharaindex)
 	    		CHAR_getInt( index, CHAR_LV),
 	    		makeEscapeString( CHAR_getUseName( index), escapebuf,
 	    							sizeof( escapebuf)),
-				ITEM_getInt( itemindex, ITEM_BASEIMAGENUMBER)
+				ITEM_getInt( item_index, ITEM_BASEIMAGENUMBER)
 	    		);
-		fd = getfdFromCharaIndex( tocharaindex);
-		if( fd != -1 ) lssproto_MSG_send( fd , index_to_my_info , 
+		fd = getfdFromCharaIndex( tochar_index);
+		if( fd != -1 ) GmsvServer_MSG_send( fd , index_to_my_info , 
 									textbuffer , offmsg->color );
 		PETMAIL_deleteOffmsg( CHAR_getInt( index, CHAR_PETMAILBUFINDEX));
 		CHAR_setInt( index, CHAR_PETMAILBUFINDEX, -1);
@@ -654,19 +654,19 @@ static void PETMAIL_sendPetmail( int index, int tocharaindex)
 static void PETMAIL_IdleProc1( int index)
 {
 
-	int		tocharaindex;
+	int		tochar_index;
 	int		warp = FALSE;
 
-	tocharaindex = PETMAIL_CheckPlayerExist( index, 0);
-	if( !CHAR_CHECKINDEX( tocharaindex) ) {
+	tochar_index = PETMAIL_CheckPlayerExist( index, 0);
+	if( !CHAR_CHECKINDEX( tochar_index) ) {
 		warp = TRUE;
 	}else {
-		if( CHAR_getInt( tocharaindex, CHAR_FLOOR) == 8215 ){//客服活动 andy
+		if( CHAR_getInt( tochar_index, CHAR_FLOOR) == 8215 ){//客服活动 andy
 			warp = TRUE;
-		}else if( CHAR_getWorkInt( tocharaindex, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE ){//交易中不收邮件
+		}else if( CHAR_getWorkInt( tochar_index, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE ){//交易中不收邮件
 			warp = TRUE;
-		}else if( CHAR_getWorkInt( tocharaindex, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE ){		
-			int battleindex = CHAR_getWorkInt( tocharaindex, CHAR_WORKBATTLEINDEX );
+		}else if( CHAR_getWorkInt( tochar_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE ){		
+			int battleindex = CHAR_getWorkInt( tochar_index, CHAR_WORKBATTLEINDEX );
 			if( !BATTLE_CHECKINDEX( battleindex )
 #ifdef _BATTLE_TIMESPEED
 				 || BattleArray[battleindex].flgTime > 30  
@@ -677,11 +677,11 @@ static void PETMAIL_IdleProc1( int index)
 		}else {
 			int	ret;
 			int distance;
-			distance = NPC_Util_CharDistance( tocharaindex, index);
+			distance = NPC_Util_CharDistance( tochar_index, index);
 			if( distance > CHAR_DEFAULTSEESIZ /2 ) {
 				warp = TRUE;
 			}else if( distance > 1 ){
-				int dir = NPC_Util_GetDirCharToChar( index, tocharaindex, 0);
+				int dir = NPC_Util_GetDirCharToChar( index, tochar_index, 0);
 				if( dir != -1 ) {
 					dir = NPC_Util_SuberiWalk( index, dir);
 				}
@@ -695,7 +695,7 @@ static void PETMAIL_IdleProc1( int index)
 					warp = TRUE;
 				}
 			}else {
-				PETMAIL_sendPetmail( index, tocharaindex);
+				PETMAIL_sendPetmail( index, tochar_index);
 				CHAR_setInt( index, CHAR_MAILMODE,CHAR_PETMAIL_RETURNWAIT);
 				CHAR_setInt( index, CHAR_PETMAILIDLETIME, NowTime.tv_sec);
 				CHAR_setInt( index, CHAR_LOOPINTERVAL, PETMAIL_LOOPINTERVAL2);
@@ -718,22 +718,22 @@ static void PETMAIL_IdleProc2( int index)
 {
   	unsigned int t = CHAR_getInt( index, CHAR_PETMAILIDLETIME);
 	if( NowTime.tv_sec > t + PETMAIL_getIdleTime( index)) {
-		int		tocharaindex;
+		int		tochar_index;
 		int		cnt;
-		tocharaindex = PETMAIL_CheckPlayerExist( index, 0);
-		if( tocharaindex != -1 ) {
-			if( CHAR_getInt( tocharaindex, CHAR_FLOOR) == 8215 ){//客服活动 andy
-			}else if( CHAR_getWorkInt( tocharaindex, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE ){//交易中不收邮件
-			}else if( CHAR_getWorkInt( tocharaindex, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE){
+		tochar_index = PETMAIL_CheckPlayerExist( index, 0);
+		if( tochar_index != -1 ) {
+			if( CHAR_getInt( tochar_index, CHAR_FLOOR) == 8215 ){//客服活动 andy
+			}else if( CHAR_getWorkInt( tochar_index, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE ){//交易中不收邮件
+			}else if( CHAR_getWorkInt( tochar_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE){
 			}else {
 				int		fl, x, y, ch_x, ch_y;
-				fl = CHAR_getInt( tocharaindex, CHAR_FLOOR);
-				ch_x = CHAR_getInt( tocharaindex, CHAR_X);
-				ch_y = CHAR_getInt( tocharaindex, CHAR_Y);
+				fl = CHAR_getInt( tochar_index, CHAR_FLOOR);
+				ch_x = CHAR_getInt( tochar_index, CHAR_X);
+				ch_y = CHAR_getInt( tochar_index, CHAR_Y);
 				for( cnt = 0; cnt < 10; cnt ++ ) {
 					x = RAND( ch_x -1, ch_x + 1);
 					y = RAND( ch_y -1, ch_y + 1);
-					if( MAP_walkAble( tocharaindex, fl,x,y)) {
+					if( MAP_walkAble( tochar_index, fl,x,y)) {
 						break;
 					}
 				}
@@ -743,7 +743,7 @@ static void PETMAIL_IdleProc2( int index)
 				CHAR_setInt( index, CHAR_MAILMODE,CHAR_PETMAIL_RETURNWAIT);
 				CHAR_setInt( index, CHAR_PETMAILIDLETIME, NowTime.tv_sec);
 				CHAR_warpToSpecificPoint( index,fl, x,y);
-				PETMAIL_sendPetmail( index, tocharaindex);
+				PETMAIL_sendPetmail( index, tochar_index);
 				return;
 			}
 		}else{
@@ -777,22 +777,22 @@ static void PETMAIL_ReturnWait( int index)
 static void PETMAIL_IdleProc3( int index)
 {
 
-	int		tocharaindex;
+	int		tochar_index;
 	int		warp = FALSE;
 
-	tocharaindex = PETMAIL_CheckPlayerExist( index, 1);
-	if( tocharaindex == -1 ) {
+	tochar_index = PETMAIL_CheckPlayerExist( index, 1);
+	if( tochar_index == -1 ) {
 		warp = TRUE;
 	}else {
-		if( CHAR_getWorkInt( tocharaindex, CHAR_WORKBATTLEMODE) == BATTLE_CHARMODE_NONE) {
+		if( CHAR_getWorkInt( tochar_index, CHAR_WORKBATTLEMODE) == BATTLE_CHARMODE_NONE) {
 			int		ret ;
 			int distance;
-			distance = NPC_Util_CharDistance( tocharaindex, index);
+			distance = NPC_Util_CharDistance( tochar_index, index);
 			if( distance > CHAR_DEFAULTSEESIZ /2 ) {
 				warp = TRUE;
 
 			}else if( distance > 1 ){
-				int dir = NPC_Util_GetDirCharToChar( index, tocharaindex, 0);
+				int dir = NPC_Util_GetDirCharToChar( index, tochar_index, 0);
 				if( dir != -1 ) {
 					dir = NPC_Util_SuberiWalk( index, dir);
 				}
@@ -811,7 +811,7 @@ static void PETMAIL_IdleProc3( int index)
 /*				CHAR_setInt( index, CHAR_MAILMODE,CHAR_PETMAIL_IDLE5);
 				CHAR_setInt( index, CHAR_PETMAILIDLETIME, NowTime.tv_sec);
 				CHAR_setInt( index, CHAR_LOOPINTERVAL, PETMAIL_LOOPINTERVAL2);
-				PETMAIL_returnMail( index, tocharaindex);
+				PETMAIL_returnMail( index, tochar_index);
 */
 			}
 		}
@@ -829,18 +829,18 @@ static void PETMAIL_IdleProc4( int index)
 {
   	unsigned int t = CHAR_getInt( index, CHAR_PETMAILIDLETIME);
 	{
-		int		tocharaindex;
+		int		tochar_index;
 		int		cnt;
-		tocharaindex = PETMAIL_CheckPlayerExist( index, 1);//寻找主人
-		if( tocharaindex != -1 ) {
-			if( CHAR_getWorkInt( tocharaindex, CHAR_WORKBATTLEMODE) == BATTLE_CHARMODE_NONE &&
-				CHAR_getWorkInt( tocharaindex, CHAR_WORKTRADEMODE) == CHAR_TRADE_FREE ){
+		tochar_index = PETMAIL_CheckPlayerExist( index, 1);//寻找主人
+		if( tochar_index != -1 ) {
+			if( CHAR_getWorkInt( tochar_index, CHAR_WORKBATTLEMODE) == BATTLE_CHARMODE_NONE &&
+				CHAR_getWorkInt( tochar_index, CHAR_WORKTRADEMODE) == CHAR_TRADE_FREE ){
 
 				int		fl, x, y, ch_x, ch_y;//回到主人身边
 				
-				fl = CHAR_getInt( tocharaindex, CHAR_FLOOR);
-				ch_x = CHAR_getInt( tocharaindex, CHAR_X);
-				ch_y = CHAR_getInt( tocharaindex, CHAR_Y);
+				fl = CHAR_getInt( tochar_index, CHAR_FLOOR);
+				ch_x = CHAR_getInt( tochar_index, CHAR_X);
+				ch_y = CHAR_getInt( tochar_index, CHAR_Y);
 				for( cnt = 0; cnt < 10; cnt ++ ) {
 					x = RAND( ch_x -1, ch_x + 1);
 					y = RAND( ch_y -1, ch_y + 1);
@@ -854,11 +854,11 @@ static void PETMAIL_IdleProc4( int index)
 				CHAR_setInt( index, CHAR_MAILMODE,CHAR_PETMAIL_IDLE5);
 				CHAR_setInt( index, CHAR_PETMAILIDLETIME, NowTime.tv_sec);
 				CHAR_warpToSpecificPoint( index,fl, x,y);
-				PETMAIL_returnMail( index, tocharaindex);
+				PETMAIL_returnMail( index, tochar_index);
 			}
 		}else {
 			if( NowTime.tv_sec > t + PETMAIL_IDLE_RETURNOWNER ) {//检查等待主人时间
-				int itemindex;
+				int item_index;
 				CHAR_warpToSpecificPoint( index, //回到原先主人所在座标
 									CHAR_getInt( index, CHAR_PETMAILFROMFLOOR),
 									CHAR_getInt( index, CHAR_PETMAILFROMX),
@@ -870,21 +870,21 @@ static void PETMAIL_IdleProc4( int index)
 				if( CHAR_getInt( index, CHAR_PETMAILIDLETIME) != -1 ) {
 					PETMAIL_deleteOffmsg( CHAR_getInt( index, CHAR_PETMAILBUFINDEX));
 				}
-				itemindex = CHAR_getItemIndex( index, CHAR_STARTITEMARRAY);//删除附带道具
-				if( ITEM_CHECKINDEX( itemindex ) ) {
+				item_index = CHAR_getItemIndex( index, CHAR_STARTITEMARRAY);//删除附带道具
+				if( ITEM_CHECKINDEX( item_index ) ) {
 					CHAR_DropItem( index, CHAR_STARTITEMARRAY);
 
 					LogItem(
 						CHAR_getChar( index, CHAR_OWNERCHARANAME ),
 						CHAR_getChar( index, CHAR_OWNERCDKEY ),
-						itemindex,
+						item_index,
 						"pm_returntimeout(宠邮->逾时删除道具)",
 						CHAR_getInt( index,CHAR_FLOOR),
 						CHAR_getInt( index,CHAR_X ),
 			 			CHAR_getInt( index,CHAR_Y ),
-						ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-						ITEM_getChar( itemindex, ITEM_NAME),
-						ITEM_getInt( itemindex, ITEM_ID)
+						ITEM_getChar( item_index, ITEM_UNIQUECODE),
+						ITEM_getChar( item_index, ITEM_NAME),
+						ITEM_getInt( item_index, ITEM_ID)
 					);
 				}
 			}
@@ -944,14 +944,14 @@ static void PETMAIL_IdleProc5( int index)
 #endif
 
 	}else {
-		int tocharaindex = PETMAIL_CheckPlayerExist( index, 1);
-		if( tocharaindex != -1 ) {
-			if( NPC_Util_CharDistance( tocharaindex, index ) > CHAR_DEFAULTSEESIZ/2) {
+		int tochar_index = PETMAIL_CheckPlayerExist( index, 1);
+		if( tochar_index != -1 ) {
+			if( NPC_Util_CharDistance( tochar_index, index ) > CHAR_DEFAULTSEESIZ/2) {
 				int		fl, x, y, ch_x, ch_y;
 				int		cnt;
-				fl = CHAR_getInt( tocharaindex, CHAR_FLOOR);
-				ch_x = CHAR_getInt( tocharaindex, CHAR_X);
-				ch_y = CHAR_getInt( tocharaindex, CHAR_Y);
+				fl = CHAR_getInt( tochar_index, CHAR_FLOOR);
+				ch_x = CHAR_getInt( tochar_index, CHAR_X);
+				ch_y = CHAR_getInt( tochar_index, CHAR_Y);
 				for( cnt = 0; cnt < 10; cnt ++ ) {
 					x = RAND( ch_x -1, ch_x + 1);
 					y = RAND( ch_y -1, ch_y + 1);
@@ -968,16 +968,16 @@ static void PETMAIL_IdleProc5( int index)
 	}
 }
 
-static void PETMAIL_returnMail( int index, int tocharaindex)
+static void PETMAIL_returnMail( int index, int tochar_index)
 {
 	char	msgbuf[512];
-	int itemindex = CHAR_getItemIndex( index, CHAR_STARTITEMARRAY);
-	if( ITEM_CHECKINDEX( itemindex ) ) {
-		int ret = CHAR_addItemSpecificItemIndex( tocharaindex, itemindex);
+	int item_index = CHAR_getItemIndex( index, CHAR_STARTITEMARRAY);
+	if( ITEM_CHECKINDEX( item_index ) ) {
+		int ret = CHAR_addItemSpecificItemIndex( tochar_index, item_index);
 		
 		if( ret < 0 ||
 #ifdef _NEW_ITEM_
-			ret >= CheckCharMaxItem(tocharaindex)
+			ret >= CheckCharMaxItem(tochar_index)
 #else
 			ret >= CHAR_MAXITEMHAVE
 #endif
@@ -985,29 +985,29 @@ static void PETMAIL_returnMail( int index, int tocharaindex)
 			CHAR_DropItem( index, CHAR_STARTITEMARRAY);
 
 			LogItem(
-				CHAR_getChar( tocharaindex, CHAR_NAME ), 
-				CHAR_getChar( tocharaindex, CHAR_CDKEY ),
-				itemindex,
+				CHAR_getChar( tochar_index, CHAR_NAME ), 
+				CHAR_getChar( tochar_index, CHAR_CDKEY ),
+				item_index,
 				"pm_returnputground(宠邮->道具已满将道具放置地上)",
 				CHAR_getInt( index,CHAR_FLOOR),
 				CHAR_getInt( index,CHAR_X ),
 	 			CHAR_getInt( index,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-						ITEM_getChar( itemindex, ITEM_NAME),
-						ITEM_getInt( itemindex, ITEM_ID)
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+						ITEM_getChar( item_index, ITEM_NAME),
+						ITEM_getInt( item_index, ITEM_ID)
 			);
 		}else {
 			CHAR_setItemIndex( index, CHAR_STARTITEMARRAY, -1);
-			CHAR_sendItemDataOne( tocharaindex, ret);
+			CHAR_sendItemDataOne( tochar_index, ret);
 		}
 	}
 
 #ifdef _PETMAIL_DEFNUMS
 	{
-		int petmailnums = CHAR_getWorkInt( tocharaindex, CHAR_PETMAILNUMS);
+		int petmailnums = CHAR_getWorkInt( tochar_index, CHAR_PETMAILNUMS);
 		petmailnums--;
 		if( petmailnums < 0 ) petmailnums = 0;
-		CHAR_setWorkInt( tocharaindex, CHAR_PETMAILNUMS, petmailnums);
+		CHAR_setWorkInt( tochar_index, CHAR_PETMAILNUMS, petmailnums);
 	}
 #endif
 	if( CHAR_getInt( index, CHAR_PETMAILBUFINDEX) != -1 ) {
@@ -1015,50 +1015,50 @@ static void PETMAIL_returnMail( int index, int tocharaindex)
 					"%s 回来了！"
 					"似乎无法寄送信件。",
 					CHAR_getUseName( index));
-		CHAR_talkToCli( tocharaindex, -1, msgbuf, CHAR_COLORWHITE);
+		CHAR_talkToCli( tochar_index, -1, msgbuf, CHAR_COLORWHITE);
 		PETMAIL_deleteOffmsg( CHAR_getInt( index, CHAR_PETMAILBUFINDEX));
 	}else {
 		snprintf( msgbuf, sizeof( msgbuf), 
 					"%s 回来了！", CHAR_getUseName( index));
-		CHAR_talkToCli( tocharaindex, -1, msgbuf, CHAR_COLORWHITE);		
+		CHAR_talkToCli( tochar_index, -1, msgbuf, CHAR_COLORWHITE);		
 	}
 
 #ifdef _PETMAIL_DEFNUMS
-	CHAR_AutoPickupMailPet( tocharaindex, index);
+	CHAR_AutoPickupMailPet( tochar_index, index);
 #endif
 
 }
 
 
 #ifdef _PETMAIL_DEFNUMS
-void CHAR_AutoPickupMailPet( int charaindex, int petindex )
+void CHAR_AutoPickupMailPet( int char_index, int petindex )
 {
 	int objindex;
 	int havepetindex;
 	char category[3];
 	Char 	*ch;
-	if( !CHAR_CHECKINDEX( charaindex ) ) return;
+	if( !CHAR_CHECKINDEX( char_index ) ) return;
 #ifdef _AVID_TRADETRYBUG //丢出宠物
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE ){
-		CHAR_talkToCli( charaindex, -1, "交易状态中无法自动拾回邮件宠物！", CHAR_COLORYELLOW );
+	if( CHAR_getWorkInt( char_index, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE ){
+		CHAR_talkToCli( char_index, -1, "交易状态中无法自动拾回邮件宠物！", CHAR_COLORYELLOW );
 		return;
 	}
 #endif
 	if( !CHAR_CHECKINDEX( petindex ) ) return;
-	havepetindex = CHAR_getCharPetElement( charaindex);
+	havepetindex = CHAR_getCharPetElement( char_index);
 	if( havepetindex == -1 ) {
 
-		CHAR_talkToCli(charaindex,-1,"宠物栏已满！无法自动拾回邮件宠物！",CHAR_COLORYELLOW);
+		CHAR_talkToCli(char_index,-1,"宠物栏已满！无法自动拾回邮件宠物！",CHAR_COLORYELLOW);
 		// WON ADD
 		LogPet(
-			CHAR_getChar( charaindex, CHAR_NAME ), 
-			CHAR_getChar( charaindex, CHAR_CDKEY ),
+			CHAR_getChar( char_index, CHAR_NAME ), 
+			CHAR_getChar( char_index, CHAR_CDKEY ),
 			CHAR_getChar( petindex, CHAR_NAME),
 			CHAR_getInt( petindex, CHAR_LV),
 			"Pet_Full(宠物栏已满，无法拾起宠物)",
-			CHAR_getInt( charaindex,CHAR_FLOOR),
-			CHAR_getInt( charaindex,CHAR_X ),
-			CHAR_getInt( charaindex,CHAR_Y ),
+			CHAR_getInt( char_index,CHAR_FLOOR),
+			CHAR_getInt( char_index,CHAR_X ),
+			CHAR_getInt( char_index,CHAR_Y ),
 			CHAR_getChar( petindex, CHAR_UNIQUECODE)   
 	    );		 
 		return;
@@ -1068,16 +1068,16 @@ void CHAR_AutoPickupMailPet( int charaindex, int petindex )
 
 	objindex = CHAR_getWorkInt( petindex, CHAR_WORKOBJINDEX );
 	CHAR_ObjectDelete(objindex);
-	CHAR_setWorkInt( petindex, CHAR_WORKPLAYERINDEX, charaindex);
-	CHAR_setCharPet( charaindex, havepetindex, petindex);
+	CHAR_setWorkInt( petindex, CHAR_WORKPLAYERINDEX, char_index);
+	CHAR_setCharPet( char_index, havepetindex, petindex);
 
-	CHAR_setChar( petindex, CHAR_OWNERCDKEY, CHAR_getChar( charaindex, CHAR_CDKEY));
-	CHAR_setChar( petindex, CHAR_OWNERCHARANAME, CHAR_getChar( charaindex, CHAR_NAME));
+	CHAR_setChar( petindex, CHAR_OWNERCDKEY, CHAR_getChar( char_index, CHAR_CDKEY));
+	CHAR_setChar( petindex, CHAR_OWNERCHARANAME, CHAR_getChar( char_index, CHAR_NAME));
 
 	snprintf( category,sizeof( category),"K%d",havepetindex);
-	CHAR_sendStatusString( charaindex, category);
+	CHAR_sendStatusString( char_index, category);
 	snprintf( category,sizeof( category),"W%d",havepetindex);
-	CHAR_sendStatusString( charaindex, category);
+	CHAR_sendStatusString( char_index, category);
 
 	CHAR_setInt( petindex, CHAR_PUTPETTIME, 0);
 	CHAR_setWorkInt( petindex, CHAR_WORKOBJINDEX, -1);
@@ -1099,17 +1099,17 @@ void CHAR_AutoPickupMailPet( int charaindex, int petindex )
 			p = CHAR_getChar( petindex, CHAR_NAME);
 		}
 		snprintf( mesg,sizeof(mesg), "拾回邮件宠物 %s", p);
-		CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORYELLOW);
+		CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORYELLOW);
 	}
 	LogPet(
-		CHAR_getChar( charaindex, CHAR_NAME ), 
-		CHAR_getChar( charaindex, CHAR_CDKEY ),
+		CHAR_getChar( char_index, CHAR_NAME ), 
+		CHAR_getChar( char_index, CHAR_CDKEY ),
 		CHAR_getChar( petindex, CHAR_NAME),
 		CHAR_getInt( petindex, CHAR_LV),
 		"PickupMailPet(自动收回邮宠)",
-		CHAR_getInt( charaindex,CHAR_FLOOR),
-		CHAR_getInt( charaindex,CHAR_X ),
-		CHAR_getInt( charaindex,CHAR_Y ),
+		CHAR_getInt( char_index,CHAR_FLOOR),
+		CHAR_getInt( char_index,CHAR_X ),
+		CHAR_getInt( char_index,CHAR_Y ),
 		CHAR_getChar( petindex, CHAR_UNIQUECODE)   
 	);
 	return;

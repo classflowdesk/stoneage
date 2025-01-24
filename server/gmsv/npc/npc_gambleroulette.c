@@ -5,7 +5,7 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "readmap.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "handletime.h"
 
 #ifdef _GAMBLE_ROULETTE 

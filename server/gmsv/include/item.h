@@ -240,8 +240,8 @@ typedef enum {
                       * int char_index: 
                       * int item_index: */
   ITEM_DETACHFUNC,   /* Attach的相反操作.
-                      * int charaindex: 
-                      * int itemindex: */
+                      * int char_index: 
+                      * int item_index: */
   ITEM_DROPFUNC,     /* 丢弃物品后的回调方法.
                       *  int char_index: 丢弃物品的玩家编号.
                       *  int item_index: 丢弃物品的全局编号. */
@@ -344,10 +344,10 @@ INLINE int ITEM_setWorkInt(int index, ITEM_WORKDATAINT item_data_enum, int data)
 INLINE int ITEM_getITEM_sItemNum(void);
 INLINE int ITEM_getITEM_sUseItemNum(void);
 INLINE BOOL ITEM_getITEM_use(int index);
-void ITEM_constructFunctable(int itemindex);
-#define ITEM_getFunctionPointer(itemindex, functype)                           \
-  _ITEM_getFunctionPointer(itemindex, functype, __FILE__, __LINE__)
-void *_ITEM_getFunctionPointer(int itemindex, int functype, char *file,
+void ITEM_constructFunctable(int item_index);
+#define ITEM_getFunctionPointer(item_index, functype)                           \
+  _ITEM_getFunctionPointer(item_index, functype, __FILE__, __LINE__)
+void *_ITEM_getFunctionPointer(int item_index, int functype, char *file,
                                int line);
 #ifdef _ALLBLUES_LUA_1_2
 typedef struct ITEM_tagLuaFunc {
@@ -376,11 +376,11 @@ void ITEM_getDefaultItemSetting(ITEM_Item *itm);
 INLINE BOOL ITEM_CHECKITEMTABLE(int number);
 BOOL ITEM_readItemConfFile(char *filename);
 
-CHAR_EquipPlace ITEM_getEquipPlace(int charaindex, int itmid);
+CHAR_EquipPlace ITEM_getEquipPlace(int char_index, int itmid);
 
-char *ITEM_makeItemStatusString(int haveitemindex, int itemindex);
+char *ITEM_makeItemStatusString(int haveitem_index, int item_index);
 char *ITEM_makeItemFalseString(void);
-char *ITEM_makeItemFalseStringWithNum(int haveitemindex);
+char *ITEM_makeItemFalseStringWithNum(int haveitem_index);
 
 BOOL ITEM_makeItem(ITEM_Item *itm, int number);
 int ITEM_makeItemAndRegist(int number);
@@ -389,8 +389,8 @@ void ITEM_equipEffect(int index);
 
 void Other_DefcharWorkInt(int index);
 
-char *ITEM_getAppropriateName(int itemindex);
-char *ITEM_getEffectString(int itemindex);
+char *ITEM_getAppropriateName(int item_index);
+char *ITEM_getEffectString(int item_index);
 
 int ITEM_getcostFromITEMtabl(int item_id);
 
@@ -412,20 +412,20 @@ int ITEM_getcanpetmailFromITEMtabl(int item_id);
 int ITEM_getmergeItemFromFromITEMtabl(int item_id);
 
 #ifdef _ITEM_CHECKWARES
-BOOL CHAR_CheckInItemForWares(int charaindex, int flg);
+BOOL CHAR_CheckInItemForWares(int char_index, int flg);
 #endif
 
-BOOL ITEM_canuseMagic(int itemindex);
+BOOL ITEM_canuseMagic(int item_index);
 // Nuke +1 08/23 : For checking the validity of item target
-int ITEM_isTargetValid(int charaindex, int itemindex, int toindex);
+int ITEM_isTargetValid(int char_index, int item_index, int toindex);
 
 int ITEMTBL_getInt(int ItemID, ITEM_DATA_ENUM datatype);
 char *ITEMTBL_getChar(int ItemID, ITEM_CHAR_DATA_ENUM datatype);
 
-int ITEM_getItemDamageCrusheED(int itemindex);
-void ITEM_RsetEquit(int charaindex);
-void ITEM_reChangeItemToPile(int itemindex);
-void ITEM_reChangeItemName(int itemindex);
+int ITEM_getItemDamageCrusheED(int item_index);
+void ITEM_RsetEquit(int char_index);
+void ITEM_reChangeItemToPile(int item_index);
+void ITEM_reChangeItemName(int item_index);
 
 #ifdef _SIMPLIFY_ITEMSTRING
 void ITEM_getDefaultItemData(int itemID, ITEM_Item *itm);

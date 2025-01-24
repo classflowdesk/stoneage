@@ -408,7 +408,7 @@ static int DelItemNum (lua_State *L)
 		itemNUM = atoi(tmp);
 	}
 	
-	int i, itemindex;
+	int i, item_index;
 	char token[256];
 	int num=0;
 #ifdef _NEW_ITEM_
@@ -418,30 +418,30 @@ static int DelItemNum (lua_State *L)
 	for( i = CHAR_STARTITEMARRAY ; i < CHAR_MAXITEMHAVE ; i++ ){
 #endif
 		if(num >= itemNUM)break;
-		itemindex = CHAR_getItemIndex( index , i );
-		if( !ITEM_CHECKINDEX(itemindex) ) continue;
-		if( ITEM_getInt(itemindex, ITEM_ID) != itemID ) continue;
-		sprintf( token, "交出道具%s",ITEM_getChar( itemindex, ITEM_NAME));
+		item_index = CHAR_getItemIndex( index , i );
+		if( !ITEM_CHECKINDEX(item_index) ) continue;
+		if( ITEM_getInt(item_index, ITEM_ID) != itemID ) continue;
+		sprintf( token, "交出道具%s",ITEM_getChar( item_index, ITEM_NAME));
 		CHAR_talkToCli( index, -1, token, CHAR_COLORYELLOW);
 
 						LogItem(
 							CHAR_getChar( index, CHAR_NAME ),
 							CHAR_getChar( index, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),
+							ITEM_getInt( item_index, ITEM_ID),
 #endif
 							"任务收取",
 							CHAR_getInt( index,CHAR_FLOOR),
 							CHAR_getInt( index,CHAR_X ),
 							CHAR_getInt( index,CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 						);
 			CHAR_setItemIndex( index, i, -1);
-			ITEM_endExistItemsOne( itemindex);
+			ITEM_endExistItemsOne( item_index);
 			CHAR_sendItemDataOne( index, i);
 			num++;
 	}
@@ -608,18 +608,18 @@ static int CreatePlayer (lua_State *L) {
 #ifdef _ONLINE_COST
 static int OnlineCost (lua_State *L)
 {
-  const int charaindex = luaL_checkint(L, 1);
+  const int char_index = luaL_checkint(L, 1);
 
-  NPC_ActionOnlineCost(charaindex);
+  NPC_ActionOnlineCost(char_index);
   lua_pushinteger(L, 1);
   return 1;
 }
 
 static int OnlineBuy (lua_State *L)
 {
-  const int charaindex = luaL_checkint(L, 1);
+  const int char_index = luaL_checkint(L, 1);
 
-  NPC_ActionOnlineBuy(charaindex);
+  NPC_ActionOnlineBuy(char_index);
   lua_pushinteger(L, 1);
   return 1;
 }

@@ -8,7 +8,7 @@ typedef struct PLAYER_QUESTION_t{
 	int type;
 	int value;
 }PlayerQuestion_t;
-BOOL PlayQuestionOnline(int charaindex, char *messageeraseescape);
+BOOL PlayQuestionOnline(int char_index, char *messageeraseescape);
 
 #endif
 

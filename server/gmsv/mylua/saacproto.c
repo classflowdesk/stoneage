@@ -5,7 +5,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-#include "saacproto_cli.h"
+#include "saac_client.h"
 
 #ifdef _ALLBLUES_LUA
 static int ACFixFMPoint(lua_State *L) 
@@ -19,7 +19,7 @@ static int ACFixFMPoint(lua_State *L)
 	const int loseindex = luaL_checkint(L, 6);
 	const int village = luaL_checkint(L, 7);
 
-	saacproto_ACFixFMPoint_send(acfd, winfmname, winfmindex, winindex, losefmname, losefmindex, loseindex, village);
+	SaacClient_ACFixFMPoint_send(acfd, winfmname, winfmindex, winindex, losefmname, losefmindex, loseindex, village);
 	
 	return 1;
 }
@@ -31,17 +31,17 @@ static int ACFMDetail(lua_State *L)
 	const int fmindex = luaL_checkint(L, 2);
 	const int tempindex = luaL_checkint(L, 3);
 	const int fd = luaL_checkint(L, 4);
-	saacproto_ACFMDetail_send( acfd, fmname, fmindex, tempindex, CONNECT_getFdid(fd));
+	SaacClient_ACFMDetail_send( acfd, fmname, fmindex, tempindex, CONNECT_getFdid(fd));
 	return 1;
 }
 
 static int ItemPetLocked(lua_State *L) 
 {
 	size_t l;
-	int charaindex=luaL_checkint(L, 1);
-	int fd = getfdFromCharaIndex( charaindex);
+	int char_index=luaL_checkint(L, 1);
+	int fd = getfdFromCharaIndex( char_index);
 	char *data=luaL_checklstring(L, 2, &l);
-	saacproto_ItemPetLocked_send( fd, CHAR_getChar(charaindex, CHAR_CDKEY), data);
+	SaacClient_ItemPetLocked_send( fd, CHAR_getChar(char_index, CHAR_CDKEY), data);
 	return 1;
 }
 

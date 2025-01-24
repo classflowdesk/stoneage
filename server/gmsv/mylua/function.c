@@ -18,18 +18,16 @@ lua_State *FindLua(char *filename) {
     } else {
       sprintf(newfilename, "%s", filename);
     }
-
     if (strcmp(newfilename, mylua->luapath) == 0) {
       return mylua->lua;
     }
     mylua = mylua->next;
   }
-
   return NULL;
 }
 
 #ifdef _MO_LUA_MERGE_CALLBACK
-BOOL MergeCallBack(int charaindex, int petindex, char *data, int flg) {
+BOOL MergeCallBack(int char_index, int petindex, char *data, int flg) {
   static lua_State *lua;
   if (lua == NULL) {
     lua = FindLua("data/ablua/mergecallback.lua");
@@ -44,7 +42,7 @@ BOOL MergeCallBack(int charaindex, int petindex, char *data, int flg) {
     return FALSE;
   }
 
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, petindex);
   lua_pushstring(lua, data);
   lua_pushnumber(lua, flg);
@@ -76,10 +74,10 @@ BOOL FamilyRideCheck(int meindex, int petindex, int petid) {
   lua_pushnumber(lua, petid);
 
   if (lua_pcall(lua, 3, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
@@ -88,7 +86,7 @@ BOOL FamilyRideCheck(int meindex, int petindex, int petid) {
 #endif
 
 #ifdef _NEW_TITLE
-int GetCharNewTitleNo(int charaindex, int id) {
+int GetCharNewTitleNo(int char_index, int id) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -104,21 +102,21 @@ int GetCharNewTitleNo(int charaindex, int id) {
     return TRUE;
   }
 
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, id);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
   return ret;
 }
 
-char *GetCharNewTitleName(int charaindex, int id) {
+char *GetCharNewTitleName(int char_index, int id) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -135,14 +133,14 @@ char *GetCharNewTitleName(int charaindex, int id) {
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, id);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isstring(lua, -1))
-    error(lua, "function `f' must return a string");
+    luaL_error(lua, "function `f' must return a string");
 
   char *ret = lua_tostring(lua, -1);
   lua_pop(lua, 1);
@@ -151,7 +149,7 @@ char *GetCharNewTitleName(int charaindex, int id) {
 #endif
 
 #ifdef _CHAR_TITLE_STR_
-char *GetCharNewTitleString(int charaindex, int id) {
+char *GetCharNewTitleString(int char_index, int id) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -167,15 +165,14 @@ char *GetCharNewTitleString(int charaindex, int id) {
     return TRUE;
   }
 
-  // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, id);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isstring(lua, -1))
-    error(lua, "function `f' must return a string");
+    luaL_error(lua, "function `f' must return a string");
 
   char *ret = lua_tostring(lua, -1);
   lua_pop(lua, 1);
@@ -241,7 +238,7 @@ int FreeCharDelet(int fd, char *cdkey, char *passwd) {
   return ret;
 }
 
-BOOL BattleCommand(int charaindex, int battleindex) {
+BOOL BattleCommand(int char_index, int battleindex) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -257,14 +254,14 @@ BOOL BattleCommand(int charaindex, int battleindex) {
     return TRUE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, battleindex);
   docall(lua, 2, 1);
 
   return TRUE;
 }
 #ifdef _MO_LUA_KS_CALLBACK
-BOOL FreeSelectBattlePet(int charaindex, int petarray) {
+BOOL FreeSelectBattlePet(int char_index, int petarray) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -280,13 +277,13 @@ BOOL FreeSelectBattlePet(int charaindex, int petarray) {
     return TRUE;
   }
   // ���η���2������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, petarray);
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -299,7 +296,7 @@ BOOL FreeSelectBattlePet(int charaindex, int petarray) {
 }
 #endif
 
-int FreeItemInslay(int charaindex, int inslayindex, int itemindex) {
+int FreeItemInslay(int char_index, int inslayindex, int item_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -315,15 +312,15 @@ int FreeItemInslay(int charaindex, int inslayindex, int itemindex) {
     return TRUE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, inslayindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, item_index);
 
   if (lua_pcall(lua, 3, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -353,10 +350,10 @@ int FreeCtrlTransDevelop(int petindex, int type) {
   lua_pushnumber(lua, type);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -382,10 +379,10 @@ int FreeFmPk() {
   }
   // ���η�����������
   if (lua_pcall(lua, 0, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -394,7 +391,7 @@ int FreeFmPk() {
   return ret;
 }
 
-int FreeStreetVendorPet(int charaindex, int petindex) {
+int FreeStreetVendorPet(int char_index, int petindex) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -410,14 +407,14 @@ int FreeStreetVendorPet(int charaindex, int petindex) {
     return TRUE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, petindex);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -426,7 +423,7 @@ int FreeStreetVendorPet(int charaindex, int petindex) {
   return ret;
 }
 
-int FreeStreetVendorItem(int charaindex, int itemindex) {
+int FreeStreetVendorItem(int char_index, int item_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -442,14 +439,14 @@ int FreeStreetVendorItem(int charaindex, int itemindex) {
     return TRUE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -458,7 +455,7 @@ int FreeStreetVendorItem(int charaindex, int itemindex) {
   return ret;
 }
 
-int FreeTradePet(int charaindex, int petindex) {
+int FreeTradePet(int char_index, int petindex) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -474,14 +471,14 @@ int FreeTradePet(int charaindex, int petindex) {
     return TRUE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, petindex);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -490,7 +487,7 @@ int FreeTradePet(int charaindex, int petindex) {
   return ret;
 }
 
-int FreeTradeItem(int charaindex, int itemindex) {
+int FreeTradeItem(int char_index, int item_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -506,14 +503,14 @@ int FreeTradeItem(int charaindex, int itemindex) {
     return TRUE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -523,7 +520,7 @@ int FreeTradeItem(int charaindex, int itemindex) {
 }
 
 #ifdef _LOCK_PET_ITEM
-int FreeDropItem(int charaindex, int itemindex) {
+int FreeDropItem(int char_index, int item_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -539,14 +536,14 @@ int FreeDropItem(int charaindex, int itemindex) {
     return TRUE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -556,7 +553,7 @@ int FreeDropItem(int charaindex, int itemindex) {
 }
 #endif
 
-int FreeLockPetSave(int charaindex, int petindex) {
+int FreeLockPetSave(int char_index, int petindex) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -572,14 +569,14 @@ int FreeLockPetSave(int charaindex, int petindex) {
     return TRUE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, petindex);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -588,7 +585,7 @@ int FreeLockPetSave(int charaindex, int petindex) {
   return ret;
 }
 #endif
-void FreeAddFMAdv(int charaindex, int shiftbit) {
+void FreeAddFMAdv(int char_index, int shiftbit) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -604,12 +601,12 @@ void FreeAddFMAdv(int charaindex, int shiftbit) {
     return;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, shiftbit);
   docall(lua, 2, 1);
 }
 #ifdef _FIRST_LOCK_ITEM
-void FreeFirstLockPet(int charaindex, int petindex) {
+void FreeFirstLockPet(int char_index, int petindex) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -625,12 +622,12 @@ void FreeFirstLockPet(int charaindex, int petindex) {
     return;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, petindex);
 
   docall(lua, 2, 1);
 }
-void FreeFirstLockItem(int charaindex, int itemindex) {
+void FreeFirstLockItem(int char_index, int item_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -646,8 +643,8 @@ void FreeFirstLockItem(int charaindex, int itemindex) {
     return;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   docall(lua, 2, 1);
 }
@@ -695,10 +692,10 @@ int FreeFusionTableForBase(int MainIndex, int Subindex1, int Subindex2) {
   lua_pushnumber(lua, Subindex1);
   lua_pushnumber(lua, Subindex2);
   if (lua_pcall(lua, 3, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -725,10 +722,10 @@ BOOL FreeFusionSkill(int petskill) {
   // ���η���һ������
   lua_pushnumber(lua, petskill);
   if (lua_pcall(lua, 1, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -738,7 +735,7 @@ BOOL FreeFusionSkill(int petskill) {
 }
 #endif
 
-BOOL FreeAction(int charaindex, int x, int y, int actionno) {
+BOOL FreeAction(int char_index, int x, int y, int actionno) {
   static lua_State *lua;
   if (lua == NULL) {
     lua = FindLua("data/ablua/freeaction.lua");
@@ -753,7 +750,7 @@ BOOL FreeAction(int charaindex, int x, int y, int actionno) {
     return FALSE;
   }
 
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, x);
   lua_pushnumber(lua, y);
   lua_pushnumber(lua, actionno);
@@ -794,7 +791,7 @@ int FreeModeExp(int charindex, int getexp, int modexp) {
   return ret;
 }
 
-BOOL FreePlayerExp(int charaindex) {
+BOOL FreePlayerExp(int char_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -810,13 +807,13 @@ BOOL FreePlayerExp(int charaindex) {
     return TRUE;
   }
   // ���η���һ������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
 
   if (lua_pcall(lua, 1, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -825,7 +822,7 @@ BOOL FreePlayerExp(int charaindex) {
   return ret;
 }
 
-BOOL FreeSaMenu(int charaindex, int index) {
+BOOL FreeSaMenu(int char_index, int index) {
   static lua_State *lua;
   if (lua == NULL) {
     lua = FindLua("data/ablua/freesamenu.lua");
@@ -840,17 +837,17 @@ BOOL FreeSaMenu(int charaindex, int index) {
     return FALSE;
   }
 
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, index);
 
-  // printf("FreeSaMenu:%d,%d\n", charaindex, index);
+  // printf("FreeSaMenu:%d,%d\n", char_index, index);
   docall(lua, 2, 1);
 
   return TRUE;
 }
 
 #ifdef _DATA_INFO_SHOW
-BOOL FreeDataInfoShow(int charaindex) {
+BOOL FreeDataInfoShow(int char_index) {
   static lua_State *lua;
   if (lua == NULL) {
     lua = FindLua("data/ablua/freedatainfoshow.lua");
@@ -865,14 +862,14 @@ BOOL FreeDataInfoShow(int charaindex) {
     return FALSE;
   }
 
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   docall(lua, 1, 1);
 
   return TRUE;
 }
 #endif
 #ifdef _FAME_REG_TIME
-BOOL FreeFameFeatures(int charaindex, int kind, int flg) {
+BOOL FreeFameFeatures(int char_index, int kind, int flg) {
   static lua_State *lua;
   if (lua == NULL) {
     lua = FindLua("data/ablua/freefamefeatures.lua");
@@ -887,7 +884,7 @@ BOOL FreeFameFeatures(int charaindex, int kind, int flg) {
     return FALSE;
   }
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, kind);
   lua_pushnumber(lua, flg);
 
@@ -896,7 +893,7 @@ BOOL FreeFameFeatures(int charaindex, int kind, int flg) {
   return TRUE;
 }
 #endif
-BOOL FreeComplianceParameter(int charaindex) {
+BOOL FreeComplianceParameter(int char_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -912,7 +909,7 @@ BOOL FreeComplianceParameter(int charaindex) {
     return FALSE;
   }
   // ���η���һ������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
 
   docall(lua, 1, 1);
 
@@ -938,10 +935,10 @@ BOOL FreeLoginCheck(int fd) {
   lua_pushnumber(lua, fd);
 
   if (lua_pcall(lua, 1, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
 
@@ -950,7 +947,7 @@ BOOL FreeLoginCheck(int fd) {
   return ret;
 }
 
-BOOL FreeCharLogout(int charaindex) {
+BOOL FreeCharLogout(int char_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -966,13 +963,13 @@ BOOL FreeCharLogout(int charaindex) {
     return FALSE;
   }
   // ���η���һ������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   docall(lua, 1, 1);
 
   return TRUE;
 }
 
-BOOL EquipEffectFunction(int charaindex, int id) {
+BOOL EquipEffectFunction(int char_index, int id) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -989,21 +986,21 @@ BOOL EquipEffectFunction(int charaindex, int id) {
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, id);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
   return ret;
 }
 
-BOOL EquipChangeFunction(int charaindex, int id) {
+BOOL EquipChangeFunction(int char_index, int id) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -1020,21 +1017,21 @@ BOOL EquipChangeFunction(int charaindex, int id) {
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, id);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
   return ret;
 }
 
-BOOL WalkFunction(int charaindex) {
+BOOL WalkFunction(int char_index) {
   MY_Lua *mylua = &MYLua;
   while (mylua->lua != NULL) {
     lua_getglobal(mylua->lua, "WalkFunction");
@@ -1045,14 +1042,14 @@ BOOL WalkFunction(int charaindex) {
       continue;
     }
 
-    lua_pushnumber(mylua->lua, charaindex);
+    lua_pushnumber(mylua->lua, char_index);
 
     if (lua_pcall(mylua->lua, 1, 1, 0) != 0)
-      error(mylua->lua, "error running function `f': %s",
+      luaL_error(mylua->lua, "error running function `f': %s",
             lua_tostring(mylua->lua, -1));
 
     if (!lua_isnumber(mylua->lua, -1))
-      error(mylua->lua, "function `f' must return a number");
+      luaL_error(mylua->lua, "function `f' must return a number");
 
     int ret = lua_tonumber(mylua->lua, -1);
     lua_pop(mylua->lua, 1);
@@ -1066,7 +1063,7 @@ BOOL WalkFunction(int charaindex) {
   return FALSE;
 }
 #ifdef _ITEM_OVER_LAP
-BOOL ItemOverlapFunction(int charindex, int fromitemindex, int toitemindex) {
+BOOL ItemOverlapFunction(int charindex, int fromitem_index, int toitem_index) {
   MY_Lua *mylua = &MYLua;
   while (mylua->lua != NULL) {
     lua_getglobal(mylua->lua, "ItemOverlapFunction");
@@ -1078,8 +1075,8 @@ BOOL ItemOverlapFunction(int charindex, int fromitemindex, int toitemindex) {
     }
     // ���η����������
     lua_pushnumber(mylua->lua, charindex);
-    lua_pushnumber(mylua->lua, fromitemindex);
-    lua_pushnumber(mylua->lua, toitemindex);
+    lua_pushnumber(mylua->lua, fromitem_index);
+    lua_pushnumber(mylua->lua, toitem_index);
 
     lua_pcall(mylua->lua, 3, 1, 0);
 
@@ -1097,8 +1094,8 @@ BOOL ItemOverlapFunction(int charindex, int fromitemindex, int toitemindex) {
   return TRUE;
 }
 
-BOOL ItemOverlapedFunction(int charindex, int fromitemindex, int fromid,
-                           int toitemindex, int toid) {
+BOOL ItemOverlapedFunction(int charindex, int fromitem_index, int fromid,
+                           int toitem_index, int toid) {
   MY_Lua *mylua = &MYLua;
   while (mylua->lua != NULL) {
     lua_getglobal(mylua->lua, "ItemOverlapedFunction");
@@ -1110,9 +1107,9 @@ BOOL ItemOverlapedFunction(int charindex, int fromitemindex, int fromid,
     }
     // ���η����������
     lua_pushnumber(mylua->lua, charindex);
-    lua_pushnumber(mylua->lua, fromitemindex);
+    lua_pushnumber(mylua->lua, fromitem_index);
     lua_pushnumber(mylua->lua, fromid);
-    lua_pushnumber(mylua->lua, toitemindex);
+    lua_pushnumber(mylua->lua, toitem_index);
     lua_pushnumber(mylua->lua, toid);
 
     docall(mylua->lua, 5, 1);
@@ -1123,7 +1120,7 @@ BOOL ItemOverlapedFunction(int charindex, int fromitemindex, int fromid,
 }
 #endif
 
-BOOL BattleFinishPvEFunction(int battleindex, int charaindex) {
+BOOL BattleFinishPvEFunction(int battleindex, int char_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -1141,14 +1138,14 @@ BOOL BattleFinishPvEFunction(int battleindex, int charaindex) {
 
   // ���η����������
   lua_pushnumber(lua, battleindex);
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
 
   docall(lua, 2, 1);
 
   return TRUE;
 }
 
-BOOL BattleFinishFunction(int charaindex, int battletime, int battleturn,
+BOOL BattleFinishFunction(int char_index, int battletime, int battleturn,
                           int battletype) {
   static lua_State *lua;
 
@@ -1166,7 +1163,7 @@ BOOL BattleFinishFunction(int charaindex, int battletime, int battleturn,
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, battletime);
   lua_pushnumber(lua, battleturn);
   lua_pushnumber(lua, battletype);
@@ -1202,7 +1199,7 @@ BOOL BattleStartFunction(int battleindex) {
 }
 #endif
 
-BOOL SetBattleEnmeyFunction(int meindex, int enemyindex, int id) {
+BOOL SetBattleEnmeyFunction(int meindex, int enemy_index, int id) {
   lua_State *lua = CHAR_getLUAFunction(meindex, CHAR_BATTLESETFUNC);
   if (lua == NULL) {
     return FALSE;
@@ -1210,7 +1207,7 @@ BOOL SetBattleEnmeyFunction(int meindex, int enemyindex, int id) {
 
   // ���η����������
   lua_pushnumber(lua, meindex);
-  lua_pushnumber(lua, enemyindex);
+  lua_pushnumber(lua, enemy_index);
   lua_pushnumber(lua, id);
   docall(lua, 3, 1);
 
@@ -1262,10 +1259,10 @@ BOOL CaptureCheckFunction(int attackindex, int defindex) {
   lua_pushnumber(lua, defindex);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
@@ -1274,7 +1271,7 @@ BOOL CaptureCheckFunction(int attackindex, int defindex) {
 #endif
 
 #ifdef _ALLBLUES_LUA_1_7
-BOOL CharVsEnemyFunction(int charaindex) {
+BOOL CharVsEnemyFunction(int char_index) {
   MY_Lua *mylua = &MYLua;
   while (mylua->lua != NULL) {
     lua_getglobal(mylua->lua, "CharVsEnemyFunction");
@@ -1285,14 +1282,14 @@ BOOL CharVsEnemyFunction(int charaindex) {
       continue;
     }
 
-    lua_pushnumber(mylua->lua, charaindex);
+    lua_pushnumber(mylua->lua, char_index);
 
     if (lua_pcall(mylua->lua, 1, 1, 0) != 0)
-      error(mylua->lua, "error running function `f': %s",
+      luaL_error(mylua->lua, "error running function `f': %s",
             lua_tostring(mylua->lua, -1));
 
     if (!lua_isnumber(mylua->lua, -1))
-      error(mylua->lua, "function `f' must return a number");
+      luaL_error(mylua->lua, "function `f' must return a number");
 
     int ret = lua_tonumber(mylua->lua, -1);
     lua_pop(mylua->lua, 1);
@@ -1308,7 +1305,7 @@ BOOL CharVsEnemyFunction(int charaindex) {
 #endif
 
 #ifdef _ALLBLUES_LUA_1_6
-BOOL CharTalkFunction(int charaindex, char *message, int color) {
+BOOL CharTalkFunction(int char_index, char *message, int color) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -1325,15 +1322,15 @@ BOOL CharTalkFunction(int charaindex, char *message, int color) {
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushstring(lua, message);
   lua_pushnumber(lua, color);
 
   if (lua_pcall(lua, 3, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
@@ -1362,10 +1359,10 @@ BOOL FamilyRideFunction(int meindex, int petindex, int petid) {
   lua_pushnumber(lua, petid);
 
   if (lua_pcall(lua, 3, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
@@ -1391,7 +1388,7 @@ BOOL NetLoopFunction(void) {
   return TRUE;
 }
 
-BOOL FreeCharCreate(int charaindex) {
+BOOL FreeCharCreate(int char_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -1407,14 +1404,14 @@ BOOL FreeCharCreate(int charaindex) {
     return FALSE;
   }
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
 
   docall(lua, 1, 1);
 
   return TRUE;
 }
 
-BOOL FreeCharLogin(int charaindex) {
+BOOL FreeCharLogin(int char_index) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -1430,20 +1427,20 @@ BOOL FreeCharLogin(int charaindex) {
     return FALSE;
   }
 
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
 
   if (lua_pcall(lua, 1, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
   return ret;
 }
 
-BOOL FreeVsPlayer(int charaindex, int toindex) {
+BOOL FreeVsPlayer(int char_index, int toindex) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -1459,21 +1456,21 @@ BOOL FreeVsPlayer(int charaindex, int toindex) {
     return FALSE;
   }
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, toindex);
 
   if (lua_pcall(lua, 2, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
   return ret;
 }
 
-BOOL FreePartyJoin(int charaindex, int toindex) {
+BOOL FreePartyJoin(int char_index, int toindex) {
   MY_Lua *mylua = &MYLua;
   while (mylua->lua != NULL) {
     lua_getglobal(mylua->lua, "FreePartyJoin");
@@ -1484,15 +1481,15 @@ BOOL FreePartyJoin(int charaindex, int toindex) {
       continue;
     }
     // ���η����������
-    lua_pushnumber(mylua->lua, charaindex);
+    lua_pushnumber(mylua->lua, char_index);
     lua_pushnumber(mylua->lua, toindex);
 
     if (lua_pcall(mylua->lua, 2, 1, 0) != 0)
-      error(mylua->lua, "error running function `f': %s",
+      luaL_error(mylua->lua, "error running function `f': %s",
             lua_tostring(mylua->lua, -1));
 
     if (!lua_isnumber(mylua->lua, -1))
-      error(mylua->lua, "function `f' must return a number");
+      luaL_error(mylua->lua, "function `f' must return a number");
 
     int ret = lua_tonumber(mylua->lua, -1);
     lua_pop(mylua->lua, 1);
@@ -1509,42 +1506,42 @@ BOOL FreePartyJoin(int charaindex, int toindex) {
 
 #ifdef _ALLBLUES_LUA_1_4
 
-BOOL RunCharLogOutEvent(int charaindex) {
-  lua_State *lua = CHAR_getLUAFunction(charaindex, CHAR_LOGINOUTFUNC);
+BOOL RunCharLogOutEvent(int char_index) {
+  lua_State *lua = CHAR_getLUAFunction(char_index, CHAR_LOGINOUTFUNC);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
 
   docall(lua, 1, 1);
 
   return TRUE;
 }
 
-BOOL BattleFinish(int battleindex, int charaindex) {
+BOOL BattleFinish(int battleindex, int char_index) {
   lua_State *lua = BATTLE_getLUAFunction(battleindex, BATTLE_FINISH);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
 
   docall(lua, 1, 1);
 
   return TRUE;
 }
 
-BOOL BattleEscape(int battleindex, int charaindex) {
+BOOL BattleEscape(int battleindex, int char_index) {
   lua_State *lua = BATTLE_getLUAFunction(battleindex, BATTLE_ESCAPE);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
 
   docall(lua, 1, 1);
 
@@ -1553,7 +1550,7 @@ BOOL BattleEscape(int battleindex, int charaindex) {
 #endif
 
 #ifdef _OFFLINE_SYSTEM
-BOOL OffLineCommand(int battleindex, int charaindex, int side) {
+BOOL OffLineCommand(int battleindex, int char_index, int side) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -1570,7 +1567,7 @@ BOOL OffLineCommand(int battleindex, int charaindex, int side) {
   }
   // ���η�����������
   lua_pushnumber(lua, battleindex);
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, side);
 
   docall(lua, 3, 1);
@@ -1579,7 +1576,7 @@ BOOL OffLineCommand(int battleindex, int charaindex, int side) {
 }
 #endif
 
-void ABNPC_Lua_NEWSHOP_Recv(int charaindex) {
+void ABNPC_Lua_NEWSHOP_Recv(int char_index) {
   static lua_State *lua;
   if (lua == NULL) {
     char token[256];
@@ -1594,7 +1591,7 @@ void ABNPC_Lua_NEWSHOP_Recv(int charaindex) {
     return;
   }
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   docall(lua, 1, 1);
 
   return;
@@ -1623,10 +1620,10 @@ BOOL FreePetSkillShop(int talkerindex, int petindex, int oldSkillID,
   lua_pushnumber(lua, newSkillID);
 
   if (lua_pcall(lua, 4, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isnumber(lua, -1))
-    error(lua, "function `f' must return a number");
+    luaL_error(lua, "function `f' must return a number");
 
   int ret = lua_tonumber(lua, -1);
   lua_pop(lua, 1);
@@ -1635,12 +1632,12 @@ BOOL FreePetSkillShop(int talkerindex, int petindex, int oldSkillID,
 #endif
 
 #ifdef _ALLBLUES_LUA_1_2
-BOOL RunUseChatMagic(int charaindex, char *data, lua_State *lua) {
+BOOL RunUseChatMagic(int char_index, char *data, lua_State *lua) {
   if (lua == NULL)
     return FALSE;
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushstring(lua, data);
 
   docall(lua, 2, 1);
@@ -1648,122 +1645,122 @@ BOOL RunUseChatMagic(int charaindex, char *data, lua_State *lua) {
   return TRUE;
 }
 
-BOOL RunItemUseEvent(int itemindex, int charaindex, int toindex,
-                     int haveitemindex) {
-  lua_State *lua = ITEM_getLUAFunction(itemindex, ITEM_USEFUNC);
+BOOL RunItemUseEvent(int item_index, int char_index, int toindex,
+                     int haveitem_index) {
+  lua_State *lua = ITEM_getLUAFunction(item_index, ITEM_USEFUNC);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η����ĸ�����
-  lua_pushnumber(lua, itemindex);
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, item_index);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, toindex);
-  lua_pushnumber(lua, haveitemindex);
+  lua_pushnumber(lua, haveitem_index);
 
   docall(lua, 4, 1);
 
   return TRUE;
 }
 
-BOOL RunItemDieReLifeEvent(int charaindex, int itemindex, int haveitemindex) {
-  lua_State *lua = ITEM_getLUAFunction(itemindex, ITEM_DIERELIFEFUNC);
+BOOL RunItemDieReLifeEvent(int char_index, int item_index, int haveitem_index) {
+  lua_State *lua = ITEM_getLUAFunction(item_index, ITEM_DIERELIFEFUNC);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η�����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
-  lua_pushnumber(lua, haveitemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
+  lua_pushnumber(lua, haveitem_index);
 
   docall(lua, 3, 1);
 
   return TRUE;
 }
 
-BOOL RunItemDetachEvent(int charaindex, int itemindex) {
-  lua_State *lua = ITEM_getLUAFunction(itemindex, ITEM_DETACHFUNC);
+BOOL RunItemDetachEvent(int char_index, int item_index) {
+  lua_State *lua = ITEM_getLUAFunction(item_index, ITEM_DETACHFUNC);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   docall(lua, 2, 1);
 
   return TRUE;
 }
 
-BOOL RunItemAttachEvent(int charaindex, int itemindex) {
-  lua_State *lua = ITEM_getLUAFunction(itemindex, ITEM_ATTACHFUNC);
+BOOL RunItemAttachEvent(int char_index, int item_index) {
+  lua_State *lua = ITEM_getLUAFunction(item_index, ITEM_ATTACHFUNC);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   docall(lua, 2, 1);
 
   return TRUE;
 }
 
-BOOL RunItemPickupEvent(int charaindex, int itemindex) {
-  lua_State *lua = ITEM_getLUAFunction(itemindex, ITEM_PICKUPFUNC);
+BOOL RunItemPickupEvent(int char_index, int item_index) {
+  lua_State *lua = ITEM_getLUAFunction(item_index, ITEM_PICKUPFUNC);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   docall(lua, 2, 1);
 
   return TRUE;
 }
 
-BOOL RunItemPostOverEvent(int itemindex, int charaindex) {
-  lua_State *lua = ITEM_getLUAFunction(itemindex, ITEM_POSTOVERFUNC);
+BOOL RunItemPostOverEvent(int item_index, int char_index) {
+  lua_State *lua = ITEM_getLUAFunction(item_index, ITEM_POSTOVERFUNC);
   if (lua == NULL) {
     return FALSE;
   }
   // ���η����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   docall(lua, 2, 1);
 
   return TRUE;
 }
 
-BOOL RunItemPreOverEvent(int itemindex, int charaindex) {
-  lua_State *lua = ITEM_getLUAFunction(itemindex, ITEM_PREOVERFUNC);
+BOOL RunItemPreOverEvent(int item_index, int char_index) {
+  lua_State *lua = ITEM_getLUAFunction(item_index, ITEM_PREOVERFUNC);
   if (lua == NULL) {
     return FALSE;
   }
   // ���η����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   docall(lua, 2, 1);
 
   return TRUE;
 }
 
-BOOL RunItemDropEvent(int charaindex, int itemindex) {
-  lua_State *lua = ITEM_getLUAFunction(itemindex, ITEM_DROPFUNC);
+BOOL RunItemDropEvent(int char_index, int item_index) {
+  lua_State *lua = ITEM_getLUAFunction(item_index, ITEM_DROPFUNC);
   if (lua == NULL) {
     return FALSE;
   }
 
   // ���η����������
-  lua_pushnumber(lua, charaindex);
-  lua_pushnumber(lua, itemindex);
+  lua_pushnumber(lua, char_index);
+  lua_pushnumber(lua, item_index);
 
   docall(lua, 2, 1);
 
@@ -1853,7 +1850,7 @@ BOOL RunCharWindowTalked(int meindex, int talkerindex, int seqno, int select,
 }
 
 #ifdef _VISUAL_BEATITUDE
-void FreeVisualBeatitude(int charaindex, int petindex, int type) {
+void FreeVisualBeatitude(int char_index, int petindex, int type) {
   static lua_State *lua;
   if (lua == NULL) {
     lua = FindLua("data/ablua/freevisualbeatitude.lua");
@@ -1865,7 +1862,7 @@ void FreeVisualBeatitude(int charaindex, int petindex, int type) {
     return;
   }
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushnumber(lua, petindex);
   lua_pushnumber(lua, type);
   docall(lua, 3, 1);
@@ -1893,10 +1890,10 @@ char *BeatitudeCheck(int meindex, int petindex, int havepetindex) {
   lua_pushnumber(lua, havepetindex);
 
   if (lua_pcall(lua, 3, 1, 0) != 0)
-    error(lua, "error running function `f': %s", lua_tostring(lua, -1));
+    luaL_error(lua, "error running function `f': %s", lua_tostring(lua, -1));
 
   if (!lua_isstring(lua, -1))
-    error(lua, "function `f' must return a string");
+    luaL_error(lua, "function `f' must return a string");
 
   int ret = lua_tostring(lua, -1);
   lua_pop(lua, 1);
@@ -1905,7 +1902,7 @@ char *BeatitudeCheck(int meindex, int petindex, int havepetindex) {
 #endif
 
 #ifdef _RIDEQUERY_
-void FreeRideQuery(int charaindex) {
+void FreeRideQuery(int char_index) {
   static lua_State *lua;
   if (lua == NULL) {
     lua = FindLua("data/ablua/familyridefunction.lua");
@@ -1917,14 +1914,14 @@ void FreeRideQuery(int charaindex) {
     return;
   }
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   docall(lua, 1, 1);
   return;
 }
 #endif
 
 #ifdef _RED_MEMOY_
-BOOL RedMoneyFunction(int charaindex, char *data) {
+BOOL RedMoneyFunction(int char_index, char *data) {
   static lua_State *lua;
 
   if (lua == NULL) {
@@ -1939,7 +1936,7 @@ BOOL RedMoneyFunction(int charaindex, char *data) {
     return TRUE;
   }
   // ���η����������
-  lua_pushnumber(lua, charaindex);
+  lua_pushnumber(lua, char_index);
   lua_pushstring(lua, data);
   docall(lua, 2, 1);
   return TRUE;

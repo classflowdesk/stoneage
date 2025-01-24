@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_fmpkman.h"
 #include "npc_scheduleman.h"
 #include "npc_fmwarpman.h"
@@ -180,7 +180,7 @@ static void NPC_FMPKMan_selectWindow( int meindex, int toindex, int num,int sele
 		
 		
 	/*--霜耨--*/
-	lssproto_WN_send( fd, windowtype, 
+	GmsvServer_WN_send( fd, windowtype, 
 				buttontype, 
 				windowno,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -285,7 +285,7 @@ void NPC_ERR_DiSP1(int meindex,int talker,int errNO)
                otherindex=CHAR_getWorkInt(talker,CHAR_WORKPARTYINDEX1+i);
                if(otherindex != -1){
                    fd = getfdFromCharaIndex( otherindex);
-                   lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+                   GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
                                          WINDOW_BUTTONTYPE_OK,
                                          CHAR_WINDOWTYPE_WINDOWWARPMAN_ERR,
                                          CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

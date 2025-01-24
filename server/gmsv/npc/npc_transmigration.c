@@ -5,7 +5,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "enemy.h"
 #include "log.h"
 #include "battle.h"
@@ -28,7 +28,7 @@ int NPC_StartpointCheck(int meindex,int talker);
 BOOL NPC_TransmigrationMain(int meindex, int toindex, char *buf);
 BOOL NPC_TransmigrationDelPet(int meindex, int talker);
 BOOL NPC_TransmigratiomWarp(int meindex, int toindex, char *buf);
-void s_eventsetend( int charaindex, int shiftbit );
+void s_eventsetend( int char_index, int shiftbit );
 
 #ifdef _PET_TRANS
 int Pet_Select;
@@ -245,7 +245,7 @@ static void NPC_Transmigration_selectWindow( int meindex, int toindex, int num)
 	 		}
 
 	 		if(CHAR_getInt(toindex, CHAR_SKILLUPPOINT) > 0) {
-	 			lssproto_WN_send( fd, windowtype, WINDOW_BUTTONTYPE_CANCEL, -1,-1,
+	 			GmsvServer_WN_send( fd, windowtype, WINDOW_BUTTONTYPE_CANCEL, -1,-1,
 																						"你身上的点数没加完，所以我不能为你转生！");
 	 			return;
 	 		}
@@ -258,7 +258,7 @@ static void NPC_Transmigration_selectWindow( int meindex, int toindex, int num)
 	 			 TM_ItemIndex = CHAR_getItemIndex(toindex, i);
 	 			if( ITEM_CHECKINDEX(TM_ItemIndex) == FALSE )continue;
 	 			if( ITEM_getInt(TM_ItemIndex, ITEM_ID) == getNoTransItem()) {
-		 			lssproto_WN_send( fd, windowtype, WINDOW_BUTTONTYPE_CANCEL, -1,-1,
+		 			GmsvServer_WN_send( fd, windowtype, WINDOW_BUTTONTYPE_CANCEL, -1,-1,
 																							"你身上携带有禁止转生的道具，无法为你转生！");
 		 			return;
 	 			}
@@ -352,7 +352,7 @@ static void NPC_Transmigration_selectWindow( int meindex, int toindex, int num)
 	}
 //	makeEscapeString( token, escapedname, sizeof(escapedname));
 	/*-仇仇匹霜耨允月--*/
-	lssproto_WN_send( fd, windowtype, 
+	GmsvServer_WN_send( fd, windowtype, 
 					buttontype, 
 					windowno,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -680,10 +680,10 @@ static int NPC_TransmigrationCheck(int meindex, int talker)
 #else
 		for( i = 0; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
-			int itemindex;
-			itemindex = CHAR_getItemIndex(talker,i);
-			if( ITEM_CHECKINDEX(itemindex) == FALSE )continue;
-			if( ITEM_getInt( itemindex, ITEM_ID ) == 20613 ) {
+			int item_index;
+			item_index = CHAR_getItemIndex(talker,i);
+			if( ITEM_CHECKINDEX(item_index) == FALSE )continue;
+			if( ITEM_getInt( item_index, ITEM_ID ) == 20613 ) {
 				++j;
 			}
 		}
@@ -742,10 +742,10 @@ static int NPC_TransmigrationCheck(int meindex, int talker)
 #else
 		for( i = 0; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
-			int itemindex;
-			itemindex = CHAR_getItemIndex(talker,i);
-			if( ITEM_CHECKINDEX(itemindex) == FALSE )continue;
-			if( ITEM_getInt( itemindex, ITEM_ID ) == 20613 ) {
+			int item_index;
+			item_index = CHAR_getItemIndex(talker,i);
+			if( ITEM_CHECKINDEX(item_index) == FALSE )continue;
+			if( ITEM_getInt( item_index, ITEM_ID ) == 20613 ) {
 				++j;
 			}
 		}
@@ -849,10 +849,10 @@ BOOL NPC_TransmigrationMain(int meindex, int toindex, char *buf)
 #else
 	for( i = 0; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
-		int itemindex;
-		itemindex = CHAR_getItemIndex(toindex,i);
-		if( ITEM_CHECKINDEX(itemindex) == FALSE )continue;
-		if( ITEM_getInt( itemindex, ITEM_ID ) == 20613 ) {
+		int item_index;
+		item_index = CHAR_getItemIndex(toindex,i);
+		if( ITEM_CHECKINDEX(item_index) == FALSE )continue;
+		if( ITEM_getInt( item_index, ITEM_ID ) == 20613 ) {
 			CHAR_DelItem( toindex, i);
 		}
 	}
@@ -872,7 +872,7 @@ BOOL NPC_TransmigrationMain(int meindex, int toindex, char *buf)
             
             //CHAR_sendStatusString( toindex , "P");
         }
-	lssproto_WO_send(fd ,0 );
+	GmsvServer_WO_send(fd ,0 );
 	// 鳖戏夫弘毛潸月
 	LogTensei(
 		CHAR_getChar( toindex, CHAR_NAME ), /* 平乓仿   */
@@ -1332,7 +1332,7 @@ BOOL NPC_TransmigrationDelPetDel(int meindex,int talker,int petsel)
 	defpet = CHAR_getInt( talker, CHAR_DEFAULTPET);
 	if(defpet == petsel){
 		CHAR_setInt( talker, CHAR_DEFAULTPET, -1);
-		lssproto_KS_send( fd, -1, TRUE);
+		GmsvServer_KS_send( fd, -1, TRUE);
 	}
 
 	snprintf( msgbuf,sizeof( msgbuf), "交出%s。",
@@ -1643,7 +1643,7 @@ void NPC_PetTransMan_selectWindow(int meindex,int toindex,int num,int select)
 		default:
 			break;
 	}
-	lssproto_WN_send( fd, windowtype, buttontype, windowno, CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno, CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 
 }
 
@@ -1709,7 +1709,7 @@ BOOL NPC_PetTransManStatus( int meindex, int toindex, int petNo)
 {
 	int petindex;
 	int LevelUpPoint = 0,petrank = 0;
-	int i,j,k,itemindex,itemID,count;
+	int i,j,k,item_index,itemID,count;
 	int vital1,str1,tgh1,dex1;
 	int vital2,str2,tgh2,dex2;
 	char token[128];
@@ -1884,7 +1884,7 @@ BOOL NPC_PetTransManStatus( int meindex, int toindex, int petNo)
 	CHAR_sendStatusString( toindex , token );
  
 //--------------------------------------------------------------------------
-	//删除物品	itemindex,itemID;
+	//删除物品	item_index,itemID;
 
 
 #ifdef _NEW_ITEM_
@@ -1893,26 +1893,26 @@ BOOL NPC_PetTransManStatus( int meindex, int toindex, int petNo)
 #else
 	for( i = 0; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
-		itemindex = CHAR_getItemIndex( toindex , i );
-		if( ITEM_CHECKINDEX(itemindex) ){
-			itemID = ITEM_getInt(itemindex ,ITEM_ID );
+		item_index = CHAR_getItemIndex( toindex , i );
+		if( ITEM_CHECKINDEX(item_index) ){
+			itemID = ITEM_getInt(item_index ,ITEM_ID );
 			for( j = 0;j < 3;j++)	{
 				if( ( itemID >= DelItem[j].minItemID ) && ( itemID <= DelItem[j].maxItemID ) )	{
 							LogItem(
 								CHAR_getChar( toindex, CHAR_NAME ),
 								CHAR_getChar( toindex, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-								itemindex,
+								item_index,
 #else
-								ITEM_getInt( itemindex, ITEM_ID),
+								ITEM_getInt( item_index, ITEM_ID),
 #endif
 								"WarpManDelItem",
 								CHAR_getInt( toindex, CHAR_FLOOR),
 								CHAR_getInt( toindex, CHAR_X ),
  								CHAR_getInt( toindex, CHAR_Y ),
-								ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-								ITEM_getChar( itemindex, ITEM_NAME),
-								ITEM_getInt( itemindex, ITEM_ID)
+								ITEM_getChar( item_index, ITEM_UNIQUECODE),
+								ITEM_getChar( item_index, ITEM_NAME),
+								ITEM_getInt( item_index, ITEM_ID)
 							);
 					CHAR_DelItem( toindex, i);
 				}
@@ -1928,7 +1928,7 @@ BOOL NPC_PetTransManStatus( int meindex, int toindex, int petNo)
 
 
 // shan add
-void s_eventsetend( int charaindex, int shiftbit )
+void s_eventsetend( int char_index, int shiftbit )
 {
 #ifdef _ADD_NEWEVENT_1024
 	int event_num = 32;
@@ -1950,9 +1950,9 @@ void s_eventsetend( int charaindex, int shiftbit )
 		//print("错误！！所设的任务旗标编号已超过范围(0~%d)。",32*event_num-1);
 		return;
 	}
-	point = CHAR_getInt( charaindex, CHAR_ENDEVENT+array);
+	point = CHAR_getInt( char_index, CHAR_ENDEVENT+array);
 	point = point | (1<<shift);
-	CHAR_setInt( charaindex, CHAR_ENDEVENT+array, point);
+	CHAR_setInt( char_index, CHAR_ENDEVENT+array, point);
 }
 #endif
 

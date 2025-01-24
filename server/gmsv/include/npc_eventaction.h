@@ -123,8 +123,8 @@ BOOL NPC_CheckTimeDefine( char *timetype);
 
 void GetRand_WarpPoint( char *buf, int *fl, int *x, int *y );
 #ifdef _EMENY_CHANCEMAN
-int NPC_EmenyChanceCheck( int meindex, int charaindex, char *arg);
-int NPC_DischargePartyForSex( int meindex, int charaindex, int fl, int x, int y, int fsex);
+int NPC_EmenyChanceCheck( int meindex, int char_index, char *arg);
+int NPC_DischargePartyForSex( int meindex, int char_index, int fl, int x, int y, int fsex);
 #endif
 
 BOOL NPC_ActionDuelRankCheck(int meindex,int talker,int rank,int flg);
@@ -144,7 +144,7 @@ void NPC_ActionDoPileClearItem( int toindex, int itemID);
 
 
 #ifdef _PROFESSION_SKILL			// WON ADD 人物职业技能
-int PROFESSION_RESTORE_POINT( int charaindex );
+int PROFESSION_RESTORE_POINT( int char_index );
 #endif
 
 

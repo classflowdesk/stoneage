@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_luckyman.h"
 
 
@@ -109,7 +109,7 @@ static void NPC_LuckyMan_selectWindow( int meindex, int toindex, int num,char *m
 
 
 	/*--霜耨--*/
-	lssproto_WN_send( fd, windowtype, 
+	GmsvServer_WN_send( fd, windowtype, 
 				buttontype, 
 				windowno,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

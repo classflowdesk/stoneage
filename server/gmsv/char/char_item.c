@@ -8,7 +8,7 @@
 #include "char.h"
 #include "char_base.h"
 #include "item.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "handletime.h"
 #include "log.h"
 #include "item_event.h"
@@ -158,39 +158,39 @@ CasinoMapTable casinomap[MAXCASINOMAPNUM] =
 
 
 static char CHAR_sendItemBuffer[STRINGBUFSIZ];
-BOOL CHAR_sendItemDataOne( int charaindex, int haveitemindex)
+BOOL CHAR_sendItemDataOne( int char_index, int haveitem_index)
 {
 	int		itemgrp[1];
-	itemgrp[0] = haveitemindex;
-	return CHAR_sendItemData( charaindex, itemgrp, 1);
+	itemgrp[0] = haveitem_index;
+	return CHAR_sendItemData( char_index, itemgrp, 1);
 }
 
-BOOL CHAR_sendItemData( int charaindex, int *itemgroup, int num)
+BOOL CHAR_sendItemData( int char_index, int *itemgroup, int num)
 {
 	int		i;
 	int		strlength = 0;
 	int     fd;
 #ifdef _NEW_ITEM_
-	if( num <= 0 || num > CheckCharMaxItem(charaindex)) return FALSE;
+	if( num <= 0 || num > CheckCharMaxItem(char_index)) return FALSE;
 #else
 	if( num <= 0 || num > CHAR_MAXITEMHAVE) return FALSE;
 
 #endif
 
-	if( CHAR_getInt(charaindex,CHAR_WHICHTYPE) != CHAR_TYPEPLAYER ) {
+	if( CHAR_getInt(char_index,CHAR_WHICHTYPE) != CHAR_TYPEPLAYER ) {
 		return FALSE;
 	}
 	
 	for( i = 0; i < num; i ++ ) {
 		char    token[512];
-		int     itemindex;
-		if( !CHAR_CHECKITEMINDEX( charaindex, itemgroup[i])) {
+		int     item_index;
+		if( !CHAR_CHECKITEMINDEX( char_index, itemgroup[i])) {
 			continue;
 		}
-		itemindex = CHAR_getItemIndex( charaindex, itemgroup[i] );
-		if( itemindex >= 0 ) {
+		item_index = CHAR_getItemIndex( char_index, itemgroup[i] );
+		if( item_index >= 0 ) {
 
-			snprintf( token ,sizeof(token),"%d|%s|" ,itemgroup[i], ITEM_makeItemStatusString( -1,itemindex ) );
+			snprintf( token ,sizeof(token),"%d|%s|" ,itemgroup[i], ITEM_makeItemStatusString( -1,item_index ) );
 		} else {
 			snprintf( token ,sizeof(token),"%s|" , ITEM_makeItemFalseStringWithNum( itemgroup[i]) );
 		}
@@ -201,23 +201,23 @@ BOOL CHAR_sendItemData( int charaindex, int *itemgroup, int num)
 		}
 	}
 	dchop( CHAR_sendItemBuffer , "|" );
-	fd = getfdFromCharaIndex( charaindex );
+	fd = getfdFromCharaIndex( char_index );
 	if( fd != -1 ){
-		lssproto_I_send( fd, CHAR_sendItemBuffer );
+		GmsvServer_I_send( fd, CHAR_sendItemBuffer );
 		return TRUE;
 	}
 	return FALSE;
 }
 
-static void CHAR_sendItemDetachEvent( int charaindex,int itemindex )
+static void CHAR_sendItemDetachEvent( int char_index,int item_index )
 {
 	char    mesg[256];
 #ifdef _ITEM_USE_TIME	
-  if(ITEM_getInt( itemindex, ITEM_USETIME) > 0){
-			time_t usetime = ITEM_getInt( itemindex, ITEM_USETIME);
+  if(ITEM_getInt( item_index, ITEM_USETIME) > 0){
+			time_t usetime = ITEM_getInt( item_index, ITEM_USETIME);
 			struct tm *tm1 = localtime(&usetime);
 			snprintf( mesg, sizeof( mesg), "卸下%s 有效使用期至 %d年%d月%d日 %d:%d:%d",
-																							ITEM_getAppropriateName(itemindex),
+																							ITEM_getAppropriateName(item_index),
 																							tm1->tm_year + 1900,
 																							tm1->tm_mon + 1,
 																							tm1->tm_mday,
@@ -228,32 +228,32 @@ static void CHAR_sendItemDetachEvent( int charaindex,int itemindex )
 	}else
 #endif
 	{
-		snprintf( mesg, sizeof( mesg), "卸下%s ", ITEM_getAppropriateName(itemindex) );
+		snprintf( mesg, sizeof( mesg), "卸下%s ", ITEM_getAppropriateName(item_index) );
 	}
-	CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORWHITE);
+	CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORWHITE);
 #ifdef _ITEM_METAMO
-	if( ITEM_getEquipPlace( charaindex, itemindex) == CHAR_BODY 
-			&& CHAR_getWorkInt( charaindex, CHAR_WORKITEMMETAMO) != 0 ) {
-		CHAR_setWorkInt( charaindex, CHAR_WORKITEMMETAMO, 0);
-		CHAR_setWorkInt( charaindex, CHAR_WORKNPCMETAMO, 0 ); //与npc对话後的变身也要变回来
-		CHAR_complianceParameter( charaindex);
-		CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex , CHAR_WORKOBJINDEX ));
-		CHAR_send_P_StatusString( charaindex , CHAR_P_STRING_BASEBASEIMAGENUMBER);
-		CHAR_talkToCli( charaindex, -1, "变身失效了！", CHAR_COLORWHITE);
+	if( ITEM_getEquipPlace( char_index, item_index) == CHAR_BODY 
+			&& CHAR_getWorkInt( char_index, CHAR_WORKITEMMETAMO) != 0 ) {
+		CHAR_setWorkInt( char_index, CHAR_WORKITEMMETAMO, 0);
+		CHAR_setWorkInt( char_index, CHAR_WORKNPCMETAMO, 0 ); //与npc对话後的变身也要变回来
+		CHAR_complianceParameter( char_index);
+		CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index , CHAR_WORKOBJINDEX ));
+		CHAR_send_P_StatusString( char_index , CHAR_P_STRING_BASEBASEIMAGENUMBER);
+		CHAR_talkToCli( char_index, -1, "变身失效了！", CHAR_COLORWHITE);
 	}
 #endif
 #ifdef _ITEM_RIDE
-	if(CHAR_getInt( charaindex , CHAR_RIDEPET ) != -1 ){
-		if( !strcmp( ITEM_getChar( itemindex, ITEM_USEFUNC), "ITEM_RIDE") ) {
+	if(CHAR_getInt( char_index , CHAR_RIDEPET ) != -1 ){
+		if( !strcmp( ITEM_getChar( item_index, ITEM_USEFUNC), "ITEM_RIDE") ) {
 			char ridemetamo[12];
-			char *itemarg = ITEM_getChar( itemindex, ITEM_ARGUMENT);
+			char *itemarg = ITEM_getChar( item_index, ITEM_ARGUMENT);
 			getStringFromIndexWithDelim( itemarg, "|", 2, ridemetamo, sizeof(ridemetamo));
-			if(CHAR_getInt( charaindex , CHAR_BASEIMAGENUMBER )==atoi(ridemetamo)){
-				CHAR_setInt( charaindex , CHAR_RIDEPET, -1 );
-				CHAR_setInt( charaindex , CHAR_BASEIMAGENUMBER , CHAR_getInt( charaindex , CHAR_BASEBASEIMAGENUMBER) );
-				CHAR_complianceParameter( charaindex );
-				CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex, CHAR_WORKOBJINDEX ));
-				CHAR_send_P_StatusString( charaindex , CHAR_P_STRING_RIDEPET);
+			if(CHAR_getInt( char_index , CHAR_BASEIMAGENUMBER )==atoi(ridemetamo)){
+				CHAR_setInt( char_index , CHAR_RIDEPET, -1 );
+				CHAR_setInt( char_index , CHAR_BASEIMAGENUMBER , CHAR_getInt( char_index , CHAR_BASEBASEIMAGENUMBER) );
+				CHAR_complianceParameter( char_index );
+				CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index, CHAR_WORKOBJINDEX ));
+				CHAR_send_P_StatusString( char_index , CHAR_P_STRING_RIDEPET);
 			}
 		}
 	}
@@ -261,27 +261,27 @@ static void CHAR_sendItemDetachEvent( int charaindex,int itemindex )
 	{
 		typedef void (*DETACHFUNC)(int,int);
 		DETACHFUNC def;
-		def=(DETACHFUNC)ITEM_getFunctionPointer(itemindex,ITEM_DETACHFUNC);
+		def=(DETACHFUNC)ITEM_getFunctionPointer(item_index,ITEM_DETACHFUNC);
 		if( def )	{
-			def( charaindex,itemindex );
+			def( char_index,item_index );
 		}
 #ifdef _ALLBLUES_LUA_1_2 
 		else{
-			RunItemDetachEvent(charaindex,itemindex );
+			RunItemDetachEvent(char_index,item_index );
 		}
 #endif
 	}
 }
 
-static void CHAR_sendItemAttachEvent( int charaindex,int itemindex )
+static void CHAR_sendItemAttachEvent( int char_index,int item_index )
 {
 	char    mesg[512];
 #ifdef _ITEM_USE_TIME	
-  if(ITEM_getInt( itemindex, ITEM_USETIME) > 0){
-			time_t usetime = ITEM_getInt( itemindex, ITEM_USETIME);
+  if(ITEM_getInt( item_index, ITEM_USETIME) > 0){
+			time_t usetime = ITEM_getInt( item_index, ITEM_USETIME);
 			struct tm *tm1 = localtime(&usetime);
 			snprintf( mesg, sizeof( mesg), "装备%s 有效使用期至 %d年%d月%d日 %d:%d:%d",
-																							ITEM_getAppropriateName(itemindex),
+																							ITEM_getAppropriateName(item_index),
 																							tm1->tm_year + 1900,
 																							tm1->tm_mon + 1,
 																							tm1->tm_mday,
@@ -293,34 +293,34 @@ static void CHAR_sendItemAttachEvent( int charaindex,int itemindex )
 #endif
 	{
 		snprintf( mesg, sizeof( mesg), "装备%s ",
-			  ITEM_getAppropriateName(itemindex) );
+			  ITEM_getAppropriateName(item_index) );
 	}
 
 	
 
-	CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORWHITE);
+	CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORWHITE);
 	{
 		typedef void (*ATTACHFUNC)(int,int);
 		ATTACHFUNC atf;
-		atf=(ATTACHFUNC)ITEM_getFunctionPointer(itemindex,ITEM_ATTACHFUNC);
+		atf=(ATTACHFUNC)ITEM_getFunctionPointer(item_index,ITEM_ATTACHFUNC);
 		if( atf ){
-			atf( charaindex,itemindex );
+			atf( char_index,item_index );
 		}
 #ifdef _ALLBLUES_LUA_1_2 
 		else{
-			RunItemAttachEvent(charaindex, itemindex );
+			RunItemAttachEvent(char_index, item_index );
 		}
 #endif
 	}
 }
 
 
-int CHAR_findSurplusItemBox( int charaindex )
+int CHAR_findSurplusItemBox( int char_index )
 {
-	int i, remnants=0, itemindex;
-	for(i=CHAR_STARTITEMARRAY; i< CheckCharMaxItem(charaindex); i++){
-		itemindex = CHAR_getItemIndex( charaindex , i );
-		if( itemindex == -1 ) remnants++;
+	int i, remnants=0, item_index;
+	for(i=CHAR_STARTITEMARRAY; i< CheckCharMaxItem(char_index); i++){
+		item_index = CHAR_getItemIndex( char_index , i );
+		if( item_index == -1 ) remnants++;
     }
 	return remnants;
 }
@@ -331,9 +331,9 @@ static int CHAR_findEmptyItemBoxFromChar( Char* ch )
 	int     i;
 	int itemMax = CheckCharMaxItemChar(ch);
 	for( i = CHAR_STARTITEMARRAY ; i < itemMax  ; i ++ ){
-		int     itemindex;
-		itemindex = ch->indexOfExistItems[i];
-		if( itemindex == -1 )return i;
+		int     item_index;
+		item_index = ch->indexOfExistItems[i];
+		if( item_index == -1 )return i;
 	}
 
 	return -1;
@@ -343,9 +343,9 @@ static int CHAR_findEmptyPoolItemBoxFromChar( Char* ch )
 {
 	int     i;
 	for( i=0; i<CHAR_MAXPOOLITEMHAVE; i++ ){
-		int     itemindex;
-		itemindex = ch->indexOfExistPoolItems[i];
-		if( itemindex == -1 ) return i;
+		int     item_index;
+		item_index = ch->indexOfExistPoolItems[i];
+		if( item_index == -1 ) return i;
 	}
 	return -1;
 }
@@ -390,7 +390,7 @@ static BOOL CHAR_sendSIToCli( int charindex , int from , int to )
 	int fd = getfdFromCharaIndex( charindex );
 	if( fd != -1 ){
 		if(from == -1 && to == -1)return FALSE;
-		lssproto_SI_send( fd , from, to  );
+		GmsvServer_SI_send( fd , from, to  );
 		return TRUE;
 	}
 	return FALSE;
@@ -491,17 +491,17 @@ static BOOL CHAR_moveItemFromItemBoxToEquip( int index, int fromindex,
 		CANNOTEQUIP;
 		return FALSE;
 	}
-	//if( BATTLE_GetWepon( charaindex ) != ITEM_BOW )
+	//if( BATTLE_GetWepon( char_index ) != ITEM_BOW )
 
 	if( fromeqplace == CHAR_DECORATION1 ) {
 		int checkplace = ( toindex == CHAR_DECORATION1)
 						? CHAR_DECORATION2:CHAR_DECORATION1;
-		int	otheritemindex;
+		int	otheritem_index;
 
 		if( toindex == CHAR_DECORATION1 || toindex == CHAR_DECORATION2 ) {
-			otheritemindex = CHAR_getItemIndex( index, checkplace);
-			if( ITEM_CHECKINDEX( otheritemindex )) {
-				int otheritemtype = ITEM_getInt( otheritemindex, ITEM_TYPE);
+			otheritem_index = CHAR_getItemIndex( index, checkplace);
+			if( ITEM_CHECKINDEX( otheritem_index )) {
+				int otheritemtype = ITEM_getInt( otheritem_index, ITEM_TYPE);
 				int myitemtype = ITEM_getInt( CHAR_getItemIndex( index, fromindex) , ITEM_TYPE);
 				if( otheritemtype == myitemtype) {
 					if( toid < 0 ) {
@@ -559,33 +559,33 @@ static BOOL CHAR_moveItemFromEquipToItemBox(int index, int fromindex,
 }
 
 #ifdef _ITEM_PILENUMS
-int CHAR_getMyMaxPilenum( int charaindex)
+int CHAR_getMyMaxPilenum( int char_index)
 {
 	int maxpile;
-	maxpile = CHAR_getInt( charaindex, CHAR_TRANSMIGRATION)
-		+ (CHAR_getInt( charaindex, CHAR_TRANSMIGRATION)/5) * 2 + 3;
+	maxpile = CHAR_getInt( char_index, CHAR_TRANSMIGRATION)
+		+ (CHAR_getInt( char_index, CHAR_TRANSMIGRATION)/5) * 2 + 3;
 
 /*
 #ifdef _PROFESSION_SKILL			// WON ADD 人物职业技能
-	maxpile += CHAR_getInt( charaindex, ATTACHPILE );
+	maxpile += CHAR_getInt( char_index, ATTACHPILE );
 #endif
 */
 
 #ifdef _EQUIT_ADDPILE
-	maxpile += CHAR_getWorkInt( charaindex, CHAR_WORKATTACHPILE);
+	maxpile += CHAR_getWorkInt( char_index, CHAR_WORKATTACHPILE);
 	maxpile = (maxpile<0)?0:maxpile;
 #endif
 	return maxpile;
 }
 
-BOOL CHAR_PileItemFromItemBoxToItemBox( int charaindex, int fromindex, int toindex)
+BOOL CHAR_PileItemFromItemBoxToItemBox( int char_index, int fromindex, int toindex)
 {
 	int maxpile, fromid, toid;
-	if( !CHAR_CHECKINDEX( charaindex) ) return FALSE;
-	fromid = CHAR_getItemIndex( charaindex, fromindex);
-	toid = CHAR_getItemIndex( charaindex, toindex);
+	if( !CHAR_CHECKINDEX( char_index) ) return FALSE;
+	fromid = CHAR_getItemIndex( char_index, fromindex);
+	toid = CHAR_getItemIndex( char_index, toindex);
 
-	maxpile = CHAR_getMyMaxPilenum( charaindex);
+	maxpile = CHAR_getMyMaxPilenum( char_index);
 
 	if( ITEM_CHECKINDEX( toid) && ITEM_CHECKINDEX( fromid) &&
 		(ITEM_getInt( toid, ITEM_ID) == ITEM_getInt( fromid, ITEM_ID)) &&
@@ -603,7 +603,7 @@ BOOL CHAR_PileItemFromItemBoxToItemBox( int charaindex, int fromindex, int toind
 		ITEM_setInt( fromid, ITEM_USEPILENUMS, formpilenum);
 
 		if( formpilenum <= 0 ){
-			CHAR_setItemIndex( charaindex, fromindex ,-1);
+			CHAR_setItemIndex( char_index, fromindex ,-1);
 			ITEM_endExistItemsOne( fromid);
 		}
 		return TRUE;
@@ -718,14 +718,14 @@ int CHAR_addItemToChar( Char* ch, int itemid )
 	return ch->indexOfExistItems[itembox]=ITEM_makeItemAndRegist(itemid);
 }
 
-int CHAR_addItem( int charaindex, int itemid )
+int CHAR_addItem( int char_index, int itemid )
 {
 	Char*   ch;
-	ch = CHAR_getCharPointer(charaindex);
+	ch = CHAR_getCharPointer(char_index);
 	if( ch != NULL ){
 		int ret = CHAR_addItemToChar( ch,itemid );
 		if( ret == -1 )return ret;
-		ITEM_setWorkInt(ret,ITEM_WORKCHARAINDEX,charaindex);
+		ITEM_setWorkInt(ret,ITEM_WORKCHARAINDEX,char_index);
 		ITEM_setWorkInt(ret,ITEM_WORKOBJINDEX,-1);
 		return ret;
 	}else
@@ -733,116 +733,116 @@ int CHAR_addItem( int charaindex, int itemid )
 }
 
 
-void CHAR_ItemUse( int charaindex, int to_charaindex, int haveitemindex )
+void CHAR_ItemUse( int char_index, int to_char_index, int haveitem_index )
 {
 	void (*usefunc)(int,int,int)=NULL;
-	int itemindex;
+	int item_index;
 
-	if( !CHAR_CHECKINDEX( charaindex ) ){
-		print( "ANDY charaindex=%d err\n", charaindex);
+	if( !CHAR_CHECKINDEX( char_index ) ){
+		print( "ANDY char_index=%d err\n", char_index);
 		return;
 	}
 
-	if( CHAR_CHECKITEMINDEX( charaindex, haveitemindex) == FALSE ){
-		print( "ANDY haveitemindex=%d err\n", haveitemindex);
+	if( CHAR_CHECKITEMINDEX( char_index, haveitem_index) == FALSE ){
+		print( "ANDY haveitem_index=%d err\n", haveitem_index);
 		return;
 	}
 #ifdef _NO_USE_PACKET_MAP
 	int index;
 for(index=0;index<30;index++){
-	if(CHAR_getInt(charaindex,CHAR_FLOOR)==getNoPacketMap(index)){
-		if (haveitemindex>=CHAR_STARTITEMARRAY+CHAR_MAXITEMNUM){
+	if(CHAR_getInt(char_index,CHAR_FLOOR)==getNoPacketMap(index)){
+		if (haveitem_index>=CHAR_STARTITEMARRAY+CHAR_MAXITEMNUM){
 			char ansmsg[256];
 			strcpysafe( ansmsg, sizeof(ansmsg),
 						"该地图禁止使用额外的包裹。");
-			CHAR_talkToCli( charaindex, -1, ansmsg, CHAR_COLORWHITE );
+			CHAR_talkToCli( char_index, -1, ansmsg, CHAR_COLORWHITE );
 			return;
 		}
 	}
 }
 #endif
-	itemindex = CHAR_getItemIndex( charaindex, haveitemindex);
-	if( !ITEM_CHECKINDEX(itemindex) ){
-//		print( "ANDY itemindex=%d err\n", itemindex);
+	item_index = CHAR_getItemIndex( char_index, haveitem_index);
+	if( !ITEM_CHECKINDEX(item_index) ){
+//		print( "ANDY item_index=%d err\n", item_index);
 		return;
 	}
-	if( CHAR_getFlg( charaindex, CHAR_ISDIE ) ){
-		print( "ANDY charaindex=%d is CHAR_ISDIE err\n", charaindex);
+	if( CHAR_getFlg( char_index, CHAR_ISDIE ) ){
+		print( "ANDY char_index=%d is CHAR_ISDIE err\n", char_index);
 		return;
 	}
 #ifndef _OFFLINE_SYSTEM
 #ifdef _STREET_VENDOR
 	// 摆摊中不可使用道具
-	if(CHAR_getWorkInt(charaindex,CHAR_WORKSTREETVENDOR) > -1){
-		print("StreetVendor use item charaindex=%d,name=%s\n",charaindex,CHAR_getChar(charaindex,CHAR_NAME));
+	if(CHAR_getWorkInt(char_index,CHAR_WORKSTREETVENDOR) > -1){
+		print("StreetVendor use item char_index=%d,name=%s\n",char_index,CHAR_getChar(char_index,CHAR_NAME));
 		return;
 	}
 #endif
 #endif
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEMODE) == BATTLE_CHARMODE_NONE ) {
-		if( CHAR_CHECKINDEX( to_charaindex ) ){
-			if( CHAR_getInt( to_charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-				int action = ITEM_getInt( itemindex, ITEM_USEACTION);
+	if( CHAR_getWorkInt( char_index, CHAR_WORKBATTLEMODE) == BATTLE_CHARMODE_NONE ) {
+		if( CHAR_CHECKINDEX( to_char_index ) ){
+			if( CHAR_getInt( to_char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+				int action = ITEM_getInt( item_index, ITEM_USEACTION);
 				if( action != -1 ) {
-					CHAR_sendAction( to_charaindex, action, TRUE);
+					CHAR_sendAction( to_char_index, action, TRUE);
 				}
 			}
 		}
 	}
 	//不等於料理 和 其他
-	if( ITEM_getInt( itemindex,ITEM_TYPE) != ITEM_OTHER &&
-		ITEM_getInt( itemindex,ITEM_TYPE) != ITEM_DISH ) {
+	if( ITEM_getInt( item_index,ITEM_TYPE) != ITEM_OTHER &&
+		ITEM_getInt( item_index,ITEM_TYPE) != ITEM_DISH ) {
 		CHAR_EquipPlace ep;
 		
-		ep = ITEM_getEquipPlace( charaindex, itemindex );
+		ep = ITEM_getEquipPlace( char_index, item_index );
 		if( ep == -1 )return;
 		if( ep == CHAR_DECORATION1 ) {
 			int	flg = FALSE;
-			int toitemindex1 = CHAR_getItemIndex( charaindex, ep);
-			int	toitemindex2 = CHAR_getItemIndex( charaindex, CHAR_DECORATION2);
+			int toitem_index1 = CHAR_getItemIndex( char_index, ep);
+			int	toitem_index2 = CHAR_getItemIndex( char_index, CHAR_DECORATION2);
 			int	searchindex = -1;
-			int fromitemtype = ITEM_getInt( itemindex, ITEM_TYPE);
+			int fromitemtype = ITEM_getInt( item_index, ITEM_TYPE);
 
-			if( !ITEM_CHECKINDEX( toitemindex1)) searchindex = toitemindex2;
-			else if(!ITEM_CHECKINDEX( toitemindex2)) searchindex = toitemindex1;
+			if( !ITEM_CHECKINDEX( toitem_index1)) searchindex = toitem_index2;
+			else if(!ITEM_CHECKINDEX( toitem_index2)) searchindex = toitem_index1;
 			if( searchindex != -1 ) {
 				if( fromitemtype != ITEM_getInt( searchindex, ITEM_TYPE)) {
 					flg = TRUE;
-					ep = ( searchindex == toitemindex1)
+					ep = ( searchindex == toitem_index1)
 								? CHAR_DECORATION2:CHAR_DECORATION1;
 				}
 			}
 			if( !flg) {
-				if( fromitemtype != ITEM_getInt( toitemindex2, ITEM_TYPE)) {
+				if( fromitemtype != ITEM_getInt( toitem_index2, ITEM_TYPE)) {
 					ep = CHAR_DECORATION1;
-				}else if( fromitemtype != ITEM_getInt( toitemindex1, ITEM_TYPE)) {
+				}else if( fromitemtype != ITEM_getInt( toitem_index1, ITEM_TYPE)) {
 					ep = CHAR_DECORATION2;
 				}else {
 					ep = CHAR_DECORATION1;
 				}
 			}
 		}
-		CHAR_moveEquipItem( charaindex, haveitemindex,ep );
+		CHAR_moveEquipItem( char_index, haveitem_index,ep );
 		return;
 	}
 
 #ifdef _ITEM_TALK_CHECK
 {
-	char *tmp=ITEM_getChar(itemindex, ITEM_NAME);
+	char *tmp=ITEM_getChar(item_index, ITEM_NAME);
 	if(tmp[0]=='@'){
-		if(ITEM_getWorkInt(itemindex, ITEM_WORKTALKCHECK)<=0){
-			ITEM_setWorkInt(itemindex, ITEM_WORKTALKCHECK, getTalkCheck());
+		if(ITEM_getWorkInt(item_index, ITEM_WORKTALKCHECK)<=0){
+			ITEM_setWorkInt(item_index, ITEM_WORKTALKCHECK, getTalkCheck());
 		}
 		
-		if(ITEM_getWorkInt(itemindex, ITEM_WORKTALKCHECK)>0){
-			if(ITEM_getWorkInt(itemindex, ITEM_WORKTALKCHECK) != CHAR_getWorkInt(charaindex, CHAR_WORK_TALKCHECK)){
+		if(ITEM_getWorkInt(item_index, ITEM_WORKTALKCHECK)>0){
+			if(ITEM_getWorkInt(item_index, ITEM_WORKTALKCHECK) != CHAR_getWorkInt(char_index, CHAR_WORK_TALKCHECK)){
 				char buf[256];
-				ITEM_setWorkInt(itemindex, ITEM_WORKTALKCHECK, getTalkCheck());
-				sprintf(buf, "%s：请输入验证数字:%d", ITEM_getChar(itemindex, ITEM_NAME), ITEM_getWorkInt(itemindex, ITEM_WORKTALKCHECK));
-				CHAR_talkToCli( charaindex, -1, buf, CHAR_COLORYELLOW);
+				ITEM_setWorkInt(item_index, ITEM_WORKTALKCHECK, getTalkCheck());
+				sprintf(buf, "%s：请输入验证数字:%d", ITEM_getChar(item_index, ITEM_NAME), ITEM_getWorkInt(item_index, ITEM_WORKTALKCHECK));
+				CHAR_talkToCli( char_index, -1, buf, CHAR_COLORYELLOW);
 				return;
 			}else{
-				ITEM_setWorkInt(itemindex, ITEM_WORKTALKCHECK, getTalkCheck());
+				ITEM_setWorkInt(item_index, ITEM_WORKTALKCHECK, getTalkCheck());
 			}
 		}
 	}
@@ -851,49 +851,49 @@ for(index=0;index<30;index++){
 
 
 
-	char *voidname = ITEM_getChar( itemindex, ITEM_USEFUNC);
+	char *voidname = ITEM_getChar( item_index, ITEM_USEFUNC);
 	if(strstr(voidname,"ITEM_USE_LUA")){
 		usefunc = (void(*)(int,int,int)) ITEM_Lua;
-	}else usefunc = (void(*)(int,int,int))ITEM_getFunctionPointer( itemindex,ITEM_USEFUNC );
+	}else usefunc = (void(*)(int,int,int))ITEM_getFunctionPointer( item_index,ITEM_USEFUNC );
 	if( usefunc ){
 		{
 			LogItem(
-				CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿抩 */
-				CHAR_getChar( charaindex, CHAR_CDKEY ),
+				CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿抩 */
+				CHAR_getChar( char_index, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-				itemindex,
+				item_index,
 #else
-				ITEM_getInt( itemindex, ITEM_ID ),       /* 失奶泛丞?寞 */
+				ITEM_getInt( item_index, ITEM_ID ),       /* 失奶泛丞?寞 */
 #endif
 				"Use(使用道具)",
-				CHAR_getInt( charaindex,CHAR_FLOOR),
-				CHAR_getInt( charaindex,CHAR_X ),
- 	      		CHAR_getInt( charaindex,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-					ITEM_getChar( itemindex, ITEM_NAME),
-					ITEM_getInt( itemindex, ITEM_ID)
+				CHAR_getInt( char_index,CHAR_FLOOR),
+				CHAR_getInt( char_index,CHAR_X ),
+ 	      		CHAR_getInt( char_index,CHAR_Y ),
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+					ITEM_getChar( item_index, ITEM_NAME),
+					ITEM_getInt( item_index, ITEM_ID)
 			);
 		}
-		usefunc(charaindex, to_charaindex, haveitemindex);
+		usefunc(char_index, to_char_index, haveitem_index);
 	}else{
 #ifdef _ALLBLUES_LUA_1_2 
-		if(RunItemUseEvent(itemindex, charaindex, to_charaindex, haveitemindex) == FALSE )
+		if(RunItemUseEvent(item_index, char_index, to_char_index, haveitem_index) == FALSE )
 #endif
 		{
 			char ansmsg[256];
 			strcpysafe( ansmsg, sizeof(ansmsg),
 						"什麽也没有发生。");
-			CHAR_talkToCli( charaindex, -1, ansmsg, CHAR_COLORWHITE );
+			CHAR_talkToCli( char_index, -1, ansmsg, CHAR_COLORWHITE );
 		}
 	}
 }
 
-BOOL CHAR_DropItemFXY( int charaindex, int itemcharaindex, int fl,
+BOOL CHAR_DropItemFXY( int char_index, int itemchar_index, int fl,
 							  int x, int y, int* objindex )
 {
-	int itemindex;
-	itemindex = CHAR_getItemIndex(charaindex,itemcharaindex);
-	if( ITEM_CHECKINDEX(itemindex) == FALSE )return -3;
+	int item_index;
+	item_index = CHAR_getItemIndex(char_index,itemchar_index);
+	if( ITEM_CHECKINDEX(item_index) == FALSE )return -3;
 	if( MAP_walkAbleFromPoint( fl,x,y, FALSE ) == FALSE ){
 		return -2;
 	}
@@ -907,13 +907,13 @@ BOOL CHAR_DropItemFXY( int charaindex, int itemcharaindex, int fl,
 				break;
 			case OBJTYPE_ITEM:
 #ifdef _DROPSTAKENEW
-				if(ITEM_getInt(itemindex, ITEM_ID) == CASINOTOKENID)
+				if(ITEM_getInt(item_index, ITEM_ID) == CASINOTOKENID)
 				{
 					int i = 0;
 					int dropflag = 0;
 					ITEM_Item *itm;
 					for(i = 0; i < arraysizeof(casinomap); i++){
-						if(CHAR_getInt(charaindex, CHAR_FLOOR) == casinomap[i].casinofl){
+						if(CHAR_getInt(char_index, CHAR_FLOOR) == casinomap[i].casinofl){
 							if(x == casinomap[i].casinox && y == casinomap[i].casinoy){
 								dropflag = 1;
 								break;
@@ -921,7 +921,7 @@ BOOL CHAR_DropItemFXY( int charaindex, int itemcharaindex, int fl,
 						}
 					}
 					if(dropflag == 1){
-						if( (itm = ITEM_getItemPointer( itemindex)) == NULL ) return -1;
+						if( (itm = ITEM_getItemPointer( item_index)) == NULL ) return -1;
 							strcpysafe( itm->string[ITEM_WATCHFUNC].string,
 								sizeof(itm->string[ITEM_WATCHFUNC].string), "ITEM_DeleteTimeWatched" );
 
@@ -945,7 +945,7 @@ BOOL CHAR_DropItemFXY( int charaindex, int itemcharaindex, int fl,
 					OBJECT_getIndex(objindex),CHAR_ITEMPUTFUNC) ;
 
 				if( ipfunc && ipfunc(OBJECT_getIndex(objindex),
-									 itemindex) == TRUE)
+									 item_index) == TRUE)
 					return -3;
 				break;
 			}
@@ -954,26 +954,26 @@ BOOL CHAR_DropItemFXY( int charaindex, int itemcharaindex, int fl,
 			}
 		}
 
-		*objindex = CHAR_DropItemAbsolute( itemindex,fl,x,y, FALSE );
+		*objindex = CHAR_DropItemAbsolute( item_index,fl,x,y, FALSE );
 
 		if( *objindex == -1 )
 			return -3;
 		{
 			LogItem(
-				CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-				CHAR_getChar( charaindex, CHAR_CDKEY ),
+				CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+				CHAR_getChar( char_index, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-				itemindex,
+				item_index,
 #else
-				ITEM_getInt( itemindex, ITEM_ID ),  /* 失奶  丞  寞 */
+				ITEM_getInt( item_index, ITEM_ID ),  /* 失奶  丞  寞 */
 #endif
 				"Drop(丢出道具)",
-			   	CHAR_getInt( charaindex,CHAR_FLOOR),
-				CHAR_getInt( charaindex,CHAR_X ),
- 	      		CHAR_getInt( charaindex,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-					ITEM_getChar( itemindex, ITEM_NAME),
-					ITEM_getInt( itemindex, ITEM_ID)
+			   	CHAR_getInt( char_index,CHAR_FLOOR),
+				CHAR_getInt( char_index,CHAR_X ),
+ 	      		CHAR_getInt( char_index,CHAR_Y ),
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+					ITEM_getChar( item_index, ITEM_NAME),
+					ITEM_getInt( item_index, ITEM_ID)
 
 			);
 		}
@@ -984,23 +984,23 @@ BOOL CHAR_DropItemFXY( int charaindex, int itemcharaindex, int fl,
 
 #ifdef _ITEM_PILENUMS	//andy_edit 2003/04/01
 
-void CHAR_SendDropItem_Stats( int charaindex, int itemindex, int itemcharaindex, int flg)
+void CHAR_SendDropItem_Stats( int char_index, int item_index, int itemchar_index, int flg)
 {
 	if( flg == 1 ){
-		CHAR_setItemIndex( charaindex, itemcharaindex , -1);
+		CHAR_setItemIndex( char_index, itemchar_index , -1);
 	}
-	CHAR_sendItemDataOne( charaindex, itemcharaindex);
+	CHAR_sendItemDataOne( char_index, itemchar_index);
 
-	if( CHAR_complianceParameter( charaindex ) ){
-		CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex, CHAR_WORKOBJINDEX));
+	if( CHAR_complianceParameter( char_index ) ){
+		CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index, CHAR_WORKOBJINDEX));
 	}
 
-	if( 0 <= itemcharaindex && itemcharaindex < CHAR_STARTITEMARRAY &&
-		CHAR_getInt( charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER ){	//如果丢弃物为装备
-		if( ITEM_CHECKINDEX( itemindex) )
-			CHAR_sendItemDetachEvent( charaindex, itemindex );
+	if( 0 <= itemchar_index && itemchar_index < CHAR_STARTITEMARRAY &&
+		CHAR_getInt( char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER ){	//如果丢弃物为装备
+		if( ITEM_CHECKINDEX( item_index) )
+			CHAR_sendItemDetachEvent( char_index, item_index );
 
-		CHAR_send_P_StatusString( charaindex,
+		CHAR_send_P_StatusString( char_index,
 								  CHAR_P_STRING_HP|CHAR_P_STRING_MAXHP|
 								  CHAR_P_STRING_MP|CHAR_P_STRING_MAXMP|
 								  CHAR_P_STRING_ATK|CHAR_P_STRING_DEF|
@@ -1011,82 +1011,82 @@ void CHAR_SendDropItem_Stats( int charaindex, int itemindex, int itemcharaindex,
 	}
 }
 #ifdef _DROPSTAKENEW
-void CHAR_DropStakeByDropItem( int charaindex, int itemcharaindex, int itemindex, int fl, int x, int y)
+void CHAR_DropStakeByDropItem( int char_index, int itemchar_index, int item_index, int fl, int x, int y)
 {
 	int j, k, casinoflag = 0, dropflag;
 	char tmpbuf[256];
-	dropflag = CHAR_getWorkInt( charaindex, CHAR_WORKSTAKEFLAG);
+	dropflag = CHAR_getWorkInt( char_index, CHAR_WORKSTAKEFLAG);
 	if( dropflag >= MAXSTAKENUM){
 		snprintf( tmpbuf, sizeof( tmpbuf), "你已经下注五次了，无法再下注！");
-		CHAR_talkToCli(charaindex, -1, tmpbuf, CHAR_COLORYELLOW);
+		CHAR_talkToCli(char_index, -1, tmpbuf, CHAR_COLORYELLOW);
 		return;
 	}
 	for (j = 0; j < arraysizeof( casinomap); j++){
-		if( CHAR_getInt( charaindex, CHAR_FLOOR) != casinomap[j].casinofl ) continue;
+		if( CHAR_getInt( char_index, CHAR_FLOOR) != casinomap[j].casinofl ) continue;
 		if( x != casinomap[j].casinox || y != casinomap[j].casinoy ) continue;
 		if( casinomap[j].dropflag == 0 ){
-			CHAR_talkToCli( charaindex, -1, "现在无法下注！", CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index, -1, "现在无法下注！", CHAR_COLORYELLOW);
 			return;
 		}else{
 			int objindex;
-			objindex = CHAR_DropItemAbsolute( itemindex, fl, x, y, FALSE );
+			objindex = CHAR_DropItemAbsolute( item_index, fl, x, y, FALSE );
 			if( objindex == -1 ) return;
-			ITEM_setInt( itemindex, ITEM_PUTTIME, NowTime.tv_sec+30*60);
+			ITEM_setInt( item_index, ITEM_PUTTIME, NowTime.tv_sec+30*60);
 			CHAR_sendWatchEvent( objindex, CHAR_ACTSTAND, NULL, 0, TRUE);
 			casinoflag = 1;
 			snprintf(tmpbuf, sizeof(tmpbuf), "你在 %s 下注了一张彩券", casinomap[j].casinoinfo);
 			for(k = 0; k < MAXSTAKENUM; k++){//下注设定
-				if(CHAR_getWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + k) != 0) continue;
-				CHAR_setWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + k, casinomap[j].casinotype);
+				if(CHAR_getWorkInt(char_index, CHAR_WORKSTAKETYPE1 + k) != 0) continue;
+				CHAR_setWorkInt(char_index, CHAR_WORKSTAKETYPE1 + k, casinomap[j].casinotype);
 				dropflag++;
 				break;
 			}
-			CHAR_talkToCli(charaindex, -1, tmpbuf, CHAR_COLORYELLOW);
+			CHAR_talkToCli(char_index, -1, tmpbuf, CHAR_COLORYELLOW);
 #ifdef _FIX_GAMBLENUM
 			if (dropflag <= MAXSTAKENUM){ //做扣点的动作
-				int nAcc = CHAR_getInt(charaindex, CHAR_GAMBLENUM);                                								
+				int nAcc = CHAR_getInt(char_index, CHAR_GAMBLENUM);                                								
 				nAcc -= casinomap[j].accumulation;
-				CHAR_setInt(charaindex, CHAR_GAMBLENUM, nAcc);								
+				CHAR_setInt(char_index, CHAR_GAMBLENUM, nAcc);								
 			}
 #endif
 			dropflag = ( dropflag >= MAXSTAKENUM )?MAXSTAKENUM:dropflag;
-			CHAR_setWorkInt(charaindex, CHAR_WORKSTAKEFLAG, dropflag);
+			CHAR_setWorkInt(char_index, CHAR_WORKSTAKEFLAG, dropflag);
 			break;
 		}
 	}
 
 	if( casinoflag == 0) return;
-		LogItem(CHAR_getChar(charaindex, CHAR_NAME),
-				CHAR_getChar(charaindex, CHAR_CDKEY),
+		LogItem(CHAR_getChar(char_index, CHAR_NAME),
+				CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-				itemindex,
+				item_index,
 #else
-				ITEM_getInt(itemindex, ITEM_ID),
+				ITEM_getInt(item_index, ITEM_ID),
 #endif
 				"StakeDrop(丢出彩券)",
-				CHAR_getInt(charaindex,CHAR_FLOOR),
-				CHAR_getInt(charaindex,CHAR_X),
- 				CHAR_getInt(charaindex,CHAR_Y),
-				ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-				ITEM_getChar( itemindex, ITEM_NAME),
-				ITEM_getInt( itemindex, ITEM_ID)
+				CHAR_getInt(char_index,CHAR_FLOOR),
+				CHAR_getInt(char_index,CHAR_X),
+ 				CHAR_getInt(char_index,CHAR_Y),
+				ITEM_getChar(item_index, ITEM_UNIQUECODE),
+				ITEM_getChar( item_index, ITEM_NAME),
+				ITEM_getInt( item_index, ITEM_ID)
 				);
-	CHAR_SendDropItem_Stats( charaindex, itemindex, itemcharaindex, 1);
+	CHAR_SendDropItem_Stats( char_index, item_index, itemchar_index, 1);
 
 }
 #endif
 
-BOOL CHAR_FindAroundUsabilitySpace( int charaindex, int itemindex, int *fl, int *x, int *y)
+BOOL CHAR_FindAroundUsabilitySpace( int char_index, int item_index, int *fl, int *x, int *y)
 {
 	int dropx, dropy, i;
 	BOOL Find = FALSE;
-	int myfl = CHAR_getInt( charaindex, CHAR_FLOOR);
+	int myfl = CHAR_getInt( char_index, CHAR_FLOOR);
 
 	for( i  = 0 ; i < 8 ; i  ++ ){
 		OBJECT  object;
 		Find = FALSE;
-		dropx = CHAR_getInt( charaindex, CHAR_X) + CHAR_getDX( CHAR_getInt( charaindex, CHAR_DIR) + i);
-		dropy = CHAR_getInt( charaindex, CHAR_Y) + CHAR_getDY( CHAR_getInt( charaindex, CHAR_DIR) + i);
+		dropx = CHAR_getInt( char_index, CHAR_X) + CHAR_getDX( CHAR_getInt( char_index, CHAR_DIR) + i);
+		dropy = CHAR_getInt( char_index, CHAR_Y) + CHAR_getDY( CHAR_getInt( char_index, CHAR_DIR) + i);
 		if( MAP_walkAbleFromPoint( myfl, dropx, dropy, FALSE ) == FALSE ) continue;
 		for( object = MAP_getTopObj( myfl, dropx, dropy) ; object ; object = NEXT_OBJECT(object ) ){
 			int objindex = GET_OBJINDEX(object);
@@ -1095,7 +1095,7 @@ BOOL CHAR_FindAroundUsabilitySpace( int charaindex, int itemindex, int *fl, int 
 				typedef BOOL (*ITEMPUTFUNC)(int,int);
 				ITEMPUTFUNC ipfunc;
 				ipfunc = (ITEMPUTFUNC)CHAR_getFunctionPointer( OBJECT_getIndex(objindex),CHAR_ITEMPUTFUNC) ;
-				if( ipfunc && ipfunc( OBJECT_getIndex( objindex), itemindex) == TRUE)
+				if( ipfunc && ipfunc( OBJECT_getIndex( objindex), item_index) == TRUE)
 					return FALSE;
 			}else{
 				Find = TRUE;
@@ -1112,34 +1112,34 @@ BOOL CHAR_FindAroundUsabilitySpace( int charaindex, int itemindex, int *fl, int 
 	return FALSE;
 }
 
-void CHAR_DropItem( int charaindex,  int itemcharaindex )
+void CHAR_DropItem( int char_index,  int itemchar_index )
 {
-	int itemindex, fl, x, y, ret, objindex, beDropOne = 1;
+	int item_index, fl, x, y, ret, objindex, beDropOne = 1;
 
-	if( !CHAR_CHECKINDEX( charaindex ) ) return;
+	if( !CHAR_CHECKINDEX( char_index ) ) return;
 
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKBATTLEMODE ) != BATTLE_CHARMODE_NONE ){
-		CHAR_talkToCli( charaindex, -1, "战斗状态中无法丢道具装备。", CHAR_COLORYELLOW );
+	if( CHAR_getWorkInt( char_index, CHAR_WORKBATTLEMODE ) != BATTLE_CHARMODE_NONE ){
+		CHAR_talkToCli( char_index, -1, "战斗状态中无法丢道具装备。", CHAR_COLORYELLOW );
 		return;
 	}
 #ifdef _AVID_TRADETRYBUG  //丢道具装备
-	if( CHAR_getWorkInt(charaindex, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE){
-		CHAR_talkToCli( charaindex, -1, "交易状态中无法丢道具装备。", CHAR_COLORYELLOW );
+	if( CHAR_getWorkInt(char_index, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE){
+		CHAR_talkToCli( char_index, -1, "交易状态中无法丢道具装备。", CHAR_COLORYELLOW );
 		return;
 	}
 #endif
 
-	itemindex = CHAR_getItemIndex( charaindex, itemcharaindex);
-	if( !ITEM_CHECKINDEX( itemindex)) return;
+	item_index = CHAR_getItemIndex( char_index, itemchar_index);
+	if( !ITEM_CHECKINDEX( item_index)) return;
 
 
 #ifdef _LOCK_PET_ITEM
-	char *arg = ITEM_getChar(itemindex, ITEM_NAME);
-	if(arg[0] == '*' || FreeDropItem(  charaindex, itemindex)==1){
+	char *arg = ITEM_getChar(item_index, ITEM_NAME);
+	if(arg[0] == '*' || FreeDropItem(  char_index, item_index)==1){
 		char dropmsg[256];
-    sprintf(dropmsg,"\n【%s】为特殊物品\n\n丢弃会直接消失！\n\n你确定要丢弃么？确定请按[OK]\n",ITEM_getChar(itemindex,ITEM_NAME));
-    CHAR_setWorkInt(charaindex,CHAR_WORK_LOCK_PET_ITEM,itemcharaindex);
-    lssproto_WN_send( getfdFromCharaIndex( charaindex), WINDOW_MESSAGETYPE_MESSAGE,
+    sprintf(dropmsg,"\n【%s】为特殊物品\n\n丢弃会直接消失！\n\n你确定要丢弃么？确定请按[OK]\n",ITEM_getChar(item_index,ITEM_NAME));
+    CHAR_setWorkInt(char_index,CHAR_WORK_LOCK_PET_ITEM,itemchar_index);
+    GmsvServer_WN_send( getfdFromCharaIndex( char_index), WINDOW_MESSAGETYPE_MESSAGE,
     		WINDOW_BUTTONTYPE_OKCANCEL,
       	CHAR_WINDOWTYPE_DROPITEM,
       	-1,
@@ -1148,73 +1148,73 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 	}
 #endif
 
-	if( ITEM_getInt( itemindex, ITEM_ID) == CASINOTOKENID &&
-		( CHAR_getInt( charaindex, CHAR_FLOOR ) == 7008 ||
-		  CHAR_getInt( charaindex, CHAR_FLOOR ) == 7005 ||
-		  CHAR_getInt( charaindex, CHAR_FLOOR ) == 7003 ) ){
+	if( ITEM_getInt( item_index, ITEM_ID) == CASINOTOKENID &&
+		( CHAR_getInt( char_index, CHAR_FLOOR ) == 7008 ||
+		  CHAR_getInt( char_index, CHAR_FLOOR ) == 7005 ||
+		  CHAR_getInt( char_index, CHAR_FLOOR ) == 7003 ) ){
 
 		int dropx, dropy, dropfl;
-		dropfl = CHAR_getInt( charaindex, CHAR_FLOOR);
-		dropx = CHAR_getInt( charaindex, CHAR_X) + CHAR_getDX( CHAR_getInt( charaindex, CHAR_DIR));
-		dropy = CHAR_getInt( charaindex, CHAR_Y) + CHAR_getDY( CHAR_getInt( charaindex, CHAR_DIR));
-		CHAR_DropStakeByDropItem( charaindex, itemcharaindex, itemindex, dropfl, dropx, dropy);
+		dropfl = CHAR_getInt( char_index, CHAR_FLOOR);
+		dropx = CHAR_getInt( char_index, CHAR_X) + CHAR_getDX( CHAR_getInt( char_index, CHAR_DIR));
+		dropy = CHAR_getInt( char_index, CHAR_Y) + CHAR_getDY( CHAR_getInt( char_index, CHAR_DIR));
+		CHAR_DropStakeByDropItem( char_index, itemchar_index, item_index, dropfl, dropx, dropy);
 		return;
 	}
 	//找出周围空间
-	if( CHAR_FindAroundUsabilitySpace( charaindex, itemindex, &fl, &x, &y) == FALSE ){
-		CHAR_talkToCli( charaindex, -1, "周围的地面已经满了。", CHAR_COLORYELLOW );
+	if( CHAR_FindAroundUsabilitySpace( char_index, item_index, &fl, &x, &y) == FALSE ){
+		CHAR_talkToCli( char_index, -1, "周围的地面已经满了。", CHAR_COLORYELLOW );
 		return;
 	}
 	
 #ifdef _ITEM_PILENUMS
-	if( ITEM_getInt( itemindex, ITEM_CANBEPILE) == 1 &&
-		ITEM_getInt( itemindex, ITEM_USEPILENUMS) > 1 ){
+	if( ITEM_getInt( item_index, ITEM_CANBEPILE) == 1 &&
+		ITEM_getInt( item_index, ITEM_USEPILENUMS) > 1 ){
 		int ret;
-		int nums = ITEM_getInt( itemindex, ITEM_USEPILENUMS);
-		ret = ITEM_makeItemAndRegist( ITEM_getInt( itemindex, ITEM_ID) );
+		int nums = ITEM_getInt( item_index, ITEM_USEPILENUMS);
+		ret = ITEM_makeItemAndRegist( ITEM_getInt( item_index, ITEM_ID) );
 		if( !ITEM_CHECKINDEX( ret)) return;
-		ITEM_setInt( itemindex, ITEM_USEPILENUMS, nums -1 );
-		itemindex = ret;
+		ITEM_setInt( item_index, ITEM_USEPILENUMS, nums -1 );
+		item_index = ret;
 		beDropOne = 0;
 	}
 #endif
 	//找到空间
-	ret = ITEM_eventDrop( itemindex, charaindex, itemcharaindex );
+	ret = ITEM_eventDrop( item_index, char_index, itemchar_index );
 	if( ret == 1 ){	//-1 物品不存在 1 消失 0 一般物品
-		CHAR_SendDropItem_Stats( charaindex, itemindex, itemcharaindex, beDropOne);
+		CHAR_SendDropItem_Stats( char_index, item_index, itemchar_index, beDropOne);
 		return;
 	}else {
-		objindex = CHAR_DropItemAbsolute( itemindex, fl, x, y, FALSE );
+		objindex = CHAR_DropItemAbsolute( item_index, fl, x, y, FALSE );
 		if( objindex == -1 ) return;
-		ITEM_setInt( itemindex, ITEM_PUTTIME, NowTime.tv_sec);
+		ITEM_setInt( item_index, ITEM_PUTTIME, NowTime.tv_sec);
 #ifdef _PET_AND_ITEM_UP
-		ITEM_setChar( itemindex, ITEM_CDKEY, 
-						CHAR_getChar( charaindex, CHAR_CDKEY));
+		ITEM_setChar( item_index, ITEM_CDKEY, 
+						CHAR_getChar( char_index, CHAR_CDKEY));
 #endif
 		{
 			LogItem(
-				CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-				CHAR_getChar( charaindex, CHAR_CDKEY ),
+				CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+				CHAR_getChar( char_index, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-				itemindex,
+				item_index,
 #else
-				ITEM_getInt( itemindex, ITEM_ID ),  /* 失奶  丞  寞 */
+				ITEM_getInt( item_index, ITEM_ID ),  /* 失奶  丞  寞 */
 #endif
 				"Drop(丢出道具)",
-		   		CHAR_getInt( charaindex,CHAR_FLOOR),
-				CHAR_getInt( charaindex,CHAR_X ),
- 	    		CHAR_getInt( charaindex,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-					ITEM_getChar( itemindex, ITEM_NAME),
-					ITEM_getInt( itemindex, ITEM_ID)
+		   		CHAR_getInt( char_index,CHAR_FLOOR),
+				CHAR_getInt( char_index,CHAR_X ),
+ 	    		CHAR_getInt( char_index,CHAR_Y ),
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+					ITEM_getChar( item_index, ITEM_NAME),
+					ITEM_getInt( item_index, ITEM_ID)
 			);
 		}
 		CHAR_sendWatchEvent( objindex, CHAR_ACTSTAND, NULL, 0, TRUE);
 	}
-	CHAR_SendDropItem_Stats( charaindex, itemindex, itemcharaindex, beDropOne);
+	CHAR_SendDropItem_Stats( char_index, item_index, itemchar_index, beDropOne);
 }
 #else
-void CHAR_DropItem( int charaindex,  int itemcharaindex )
+void CHAR_DropItem( int char_index,  int itemchar_index )
 {
 	int dirx[9],diry[9];
 	int i, j;
@@ -1222,27 +1222,27 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 	int droped =0;
 	int count_item =0, count_chara =0;
 	int fl, x, y;
-	int itemindex = CHAR_getItemIndex(charaindex,itemcharaindex);
+	int item_index = CHAR_getItemIndex(char_index,itemchar_index);
 
-	if( !CHAR_CHECKINDEX( charaindex ) ) return;
-	if( !ITEM_CHECKINDEX( itemindex) ) return;
+	if( !CHAR_CHECKINDEX( char_index ) ) return;
+	if( !ITEM_CHECKINDEX( item_index) ) return;
 #ifdef _AVID_TRADETRYBUG  //丢道具装备
-	if( CHAR_getWorkInt(charaindex, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE){
-		CHAR_talkToCli( charaindex, -1, "交易状态中无法丢道具装备。", CHAR_COLORYELLOW );
+	if( CHAR_getWorkInt(char_index, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE){
+		CHAR_talkToCli( char_index, -1, "交易状态中无法丢道具装备。", CHAR_COLORYELLOW );
 		return;
 	}
 #endif
 #ifdef _LOCK_PET_ITEM
-	char *arg = ITEM_getChar(itemindex, ITEM_NAME);
+	char *arg = ITEM_getChar(item_index, ITEM_NAME);
 	if(arg[0] == '*'){
-		CHAR_talkToCli( charaindex, -1, "绑定的物品不能丢弃！", CHAR_COLORYELLOW );
+		CHAR_talkToCli( char_index, -1, "绑定的物品不能丢弃！", CHAR_COLORYELLOW );
 		return;
 	}
 #endif
 #ifdef _DROPCHECK2
-	fl = CHAR_getInt( charaindex, CHAR_FLOOR);
-	x = CHAR_getInt( charaindex, CHAR_X);
-	y = CHAR_getInt( charaindex, CHAR_Y);
+	fl = CHAR_getInt( char_index, CHAR_FLOOR);
+	x = CHAR_getInt( char_index, CHAR_X);
+	y = CHAR_getInt( char_index, CHAR_Y);
 
 	for( i = x-CHAR_DEFAULTSEESIZ/2 ; i <= x+CHAR_DEFAULTSEESIZ/2 ; i++ ){
 		for( j = y-CHAR_DEFAULTSEESIZ/2 ; j <= y+CHAR_DEFAULTSEESIZ/2 ; j ++ ){
@@ -1260,7 +1260,7 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 	}
 
 #ifdef _DROPSTAKENEW
-		if(ITEM_getInt(itemindex, ITEM_ID) == CASINOTOKENID){
+		if(ITEM_getInt(item_index, ITEM_ID) == CASINOTOKENID){
 			int k = 0;
 			int casinodropflag = 0;
 			for(k = 0; k < arraysizeof(casinomap); k++){
@@ -1276,7 +1276,7 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 			if(casinodropflag == 0){
 #endif
 		if( count_item > 80 || count_chara > 80 ) {
-			CHAR_talkToCli( charaindex, -1, "这里的物品已经太多了，不能再丢了。", CHAR_COLORYELLOW );
+			CHAR_talkToCli( char_index, -1, "这里的物品已经太多了，不能再丢了。", CHAR_COLORYELLOW );
 			return;
 		}
 #ifdef _DROPSTAKENEW
@@ -1287,22 +1287,22 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 #endif
 
 	for( i  = 1 ; i < 8 ; i  ++ ){
-		dirx[i] = CHAR_getDX(CHAR_getInt(charaindex,CHAR_DIR) + i);
-		diry[i] = CHAR_getDY(CHAR_getInt(charaindex,CHAR_DIR) + i);
+		dirx[i] = CHAR_getDX(CHAR_getInt(char_index,CHAR_DIR) + i);
+		diry[i] = CHAR_getDY(CHAR_getInt(char_index,CHAR_DIR) + i);
 	}
-	dirx[0] = CHAR_getDX(CHAR_getInt(charaindex,CHAR_DIR));
-	diry[0] = CHAR_getDY(CHAR_getInt(charaindex,CHAR_DIR));
+	dirx[0] = CHAR_getDX(CHAR_getInt(char_index,CHAR_DIR));
+	diry[0] = CHAR_getDY(CHAR_getInt(char_index,CHAR_DIR));
 	dirx[8] = 0;
 	diry[8] = 0;
-	floor = CHAR_getInt( charaindex,CHAR_FLOOR );
+	floor = CHAR_getInt( char_index,CHAR_FLOOR );
 	{
 		int     ret;
-		if( 0 <= itemcharaindex && itemcharaindex < CHAR_STARTITEMARRAY ){	//如果丢弃物为装备
-			CHAR_sendItemDetachEvent( charaindex, itemindex );
+		if( 0 <= itemchar_index && itemchar_index < CHAR_STARTITEMARRAY ){	//如果丢弃物为装备
+			CHAR_sendItemDetachEvent( char_index, item_index );
 		}
-		ret = ITEM_eventDrop( itemindex, charaindex, itemcharaindex );
+		ret = ITEM_eventDrop( item_index, char_index, itemchar_index );
 		if( ret == 1 ){	//-1 物品不存在 1 消失 0 一般物品
-			itemindex = -1;
+			item_index = -1;
 			goto END;
 		}else if( ret == -1 ){
 			print( "%s:%d err\n", __FILE__,__LINE__);
@@ -1314,33 +1314,33 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 
 	droped = 0;
 	for( i = 0 ; i < 9 ; i ++ ){
-		int x=CHAR_getInt(charaindex,CHAR_X)+dirx[i];
-		int y=CHAR_getInt(charaindex,CHAR_Y)+diry[i];
+		int x=CHAR_getInt(char_index,CHAR_X)+dirx[i];
+		int y=CHAR_getInt(char_index,CHAR_Y)+diry[i];
 #ifdef _DROPSTAKENEW
 		// 判断物品是否为彩券
-		if(ITEM_getInt(itemindex, ITEM_ID) == CASINOTOKENID){
+		if(ITEM_getInt(item_index, ITEM_ID) == CASINOTOKENID){
 			int j = 0, k = 0;
 			int bdropstake = 0;
 			int casinoflag = 0;
 			for (j = 0; j < arraysizeof(casinomap); j++){
-				if (CHAR_getInt(charaindex, CHAR_FLOOR) == casinomap[j].casinofl){
+				if (CHAR_getInt(char_index, CHAR_FLOOR) == casinomap[j].casinofl){
 					if (x == casinomap[j].casinox && y == casinomap[j].casinoy){
 						char tmpbuf[256];
-						int dropflag = CHAR_getWorkInt(charaindex, CHAR_WORKSTAKEFLAG);
+						int dropflag = CHAR_getWorkInt(char_index, CHAR_WORKSTAKEFLAG);
 						casinoflag = 1;
 						if(casinomap[j].dropflag == 0){
-							CHAR_talkToCli(charaindex, -1, "现在无法下注！", CHAR_COLORYELLOW);
+							CHAR_talkToCli(char_index, -1, "现在无法下注！", CHAR_COLORYELLOW);
 							return;
 						}else{
 							snprintf(tmpbuf, sizeof(tmpbuf), "你在 %s 下注了一张彩券", casinomap[j].casinoinfo);
 							if(dropflag >= MAXSTAKENUM){
 								snprintf(tmpbuf, sizeof(tmpbuf), "你已经下注五次了，无法再下注！");
-								CHAR_talkToCli(charaindex, -1, tmpbuf, CHAR_COLORYELLOW);
+								CHAR_talkToCli(char_index, -1, tmpbuf, CHAR_COLORYELLOW);
 								return;
 							}
 							for(k = 0; k < MAXSTAKENUM; k++){
-								if(CHAR_getWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + k) == 0){
-									CHAR_setWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + k, casinomap[j].casinotype);
+								if(CHAR_getWorkInt(char_index, CHAR_WORKSTAKETYPE1 + k) == 0){
+									CHAR_setWorkInt(char_index, CHAR_WORKSTAKETYPE1 + k, casinomap[j].casinotype);
 									casinomap[j].stakenum = casinomap[j].stakenum + 1;
 									if(casinomap[j].stakenum >= 100000000)
 										casinomap[j].stakenum = 100000000;
@@ -1351,24 +1351,24 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 								}
 							}
 						}
-						CHAR_talkToCli(charaindex, -1, tmpbuf, CHAR_COLORYELLOW);
+						CHAR_talkToCli(char_index, -1, tmpbuf, CHAR_COLORYELLOW);
 #ifdef _FIX_GAMBLENUM		
 						//做扣点的动作
 						if (dropflag <= MAXSTAKENUM){
-							int nAcc = CHAR_getInt(charaindex, CHAR_GAMBLENUM);                                								
+							int nAcc = CHAR_getInt(char_index, CHAR_GAMBLENUM);                                								
 							nAcc -= casinomap[j].accumulation;
-							CHAR_setInt(charaindex, CHAR_GAMBLENUM, nAcc);								
+							CHAR_setInt(char_index, CHAR_GAMBLENUM, nAcc);								
 						}
 #endif
 						if (dropflag >= MAXSTAKENUM){
 							dropflag = 0;
 							for (k = 0; k < MAXSTAKENUM ; k++){
-								if (CHAR_getWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + k) > 0)
+								if (CHAR_getWorkInt(char_index, CHAR_WORKSTAKETYPE1 + k) > 0)
 									dropflag++;
 							}
-							CHAR_setWorkInt(charaindex, CHAR_WORKSTAKEFLAG, dropflag);
+							CHAR_setWorkInt(char_index, CHAR_WORKSTAKEFLAG, dropflag);
 						}else{
-							CHAR_setWorkInt(charaindex, CHAR_WORKSTAKEFLAG, dropflag);
+							CHAR_setWorkInt(char_index, CHAR_WORKSTAKEFLAG, dropflag);
 						}
 						continue;
 					}
@@ -1377,22 +1377,22 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 
 			// 此地方的彩券数量超过一张以上
 			if(bdropstake == 0 && casinoflag != 0){
-				CHAR_setItemIndex(charaindex, itemcharaindex ,-1);
-				CHAR_sendItemDataOne(charaindex, itemcharaindex);
-				LogItem(CHAR_getChar(charaindex, CHAR_NAME),
-						CHAR_getChar(charaindex, CHAR_CDKEY),
+				CHAR_setItemIndex(char_index, itemchar_index ,-1);
+				CHAR_sendItemDataOne(char_index, itemchar_index);
+				LogItem(CHAR_getChar(char_index, CHAR_NAME),
+						CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-						itemindex,
+						item_index,
 #else
-						ITEM_getInt(itemindex, ITEM_ID),
+						ITEM_getInt(item_index, ITEM_ID),
 #endif
 						"StakeDrop(丢出彩券)",
-						CHAR_getInt(charaindex,CHAR_FLOOR),
-						CHAR_getInt(charaindex,CHAR_X),
- 						CHAR_getInt(charaindex,CHAR_Y),
-						ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-					ITEM_getChar( itemindex, ITEM_NAME),
-					ITEM_getInt( itemindex, ITEM_ID)
+						CHAR_getInt(char_index,CHAR_FLOOR),
+						CHAR_getInt(char_index,CHAR_X),
+ 						CHAR_getInt(char_index,CHAR_Y),
+						ITEM_getChar(item_index, ITEM_UNIQUECODE),
+					ITEM_getChar( item_index, ITEM_NAME),
+					ITEM_getInt( item_index, ITEM_ID)
 
 						);
 				return;
@@ -1400,19 +1400,19 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 		}
 #endif
 		{
-			int ret = CHAR_DropItemFXY( charaindex,itemcharaindex,
-									CHAR_getInt(charaindex,CHAR_FLOOR), x, y,  &objindex );
+			int ret = CHAR_DropItemFXY( char_index,itemchar_index,
+									CHAR_getInt(char_index,CHAR_FLOOR), x, y,  &objindex );
 			switch( ret ){
 			case 0:
 					droped = 1;
 #ifdef _ITEM_ORNAMENTS	// WON FIX
-			if( ITEM_getWorkInt( itemindex, ITEM_CANPICKUP) > 0 ){
-				ITEM_setInt( itemindex, ITEM_PUTTIME, NowTime.tv_sec + 60*5);
+			if( ITEM_getWorkInt( item_index, ITEM_CANPICKUP) > 0 ){
+				ITEM_setInt( item_index, ITEM_PUTTIME, NowTime.tv_sec + 60*5);
 			}else{
-				ITEM_setInt( itemindex, ITEM_PUTTIME, NowTime.tv_sec);
+				ITEM_setInt( item_index, ITEM_PUTTIME, NowTime.tv_sec);
 			}
 #else
-			ITEM_setInt( itemindex, ITEM_PUTTIME, NowTime.tv_sec);
+			ITEM_setInt( item_index, ITEM_PUTTIME, NowTime.tv_sec);
 #endif
 				goto END;
 				break;
@@ -1430,23 +1430,23 @@ void CHAR_DropItem( int charaindex,  int itemcharaindex )
 	}
 #ifdef _DROPCHECK	
 	if( droped != 1 ) {
-		CHAR_talkToCli( charaindex, -1, "周围的地面已经满了。", CHAR_COLORYELLOW );
+		CHAR_talkToCli( char_index, -1, "周围的地面已经满了。", CHAR_COLORYELLOW );
 		return;
 	}
 #endif
 END:
 	CHAR_sendWatchEvent( objindex, CHAR_ACTSTAND, NULL, 0, TRUE);
-	CHAR_setItemIndex( charaindex, itemcharaindex ,-1);
+	CHAR_setItemIndex( char_index, itemchar_index ,-1);
 {
 	char	category[3];
-	snprintf( category,sizeof( category),"J%d", itemcharaindex);
-	CHAR_sendStatusString( charaindex , category);
+	snprintf( category,sizeof( category),"J%d", itemchar_index);
+	CHAR_sendStatusString( char_index , category);
 }
-	if( CHAR_complianceParameter( charaindex ) ){
-		CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex, CHAR_WORKOBJINDEX) );
+	if( CHAR_complianceParameter( char_index ) ){
+		CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index, CHAR_WORKOBJINDEX) );
 	}
-	if( CHAR_getInt( charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-		CHAR_send_P_StatusString( charaindex,
+	if( CHAR_getInt( char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+		CHAR_send_P_StatusString( char_index,
 								  CHAR_P_STRING_HP|CHAR_P_STRING_MAXHP|
 								  CHAR_P_STRING_MP|CHAR_P_STRING_MAXMP|
 								  CHAR_P_STRING_ATK|CHAR_P_STRING_DEF|
@@ -1455,52 +1455,52 @@ END:
 								  CHAR_P_STRING_WATER|CHAR_P_STRING_FIRE|
 								  CHAR_P_STRING_WIND
 								);
-        CHAR_sendItemDataOne( charaindex, itemcharaindex);
+        CHAR_sendItemDataOne( char_index, itemchar_index);
 	}
 	return;
 }
 #endif
 
-int CHAR_DropItemAbsolute( int itemindex, int floor, int x, int y,
+int CHAR_DropItemAbsolute( int item_index, int floor, int x, int y,
 						   BOOL net)
 {
 	Object object;
 	int objindex;
 
-	if( !ITEM_CHECKINDEX( itemindex) )return FALSE;
+	if( !ITEM_CHECKINDEX( item_index) )return FALSE;
 
 	object.type = OBJTYPE_ITEM;
-	object.index = itemindex;
+	object.index = item_index;
 	object.x = x;
 	object.y = y;
 	object.floor = floor;
 	objindex = initObjectOne( &object );
-	ITEM_setWorkInt( itemindex,ITEM_WORKOBJINDEX, objindex );
-	ITEM_setWorkInt( itemindex,ITEM_WORKCHARAINDEX, -1 );
+	ITEM_setWorkInt( item_index,ITEM_WORKOBJINDEX, objindex );
+	ITEM_setWorkInt( item_index,ITEM_WORKCHARAINDEX, -1 );
 	if( net )
 		CHAR_sendWatchEvent( objindex,CHAR_ACTSTAND,NULL,0,TRUE);
 
 	return objindex;
 }
 
-int  CHAR_addItemSpecificItemIndex( int charaindex, int itemindex )
+int  CHAR_addItemSpecificItemIndex( int char_index, int item_index )
 {
 	int emptyindex;
-	if( CHAR_CHECKINDEX( charaindex) == FALSE) return -1;
-	if( ITEM_CHECKINDEX( itemindex) == FALSE) return -1;
-	emptyindex = CHAR_findEmptyItemBox( charaindex );
+	if( CHAR_CHECKINDEX( char_index) == FALSE) return -1;
+	if( ITEM_CHECKINDEX( item_index) == FALSE) return -1;
+	emptyindex = CHAR_findEmptyItemBox( char_index );
 	if( emptyindex == -1 ){
-		return CheckCharMaxItem(charaindex) ;
+		return CheckCharMaxItem(char_index) ;
 	}else{
-		CHAR_setItemIndex( charaindex, emptyindex, itemindex );
-		ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX,-1);
-		ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX,charaindex);
-		CHAR_sendItemDataOne( charaindex, emptyindex);
+		CHAR_setItemIndex( char_index, emptyindex, item_index );
+		ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX,-1);
+		ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX,char_index);
+		CHAR_sendItemDataOne( char_index, emptyindex);
 	}
 	return emptyindex;
 }
 
-static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
+static int CHAR_PickUpItemFXY( int char_index, int fl ,int x , int y ,
 							   int* contents,int* objindex )
 {
 	OBJECT  object;
@@ -1511,17 +1511,17 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 		if( objtype == OBJTYPE_NOUSE )continue;
 		else if( objtype == OBJTYPE_ITEM ){
 			int ret;
-			int itemindex = OBJECT_getIndex( index);
+			int item_index = OBJECT_getIndex( index);
 #ifdef _ITEM_ORNAMENTS
-			if( ITEM_getWorkInt( itemindex, ITEM_CANPICKUP) > 0 ){
+			if( ITEM_getWorkInt( item_index, ITEM_CANPICKUP) > 0 ){
 				return -1;
 			}
 #endif
 #ifdef _PET_AND_ITEM_UP
 			if( strcmp( getItemup(), "否" ) == 0 ){
-				if(strcmp(ITEM_getChar( itemindex, ITEM_CDKEY), 
-						CHAR_getChar( charaindex, CHAR_CDKEY))!=0){
-						if(ITEM_getInt(itemindex, ITEM_ID)!=12808 && ITEM_getInt(itemindex, ITEM_ID)!=2400 && ITEM_getInt(itemindex, ITEM_ID)!=2174){
+				if(strcmp(ITEM_getChar( item_index, ITEM_CDKEY), 
+						CHAR_getChar( char_index, CHAR_CDKEY))!=0){
+						if(ITEM_getInt(item_index, ITEM_ID)!=12808 && ITEM_getInt(item_index, ITEM_ID)!=2400 && ITEM_getInt(item_index, ITEM_ID)!=2174){
 							return -6;
 						}
 				}
@@ -1530,9 +1530,9 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 		
 #ifdef _DROPSTAKENEW
 			// 判断物品是否为彩券
-			if(ITEM_getInt(itemindex, ITEM_ID) == CASINOTOKENID){
+			if(ITEM_getInt(item_index, ITEM_ID) == CASINOTOKENID){
 				int i = 0;
-				int bdropstake = 0, casinoflag = 0, emptyitemindexinchara = -1;
+				int bdropstake = 0, casinoflag = 0, emptyitem_indexinchara = -1;
 				for(i = 0; i < arraysizeof(casinomap); i++){
 					if(fl == casinomap[i].casinofl){
 						if(x == casinomap[i].casinox && y == casinomap[i].casinoy){
@@ -1540,28 +1540,28 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 							int pickupflag = 0;
 							casinoflag = 1;
 							if(casinomap[i].dropflag == 0){
-								CHAR_talkToCli(charaindex, -1, "现在已经无法取回下注彩券了！", CHAR_COLORYELLOW);
+								CHAR_talkToCli(char_index, -1, "现在已经无法取回下注彩券了！", CHAR_COLORYELLOW);
 								return -1;
 							}
-							stakeflag = CHAR_getWorkInt(charaindex, CHAR_WORKSTAKEFLAG);
+							stakeflag = CHAR_getWorkInt(char_index, CHAR_WORKSTAKEFLAG);
 							if(stakeflag == 0){
-								CHAR_talkToCli(charaindex, -1, "您并没有下注，所以无法取回彩券！", CHAR_COLORYELLOW);
+								CHAR_talkToCli(char_index, -1, "您并没有下注，所以无法取回彩券！", CHAR_COLORYELLOW);
 								return -1;
 							}
 							for(j = 0; j < MAXSTAKENUM; j++){
-								if(CHAR_getWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + j) == casinomap[i].casinotype){
-									emptyitemindexinchara = CHAR_findEmptyItemBox(charaindex);
-								   if(emptyitemindexinchara < 0) return -2;
-									CHAR_setWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + j, 0);
+								if(CHAR_getWorkInt(char_index, CHAR_WORKSTAKETYPE1 + j) == casinomap[i].casinotype){
+									emptyitem_indexinchara = CHAR_findEmptyItemBox(char_index);
+								   if(emptyitem_indexinchara < 0) return -2;
+									CHAR_setWorkInt(char_index, CHAR_WORKSTAKETYPE1 + j, 0);
 									casinomap[i].stakenum = casinomap[i].stakenum - 1;
 									stakeflag--;
 									pickupflag = 1;
 #ifdef _FIX_GAMBLENUM
 									//做加点的动作
 									{
-										int nAcc = CHAR_getInt(charaindex, CHAR_GAMBLENUM);										
+										int nAcc = CHAR_getInt(char_index, CHAR_GAMBLENUM);										
 										nAcc += casinomap[i].accumulation;
-										CHAR_setInt(charaindex, CHAR_GAMBLENUM, nAcc);										
+										CHAR_setInt(char_index, CHAR_GAMBLENUM, nAcc);										
 									}
 #endif
 									if(casinomap[i].stakenum <= 0){
@@ -1574,14 +1574,14 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 							if(stakeflag < 0){
 								stakeflag = 0;
 								for(j = 0; j < MAXSTAKENUM; j++){
-									if(CHAR_getWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + j) > 0)
+									if(CHAR_getWorkInt(char_index, CHAR_WORKSTAKETYPE1 + j) > 0)
 										stakeflag++;
 								}
-								CHAR_setWorkInt(charaindex, CHAR_WORKSTAKEFLAG, stakeflag);
+								CHAR_setWorkInt(char_index, CHAR_WORKSTAKEFLAG, stakeflag);
 							}else
-								CHAR_setWorkInt(charaindex, CHAR_WORKSTAKEFLAG, stakeflag);
+								CHAR_setWorkInt(char_index, CHAR_WORKSTAKEFLAG, stakeflag);
 							if(pickupflag == 0){
-								CHAR_talkToCli(charaindex, -1, "您没有在此下注，所以无法取回彩券！", CHAR_COLORYELLOW);
+								CHAR_talkToCli(char_index, -1, "您没有在此下注，所以无法取回彩券！", CHAR_COLORYELLOW);
 								return -1;
 							}
 						}
@@ -1590,69 +1590,69 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 				
 				if(bdropstake == 0 && casinoflag != 0){// 此地方的彩券数量超过一张以上
 					char tmpbuf[256];
-					if(emptyitemindexinchara != -1){
+					if(emptyitem_indexinchara != -1){
 						int itemid=-1, ret=-1;
 						itemid = ITEM_makeItemAndRegist(CASINOTOKENID);
 						if(itemid == -1) return -1;
-						ret = CHAR_addItemSpecificItemIndex( charaindex, itemid);
-						if( ret < 0 || ret >=  CheckCharMaxItem(charaindex)  ) {
+						ret = CHAR_addItemSpecificItemIndex( char_index, itemid);
+						if( ret < 0 || ret >=  CheckCharMaxItem(char_index)  ) {
 							ITEM_endExistItemsOne( itemid );
 							return -1;
 						}
 					}
-					CHAR_sendItemDataOne(charaindex, emptyitemindexinchara);
+					CHAR_sendItemDataOne(char_index, emptyitem_indexinchara);
 					snprintf(tmpbuf, sizeof(tmpbuf), "拾回%s，已将下注取消！",
-						ITEM_getChar(itemindex, ITEM_NAME));
-					CHAR_talkToCli(charaindex, -1, tmpbuf, CHAR_COLORWHITE);
+						ITEM_getChar(item_index, ITEM_NAME));
+					CHAR_talkToCli(char_index, -1, tmpbuf, CHAR_COLORWHITE);
 					// 记录捡回记录
-					LogItem(CHAR_getChar(charaindex, CHAR_NAME),
-							CHAR_getChar(charaindex, CHAR_CDKEY),
+					LogItem(CHAR_getChar(char_index, CHAR_NAME),
+							CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt(itemindex, ITEM_ID),
+							ITEM_getInt(item_index, ITEM_ID),
 #endif
 							"StakePickUp(捡起彩券)",
-							CHAR_getInt(charaindex,CHAR_FLOOR),
-							CHAR_getInt(charaindex,CHAR_X),
- 							CHAR_getInt(charaindex,CHAR_Y),
-							ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							CHAR_getInt(char_index,CHAR_FLOOR),
+							CHAR_getInt(char_index,CHAR_X),
+ 							CHAR_getInt(char_index,CHAR_Y),
+							ITEM_getChar(item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 							);
 					return -1;
 				}
 			}
 #endif
-			ret = CHAR_addItemSpecificItemIndex( charaindex, itemindex );
-			if(ret ==  CheckCharMaxItem(charaindex)  ){
+			ret = CHAR_addItemSpecificItemIndex( char_index, item_index );
+			if(ret ==  CheckCharMaxItem(char_index)  ){
 				return -2;
 			}else if( ret != -1 ) {
 				typedef void (*PICKUPFUNC)( int, int);
 				PICKUPFUNC pickupfunc = NULL;
 				pickupfunc = (PICKUPFUNC)ITEM_getFunctionPointer(
-									itemindex, ITEM_PICKUPFUNC);
+									item_index, ITEM_PICKUPFUNC);
 				if( pickupfunc){
-					pickupfunc( charaindex, itemindex);
+					pickupfunc( char_index, item_index);
 				}
 #ifdef _ALLBLUES_LUA_1_2 
 				else{
-					RunItemPickupEvent(charaindex, itemindex );
+					RunItemPickupEvent(char_index, item_index );
 				}
 #endif
 				*contents = OBJECT_getIndex(index);
 				*objindex = index;
-//	      CHAR_sendItemDataOne( charaindex, ret);
+//	      CHAR_sendItemDataOne( char_index, ret);
 				return 0;
 			}
 		}else if( objtype == OBJTYPE_GOLD ){
 			int MaxGold;
 			long dropgoldamount = 0, newamountgold = 0, Minus = 0, newgold = 0;
-			long mygold = (long) CHAR_getInt( charaindex, CHAR_GOLD );
-			MaxGold = CHAR_getMaxHaveGold( charaindex);
+			long mygold = (long) CHAR_getInt( char_index, CHAR_GOLD );
+			MaxGold = CHAR_getMaxHaveGold( char_index);
 			if ((mygold <0) || (mygold > MaxGold))return -2;
 			dropgoldamount = OBJECT_getIndex(index);
-			newamountgold  = (unsigned int) CHAR_getInt( charaindex,CHAR_GOLD ) + dropgoldamount;
+			newamountgold  = (unsigned int) CHAR_getInt( char_index,CHAR_GOLD ) + dropgoldamount;
 			Minus = newamountgold - MaxGold;
 			if( Minus > 0 ) {
 				newgold = Minus;
@@ -1662,7 +1662,7 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 				*contents = dropgoldamount;
 			}
 			OBJECT_setIndex( index, newgold);
-			CHAR_setInt( charaindex, CHAR_GOLD, min( newamountgold, MaxGold ) );
+			CHAR_setInt( char_index, CHAR_GOLD, min( newamountgold, MaxGold ) );
 			*objindex = index;
 			return 1;
 		}else if( objtype == OBJTYPE_CHARA ) {
@@ -1672,14 +1672,14 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 				if( CHAR_getWorkInt( pindex, CHAR_WORKPETFOLLOWMODE) == 3 ){
 					return -7;
 				}
-				int havepetindex = CHAR_getCharPetElement( charaindex);
+				int havepetindex = CHAR_getCharPetElement( char_index);
 				if( havepetindex == -1 ) {
 					if( CHAR_getWorkInt( pindex, CHAR_WORKPETFOLLOWMODE) != CHAR_PETFOLLOW_NOW )
 					return -3;
 				}
-				if( CHAR_getWorkInt( charaindex, CHAR_PickAllPet) != TRUE )	{
-					if( (CHAR_getInt( pindex, CHAR_LV) - CHAR_getInt( charaindex, CHAR_LV) > 20 )
-						&& (CHAR_getInt( charaindex, CHAR_TRANSMIGRATION ) <= 0 ))	{
+				if( CHAR_getWorkInt( char_index, CHAR_PickAllPet) != TRUE )	{
+					if( (CHAR_getInt( pindex, CHAR_LV) - CHAR_getInt( char_index, CHAR_LV) > 20 )
+						&& (CHAR_getInt( char_index, CHAR_TRANSMIGRATION ) <= 0 ))	{
 						return -4;
 					}
 				}
@@ -1690,21 +1690,21 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 					if( !strcmp( CHAR_getChar( pindex, CHAR_OWNERCDKEY), "SYSTEM_WAYI" ) &&
 						!strcmp( CHAR_getChar( pindex, CHAR_OWNERCHARANAME), "SYSTEM_WAYI" ) ){
 					}else{
-						if( strcmp( CHAR_getChar( pindex, CHAR_OWNERCDKEY), CHAR_getChar( charaindex, CHAR_CDKEY) ) ||
-							strcmp( CHAR_getChar( pindex, CHAR_OWNERCHARANAME), CHAR_getChar( charaindex, CHAR_NAME) )){
+						if( strcmp( CHAR_getChar( pindex, CHAR_OWNERCDKEY), CHAR_getChar( char_index, CHAR_CDKEY) ) ||
+							strcmp( CHAR_getChar( pindex, CHAR_OWNERCHARANAME), CHAR_getChar( char_index, CHAR_NAME) )){
 							return -5;
 						}
 					}
 				}
 				if( CHAR_getWorkInt( pindex, CHAR_WORKPETFOLLOWMODE) == CHAR_PETFOLLOW_NOW ){
-					CHAR_pickupFollowPet( charaindex, pindex );
+					CHAR_pickupFollowPet( char_index, pindex );
 					return -1;
 				}
 				if( CHAR_getInt( pindex, CHAR_MAILMODE) != CHAR_PETMAIL_NONE){
 					if( strcmp( CHAR_getChar( pindex, CHAR_OWNERCDKEY),
-								CHAR_getChar( charaindex, CHAR_CDKEY)) 	!= 0 ||
+								CHAR_getChar( char_index, CHAR_CDKEY)) 	!= 0 ||
 						strcmp( CHAR_getChar( pindex, CHAR_OWNERCHARANAME),
-						CHAR_getChar( charaindex, CHAR_NAME))!= 0 ){
+						CHAR_getChar( char_index, CHAR_NAME))!= 0 ){
 						return -5;
 					}else if( CHAR_getInt( pindex, CHAR_MAILMODE) != CHAR_PETMAIL_IDLE5){
 						return -5;
@@ -1722,32 +1722,32 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 						CHAR_constructFunctable( pindex);
 					}
 				}
-				CHAR_setWorkInt( pindex, CHAR_WORKPLAYERINDEX, charaindex);
-				CHAR_setCharPet( charaindex, havepetindex, pindex);
+				CHAR_setWorkInt( pindex, CHAR_WORKPLAYERINDEX, char_index);
+				CHAR_setCharPet( char_index, havepetindex, pindex);
 #ifndef _FIX_COPY_MM_BUG			
 #ifdef _PET_TALK
 				if( CHAR_getInt( pindex, CHAR_PETID) != 718 )	{
 #endif
 #endif
 					CHAR_setChar( pindex, CHAR_OWNERCDKEY,
-						CHAR_getChar( charaindex, CHAR_CDKEY));
+						CHAR_getChar( char_index, CHAR_CDKEY));
 					CHAR_setChar( pindex, CHAR_OWNERCHARANAME,
-						CHAR_getChar( charaindex, CHAR_NAME));
+						CHAR_getChar( char_index, CHAR_NAME));
 #ifndef _FIX_COPY_MM_BUG	
 #ifdef _PET_TALK
 				}
 #endif		
 #endif
 #ifdef _PET_ITEM
-				CHAR_sendPetItemData( charaindex, havepetindex);
+				CHAR_sendPetItemData( char_index, havepetindex);
 #endif		
 				CHAR_complianceParameter( pindex);
 {
 				char category[3];
 				snprintf( category,sizeof( category),"K%d",havepetindex);
-				CHAR_sendStatusString( charaindex, category);
+				CHAR_sendStatusString( char_index, category);
 				snprintf( category,sizeof( category),"W%d",havepetindex);
-				CHAR_sendStatusString( charaindex, category);
+				CHAR_sendStatusString( char_index, category);
 }
 				CHAR_setInt( pindex, CHAR_PUTPETTIME, 0);
 				*contents = pindex;
@@ -1759,39 +1759,39 @@ static int CHAR_PickUpItemFXY( int charaindex, int fl ,int x , int y ,
 	return -1;
 }
 
-void CHAR_PickUpItem( int charaindex, int dir )
+void CHAR_PickUpItem( int char_index, int dir )
 {
 	int i;
 	int dirx[2],diry[2];
 	int searchloopcount=0;
 
-	if( !CHAR_CHECKINDEX(charaindex) )return;
-	if( CHAR_getFlg( charaindex,CHAR_ISDIE ) )return;
-	if( CHAR_getWorkInt( charaindex,CHAR_WORKBATTLEMODE ) )return;
+	if( !CHAR_CHECKINDEX(char_index) )return;
+	if( CHAR_getFlg( char_index,CHAR_ISDIE ) )return;
+	if( CHAR_getWorkInt( char_index,CHAR_WORKBATTLEMODE ) )return;
 	if( dir < 0 ){
 		searchloopcount = 1;
 		dirx[0] = 0;
 		diry[0] = 0;
 	}else{
-		if( dir != CHAR_getInt( charaindex, CHAR_DIR)) {
+		if( dir != CHAR_getInt( char_index, CHAR_DIR)) {
 			VALIDATEDIR(dir);
-			CHAR_setInt(charaindex,CHAR_DIR,dir);
-			CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex,CHAR_WORKOBJINDEX),
+			CHAR_setInt(char_index,CHAR_DIR,dir);
+			CHAR_sendWatchEvent(CHAR_getWorkInt(char_index,CHAR_WORKOBJINDEX),
 								CHAR_ACTSTAND,NULL,0,FALSE);
 		}
-		dirx[0] = CHAR_getDX(CHAR_getInt(charaindex,CHAR_DIR));
-		diry[0] = CHAR_getDY(CHAR_getInt(charaindex,CHAR_DIR));
+		dirx[0] = CHAR_getDX(CHAR_getInt(char_index,CHAR_DIR));
+		diry[0] = CHAR_getDY(CHAR_getInt(char_index,CHAR_DIR));
 		dirx[1] = 0;
 		diry[1] = 0;
 		searchloopcount=2;
 	}
 	for( i = 0 ; i < searchloopcount ; i ++ ){
 		int contents,objindex;
-		int fl = CHAR_getInt(charaindex,CHAR_FLOOR);
+		int fl = CHAR_getInt(char_index,CHAR_FLOOR);
 		
-		int y  = CHAR_getInt(charaindex,CHAR_Y)+diry[i];
-		int x  = CHAR_getInt(charaindex,CHAR_X)+dirx[i];
-		int ret = CHAR_PickUpItemFXY( charaindex,fl,x,y,&contents, &objindex);
+		int y  = CHAR_getInt(char_index,CHAR_Y)+diry[i];
+		int x  = CHAR_getInt(char_index,CHAR_X)+dirx[i];
+		int ret = CHAR_PickUpItemFXY( char_index,fl,x,y,&contents, &objindex);
 		switch( ret ){
 		case 0:
 			CHAR_ObjectDelete(objindex);
@@ -1802,7 +1802,7 @@ void CHAR_PickUpItem( int charaindex, int dir )
 				int dropflag = 0;
 				for(j = 0; j < arraysizeof(casinomap); j++)
 				{
-					if(CHAR_getInt(charaindex, CHAR_FLOOR) == casinomap[j].casinofl)
+					if(CHAR_getInt(char_index, CHAR_FLOOR) == casinomap[j].casinofl)
 					{
 						if(x == casinomap[j].casinox && y == casinomap[j].casinoy)
 						{
@@ -1818,22 +1818,22 @@ void CHAR_PickUpItem( int charaindex, int dir )
 #endif
 				snprintf( mesg,sizeof(mesg), "拾获 %s",
 						  ITEM_getAppropriateName(contents) );
-				CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORWHITE);
+				CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORWHITE);
 			}
 
 			{
 				LogItem(
-					CHAR_getChar( charaindex, CHAR_NAME ),
-					CHAR_getChar( charaindex, CHAR_CDKEY ),
+					CHAR_getChar( char_index, CHAR_NAME ),
+					CHAR_getChar( char_index, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
 					contents,
 #else
 					ITEM_getInt(contents, ITEM_ID),
 #endif
 					"PickUp(捡起道具)",
-					CHAR_getInt( charaindex,CHAR_FLOOR),
-					CHAR_getInt( charaindex,CHAR_X ),
- 	      			CHAR_getInt( charaindex,CHAR_Y ),
+					CHAR_getInt( char_index,CHAR_FLOOR),
+					CHAR_getInt( char_index,CHAR_X ),
+ 	      			CHAR_getInt( char_index,CHAR_Y ),
 					ITEM_getChar( contents, ITEM_UNIQUECODE),
 					ITEM_getChar( contents, ITEM_NAME),
 					ITEM_getInt( contents, ITEM_ID)
@@ -1843,7 +1843,7 @@ void CHAR_PickUpItem( int charaindex, int dir )
 			return;
 			break;
 		case 1:
-			CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_GOLD);
+			CHAR_send_P_StatusString( char_index, CHAR_P_STRING_GOLD);
 
 			if( OBJECT_getIndex( objindex) == 0 ) {
 				CHAR_ObjectDelete(objindex);
@@ -1857,19 +1857,19 @@ void CHAR_PickUpItem( int charaindex, int dir )
 				}else {
 					snprintf( mesg,sizeof(mesg), "拾获 %d Stone",contents );
 				}
-				CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORWHITE);
+				CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORWHITE);
 			}
 			if( contents != 0 ){
 			     LogStone(
 										-1,
-			             CHAR_getChar( charaindex, CHAR_NAME ),
-			             CHAR_getChar( charaindex, CHAR_CDKEY ),
+			             CHAR_getChar( char_index, CHAR_NAME ),
+			             CHAR_getChar( char_index, CHAR_CDKEY ),
 			             contents,
-						 CHAR_getInt( charaindex, CHAR_GOLD ),
+						 CHAR_getInt( char_index, CHAR_GOLD ),
 			             "PickUp(拾获金钱)",
-			             CHAR_getInt( charaindex,CHAR_FLOOR),
-			             CHAR_getInt( charaindex,CHAR_X ),
-			             CHAR_getInt( charaindex,CHAR_Y )
+			             CHAR_getInt( char_index,CHAR_FLOOR),
+			             CHAR_getInt( char_index,CHAR_X ),
+			             CHAR_getInt( char_index,CHAR_Y )
 			             );
 			}
 			return;
@@ -1886,18 +1886,18 @@ void CHAR_PickUpItem( int charaindex, int dir )
 				}
 
 				snprintf( mesg,sizeof(mesg), "拾获 %s", p);
-				CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORWHITE);
+				CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORWHITE);
 			}
 			// 矢永玄毛胶匀凶夫弘
 			LogPet(
-				CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-				CHAR_getChar( charaindex, CHAR_CDKEY ),
+				CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+				CHAR_getChar( char_index, CHAR_CDKEY ),
 				CHAR_getChar( contents, CHAR_NAME),
 				CHAR_getInt( contents, CHAR_LV),
 				"PickUp(捡宠)",
-				CHAR_getInt( charaindex,CHAR_FLOOR),
-				CHAR_getInt( charaindex,CHAR_X ),
-				CHAR_getInt( charaindex,CHAR_Y ),
+				CHAR_getInt( char_index,CHAR_FLOOR),
+				CHAR_getInt( char_index,CHAR_X ),
+				CHAR_getInt( char_index,CHAR_Y ),
 				CHAR_getChar( contents, CHAR_UNIQUECODE)   // shan 2001/12/14
 			);
 			return;
@@ -1917,18 +1917,18 @@ void CHAR_PickUpItem( int charaindex, int dir )
 				}
 
 				snprintf( mesg,sizeof(mesg), "拾回 %s", p);
-				CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORWHITE);
+				CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORWHITE);
 			}
 			// 矢永玄毛胶匀凶夫弘
 			LogPet(
-				CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-				CHAR_getChar( charaindex, CHAR_CDKEY ),
+				CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+				CHAR_getChar( char_index, CHAR_CDKEY ),
 				CHAR_getChar( contents, CHAR_NAME),
 				CHAR_getInt( contents, CHAR_LV),
 				"FollowPickUp(收回溜宠)",
-				CHAR_getInt( charaindex,CHAR_FLOOR),
-				CHAR_getInt( charaindex,CHAR_X ),
-				CHAR_getInt( charaindex,CHAR_Y ),
+				CHAR_getInt( char_index,CHAR_FLOOR),
+				CHAR_getInt( char_index,CHAR_X ),
+				CHAR_getInt( char_index,CHAR_Y ),
 				CHAR_getChar( contents, CHAR_UNIQUECODE)   // shan 2001/12/14
 			);
 
@@ -1937,19 +1937,19 @@ void CHAR_PickUpItem( int charaindex, int dir )
 		case -1:
 			break;
 		case -2:
-			CHAR_talkToCli( charaindex,-1,"道具栏已满。", CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index,-1,"道具栏已满。", CHAR_COLORYELLOW);
 			break;
 		case -3:
-			CHAR_talkToCli( charaindex,-1,"宠物数已满。", CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index,-1,"宠物数已满。", CHAR_COLORYELLOW);
 			break;
 		case -4:
-			CHAR_talkToCli( charaindex,-1,"无法照顾该宠物。", CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index,-1,"无法照顾该宠物。", CHAR_COLORYELLOW);
 			break;
 		case -5:
-			CHAR_talkToCli( charaindex,-1,"无法拾获该宠物。", CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index,-1,"无法拾获该宠物。", CHAR_COLORYELLOW);
 			break;
 		case -6:
-			CHAR_talkToCli( charaindex,-1,"无法拾获该道具。", CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index,-1,"无法拾获该道具。", CHAR_COLORYELLOW);
 			break;
 		default:
 			return;
@@ -1961,8 +1961,8 @@ void CHAR_PickUpItem( int charaindex, int dir )
 /*------------------------------------------------------------
  * 云嗯毛甄  隙烂匹  公丹午允月［CHAR_DropMoney井日及心匹银丹仪［
  * 娄醒
- *  charaindex  int     平乓仿奶件犯永弁旦
- *  itemindex   int     失奶  丞奶件犯永弁旦(平乓仿犯□正及  匹及)
+ *  char_index  int     平乓仿奶件犯永弁旦
+ *  item_index   int     失奶  丞奶件犯永弁旦(平乓仿犯□正及  匹及)
  *  fl          int     白夫失
  *  x           int     x
  *  y           int     y
@@ -1977,17 +1977,17 @@ void CHAR_PickUpItem( int charaindex, int dir )
  *  汹互  匹  ［ -6
  *  岳      0
  ------------------------------------------------------------*/
-static BOOL CHAR_DropMoneyFXY( int charaindex, int amount, int fl , int x,
+static BOOL CHAR_DropMoneyFXY( int char_index, int amount, int fl , int x,
 							   int y, BOOL force, int* objindex )
 {
 	OBJECT  object;
 	int MaxGold;
-	int mygold = CHAR_getInt( charaindex, CHAR_GOLD );
+	int mygold = CHAR_getInt( char_index, CHAR_GOLD );
 	if( amount <= 0 )return -6;
 	if( amount > mygold )
 		return -1;
 
-	MaxGold = CHAR_getMaxHaveGold( charaindex);
+	MaxGold = CHAR_getMaxHaveGold( char_index);
 	if ((mygold <0) || (mygold > MaxGold))	return -1;
                                                                               	
 	if( MAP_walkAbleFromPoint( fl,x,y,FALSE ) == FALSE )return -2;
@@ -2002,8 +2002,8 @@ static BOOL CHAR_DropMoneyFXY( int charaindex, int amount, int fl , int x,
 			if( tmpamount  > MaxGold )
 				return -4;
 			OBJECT_setIndex(index,tmpamount);
-			CHAR_setInt(charaindex,CHAR_GOLD,
-						(unsigned int)CHAR_getInt(charaindex,
+			CHAR_setInt(char_index,CHAR_GOLD,
+						(unsigned int)CHAR_getInt(char_index,
 												  CHAR_GOLD )
 						- amount );
 			*objindex = index;
@@ -2011,14 +2011,14 @@ static BOOL CHAR_DropMoneyFXY( int charaindex, int amount, int fl , int x,
 			OBJECT_setTime( index, NowTime.tv_sec);
 #endif
 			if( amount >= 100 ){ /* 云嗯毛  中凶夫弘 */
-			        LogStone(-1,CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-			                 CHAR_getChar( charaindex, CHAR_CDKEY ), /* 交□扒□ID */
+			        LogStone(-1,CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+			                 CHAR_getChar( char_index, CHAR_CDKEY ), /* 交□扒□ID */
 			                 amount,                                   /* 嗯喊 */
-							 CHAR_getInt( charaindex, CHAR_GOLD ),
+							 CHAR_getInt( char_index, CHAR_GOLD ),
 			                 "Drop(放置金钱)",
-			                 CHAR_getInt( charaindex,CHAR_FLOOR),
-			                 CHAR_getInt( charaindex,CHAR_X ),
-			                 CHAR_getInt( charaindex,CHAR_Y )
+			                 CHAR_getInt( char_index,CHAR_FLOOR),
+			                 CHAR_getInt( char_index,CHAR_X ),
+			                 CHAR_getInt( char_index,CHAR_Y )
 			                 );
 			}
 			return 0;
@@ -2050,21 +2050,21 @@ static BOOL CHAR_DropMoneyFXY( int charaindex, int amount, int fl , int x,
 			return -3;
 
 		/*云嗯毛蛹日允*/
-		CHAR_setInt(charaindex,CHAR_GOLD,
-					(unsigned int)CHAR_getInt(charaindex,CHAR_GOLD )
+		CHAR_setInt(char_index,CHAR_GOLD,
+					(unsigned int)CHAR_getInt(char_index,CHAR_GOLD )
 					- amount );
 #ifdef _DEL_DROP_GOLD
 		OBJECT_setTime( *objindex, NowTime.tv_sec);
 #endif
 		if( amount >= 100 ){ /* 云嗯毛  中凶夫弘 */
-		      LogStone(-1,CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-		               CHAR_getChar( charaindex, CHAR_CDKEY ), /* 交□扒□ID */
+		      LogStone(-1,CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+		               CHAR_getChar( char_index, CHAR_CDKEY ), /* 交□扒□ID */
 		               amount,                                   /* 嗯喊 */
-					   CHAR_getInt( charaindex, CHAR_GOLD ),
+					   CHAR_getInt( char_index, CHAR_GOLD ),
 		               "Drop(放置金钱)",
-		               CHAR_getInt( charaindex,CHAR_FLOOR),
-		               CHAR_getInt( charaindex,CHAR_X ),
-		               CHAR_getInt( charaindex,CHAR_Y )
+		               CHAR_getInt( char_index,CHAR_FLOOR),
+		               CHAR_getInt( char_index,CHAR_X ),
+		               CHAR_getInt( char_index,CHAR_Y )
 		               );
 		}
 		return 0;
@@ -2074,65 +2074,65 @@ static BOOL CHAR_DropMoneyFXY( int charaindex, int amount, int fl , int x,
 /*------------------------------------------------------------
  * 云嗯毛  允楮醒［  及蟆井日  允［
  * 娄醒
- *  charaindex      int     平乓仿奶件犯永弁旦
+ *  char_index      int     平乓仿奶件犯永弁旦
  *  amount          int     云嗯及汹
  *
  * 忒曰袄
  *  卅仄
  ------------------------------------------------------------*/
-void CHAR_DropMoney( int charaindex,  int amount )
+void CHAR_DropMoney( int char_index,  int amount )
 {
 	int dirx[9],diry[9];
 	int ret;
 	int i;
 	int objindex, MaxGold;
 
-	if( !CHAR_CHECKINDEX( charaindex ) )return;
+	if( !CHAR_CHECKINDEX( char_index ) )return;
 
 #ifdef _AVID_TRADETRYBUG //丢出石币
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKTRADEMODE) == CHAR_TRADE_TRADING ){
-		CHAR_talkToCli( charaindex, -1, "交易状态中无法丢出石币。", CHAR_COLORYELLOW );
+	if( CHAR_getWorkInt( char_index, CHAR_WORKTRADEMODE) == CHAR_TRADE_TRADING ){
+		CHAR_talkToCli( char_index, -1, "交易状态中无法丢出石币。", CHAR_COLORYELLOW );
 		return;
 	}
 #endif
 
-	MaxGold = CHAR_getMaxHaveGold( charaindex);
-	if( CHAR_getFlg( charaindex,CHAR_ISDIE ) )return;
+	MaxGold = CHAR_getMaxHaveGold( char_index);
+	if( CHAR_getFlg( char_index,CHAR_ISDIE ) )return;
 
 	//ANDY_ADD	12/28
 	{
 		int money=0;
-		money = CHAR_getInt( charaindex, CHAR_GOLD );
+		money = CHAR_getInt( char_index, CHAR_GOLD );
 		if( money < 0 )	{
-			CHAR_setInt( charaindex, CHAR_GOLD, 0);
+			CHAR_setInt( char_index, CHAR_GOLD, 0);
 			return;
 		}
 		if( (amount > money) || (money > MaxGold))	{
 			if( money > MaxGold )	{
-				CHAR_setInt( charaindex, CHAR_GOLD, 0 );
+				CHAR_setInt( char_index, CHAR_GOLD, 0 );
 				print("\n ERR: %s(stone%d) dropMoney%d > CHAR_MAXGOLDHAVE !!",
-						CHAR_getChar(charaindex, CHAR_CDKEY), money, amount);
+						CHAR_getChar(char_index, CHAR_CDKEY), money, amount);
 			}else	{
-				print("\n ERR: %s dropMoney > CHAR_GOLD !!", CHAR_getChar(charaindex, CHAR_CDKEY));
+				print("\n ERR: %s dropMoney > CHAR_GOLD !!", CHAR_getChar(char_index, CHAR_CDKEY));
 			}
-			CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_GOLD);
+			CHAR_send_P_StatusString( char_index, CHAR_P_STRING_GOLD);
 			return;
 		}
 	}
 	//ANDY_END
 	for( i  = 0 ; i < 7 ; i  ++ ){
-		dirx[i+2] = CHAR_getDX( CHAR_getInt(charaindex,CHAR_DIR) + i+1 );
-		diry[i+2] = CHAR_getDY( CHAR_getInt(charaindex,CHAR_DIR) + i+1 );
+		dirx[i+2] = CHAR_getDX( CHAR_getInt(char_index,CHAR_DIR) + i+1 );
+		diry[i+2] = CHAR_getDY( CHAR_getInt(char_index,CHAR_DIR) + i+1 );
 	}
 
-	dirx[0] = CHAR_getDX(CHAR_getInt(charaindex,CHAR_DIR));
-	diry[0] = CHAR_getDY(CHAR_getInt(charaindex,CHAR_DIR));
+	dirx[0] = CHAR_getDX(CHAR_getInt(char_index,CHAR_DIR));
+	diry[0] = CHAR_getDY(CHAR_getInt(char_index,CHAR_DIR));
 	dirx[1] = 0;
 	diry[1] = 0;
 
 	for( i = 0 ; i < 9 ; i ++ ){
-		int x = CHAR_getInt(charaindex,CHAR_X) + dirx[i];
-		int y = CHAR_getInt(charaindex,CHAR_Y) + diry[i];
+		int x = CHAR_getInt(char_index,CHAR_X) + dirx[i];
+		int y = CHAR_getInt(char_index,CHAR_Y) + diry[i];
 
 // CoolFish 2002/04/06 下注处不可丢置石币
 #ifdef _DROPSTAKENEW
@@ -2140,19 +2140,19 @@ void CHAR_DropMoney( int charaindex,  int amount )
 			int j = 0;
 			for(j = 0; j < arraysizeof(casinomap); j++)
 			{
-				if(CHAR_getInt(charaindex, CHAR_FLOOR) == casinomap[j].casinofl)
+				if(CHAR_getInt(char_index, CHAR_FLOOR) == casinomap[j].casinofl)
 				{
 					if (x == casinomap[j].casinox && y == casinomap[j].casinoy)
 					{
-						CHAR_talkToCli(charaindex, -1, "这里不能放置石币！", CHAR_COLORYELLOW);
+						CHAR_talkToCli(char_index, -1, "这里不能放置石币！", CHAR_COLORYELLOW);
 						return;
 					}
 				}
 			}
 		}
 #endif
-		ret = CHAR_DropMoneyFXY( charaindex,amount,
-								 CHAR_getInt(charaindex,CHAR_FLOOR),
+		ret = CHAR_DropMoneyFXY( char_index,amount,
+								 CHAR_getInt(char_index,CHAR_FLOOR),
 								 x,y, FALSE, &objindex );
 		switch( ret ){
 		case 0:
@@ -2175,11 +2175,11 @@ void CHAR_DropMoney( int charaindex,  int amount )
 	}
 
 	{
-		int x = CHAR_getInt(charaindex,CHAR_X) + dirx[1];
-		int y = CHAR_getInt(charaindex,CHAR_Y) + diry[1];
+		int x = CHAR_getInt(char_index,CHAR_X) + dirx[1];
+		int y = CHAR_getInt(char_index,CHAR_Y) + diry[1];
 
-		ret = CHAR_DropMoneyFXY( charaindex,amount,
-								 CHAR_getInt(charaindex,CHAR_FLOOR),
+		ret = CHAR_DropMoneyFXY( char_index,amount,
+								 CHAR_getInt(char_index,CHAR_FLOOR),
 								 x,y, TRUE, &objindex );
 		switch( ret ){
 		case 0:
@@ -2202,7 +2202,7 @@ void CHAR_DropMoney( int charaindex,  int amount )
 
 END:
 	CHAR_sendWatchEvent(objindex,CHAR_ACTSTAND,NULL,0,TRUE );
-	CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_GOLD);
+	CHAR_send_P_StatusString( char_index, CHAR_P_STRING_GOLD);
 	return;
 }
 
@@ -2211,9 +2211,9 @@ static int CHAR_findEmptyItemBoxNoFromChar( Char* ch )
 	int i, j=0;;
 	int itemMax = CheckCharMaxItemChar(ch);
 	for( i = CHAR_STARTITEMARRAY ; i <  itemMax ; i ++ ){
-		int     itemindex;
-		itemindex = ch->indexOfExistItems[i];
-		if( itemindex == -1 )  j++;
+		int     item_index;
+		item_index = ch->indexOfExistItems[i];
+		if( item_index == -1 )  j++;
 	}
 	return j;
 }
@@ -2241,9 +2241,9 @@ int CHAR_findTotalEmptyItem( int index )
     ch = CHAR_getCharPointer(index);
     if( ch != NULL ){
         for (i = CHAR_STARTITEMARRAY; i < CheckCharMaxItem(index); i++){
-        	int itemindex = 0;
-                itemindex = ch->indexOfExistItems[i];
-                if (itemindex == -1) totaleptitem++;
+        	int item_index = 0;
+                item_index = ch->indexOfExistItems[i];
+                if (item_index == -1) totaleptitem++;
         }
         return totaleptitem;
     }
@@ -2251,13 +2251,13 @@ int CHAR_findTotalEmptyItem( int index )
 	return -1;
 }
 
-int CHAR_pickupFollowPet( int charaindex, int pickupindex )
+int CHAR_pickupFollowPet( int char_index, int pickupindex )
 {
 	int petindex;
 	int objindex;
 	int havepetindex;
 	char category[3];
-	if( !CHAR_CHECKINDEX( charaindex ) )	return FALSE;
+	if( !CHAR_CHECKINDEX( char_index ) )	return FALSE;
 	if( pickupindex != -1 )
 		petindex = pickupindex;
 	else{
@@ -2265,47 +2265,47 @@ int CHAR_pickupFollowPet( int charaindex, int pickupindex )
 		int petnum;
 		petnum=0;
 		for(;petnum<5;petnum++){
-			petindex = CHAR_getWorkInt( charaindex, CHAR_WORKPETFOLLOW +petnum);
+			petindex = CHAR_getWorkInt( char_index, CHAR_WORKPETFOLLOW +petnum);
 			if( !CHAR_CHECKINDEX( petindex ) ){
-				CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW +petnum, -1 );
+				CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW +petnum, -1 );
 			}else{
 #ifdef _PETFOLLOW_NEW_
-				int havepetindex = CHAR_getCharPetElementOld( charaindex);
+				int havepetindex = CHAR_getCharPetElementOld( char_index);
 #else
-				int havepetindex = CHAR_getCharPetElement( charaindex);
+				int havepetindex = CHAR_getCharPetElement( char_index);
 #endif
 				if( havepetindex == -1 ) {
-					CHAR_talkToCli(charaindex,-1,"宠物栏已满！无法拾回！",CHAR_COLORYELLOW);
+					CHAR_talkToCli(char_index,-1,"宠物栏已满！无法拾回！",CHAR_COLORYELLOW);
 					return FALSE;
 				}
 				objindex = CHAR_getWorkInt( petindex, CHAR_WORKOBJINDEX );
-				if( (pickupindex == -1) || (pickupindex == CHAR_getWorkInt( charaindex, CHAR_WORKPETFOLLOW +  petnum)   ) )
-					CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW+petnum, -1 );
-				if( strcmp( CHAR_getChar( petindex, CHAR_OWNERCDKEY), CHAR_getChar( charaindex, CHAR_CDKEY)) != 0 ||
-					strcmp( CHAR_getChar( petindex, CHAR_OWNERCHARANAME), CHAR_getChar( charaindex, CHAR_NAME)) != 0 )
+				if( (pickupindex == -1) || (pickupindex == CHAR_getWorkInt( char_index, CHAR_WORKPETFOLLOW +  petnum)   ) )
+					CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW+petnum, -1 );
+				if( strcmp( CHAR_getChar( petindex, CHAR_OWNERCDKEY), CHAR_getChar( char_index, CHAR_CDKEY)) != 0 ||
+					strcmp( CHAR_getChar( petindex, CHAR_OWNERCHARANAME), CHAR_getChar( char_index, CHAR_NAME)) != 0 )
 				{
 					return FALSE;
 				}
 				CHAR_ObjectDelete(objindex);
 				CHAR_setWorkInt( petindex, CHAR_WORKPETFOLLOWMODE, CHAR_PETFOLLOW_NONE );
-				CHAR_setWorkInt( petindex, CHAR_WORKPLAYERINDEX, charaindex);
-				CHAR_setCharPet( charaindex, havepetindex, petindex);
+				CHAR_setWorkInt( petindex, CHAR_WORKPLAYERINDEX, char_index);
+				CHAR_setCharPet( char_index, havepetindex, petindex);
 #ifndef _FIX_COPY_MM_BUG
 #ifdef _PET_TALK
 				if( CHAR_getInt( petindex, CHAR_PETID) != 718 )	{
 #endif
 #endif
-					CHAR_setChar( petindex, CHAR_OWNERCDKEY, CHAR_getChar( charaindex, CHAR_CDKEY));
-					CHAR_setChar( petindex, CHAR_OWNERCHARANAME, CHAR_getChar( charaindex, CHAR_NAME));
+					CHAR_setChar( petindex, CHAR_OWNERCDKEY, CHAR_getChar( char_index, CHAR_CDKEY));
+					CHAR_setChar( petindex, CHAR_OWNERCHARANAME, CHAR_getChar( char_index, CHAR_NAME));
 #ifndef _FIX_COPY_MM_BUG	
 #ifdef _PET_TALK
 				}
 #endif
 #endif
 				snprintf( category,sizeof( category),"K%d",havepetindex);
-				CHAR_sendStatusString( charaindex, category);
+				CHAR_sendStatusString( char_index, category);
 				snprintf( category,sizeof( category),"W%d",havepetindex);
-				CHAR_sendStatusString( charaindex, category);
+				CHAR_sendStatusString( char_index, category);
 				CHAR_setInt( petindex, CHAR_PUTPETTIME, 0);
 				CHAR_setWorkInt( petindex, CHAR_WORKPETFOLLOWCOUNT, 0);
 				CHAR_setWorkInt( petindex, CHAR_WORKOBJINDEX, -1);
@@ -2317,44 +2317,44 @@ int CHAR_pickupFollowPet( int charaindex, int pickupindex )
 						p = CHAR_getChar( petindex, CHAR_NAME);
 					}
 					snprintf( mesg,sizeof(mesg), "拾回 %s", p);
-					CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORYELLOW);
+					CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORYELLOW);
 				}
 				LogPet(
-					CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-					CHAR_getChar( charaindex, CHAR_CDKEY ),
+					CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+					CHAR_getChar( char_index, CHAR_CDKEY ),
 					CHAR_getChar( petindex, CHAR_NAME),
 					CHAR_getInt( petindex, CHAR_LV),
 					"FollowPickUp(收回溜宠)",
-					CHAR_getInt( charaindex,CHAR_FLOOR),
-					CHAR_getInt( charaindex,CHAR_X ),
-					CHAR_getInt( charaindex,CHAR_Y ),
+					CHAR_getInt( char_index,CHAR_FLOOR),
+					CHAR_getInt( char_index,CHAR_X ),
+					CHAR_getInt( char_index,CHAR_Y ),
 					CHAR_getChar( petindex, CHAR_UNIQUECODE)   // shan 2001/12/14
 				);
 			}
 		}
 		return TRUE;
 #else
-		petindex = CHAR_getWorkInt( charaindex, CHAR_WORKPETFOLLOW );
+		petindex = CHAR_getWorkInt( char_index, CHAR_WORKPETFOLLOW );
 #endif
 	}
 	if( !CHAR_CHECKINDEX( petindex ) )
 	{
-		CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW, -1 );
+		CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW, -1 );
 #ifdef _PETFOLLOW_NEW_
-		CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW+1, -1 );
-		CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW+2, -1 );
-		CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW+3, -1 );
-		CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW+4, -1 );
+		CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW+1, -1 );
+		CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW+2, -1 );
+		CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW+3, -1 );
+		CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW+4, -1 );
 #endif
 		return FALSE;
 	}
 #ifdef _PETFOLLOW_NEW_
-				havepetindex = CHAR_getCharPetElementOld( charaindex);
+				havepetindex = CHAR_getCharPetElementOld( char_index);
 #else
-				havepetindex = CHAR_getCharPetElement( charaindex);
+				havepetindex = CHAR_getCharPetElement( char_index);
 #endif
 	if( havepetindex == -1 ) {
-		CHAR_talkToCli(charaindex,-1,"宠物栏已满！无法拾回！",CHAR_COLORYELLOW);
+		CHAR_talkToCli(char_index,-1,"宠物栏已满！无法拾回！",CHAR_COLORYELLOW);
 		return FALSE;
 	}
 	objindex = CHAR_getWorkInt( petindex, CHAR_WORKOBJINDEX );
@@ -2364,39 +2364,39 @@ int CHAR_pickupFollowPet( int charaindex, int pickupindex )
 	int petnum;
 	petnum=0;
 	for(;petnum<5;petnum++){
-		if( (pickupindex == -1) || (pickupindex == CHAR_getWorkInt( charaindex, CHAR_WORKPETFOLLOW+petnum )   ) )
-			CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW+petnum, -1 );
+		if( (pickupindex == -1) || (pickupindex == CHAR_getWorkInt( char_index, CHAR_WORKPETFOLLOW+petnum )   ) )
+			CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW+petnum, -1 );
 	}
 #else
-	if( (pickupindex == -1) || (pickupindex == CHAR_getWorkInt( charaindex, CHAR_WORKPETFOLLOW )   ) )
-		CHAR_setWorkInt( charaindex, CHAR_WORKPETFOLLOW, -1 );
+	if( (pickupindex == -1) || (pickupindex == CHAR_getWorkInt( char_index, CHAR_WORKPETFOLLOW )   ) )
+		CHAR_setWorkInt( char_index, CHAR_WORKPETFOLLOW, -1 );
 #endif
 	/* CDKEY 午平乓仿  互域谯仄卅中午五反胶尹卅中 */
-	if( strcmp( CHAR_getChar( petindex, CHAR_OWNERCDKEY), CHAR_getChar( charaindex, CHAR_CDKEY)) != 0 ||
-	    strcmp( CHAR_getChar( petindex, CHAR_OWNERCHARANAME), CHAR_getChar( charaindex, CHAR_NAME)) != 0 )
+	if( strcmp( CHAR_getChar( petindex, CHAR_OWNERCDKEY), CHAR_getChar( char_index, CHAR_CDKEY)) != 0 ||
+	    strcmp( CHAR_getChar( petindex, CHAR_OWNERCHARANAME), CHAR_getChar( char_index, CHAR_NAME)) != 0 )
 	{
 		return FALSE;
 	}
 	CHAR_ObjectDelete(objindex);
 	CHAR_setWorkInt( petindex, CHAR_WORKPETFOLLOWMODE, CHAR_PETFOLLOW_NONE );
-	CHAR_setWorkInt( petindex, CHAR_WORKPLAYERINDEX, charaindex);
-	CHAR_setCharPet( charaindex, havepetindex, petindex);
+	CHAR_setWorkInt( petindex, CHAR_WORKPLAYERINDEX, char_index);
+	CHAR_setCharPet( char_index, havepetindex, petindex);
 #ifndef _FIX_COPY_MM_BUG	
 #ifdef _PET_TALK
 	if( CHAR_getInt( petindex, CHAR_PETID) != 718 )	{
 #endif
 #endif
-		CHAR_setChar( petindex, CHAR_OWNERCDKEY, CHAR_getChar( charaindex, CHAR_CDKEY));
-		CHAR_setChar( petindex, CHAR_OWNERCHARANAME, CHAR_getChar( charaindex, CHAR_NAME));
+		CHAR_setChar( petindex, CHAR_OWNERCDKEY, CHAR_getChar( char_index, CHAR_CDKEY));
+		CHAR_setChar( petindex, CHAR_OWNERCHARANAME, CHAR_getChar( char_index, CHAR_NAME));
 #ifndef _FIX_COPY_MM_BUG	
 #ifdef _PET_TALK
 	}
 #endif
 #endif
 	snprintf( category,sizeof( category),"K%d",havepetindex);
-	CHAR_sendStatusString( charaindex, category);
+	CHAR_sendStatusString( char_index, category);
 	snprintf( category,sizeof( category),"W%d",havepetindex);
-	CHAR_sendStatusString( charaindex, category);
+	CHAR_sendStatusString( char_index, category);
 	CHAR_setInt( petindex, CHAR_PUTPETTIME, 0);
 	CHAR_setWorkInt( petindex, CHAR_WORKPETFOLLOWCOUNT, 0);
 	CHAR_setWorkInt( petindex, CHAR_WORKOBJINDEX, -1);
@@ -2408,16 +2408,16 @@ int CHAR_pickupFollowPet( int charaindex, int pickupindex )
 		p = CHAR_getChar( petindex, CHAR_NAME);
 	}
 	snprintf( mesg,sizeof(mesg), "拾回 %s", p);
-	CHAR_talkToCli(charaindex,-1,mesg,CHAR_COLORYELLOW);
+	CHAR_talkToCli(char_index,-1,mesg,CHAR_COLORYELLOW);
 	LogPet(
-		CHAR_getChar( charaindex, CHAR_NAME ), /* 平乓仿   */
-		CHAR_getChar( charaindex, CHAR_CDKEY ),
+		CHAR_getChar( char_index, CHAR_NAME ), /* 平乓仿   */
+		CHAR_getChar( char_index, CHAR_CDKEY ),
 		CHAR_getChar( petindex, CHAR_NAME),
 		CHAR_getInt( petindex, CHAR_LV),
 		"FollowPickUp(收回溜宠)",
-		CHAR_getInt( charaindex,CHAR_FLOOR),
-		CHAR_getInt( charaindex,CHAR_X ),
-		CHAR_getInt( charaindex,CHAR_Y ),
+		CHAR_getInt( char_index,CHAR_FLOOR),
+		CHAR_getInt( char_index,CHAR_X ),
+		CHAR_getInt( char_index,CHAR_Y ),
 		CHAR_getChar( petindex, CHAR_UNIQUECODE)   // shan 2001/12/14
 	);
 	return TRUE;
@@ -2440,12 +2440,12 @@ int NPC_MAPCLEANGOLD( int meindex , int floor)
 		for( object=MAP_getTopObj(fl,x,y) ; object ; object =  NEXT_OBJECT(object ) )	{
 			int index = GET_OBJINDEX(object);
 			int objtype = OBJECT_getType(index);
-			int itemindex = OBJECT_getIndex( index);
+			int item_index = OBJECT_getIndex( index);
 
 			if( objtype == OBJTYPE_NOUSE )continue;
 			if( objtype == OBJTYPE_ITEM ){
-				if(ITEM_getInt(itemindex, ITEM_ID) == CASINOTOKENID)	{
-					ITEM_endExistItemsOne( itemindex);
+				if(ITEM_getInt(item_index, ITEM_ID) == CASINOTOKENID)	{
+					ITEM_endExistItemsOne( item_index);
 					OBJECT_setIndex( index, 0);
 					CHAR_ObjectDelete(index);	//清除
 					print(" clean( %d )", index );
@@ -2567,11 +2567,11 @@ int CasinoPay(int npcindex, int wincasinotype)
 		{
 			int index = GET_OBJINDEX(object);
 			int objtype = OBJECT_getType(index);
-			int itemindex = OBJECT_getIndex( index);
+			int item_index = OBJECT_getIndex( index);
 			if (objtype == OBJTYPE_NOUSE) continue;
 			else if (objtype == OBJTYPE_ITEM)
 			{
-				if(ITEM_getInt(itemindex, ITEM_ID) == CASINOTOKENID)
+				if(ITEM_getInt(item_index, ITEM_ID) == CASINOTOKENID)
 				{
 					OBJECT_setIndex(index, 0);
 					CHAR_ObjectDelete(index);
@@ -2585,162 +2585,162 @@ int CasinoPay(int npcindex, int wincasinotype)
 #endif
 
 #ifdef _PET_ITEM
-void CHAR_sendPetItemData( int charaindex, int petid)
+void CHAR_sendPetItemData( int char_index, int petid)
 {
 		int     i;
 		char CHAR_statusSendBuffer[1024];
 		int strlength = 2;
-		int petindex = CHAR_getCharPet( charaindex, petid);
+		int petindex = CHAR_getCharPet( char_index, petid);
 		if(!CHAR_CHECKINDEX(petindex)) return;
-		int fd = getfdFromCharaIndex( charaindex );
+		int fd = getfdFromCharaIndex( char_index );
 		snprintf( CHAR_statusSendBuffer ,sizeof(CHAR_statusSendBuffer),"B%d" , petid);
 		for( i = 0 ; i < CHAR_MAXPETITEMHAVE ; i ++ ){
 			char    token[512];
-			int     itemindex;
-			itemindex = CHAR_getItemIndex( petindex, i );
-			if( itemindex >= 0 ) {
-				snprintf( token ,sizeof(token),"%s|" ,ITEM_makeItemStatusString( -1, itemindex ) );
+			int     item_index;
+			item_index = CHAR_getItemIndex( petindex, i );
+			if( item_index >= 0 ) {
+				snprintf( token ,sizeof(token),"%s|" ,ITEM_makeItemStatusString( -1, item_index ) );
 			}else {
 				snprintf( token ,sizeof(token),"%s|" , ITEM_makeItemFalseString() );
 			}
 			strcpysafe( CHAR_statusSendBuffer + strlength,
 						sizeof(CHAR_statusSendBuffer) - strlength, token );
 			strlength += strlen( token );
-			if( strlength >= arraysizeof(CHAR_statusSendBuffer) ) lssproto_S_send(fd, CHAR_statusSendBuffer);
+			if( strlength >= arraysizeof(CHAR_statusSendBuffer) ) GmsvServer_S_send(fd, CHAR_statusSendBuffer);
 		}
 		dchop( CHAR_statusSendBuffer , "|" );
-		lssproto_S_send(fd, CHAR_statusSendBuffer);
+		GmsvServer_S_send(fd, CHAR_statusSendBuffer);
 }
 
-void CHAR_movePetItem( int charaindex, int petid, int fromindex, int toindex )
+void CHAR_movePetItem( int char_index, int petid, int fromindex, int toindex )
 {
-	if( !CHAR_CHECKINDEX( charaindex ) )return;
-	if( CHAR_getFlg( charaindex,CHAR_ISDIE ) )return;
-	int petindex = CHAR_getCharPet( charaindex, petid);
+	if( !CHAR_CHECKINDEX( char_index ) )return;
+	if( CHAR_getFlg( char_index,CHAR_ISDIE ) )return;
+	int petindex = CHAR_getCharPet( char_index, petid);
 	char token[512];
-	if(toindex == -1 && fromindex >= CHAR_EQUIPPLACENUM && fromindex < CheckCharMaxItem(charaindex)){
-		int itemindex = CHAR_getItemIndex( charaindex, fromindex );
-		toindex=ITEM_getInt( itemindex, ITEM_TYPE)-ITEM_PET_HEAD;
+	if(toindex == -1 && fromindex >= CHAR_EQUIPPLACENUM && fromindex < CheckCharMaxItem(char_index)){
+		int item_index = CHAR_getItemIndex( char_index, fromindex );
+		toindex=ITEM_getInt( item_index, ITEM_TYPE)-ITEM_PET_HEAD;
 	}else if(toindex == -2){
 		if(fromindex<CHAR_PETITEMNUM)
-			CHAR_talkToCli( charaindex, -1, "无法丢弃宠物身上的物品。", CHAR_COLORYELLOW );
+			CHAR_talkToCli( char_index, -1, "无法丢弃宠物身上的物品。", CHAR_COLORYELLOW );
 		else
-			CHAR_DropItem( charaindex, fromindex );
+			CHAR_DropItem( char_index, fromindex );
 	}
 	
-	if( (fromindex >=0 && fromindex < CHAR_PETITEMNUM && toindex >= CHAR_EQUIPPLACENUM && toindex < CheckCharMaxItem(charaindex)) 
-		|| (toindex >=0 && toindex < CHAR_PETITEMNUM && fromindex >= CHAR_EQUIPPLACENUM && fromindex < CheckCharMaxItem(charaindex))){
+	if( (fromindex >=0 && fromindex < CHAR_PETITEMNUM && toindex >= CHAR_EQUIPPLACENUM && toindex < CheckCharMaxItem(char_index)) 
+		|| (toindex >=0 && toindex < CHAR_PETITEMNUM && fromindex >= CHAR_EQUIPPLACENUM && fromindex < CheckCharMaxItem(char_index))){
 		if(fromindex >= CHAR_EQUIPPLACENUM){
-			int charitemindex = CHAR_getItemIndex( charaindex, fromindex );
-			int petitemindex = CHAR_getItemIndex( petindex, toindex );
-			int type=ITEM_getInt( charitemindex, ITEM_TYPE);
+			int charitem_index = CHAR_getItemIndex( char_index, fromindex );
+			int petitem_index = CHAR_getItemIndex( petindex, toindex );
+			int type=ITEM_getInt( charitem_index, ITEM_TYPE);
 			if(CHAR_getInt(petindex, CHAR_VARIABLEAI) < 100){
-				CHAR_talkToCli( charaindex, -1, "无法训服宠物装备该物品。", CHAR_COLORRED );
+				CHAR_talkToCli( char_index, -1, "无法训服宠物装备该物品。", CHAR_COLORRED );
 				return;
 			}
 			if(type<ITEM_PET_HEAD || type>ITEM_PET_FEET || (type-ITEM_PET_HEAD) != toindex){
-				CHAR_talkToCli( charaindex, -1, "无法装备该项物品。", CHAR_COLORWHITE );
+				CHAR_talkToCli( char_index, -1, "无法装备该项物品。", CHAR_COLORWHITE );
 				return;
 			}
-			if( CHAR_getInt( petindex, CHAR_LV) < ITEM_getInt( charitemindex, ITEM_LEVEL)){
-				CHAR_talkToCli( charaindex, -1, "宠物等级尚未到达装备该项物品！", CHAR_COLORYELLOW );
+			if( CHAR_getInt( petindex, CHAR_LV) < ITEM_getInt( charitem_index, ITEM_LEVEL)){
+				CHAR_talkToCli( char_index, -1, "宠物等级尚未到达装备该项物品！", CHAR_COLORYELLOW );
 				return;
 			}
-			if( ITEM_CHECKINDEX( petitemindex)){
-				sprintf( token, "宠物%s 卸下%s", CHAR_getChar( petindex, CHAR_NAME), ITEM_getChar( petitemindex, ITEM_NAME));
-				CHAR_talkToCli( charaindex, -1, token, CHAR_COLORWHITE );
+			if( ITEM_CHECKINDEX( petitem_index)){
+				sprintf( token, "宠物%s 卸下%s", CHAR_getChar( petindex, CHAR_NAME), ITEM_getChar( petitem_index, ITEM_NAME));
+				CHAR_talkToCli( char_index, -1, token, CHAR_COLORWHITE );
 			}
-			sprintf( token, "宠物%s 装备%s", CHAR_getChar( petindex, CHAR_NAME), ITEM_getChar( charitemindex, ITEM_NAME));
-			CHAR_talkToCli( charaindex, -1, token, CHAR_COLORWHITE );
-			CHAR_setItemIndex( charaindex, fromindex, petitemindex );
-			CHAR_setItemIndex( petindex, toindex, charitemindex );
-			CHAR_sendItemDataOne( charaindex, fromindex);
-			CHAR_sendPetItemData( charaindex, petid);
+			sprintf( token, "宠物%s 装备%s", CHAR_getChar( petindex, CHAR_NAME), ITEM_getChar( charitem_index, ITEM_NAME));
+			CHAR_talkToCli( char_index, -1, token, CHAR_COLORWHITE );
+			CHAR_setItemIndex( char_index, fromindex, petitem_index );
+			CHAR_setItemIndex( petindex, toindex, charitem_index );
+			CHAR_sendItemDataOne( char_index, fromindex);
+			CHAR_sendPetItemData( char_index, petid);
 		}else{
-			int charitemindex = CHAR_getItemIndex( charaindex, toindex );
-			int petitemindex = CHAR_getItemIndex( petindex, fromindex );
-			int type=ITEM_getInt( charitemindex, ITEM_TYPE);
-			sprintf( token, "宠物%s 卸下%s", CHAR_getChar( petindex, CHAR_NAME), ITEM_getChar( petitemindex, ITEM_NAME));
-			CHAR_talkToCli( charaindex, -1, token, CHAR_COLORWHITE );
-			if( ITEM_CHECKINDEX( charitemindex)){
+			int charitem_index = CHAR_getItemIndex( char_index, toindex );
+			int petitem_index = CHAR_getItemIndex( petindex, fromindex );
+			int type=ITEM_getInt( charitem_index, ITEM_TYPE);
+			sprintf( token, "宠物%s 卸下%s", CHAR_getChar( petindex, CHAR_NAME), ITEM_getChar( petitem_index, ITEM_NAME));
+			CHAR_talkToCli( char_index, -1, token, CHAR_COLORWHITE );
+			if( ITEM_CHECKINDEX( charitem_index)){
 				if(CHAR_getInt(petindex, CHAR_VARIABLEAI) < 100){
-					CHAR_talkToCli( charaindex, -1, "无法训服宠物装备该物品。", CHAR_COLORRED );
+					CHAR_talkToCli( char_index, -1, "无法训服宠物装备该物品。", CHAR_COLORRED );
 					return;
 				}
 /*
-				if (CHAR_getInt( charaindex, CHAR_RIDEPET ) == petid ){
-					CHAR_talkToCli( charaindex, -1, "骑乘中的宠无法装备该物品。", CHAR_COLORRED );
+				if (CHAR_getInt( char_index, CHAR_RIDEPET ) == petid ){
+					CHAR_talkToCli( char_index, -1, "骑乘中的宠无法装备该物品。", CHAR_COLORRED );
 					return;
 				}
 */
 				if(type<ITEM_PET_HEAD || type>ITEM_PET_FEET || (type-ITEM_PET_HEAD) != toindex){
-					CHAR_talkToCli( charaindex, -1, "无法装备该项物品。", CHAR_COLORWHITE );
+					CHAR_talkToCli( char_index, -1, "无法装备该项物品。", CHAR_COLORWHITE );
 					return;
 				}
-				if( CHAR_getInt( petindex, CHAR_LV) < ITEM_getInt( charitemindex, ITEM_LEVEL)){
-					CHAR_talkToCli( charaindex, -1, "宠物等级尚未到达装备该项物品！", CHAR_COLORYELLOW );
+				if( CHAR_getInt( petindex, CHAR_LV) < ITEM_getInt( charitem_index, ITEM_LEVEL)){
+					CHAR_talkToCli( char_index, -1, "宠物等级尚未到达装备该项物品！", CHAR_COLORYELLOW );
 					return;
 				}
-				sprintf( token, "宠物%s 装备%s", CHAR_getChar( petindex, CHAR_NAME), ITEM_getChar( charitemindex, ITEM_NAME));
-				CHAR_talkToCli( charaindex, -1, token, CHAR_COLORWHITE );
+				sprintf( token, "宠物%s 装备%s", CHAR_getChar( petindex, CHAR_NAME), ITEM_getChar( charitem_index, ITEM_NAME));
+				CHAR_talkToCli( char_index, -1, token, CHAR_COLORWHITE );
 			}
-			CHAR_setItemIndex( charaindex, toindex, petitemindex );
-			CHAR_setItemIndex( petindex, fromindex, charitemindex );
-			CHAR_sendItemDataOne( charaindex, toindex);
-			CHAR_sendPetItemData( charaindex, petid);
+			CHAR_setItemIndex( char_index, toindex, petitem_index );
+			CHAR_setItemIndex( petindex, fromindex, charitem_index );
+			CHAR_sendItemDataOne( char_index, toindex);
+			CHAR_sendPetItemData( char_index, petid);
 		}
 	}
 	CHAR_complianceParameter( petindex );
 	snprintf( token, sizeof( token ), "K%d", petid );
-	CHAR_sendStatusString( charaindex, token );
+	CHAR_sendStatusString( char_index, token );
 }
 
-void CHAR_sendPetItemEmpty( int charaindex, int petid)
+void CHAR_sendPetItemEmpty( int char_index, int petid)
 {
-	int fd = getfdFromCharaIndex( charaindex );
+	int fd = getfdFromCharaIndex( char_index );
 	char CHAR_statusSendBuffer[16];
 	sprintf(CHAR_statusSendBuffer,"B%d|",petid);
-	lssproto_S_send(fd, CHAR_statusSendBuffer);
+	GmsvServer_S_send(fd, CHAR_statusSendBuffer);
 }
 
 #endif
 #ifdef _ROOKIE_ITEM
-void CHAR_CheckUserItem( int charaindex ){
+void CHAR_CheckUserItem( int char_index ){
 	int i,maxitem;
-	maxitem = CheckCharMaxItem(charaindex);
-	if(CHAR_getInt( charaindex, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYER){
+	maxitem = CheckCharMaxItem(char_index);
+	if(CHAR_getInt( char_index, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYER){
 		for( i = 0 ; i < maxitem ; i ++ ){
-			int itemindex = CHAR_getItemIndex( charaindex, i );
+			int item_index = CHAR_getItemIndex( char_index, i );
 
-			if( itemindex >= 0 ) {
-					if (CHAR_getInt(charaindex, CHAR_TRANSMIGRATION) > 0||CHAR_getInt(charaindex, CHAR_LV) >= 120) {
-							if (ITEM_getInt(itemindex, ITEM_ID) == getRookieItem(0)
-									||ITEM_getInt(itemindex, ITEM_ID) == getRookieItem(1)
-									||ITEM_getInt(itemindex, ITEM_ID) == getRookieItem(2)
-									||ITEM_getInt(itemindex, ITEM_ID) == getRookieItem(3)
-									||ITEM_getInt(itemindex, ITEM_ID) == getRookieItem(4)) {
+			if( item_index >= 0 ) {
+					if (CHAR_getInt(char_index, CHAR_TRANSMIGRATION) > 0||CHAR_getInt(char_index, CHAR_LV) >= 120) {
+							if (ITEM_getInt(item_index, ITEM_ID) == getRookieItem(0)
+									||ITEM_getInt(item_index, ITEM_ID) == getRookieItem(1)
+									||ITEM_getInt(item_index, ITEM_ID) == getRookieItem(2)
+									||ITEM_getInt(item_index, ITEM_ID) == getRookieItem(3)
+									||ITEM_getInt(item_index, ITEM_ID) == getRookieItem(4)) {
 							char itemname[128];
 							sprintf(itemname, "您的道具:%s，由于您已脱离了新手阶段，系统自动收回。",
-									ITEM_getChar(itemindex, ITEM_NAME));
-							CHAR_talkToCli(charaindex, -1, itemname,
+									ITEM_getChar(item_index, ITEM_NAME));
+							CHAR_talkToCli(char_index, -1, itemname,
 									CHAR_COLORYELLOW);
-							CHAR_setItemIndex(charaindex, i, -1);
-							CHAR_sendItemDataOne(charaindex, i);
-							ITEM_endExistItemsOne(itemindex);
+							CHAR_setItemIndex(char_index, i, -1);
+							CHAR_sendItemDataOne(char_index, i);
+							ITEM_endExistItemsOne(item_index);
 							continue;
 						}
 					}
 #ifdef _ITEM_USE_TIME
-						if(ITEM_getInt( itemindex, ITEM_USETIME) > 0){
-							if(ITEM_getInt( itemindex, ITEM_USETIME)<(int)time(NULL)){
+						if(ITEM_getInt( item_index, ITEM_USETIME) > 0){
+							if(ITEM_getInt( item_index, ITEM_USETIME)<(int)time(NULL)){
 								char itemname[128];
 								sprintf(itemname, "您的道具:%s，由于使用期限已到，系统自动收回。",
-										ITEM_getChar(itemindex, ITEM_NAME));
-								CHAR_talkToCli(charaindex, -1, itemname,
+										ITEM_getChar(item_index, ITEM_NAME));
+								CHAR_talkToCli(char_index, -1, itemname,
 										CHAR_COLORYELLOW);
-								CHAR_setItemIndex(charaindex, i, -1);
-								CHAR_sendItemDataOne(charaindex, i);
-								ITEM_endExistItemsOne(itemindex);
+								CHAR_setItemIndex(char_index, i, -1);
+								CHAR_sendItemDataOne(char_index, i);
+								ITEM_endExistItemsOne(item_index);
 							}
 						}
 #endif

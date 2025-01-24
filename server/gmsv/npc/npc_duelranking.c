@@ -5,8 +5,8 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "net.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "npc_duelranking.h"
 #include "handletime.h"
 
@@ -61,7 +61,7 @@ static void NPC_Duelranking_selectWindow( int meindex, int toindex, int num, int
 				"             ＜强者们＞              \n\n"
 				"             ＜ 自己 ＞              \n\n"
 				"             ＜都不看＞              \n\n" );
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
 							WINDOW_BUTTONTYPE_NONE,
 							CHAR_WINDOWTYPE_DUELRANKING_START,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -80,7 +80,7 @@ void NPC_DuelrankingWindowTalked( int meindex, int talkerindex, int seqno, int s
 	switch( seqno){
 	case CHAR_WINDOWTYPE_DUELRANKING_START:
 		if( atoi( data) == 3 ) {
-			saacproto_DBGetEntryByCount_send( acfd, 
+			SaacClient_DBGetEntryByCount_send( acfd, 
 											DB_DUELPOINT, 0, 
 								NPC_DUELRANKING_WINDOWLINENUM, fdid, 
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX));
@@ -88,7 +88,7 @@ void NPC_DuelrankingWindowTalked( int meindex, int talkerindex, int seqno, int s
 		if( atoi( data) == 5 ) {
 			char dbkey[256];
 			CHAR_makeDBKey( talkerindex, dbkey, sizeof( dbkey));
-			saacproto_DBGetEntryRank_send( acfd, DB_DUELPOINT, dbkey, fdid,
+			SaacClient_DBGetEntryRank_send( acfd, DB_DUELPOINT, dbkey, fdid,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX));
 		}
 		break;
@@ -102,7 +102,7 @@ void NPC_DuelrankingWindowTalked( int meindex, int talkerindex, int seqno, int s
 			}
 	
 			if( count < 0) count = 0;
-			saacproto_DBGetEntryByCount_send( acfd, 
+			SaacClient_DBGetEntryByCount_send( acfd, 
 											DB_DUELPOINT, 
 											count,
 								NPC_DUELRANKING_WINDOWLINENUM, fdid,
@@ -112,7 +112,7 @@ void NPC_DuelrankingWindowTalked( int meindex, int talkerindex, int seqno, int s
 				int count;
 				count = atoi( data);
 				if( count < 1 ) count = 1;
-				saacproto_DBGetEntryByCount_send( acfd, 
+				SaacClient_DBGetEntryByCount_send( acfd, 
 												DB_DUELPOINT, 
 												count-1,
 									NPC_DUELRANKING_WINDOWLINENUM, fdid,
@@ -203,7 +203,7 @@ void NPC_Duelranking_PrintRanking( char *data, int count_start, int fdid, int ms
 	}else {
 		button = WINDOW_BUTTONTYPE_NEXT|WINDOW_BUTTONTYPE_PREV|WINDOW_BUTTONTYPE_OK;
 	}
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_WIDEMESSAGE, 
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_WIDEMESSAGE, 
 					button,
 					CHAR_WINDOWTYPE_DUELRANKING_TOPRANKING,
 					msgid2,
@@ -220,7 +220,7 @@ void NPC_Duelranking_CallMyRanking( int count, int msgid, int msgid2)
 {
 	count -= 5;
 	if( count < 0 ) count = 0;
-	saacproto_DBGetEntryByCount_send( acfd,  DB_DUELPOINT, 
+	SaacClient_DBGetEntryByCount_send( acfd,  DB_DUELPOINT, 
 									count, NPC_DUELRANKING_WINDOWLINENUM, 
 									msgid, msgid2 );
 }

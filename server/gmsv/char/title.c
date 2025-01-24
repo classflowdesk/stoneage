@@ -1,11 +1,7 @@
 #include "version.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#ifdef _REDHAT_V9
-#include <errno.h>
-#endif
+//
+#include "util.h"
+//
 #include "autil.h"
 #include "title.h"
 #include "char.h"
@@ -13,17 +9,16 @@
 #include "item.h"
 #include "skill.h"
 #include "buf.h"
-#include "util.h"
 #include "config_file.h"
 
 
 /*====================惫寞  ====================*/
-static int TITLE_IntCheck( int charaindex,int elem, int *data, int flg);
-static int TITLE_WorkIntCheck( int charaindex,int elem, int *data, int flg);
-static int TITLE_ItemCheck( int charaindex,int elem, int *data, int flg);
-static int TITLE_ItemEquipCheck( int charaindex,int elem, int *data, int flg);
-static int TITLE_SkillCheck( int charaindex,int elem, int *data, int flg);
-static int TITLE_SexCheck( int charaindex,int elem, int *data, int flg);
+static int TITLE_IntCheck( int char_index,int elem, int *data, int flg);
+static int TITLE_WorkIntCheck( int char_index,int elem, int *data, int flg);
+static int TITLE_ItemCheck( int char_index,int elem, int *data, int flg);
+static int TITLE_ItemEquipCheck( int char_index,int elem, int *data, int flg);
+static int TITLE_SkillCheck( int char_index,int elem, int *data, int flg);
+static int TITLE_SexCheck( int char_index,int elem, int *data, int flg);
 
 typedef enum
 {
@@ -47,12 +42,6 @@ typedef struct tagTITLE_Table
 	void                (*definefunction)(int,char* buf,int buflen);
 }TITLE_Table;
 
-/* 银尹月由仿丢□正
- * STR,TGH,MAXMP］ATK,DEF
- * LEVEL,CLASS,SKILL,ITEM,FIREREG,ICEREG,THUNDERREG
- * KANJILV,TALKCNT,WALKCNT,DEADCNT,LOGINCNT,BASEIMAGENUMBER
- * GOLD
-*/
 typedef struct tagTITLE_Compare {
 	char    compare[8];;
 } TITLE_COMPARE;
@@ -62,7 +51,7 @@ TITLE_COMPARE TITLE_compare[] = { {"<="}, {">="},{"<>"}, {">"},{"<"},{"="}};
 typedef struct tagTITLE_PARAM
 {
 	int     element;
-	int     (*checkfunc)( int charaindex,int elem, int *data, int flg );
+	int     (*checkfunc)( int char_index,int elem, int *data, int flg );
 	char    *paramname;
 }TITLE_PARAM;
 
@@ -137,16 +126,16 @@ static char    TITLE_statusStringBuffer[TITLESTRINGBUFSIZ];
  * 弁仿奶失件玄卞苇六月惫寞及  侬  毛综月
  * 娄醒
  *  title       Title*      旦平伙
- *  charaindex  int         仇及惫寞毛  匀化中月平乓仿及奶件犯永弁旦
+ *  char_index  int         仇及惫寞毛  匀化中月平乓仿及奶件犯永弁旦
  * 忒曰袄
  *  char*
  ------------------------------------------------------------*/
-char* TITLE_makeTitleStatusString( int charaindex,int havetitleindex )
+char* TITLE_makeTitleStatusString( int char_index,int havetitleindex )
 {
 	int     attach;
 	int     index;
 	/*  楮醒  尺及奶件犯永弁旦井日犯□正毛综岳允月  */
-	index = CHAR_getCharHaveTitle( charaindex,havetitleindex );
+	index = CHAR_getCharHaveTitle( char_index,havetitleindex );
 
 	attach = TITLE_getTitleIndex( index);
 	if( attach == -1 ) {
@@ -166,7 +155,7 @@ char* TITLE_makeTitleStatusString( int charaindex,int havetitleindex )
 		void    (*function)(int,char* buf,int buflen);
 		function = TITLE_table[attach].definefunction;
 		if( function )
-			function( charaindex,string,sizeof(string) );
+			function( char_index,string,sizeof(string) );
 
 		strcpysafe( TITLE_statusStringBuffer,
 					sizeof(TITLE_statusStringBuffer ),string );
@@ -197,31 +186,31 @@ char* TITLE_makeSkillFalseString( void )
 /*------------------------------------------------------------
  * 隙烂今木凶  寞及惫寞毛馨笛允月［褐今卅匀化中凶日｝馨笛仄卅中
  * 娄醒
- *  charaindex      int     平乓仿奶件犯永弁旦
+ *  char_index      int     平乓仿奶件犯永弁旦
  *  titleindex      int     惫寞奶件犯永弁旦
  * 忒曰袄
  *  馨笛仄凶index
  *  馨笛仄卅井匀凶      FALSE(0)
  ------------------------------------------------------------*/
-BOOL TITLE_addtitle( int charaindex, int titleindex )
+BOOL TITLE_addtitle( int char_index, int titleindex )
 {
 	int i;
 	int firstfindempty=-1;
 
-	if( CHAR_CHECKINDEX(charaindex)  == FALSE )return FALSE;
+	if( CHAR_CHECKINDEX(char_index)  == FALSE )return FALSE;
 	/*if( TITLE_CHECKTABLEINDEX(titleindex) == FALSE )return FALSE;*/
 	if( TITLE_getTitleIndex( titleindex) == -1 ) return FALSE;
 
 	for( i=0 ; i < CHAR_TITLEMAXHAVE ; i++ ){
-		if( CHAR_getCharHaveTitle( charaindex,i ) == titleindex )
+		if( CHAR_getCharHaveTitle( char_index,i ) == titleindex )
 			/*  允匹卞  匀化中月井日窒手仄卅中  */
 			return FALSE;
 		if( firstfindempty == -1
-			&& CHAR_getCharHaveTitle(charaindex,i) == -1 ){
+			&& CHAR_getCharHaveTitle(char_index,i) == -1 ){
 			firstfindempty = i;
 		}
 	}
-	return CHAR_setCharHaveTitle( charaindex,firstfindempty,titleindex );
+	return CHAR_setCharHaveTitle( char_index,firstfindempty,titleindex );
 }
 
 
@@ -229,30 +218,30 @@ BOOL TITLE_addtitle( int charaindex, int titleindex )
  * 隙烂今木凶  寞及惫寞互丐匀凶日绰轮允月［卅井匀凶日窒手仄卅中［
  *   醒蜊丐匀凶日蝈  壅允［
  * 娄醒
- *  charaindex      int     平乓仿奶件犯永弁旦
+ *  char_index      int     平乓仿奶件犯永弁旦
  *  titleindex      int     惫寞奶件犯永弁旦
  * 忒曰袄
  *  绰轮仄凶            TRUE(1)
  *  绰轮仄卅井匀凶      FALSE(0)
  ------------------------------------------------------------*/
-BOOL TITLE_deltitle( int charaindex, int titleindex )
+BOOL TITLE_deltitle( int char_index, int titleindex )
 {
 	int i;
 	BOOL    del=FALSE;
 	int     index;
-	if( CHAR_CHECKINDEX(charaindex)  == FALSE )return FALSE;
+	if( CHAR_CHECKINDEX(char_index)  == FALSE )return FALSE;
 	/*if( TITLE_CHECKTABLEINDEX(titleindex) == FALSE )return FALSE;*/
 	index = TITLE_getTitleIndex( titleindex);
 	if(  index == -1 ) return FALSE;
 
 	for( i=0 ; i < CHAR_TITLEMAXHAVE ; i++ )
-		if( CHAR_getCharHaveTitle( charaindex,i ) == titleindex ){
+		if( CHAR_getCharHaveTitle( char_index,i ) == titleindex ){
 			/*  愤坌互银匀化中凶支勾卅日壬｝公木手卅仄卞允月    */
-			if( CHAR_getInt(charaindex, CHAR_INDEXOFEQTITLE) == i ){
-				CHAR_setInt(charaindex, CHAR_INDEXOFEQTITLE, -1 );
+			if( CHAR_getInt(char_index, CHAR_INDEXOFEQTITLE) == i ){
+				CHAR_setInt(char_index, CHAR_INDEXOFEQTITLE, -1 );
 			}
 			/*    匀化中月井日壅允  */
-			CHAR_setCharHaveTitle( charaindex,i,-1);
+			CHAR_setCharHaveTitle( char_index,i,-1);
 			
 			del = TRUE;
 		}
@@ -761,13 +750,13 @@ BOOL TITLE_initTitleConfig( char* filename )
 /*------------------------------------------------------------
  * 惫寞涩烂卞宁丹井譬屯化惫寞毛芨尹月［
  * 娄醒
- *  charaindex        int   平乓仿奶件犯永弁旦
+ *  char_index        int   平乓仿奶件犯永弁旦
  *  mode              BOOL  TRUE:item=及手及及心譬屯月 FALSE:蝈
  * 忒曰袄
  *  TRUE: 惫寞卞  祭  曰［
  *  FALSE:窒手  井匀凶［
  *------------------------------------------------------------*/
-static BOOL TITLE_TitleCheck_Main( int charaindex, BOOL mode, int *addcnt, int *delcnt)
+static BOOL TITLE_TitleCheck_Main( int char_index, BOOL mode, int *addcnt, int *delcnt)
 {
 	int     i, j,k, ret;
 	
@@ -798,7 +787,7 @@ static BOOL TITLE_TitleCheck_Main( int charaindex, BOOL mode, int *addcnt, int *
 			int index = TITLE_ConfigTable[i].paramindex[j];
 			if( TITLE_param[index].checkfunc != NULL ) {
 				rc = TITLE_param[index].checkfunc( 
-						charaindex,
+						char_index,
 						TITLE_param[index].element, 
 						TITLE_ConfigTable[i].param[j],
 						TITLE_ConfigTable[i].compareflg[j]
@@ -826,10 +815,10 @@ static BOOL TITLE_TitleCheck_Main( int charaindex, BOOL mode, int *addcnt, int *
 	ret = FALSE;
 	for( i = 0; i < TITLE_titlecfgnum && TITLE_configbuf[i].title != -1; i ++ ) {
 		if( TITLE_configbuf[i].flg == -1 ) {
-			*delcnt += TITLE_deltitle( charaindex, TITLE_configbuf[i].title);
+			*delcnt += TITLE_deltitle( char_index, TITLE_configbuf[i].title);
 		}
 		else {
-			*addcnt += TITLE_addtitle( charaindex, TITLE_configbuf[i].title) ? 1:0;
+			*addcnt += TITLE_addtitle( char_index, TITLE_configbuf[i].title) ? 1:0;
 		}
 	}
 	if( *delcnt > 0 || *addcnt > 0) {
@@ -841,32 +830,32 @@ static BOOL TITLE_TitleCheck_Main( int charaindex, BOOL mode, int *addcnt, int *
 /*------------------------------------------------------------
  * 惫寞涩烂卞宁丹井譬屯化惫寞毛芨尹月［
  * 娄醒
- *  charaindex        int   平乓仿奶件犯永弁旦
+ *  char_index        int   平乓仿奶件犯永弁旦
  *  mode              BOOL  TRUE:item=及手及及心譬屯月 FALSE:蝈
  * 忒曰袄
  *  TRUE: 惫寞卞  祭  曰［
  *  FALSE:窒手  井匀凶［
  *------------------------------------------------------------*/
-BOOL TITLE_TitleCheck( int charaindex, BOOL mode)
+BOOL TITLE_TitleCheck( int char_index, BOOL mode)
 {
 #define     TITLE_MSGUNIT1      "TSU"
 #define     TITLE_MSGUNIT2      "KO"
 	int     addcnt,delcnt;
 	BOOL    rc;
 	char    msgbuf[64];
-	rc = TITLE_TitleCheck_Main( charaindex, mode, &addcnt,&delcnt);
+	rc = TITLE_TitleCheck_Main( char_index, mode, &addcnt,&delcnt);
 	if( rc ) {
 		if( delcnt > 0 ) {
 			snprintf( msgbuf, sizeof( msgbuf), 
 						"失去%d%s 称号！", delcnt,
 						delcnt < 10 ?  TITLE_MSGUNIT1:TITLE_MSGUNIT2);
-			CHAR_talkToCli( charaindex, -1, msgbuf,  CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index, -1, msgbuf,  CHAR_COLORYELLOW);
 		}
 		if( addcnt > 0 ) {
 			snprintf( msgbuf, sizeof( msgbuf), 
 						"获得%d%s 称号！", addcnt,
 						addcnt < 10 ?  TITLE_MSGUNIT1:TITLE_MSGUNIT2);
-			CHAR_talkToCli( charaindex, -1, msgbuf,  CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index, -1, msgbuf,  CHAR_COLORYELLOW);
 		}
 	}
 	return rc;
@@ -874,41 +863,41 @@ BOOL TITLE_TitleCheck( int charaindex, BOOL mode)
 /*------------------------------------------------------------
  * 惫寞涩烂卞宁丹井譬屯化惫寞毛芨尹月［
  * 娄醒
- *  charaindex        int   平乓仿奶件犯永弁旦
+ *  char_index        int   平乓仿奶件犯永弁旦
  *  mode              BOOL  TRUE:item=及手及及心譬屯月 FALSE:蝈
  * 忒曰袄
  *  TRUE: 惫寞卞  祭  曰［
  *  FALSE:窒手  井匀凶［
  *------------------------------------------------------------*/
-BOOL TITLE_TitleCheck_Nomsg( int charaindex, BOOL mode, int *addcnt, int *delcnt)
+BOOL TITLE_TitleCheck_Nomsg( int char_index, BOOL mode, int *addcnt, int *delcnt)
 {
-	return( TITLE_TitleCheck_Main( charaindex, mode, addcnt,delcnt));
+	return( TITLE_TitleCheck_Main( char_index, mode, addcnt,delcnt));
 }
 
 
-static int TITLE_IntCheck( int charaindex, int elem, int *data, int flg)
+static int TITLE_IntCheck( int char_index, int elem, int *data, int flg)
 {
 	int     rc = FALSE;
 	int     i;
 	for( i = 0; i < TITLE_PARAMSIZE && *(data+i) != -1; i ++ ) {
 		switch( flg) {
 		  case 0:       /* "<=" */
-			if( CHAR_getInt( charaindex, elem) <= *(data+i) ) rc = TRUE;
+			if( CHAR_getInt( char_index, elem) <= *(data+i) ) rc = TRUE;
 			break;
 		  case 1:       /* ">=" */
-			if( CHAR_getInt( charaindex, elem) >= *(data+i) ) rc = TRUE;
+			if( CHAR_getInt( char_index, elem) >= *(data+i) ) rc = TRUE;
 			break;
 		  case 2:       /* "<>" */
-			if( CHAR_getInt( charaindex, elem) != *(data+i) ) rc = TRUE;
+			if( CHAR_getInt( char_index, elem) != *(data+i) ) rc = TRUE;
 			break;
 		  case 3:       /* ">" */
-			if( CHAR_getInt( charaindex, elem) > *(data+i) ) rc = TRUE;
+			if( CHAR_getInt( char_index, elem) > *(data+i) ) rc = TRUE;
 			break;
 		  case 4:       /* "<"  */
-			if( CHAR_getInt( charaindex, elem) < *(data+i) ) rc = TRUE;
+			if( CHAR_getInt( char_index, elem) < *(data+i) ) rc = TRUE;
 			break;
 		  case 5:       /* "=" */
-			if( CHAR_getInt( charaindex, elem) == *(data+i) ) rc = TRUE;
+			if( CHAR_getInt( char_index, elem) == *(data+i) ) rc = TRUE;
 			break;
 		  default:
 		  rc= FALSE;
@@ -918,29 +907,29 @@ static int TITLE_IntCheck( int charaindex, int elem, int *data, int flg)
 	}
 	return rc;
 }
-static int TITLE_WorkIntCheck( int charaindex,int elem, int *data, int flg)
+static int TITLE_WorkIntCheck( int char_index,int elem, int *data, int flg)
 {
 	int     rc = FALSE;
 	int i;
 	for( i = 0; i < TITLE_PARAMSIZE && *(data+i) != -1; i ++ ) {
 		switch( flg) {
 		  case 0:       /* "<=" */
-			if( CHAR_getWorkInt( charaindex, elem) <= *(data+i) ) rc = TRUE;
+			if( CHAR_getWorkInt( char_index, elem) <= *(data+i) ) rc = TRUE;
 			break;
 		  case 1:       /* ">=" */
-			if( CHAR_getWorkInt( charaindex, elem) >= *(data+i) ) rc = TRUE;
+			if( CHAR_getWorkInt( char_index, elem) >= *(data+i) ) rc = TRUE;
 			break;
 		  case 2:       /* "<>" */
-			if( CHAR_getWorkInt( charaindex, elem) != *(data+i) ) rc = TRUE;
+			if( CHAR_getWorkInt( char_index, elem) != *(data+i) ) rc = TRUE;
 			break;
 		  case 3:       /* ">" */
-			if( CHAR_getWorkInt( charaindex, elem) > *(data +i)) rc = TRUE;
+			if( CHAR_getWorkInt( char_index, elem) > *(data +i)) rc = TRUE;
 			break;
 		  case 4:       /* "<"  */
-			if( CHAR_getWorkInt( charaindex, elem) < *(data+i) ) rc = TRUE;
+			if( CHAR_getWorkInt( char_index, elem) < *(data+i) ) rc = TRUE;
 			break;
 		  case 5:       /* "=" */
-			if( CHAR_getWorkInt( charaindex, elem) == *(data+i) ) rc = TRUE;
+			if( CHAR_getWorkInt( char_index, elem) == *(data+i) ) rc = TRUE;
 			break;
 		  default:
 		  rc= FALSE;
@@ -953,7 +942,7 @@ static int TITLE_WorkIntCheck( int charaindex,int elem, int *data, int flg)
 /* --------------------------------------
  * 隙烂今木凶data午  匀化中月失奶  丞毛  胜允月［
  * -------------------------------------*/
-static int TITLE_ItemCheckMain( int charaindex, int itemhaveindex, int *data, int flg)
+static int TITLE_ItemCheckMain( int char_index, int itemhaveindex, int *data, int flg)
 {
 	int i,j;
 	int rc = FALSE;
@@ -962,30 +951,30 @@ static int TITLE_ItemCheckMain( int charaindex, int itemhaveindex, int *data, in
 
 	for( j = 0; j < TITLE_PARAMSIZE && *(data+j) != -1; j ++ ) {
 		for( i =0; i < itemhaveindex; i ++ ) {
-			int     itemindex = CHAR_getItemIndex(charaindex,i);
-			if( ITEM_CHECKINDEX(itemindex) ) {
+			int     item_index = CHAR_getItemIndex(char_index,i);
+			if( ITEM_CHECKINDEX(item_index) ) {
 				switch( flg) {
 				  case 0:       /* "<=" */
-					if( ITEM_getInt( itemindex, ITEM_ID) <= *(data+j) ) rc = TRUE;
+					if( ITEM_getInt( item_index, ITEM_ID) <= *(data+j) ) rc = TRUE;
 					break;
 				  case 1:       /* ">=" */
-					if( ITEM_getInt( itemindex, ITEM_ID) >= *(data+j) ) rc = TRUE;
+					if( ITEM_getInt( item_index, ITEM_ID) >= *(data+j) ) rc = TRUE;
 					break;
 				  case 3:       /* ">" */
-					if( ITEM_getInt( itemindex, ITEM_ID) > *(data +j)) rc = TRUE;
+					if( ITEM_getInt( item_index, ITEM_ID) > *(data +j)) rc = TRUE;
 					break;
 				  case 4:       /* "<"  */
-					if( ITEM_getInt( itemindex, ITEM_ID) < *(data +j)) rc = TRUE;
+					if( ITEM_getInt( item_index, ITEM_ID) < *(data +j)) rc = TRUE;
 					break;
 				  case 5:       /* "=" */
-					if( ITEM_getInt( itemindex, ITEM_ID) == *(data +j)) rc = TRUE;
+					if( ITEM_getInt( item_index, ITEM_ID) == *(data +j)) rc = TRUE;
 					break;
 				  /* 仇木分仃    健中［
 				   * 失奶  丞蝈  毛苇化公木毛  匀化中卅井匀凶日蕞午允月［
 				   * 仇仇匹反  匀化中月仪毛絮午仄化民尼永弁
 				   */
 				  case 2:       /* "<>" */
-					if( ITEM_getInt( itemindex, ITEM_ID) == *(data +j)) rc = FALSE;
+					if( ITEM_getInt( item_index, ITEM_ID) == *(data +j)) rc = FALSE;
 					break;
 				  default:
 				  rc= FALSE;
@@ -999,33 +988,34 @@ static int TITLE_ItemCheckMain( int charaindex, int itemhaveindex, int *data, in
 	return rc;
 }
 
-#ifdef _NEW_ITEM_
+#ifdef _NEW_ITEM_
+
 extern int CheckCharMaxItem(int charindex);
 #endif
-static int TITLE_ItemCheck( int charaindex,int elem, int *data, int flg)
+static int TITLE_ItemCheck( int char_index,int elem, int *data, int flg)
 {
-	return( TITLE_ItemCheckMain( charaindex
+	return( TITLE_ItemCheckMain( char_index
 #ifdef _NEW_ITEM_
-		,CheckCharMaxItem(charaindex)
+		,CheckCharMaxItem(char_index)
 #else
 		,CHAR_MAXITEMHAVE
 #endif
 		,data,flg));
 }
 
-static int TITLE_ItemEquipCheck( int charaindex,int elem, int *data, int flg)
+static int TITLE_ItemEquipCheck( int char_index,int elem, int *data, int flg)
 {
-	return( TITLE_ItemCheckMain( charaindex, CHAR_EQUIPPLACENUM,data,flg));
+	return( TITLE_ItemCheckMain( char_index, CHAR_EQUIPPLACENUM,data,flg));
 }
 
-static int TITLE_SkillCheck( int charaindex,int elem, int *data, int flg)
+static int TITLE_SkillCheck( int char_index,int elem, int *data, int flg)
 {
 	int i;
 	int rc = FALSE;
 	CHAR_HaveSkill* hskill;
 
 	for( i = 0 ; i < CHAR_SKILLMAXHAVE ; i ++ ){
-		hskill = CHAR_getCharHaveSkill( charaindex, i );
+		hskill = CHAR_getCharHaveSkill( char_index, i );
 		if( hskill != NULL && hskill->use == TRUE ) {
 
 			if( *(data + 1) != -2 ) {
@@ -1080,7 +1070,7 @@ static int TITLE_SkillCheck( int charaindex,int elem, int *data, int flg)
 /* --------------------------------------
  * 裆平乓仿井辉平乓仿井民尼永弁允月［
  * -------------------------------------*/
-static int TITLE_SexCheck( int charaindex,int elem, int *data, int flg)
+static int TITLE_SexCheck( int char_index,int elem, int *data, int flg)
 {
 	int     i,j;
 	struct {
@@ -1097,7 +1087,7 @@ static int TITLE_SexCheck( int charaindex,int elem, int *data, int flg)
 	};
 	for( i = 0; i < 2; i ++ ) {
 		for( j = 0; s_sex[i].sex[j] != -1 ; j ++ ) {
-			if( CHAR_getInt( charaindex, CHAR_BASEBASEIMAGENUMBER ) 
+			if( CHAR_getInt( char_index, CHAR_BASEBASEIMAGENUMBER ) 
 				== s_sex[i].sex[j] ) 
 			{
 				if( i == *data ) return TRUE;

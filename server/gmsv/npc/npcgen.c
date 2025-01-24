@@ -288,7 +288,7 @@ static BOOL NPC_generateNPC( int createindex, int createtemplateindex )
     }
     {
 		extern int CheckCharMaxItemChar(Char* ch);
-        int     itemindex=CHAR_STARTITEMARRAY;
+        int     item_index=CHAR_STARTITEMARRAY;
 
 
 		int itemMax = CheckCharMaxItemChar(&one);
@@ -299,8 +299,8 @@ static BOOL NPC_generateNPC( int createindex, int createtemplateindex )
                     int     randomvalue = template->haveitem[i].havenum;
                     randomvalue *= (RAND(90,110))/100.0;
                     one.data[CHAR_GOLD] = min( CHAR_MAXGOLDHAVE, randomvalue );
-                }else if( itemindex+i < itemMax ){
-                    one.indexOfExistItems[itemindex+i] =
+                }else if( item_index+i < itemMax ){
+                    one.indexOfExistItems[item_index+i] =
                         ITEM_makeItemAndRegist(template->haveitem[i]
                                                .itemnumber);
                 }
@@ -309,43 +309,43 @@ static BOOL NPC_generateNPC( int createindex, int createtemplateindex )
     }
 
     {
-        int     charaindex;
+        int     char_index;
         int     objindex;
         Object  obj;
-        charaindex = CHAR_initCharOneArray( &one );
-        if( charaindex == -1 ){
+        char_index = CHAR_initCharOneArray( &one );
+        if( char_index == -1 ){
             //CHAR_endCharData( &one );
             return FALSE;
         }
         if( template->intdata[NPC_TEMPLATEISFLYING] )
-            CHAR_setFlg(charaindex, CHAR_ISFLYING, 1 );
+            CHAR_setFlg(char_index, CHAR_ISFLYING, 1 );
 
         obj.type = OBJTYPE_CHARA;
-        obj.index= charaindex;
-        obj.x       = CHAR_getInt(charaindex,CHAR_X);
-        obj.y       = CHAR_getInt(charaindex,CHAR_Y);
-        obj.floor   = CHAR_getInt(charaindex,CHAR_FLOOR);
+        obj.index= char_index;
+        obj.x       = CHAR_getInt(char_index,CHAR_X);
+        obj.y       = CHAR_getInt(char_index,CHAR_Y);
+        obj.floor   = CHAR_getInt(char_index,CHAR_FLOOR);
         objindex = initObjectOne( &obj );
         if( objindex == -1 ){
-            CHAR_endCharOneArray( charaindex );
+            CHAR_endCharOneArray( char_index );
             return FALSE;
         }else{
         }
-        CHAR_setWorkInt( charaindex,CHAR_WORKOBJINDEX,objindex );
+        CHAR_setWorkInt( char_index,CHAR_WORKOBJINDEX,objindex );
 #ifdef _MO_RELOAD_NPC
-        CHAR_setWorkInt( charaindex,CHAR_WORKNPCTYPE,1);
+        CHAR_setWorkInt( char_index,CHAR_WORKNPCTYPE,1);
 #endif
 #ifdef _ADD_ACTION
 //CHAR_WORKACTION
-		CHAR_setWorkInt( charaindex, CHAR_WORKACTION, 
-			CHAR_getInt( charaindex, CHAR_ACTIONSTYLE ) );
+		CHAR_setWorkInt( char_index, CHAR_WORKACTION, 
+			CHAR_getInt( char_index, CHAR_ACTIONSTYLE ) );
 		
-        CHAR_sendWatchEvent( objindex, CHAR_getWorkInt( charaindex, CHAR_WORKACTION)
+        CHAR_sendWatchEvent( objindex, CHAR_getWorkInt( char_index, CHAR_WORKACTION)
 			,NULL,0,TRUE);
 #else
 		CHAR_sendWatchEvent(objindex,CHAR_ACTSTAND,NULL,0,TRUE);
 #endif
-        CHAR_complianceParameter( charaindex );
+        CHAR_complianceParameter( char_index );
     }
 
     return TRUE;

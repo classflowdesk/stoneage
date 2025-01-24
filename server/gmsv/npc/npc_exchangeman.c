@@ -5,7 +5,7 @@
 #include "net.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_exchangeman.h"
 #include "npc_eventaction.h"
 #include "log.h"
@@ -13,7 +13,7 @@
 #include "handletime.h"
 #include "enemy.h"
 #include "npc_warp.h"
-#include "saacproto_cli.h"
+#include "saac_client.h"
 #include "config_file.h"
 #include "chatmagic.h"
 #include "npc_transmigration.h"
@@ -334,7 +334,7 @@ BOOL NPC_TypeCheck(int meindex,int talker,char *szMes)
 								CHAR_setInt( talker, CHAR_HEROCNT, 
 									CHAR_getInt( talker, CHAR_HEROCNT)+1 );
 								getMissionNameInfo( talker, nameinfo);
-								saacproto_ACMissionTable_send( acfd, MISSION_HERO_COMPLETE, 4, nameinfo, "");
+								SaacClient_ACMissionTable_send( acfd, MISSION_HERO_COMPLETE, 4, nameinfo, "");
 								sprintf( msg, " 完成任务 i:%d m:%d %s ", mindex, mission, nameinfo);
 								print( msg);
 								LogAngel( msg );
@@ -358,7 +358,7 @@ BOOL NPC_TypeCheck(int meindex,int talker,char *szMes)
 								char msg[1024];
 
 								getMissionNameInfo( talker, nameinfo);
-								saacproto_ACMissionTable_send( acfd, mindex, 3, nameinfo, "");
+								SaacClient_ACMissionTable_send( acfd, mindex, 3, nameinfo, "");
 
 								sprintf( msg, " 放弃任务 i:%d m:%d %s ", mindex, mission, nameinfo);
 								print( msg);
@@ -376,7 +376,7 @@ BOOL NPC_TypeCheck(int meindex,int talker,char *szMes)
 #ifdef _NEWEVENT
 						if(NPC_Util_GetStrFromStrWithDelim(buf, "NomalWindowMsg1",
 							buf2, sizeof(buf2)) != NULL){
-							lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+							GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_STARTMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -436,7 +436,7 @@ BOOL NPC_TypeCheck(int meindex,int talker,char *szMes)
 									CHAR_setInt( talker, CHAR_HEROCNT, 
 										CHAR_getInt( talker, CHAR_HEROCNT)+1 );
 									getMissionNameInfo( talker, nameinfo);
-									saacproto_ACMissionTable_send( acfd, MISSION_HERO_COMPLETE, 4, nameinfo, "");
+									SaacClient_ACMissionTable_send( acfd, MISSION_HERO_COMPLETE, 4, nameinfo, "");
 									sprintf( msg, " 完成任务 i:%d m:%d %s ", mindex, mission, nameinfo);
 									print( msg);
 									LogAngel( msg );
@@ -460,13 +460,13 @@ BOOL NPC_TypeCheck(int meindex,int talker,char *szMes)
 									print(" ====清除召唤任务==== ");
 									
 									getMissionNameInfo( talker, nameinfo);
-									saacproto_ACMissionTable_send( acfd, mindex, 3, nameinfo, "");
+									SaacClient_ACMissionTable_send( acfd, mindex, 3, nameinfo, "");
 								}
 								
 							}
 #endif
 							
-							lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+							GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_YES,
 								CHAR_WINDOWTYPE_WINDOWEVENT_STARTMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1020,10 +1020,10 @@ BOOL NPC_EventFreeIfCheck(int meindex,int talker,char* buf,int kosuu,int flg)
 
 #ifdef _ADD_reITEM
 	if(strstr( buf, "reITEM" ) != NULL) {
-		int i,count=0,itemindex=-1;
+		int i,count=0,item_index=-1;
 		for( i = CHAR_STARTITEMARRAY ; i < CheckCharMaxItem(talker) ; i++ ){
-			itemindex = CHAR_getItemIndex( talker , i );
-			if( !ITEM_CHECKINDEX( itemindex) )
+			item_index = CHAR_getItemIndex( talker , i );
+			if( !ITEM_CHECKINDEX( item_index) )
 				++count;
 		}
 		if(NPC_EventBigSmallLastCheck( kosuu, count, flg) == TRUE)
@@ -1278,15 +1278,15 @@ BOOL NPC_TiemCheck(int meindex,int talker,int time,int flg)
 BOOL NPC_EventItemCheck(int meindex,int talker,int itemNo,int flg)
 {
 	int i;
-	int itemindex = -1;
+	int item_index = -1;
 	int id;
 
 	//Change fix 不检查穿戴在身上的道具
 	for( i = CHAR_STARTITEMARRAY ; i < CheckCharMaxItem(talker) ; i++ ) {
 
-		itemindex=CHAR_getItemIndex( talker , i );
-		if( ITEM_CHECKINDEX( itemindex) ) {
-			id=ITEM_getInt( itemindex ,ITEM_ID );
+		item_index=CHAR_getItemIndex( talker , i );
+		if( ITEM_CHECKINDEX( item_index) ) {
+			id=ITEM_getInt( item_index ,ITEM_ID );
 
 			if(NPC_EventBigSmallLastCheck( itemNo, id, flg) == TRUE) {
 				if(flg == 0)	return TRUE;
@@ -1589,7 +1589,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				/*--戚矢□斥互丐月桦宁反示正件方它奶件玉它及正奶皿毛井尹月--*/
 				if(strstr( buf, "ThanksMsg2") != NULL) {
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_REQTHANK,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1616,7 +1616,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 					if(strstr( buf, "ThanksMsg2") != NULL) {
 					
 						/*仇仇匹霜耨允月*/
-						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 									WINDOW_BUTTONTYPE_NEXT,
 									CHAR_WINDOWTYPE_WINDOWEVENT_REQTHANK,
 									CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1641,14 +1641,14 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 					if(strstr( buf, tmp) != NULL) {
 						
 						/*仇仇匹霜耨允月*/
-						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 									WINDOW_BUTTONTYPE_NEXT,
 									CHAR_WINDOWTYPE_WINDOWEVENT_REQTHANK,
 									CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
 									token);
 						return;
 					}else{
-						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 									WINDOW_BUTTONTYPE_OK,
 									CHAR_WINDOWTYPE_WINDOWEVENT_REQTHANK,
 									CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1725,7 +1725,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				/*--戚矢□斥互丐月桦宁反示正件它奶件玉它及正奶皿毛井尹月--*/
 				if(strstr( buf, "RequestMsg2") != NULL) {
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_REQMAINMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1750,7 +1750,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 					/*--戚矢□斥互丐月桦宁反示正件方它奶件玉它及正奶皿毛井尹月--*/
 					if(strstr( buf, "RequestMsg2") != NULL){
 						/*仇仇匹霜耨允月*/
-						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 									WINDOW_BUTTONTYPE_NEXT,
 									CHAR_WINDOWTYPE_WINDOWEVENT_REQMAINMSG,
 									CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1772,14 +1772,14 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 					if(strstr( buf, tmp) != NULL) {
 						
 						/*仇仇匹霜耨允月*/
-						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 									WINDOW_BUTTONTYPE_NEXT,
 									CHAR_WINDOWTYPE_WINDOWEVENT_REQMAINMSG,
 									CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
 									token);
 						return;
 					}else{
-						lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+						GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 									WINDOW_BUTTONTYPE_YESNO,
 									CHAR_WINDOWTYPE_WINDOWEVENT_REQMAINMSG,
 									CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1821,7 +1821,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 			/*--戚矢□斥互丐月桦宁反示正件它奶件玉它及正奶皿毛井尹月--*/
 			if(strstr( buf, "AcceptMsg2") != NULL) {
 				/*仇仇匹霜耨允月*/
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 							WINDOW_BUTTONTYPE_NEXT,
 							CHAR_WINDOWTYPE_WINDOWEVENT_ACCMAINMSG,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1847,7 +1847,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				/*--戚矢□斥互丐月桦宁反示正件方它奶件玉它及正奶皿毛井尹月--*/
 				if(strstr( buf, "AcceptMsg2") != NULL) {
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_ACCMAINMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -1868,14 +1868,14 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				if(strstr( buf, tmp) != NULL) {
 					
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_ACCMAINMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
 								token);
 					return;
 				}else{
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_YESNO,
 								CHAR_WINDOWTYPE_WINDOWEVENT_ACCMAINMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2044,7 +2044,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 							CHAR_setInt( talker, CHAR_HEROCNT, 
 								CHAR_getInt( talker, CHAR_HEROCNT)+1 );
 							getMissionNameInfo( talker, nameinfo);
-							saacproto_ACMissionTable_send( acfd, MISSION_HERO_COMPLETE, 4, nameinfo, "");
+							SaacClient_ACMissionTable_send( acfd, MISSION_HERO_COMPLETE, 4, nameinfo, "");
 							sprintf( msg, " 完成任务 i:%d m:%d %s ", mindex, mission, nameinfo);
 							print( msg);
 							LogAngel( msg );
@@ -2068,7 +2068,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 							print(" ====清除召唤任务==== ");
 
 							getMissionNameInfo( talker, nameinfo);
-							saacproto_ACMissionTable_send( acfd, mindex, 3, nameinfo, "");
+							SaacClient_ACMissionTable_send( acfd, mindex, 3, nameinfo, "");
 						}
 						
 					}
@@ -2089,7 +2089,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 #else
 				if(strstr( buf, "ThanksMsg2") != NULL){
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_ACCTHANK,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2112,13 +2112,13 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 					buf2, sizeof( buf2)) != NULL)
 					strcpysafe( token,sizeof( buf2), buf2);
 				if(strstr(buf, "ThanksMsg2") != NULL)
-					lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_NEXT,
 					CHAR_WINDOWTYPE_WINDOWEVENT_ACCTHANKNEW,
 					CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
 					token);
 				else
-					lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 					WINDOW_BUTTONTYPE_OK,
 					CHAR_WINDOWTYPE_WINDOWEVENT_ACCTHANKNEW,
 					CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -2135,7 +2135,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				
 				if(strstr(buf, tmp) != NULL)
 				{
-					lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_NEXT,
 						CHAR_WINDOWTYPE_WINDOWEVENT_ACCTHANKNEW,
 						CHAR_getWorkInt(meindex, CHAR_WORKOBJINDEX),
@@ -2144,7 +2144,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				}
 				else
 				{
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK,
 						CHAR_WINDOWTYPE_WINDOWEVENT_ACCTHANKNEW,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2171,7 +2171,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				/*--戚矢□斥互丐月桦宁反示正件方它奶件玉它及正奶皿毛井尹月--*/
 				if(strstr( buf, "ThanksMsg2") != NULL){
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_ACCTHANK,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2195,14 +2195,14 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				if(strstr( buf, tmp) != NULL) {
 						
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_ACCTHANK,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
 								token);
 					return;
 				}else{
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_OK,
 								CHAR_WINDOWTYPE_WINDOWEVENT_ACCTHANK,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2284,7 +2284,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 			/*--戚矢□斥互丐月桦宁反示正件它奶件玉它及正奶皿毛井尹月--*/
 			if(strstr( buf, "NomalWindowMsg2") != NULL) {
 				/*仇仇匹霜耨允月*/
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 							WINDOW_BUTTONTYPE_NEXT,
 							CHAR_WINDOWTYPE_WINDOWEVENT_STARTMSG,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2308,7 +2308,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				/*--戚矢□斥互丐月桦宁反示正件方它奶件玉它及正奶皿毛井尹月--*/
 				if(strstr( buf, "NomalWindowMsg2") != NULL) {
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_STARTMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2329,7 +2329,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 				if(strstr( buf, tmp) != NULL) {
 					
 					/*仇仇匹霜耨允月*/
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_NEXT,
 								CHAR_WINDOWTYPE_WINDOWEVENT_STARTMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2380,7 +2380,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 								k++;
 							}
 					}
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_YES,
 								CHAR_WINDOWTYPE_WINDOWEVENT_STARTMSG,
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2463,7 +2463,7 @@ void NPC_MsgDisp(int meindex,int talker,int num)
 #ifdef _NEWEVENT
 	if(num != 8)
 #endif
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 					buttontype,
 					windowtype,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -2481,7 +2481,7 @@ BOOL NPC_EventAdd(int meindex,int talker,int mode)
 	char buff2[128];
 	int j = 1,i = 0;
 	int kosuucnt = 0;
-	int itemindex;
+	int item_index;
 	char buff[1024*2];
 	int rand_j = 0;
 	int rand_flg = 0;
@@ -2639,8 +2639,8 @@ BOOL NPC_EventAdd(int meindex,int talker,int mode)
 			
 			j--;
 			for( i = CHAR_STARTITEMARRAY ; i < CheckCharMaxItem(talker) ; i++ ){
-				itemindex=CHAR_getItemIndex( talker , i );
-				if( !ITEM_CHECKINDEX( itemindex) ){
+				item_index=CHAR_getItemIndex( talker , i );
+				if( !ITEM_CHECKINDEX( item_index) ){
 					kosuucnt++;
 				 }
 			}
@@ -2671,8 +2671,8 @@ BOOL NPC_EventAdd(int meindex,int talker,int mode)
 	{	
 		/*--民尼永弁   癫卞蝈    月井＂-*/
 		for( i = CHAR_STARTITEMARRAY ; i < CheckCharMaxItem(talker) ; i++ ){
-			itemindex=CHAR_getItemIndex( talker , i );
-			if( !ITEM_CHECKINDEX( itemindex) ){
+			item_index=CHAR_getItemIndex( talker , i );
+			if( !ITEM_CHECKINDEX( item_index) ){
 				kosuucnt++;
 			 }
 		}
@@ -2857,7 +2857,7 @@ BOOL NPC_RandItemGet(int meidex,int talker,int rand_j,char *buf)
 	char buff2[64];
 	int randitem;
 	int ret;
-	int itemindex;
+	int item_index;
 	char token[128];
 
 	if(rand_j == 0) {
@@ -2870,37 +2870,37 @@ BOOL NPC_RandItemGet(int meidex,int talker,int rand_j,char *buf)
 
 	getStringFromIndexWithDelim(buf , "," , randitem, buff2, sizeof(buff2)) ;
 
-	itemindex = ITEM_makeItemAndRegist( atoi( buff2));
+	item_index = ITEM_makeItemAndRegist( atoi( buff2));
 
-	if(itemindex == -1) return FALSE;
+	if(item_index == -1) return FALSE;
 	/*失奶  丞及馨笛(  涛失奶  丞  卞中木化仄引丹  */
-	ret = CHAR_addItemSpecificItemIndex( talker, itemindex);
+	ret = CHAR_addItemSpecificItemIndex( talker, item_index);
 	if( ret < 0 || ret >= CheckCharMaxItem(talker) ) {
-		print( "npc_exchangeman.c: additem error itemindex[%d]\n", itemindex);
-		ITEM_endExistItemsOne( itemindex);
+		print( "npc_exchangeman.c: additem error item_index[%d]\n", item_index);
+		ITEM_endExistItemsOne( item_index);
 		return FALSE;
 	}
 
-	if(itemindex != -1) {
+	if(item_index != -1) {
 		LogItem(
 			CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 			CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-			itemindex,
+			item_index,
 #else
-			ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+			ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 			"EventAddItem(任务需求所得到的道具)",
 			CHAR_getInt( talker,CHAR_FLOOR),
 			CHAR_getInt( talker,CHAR_X ),
  			CHAR_getInt( talker,CHAR_Y ),
-            ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-			ITEM_getChar( itemindex, ITEM_NAME),
-			ITEM_getInt( itemindex, ITEM_ID)
+            ITEM_getChar( item_index, ITEM_UNIQUECODE),
+			ITEM_getChar( item_index, ITEM_NAME),
+			ITEM_getInt( item_index, ITEM_ID)
 		);
 	}
 					
-	sprintf(token,"收下了%s",ITEM_getChar( itemindex, ITEM_NAME));
+	sprintf(token,"收下了%s",ITEM_getChar( item_index, ITEM_NAME));
 	CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 
 	CHAR_sendItemDataOne( talker, ret);
@@ -3329,7 +3329,7 @@ BOOL NPC_EventDelPet(int  meindex,int  talker, int petsel)
 	defpet = CHAR_getInt( talker, CHAR_DEFAULTPET);
 	if(defpet == petsel){
 		CHAR_setInt( talker, CHAR_DEFAULTPET, -1);
-		lssproto_KS_send( fd, -1, TRUE);
+		GmsvServer_KS_send( fd, -1, TRUE);
 	}
 
 	snprintf( msgbuf,sizeof( msgbuf), "交出%s。",
@@ -3641,7 +3641,7 @@ BOOL NPC_EventDelItem(int meindex,int talker,char *buf,int breakflg)
 	int i = 1, j = 1, k = 1 ;
 	char buff3[128];
 	char buf2[32];
-	int itemindex;
+	int item_index;
 	char token[256];
 
 	while(getStringFromIndexWithDelim(buf , "," , k, buff3, sizeof(buff3))
@@ -3668,38 +3668,38 @@ BOOL NPC_EventDelItem(int meindex,int talker,char *buf,int breakflg)
 #endif
       {
 			    for( i =0 ; i < CheckCharMaxItem(talker) ; i++ ){
-				    itemindex = CHAR_getItemIndex( talker , i );
-				    if( ITEM_CHECKINDEX( itemindex) ) {
-					    id = ITEM_getInt( itemindex , ITEM_ID );
+				    item_index = CHAR_getItemIndex( talker , i );
+				    if( ITEM_CHECKINDEX( item_index) ) {
+					    id = ITEM_getInt( item_index , ITEM_ID );
 					    if(itemno == id) {
 						    cnt++;
 						    LogItem(
 							CHAR_getChar( talker, CHAR_NAME ), // 平乓仿
 							CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),  // 失奶  丞  寞
+							ITEM_getInt( item_index, ITEM_ID),  // 失奶  丞  寞
 #endif
 							"EventDelItem(任务需求所收回的道具)",
 							CHAR_getInt( talker, CHAR_FLOOR),
 							CHAR_getInt( talker, CHAR_X ),
  							CHAR_getInt( talker, CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 	     					);
 	 
 		    				if(breakflg == 1){
-			    			    sprintf(token,"%s 坏了",ITEM_getChar( itemindex, ITEM_NAME));
+			    			    sprintf(token,"%s 坏了",ITEM_getChar( item_index, ITEM_NAME));
 							    CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 							}else{
-							    sprintf(token,"交出%s",ITEM_getChar( itemindex, ITEM_NAME));
+							    sprintf(token,"交出%s",ITEM_getChar( item_index, ITEM_NAME));
 							    CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 							}
 						    //--失奶  丞毛坫诮--
 						    CHAR_setItemIndex( talker, i ,-1);
-						    ITEM_endExistItemsOne(itemindex);
+						    ITEM_endExistItemsOne(item_index);
 						    CHAR_sendItemDataOne( talker, i);
 
 						    if(cnt == kosuu){
@@ -3713,37 +3713,37 @@ BOOL NPC_EventDelItem(int meindex,int talker,char *buf,int breakflg)
 		else{
 			/*--蓟氏分  寞及失奶  丞毛蓟请---*/
 			for( j = 0 ;  j < CheckCharMaxItem(talker) ; j++){
-				itemindex = CHAR_getItemIndex( talker ,j);
+				item_index = CHAR_getItemIndex( talker ,j);
 
-				if( ITEM_CHECKINDEX( itemindex)){
-					if( atoi( buff3) == ITEM_getInt( itemindex, ITEM_ID)) {
+				if( ITEM_CHECKINDEX( item_index)){
+					if( atoi( buff3) == ITEM_getInt( item_index, ITEM_ID)) {
 						LogItem(
 							CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 							CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+							ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 							"EventDelItem(任务需求所收回的道具)",
 							CHAR_getInt( talker,CHAR_FLOOR),
 							CHAR_getInt( talker,CHAR_X ),
 							CHAR_getInt( talker,CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 						);
 						if(breakflg == 1){
-								sprintf(token,"%s 坏了",ITEM_getChar( itemindex, ITEM_NAME));
+								sprintf(token,"%s 坏了",ITEM_getChar( item_index, ITEM_NAME));
 							CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 						}else{
 							sprintf( token, "交出%s。",
-											ITEM_getChar( itemindex, ITEM_NAME));
+											ITEM_getChar( item_index, ITEM_NAME));
 							CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 						}
 						/*--失奶  丞毛坫诮--*/
 						CHAR_setItemIndex( talker, j ,-1);
-						ITEM_endExistItemsOne( itemindex);
+						ITEM_endExistItemsOne( item_index);
 						/*--由仿丢□正霜耨--*/
 						CHAR_sendItemDataOne( talker, j);
 					}
@@ -3775,7 +3775,7 @@ BOOL NPC_EventDelItemEVDEL(int meindex,int talker,char *buf,char *nbuf,int break
 			int kosuu;
 #ifndef _ITEM_PILENUMS
 			char token[256];
-			int i, itemindex, id, cnt;
+			int i, item_index, id, cnt;
 #endif
 			getStringFromIndexWithDelim( buff3, "*", 1, buf2, sizeof( buf2));
 			itemno = atoi( buf2); 
@@ -3797,36 +3797,36 @@ BOOL NPC_EventDelItemEVDEL(int meindex,int talker,char *buf,char *nbuf,int break
 #else
 			cnt = 0;
 			for( i =0 ; i < CheckCharMaxItem(talker) ; i++ ){
-				itemindex = CHAR_getItemIndex( talker , i );
-				if( ITEM_CHECKINDEX( itemindex) ) {
-					id = ITEM_getInt( itemindex , ITEM_ID );
+				item_index = CHAR_getItemIndex( talker , i );
+				if( ITEM_CHECKINDEX( item_index) ) {
+					id = ITEM_getInt( item_index , ITEM_ID );
 					if(itemno == id) {
 						cnt++;
 						LogItem(
 							CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 							CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+							ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 							"EventDelItem(任务需求所收回的道具)",
 							CHAR_getInt( talker, CHAR_FLOOR),
 							CHAR_getInt( talker, CHAR_X ),
  							CHAR_getInt( talker, CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 						);
 						if(breakflg == 1){
-							sprintf(token,"%s 坏了",ITEM_getChar( itemindex, ITEM_NAME));
+							sprintf(token,"%s 坏了",ITEM_getChar( item_index, ITEM_NAME));
 							CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 						}else{
-							sprintf(token,"交出%s",ITEM_getChar( itemindex, ITEM_NAME));
+							sprintf(token,"交出%s",ITEM_getChar( item_index, ITEM_NAME));
 							CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 						}
 						CHAR_setItemIndex( talker, i ,-1);
-						ITEM_endExistItemsOne(itemindex);
+						ITEM_endExistItemsOne(item_index);
 						CHAR_sendItemDataOne( talker, i);
 						if(cnt == kosuu){
 							break;
@@ -3837,7 +3837,7 @@ BOOL NPC_EventDelItemEVDEL(int meindex,int talker,char *buf,char *nbuf,int break
 #endif
 		}else{
 #ifndef _ITEM_PILENUMS
-			int j, itemindex;
+			int j, item_index;
 			char token[256];
 #endif
 			if(strstr(nbuf,"-1") == NULL){
@@ -3856,35 +3856,35 @@ BOOL NPC_EventDelItemEVDEL(int meindex,int talker,char *buf,char *nbuf,int break
 			NPC_ActionDoPileDelItem( talker, itemno, itemno);
 #else
 			for( j = 0 ;  j < CheckCharMaxItem(talker) ; j++){
-				itemindex = CHAR_getItemIndex( talker ,j);
-				if( ITEM_CHECKINDEX( itemindex)){
-					if( atoi( buff3) == ITEM_getInt( itemindex, ITEM_ID)) {
+				item_index = CHAR_getItemIndex( talker ,j);
+				if( ITEM_CHECKINDEX( item_index)){
+					if( atoi( buff3) == ITEM_getInt( item_index, ITEM_ID)) {
 						LogItem(
 							CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 							CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-							itemindex,
+							item_index,
 #else
-							ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+							ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 							"EventDelItem(任务需求所收回的道具)",
 							CHAR_getInt( talker,CHAR_FLOOR),
 							CHAR_getInt( talker,CHAR_X ),
 							CHAR_getInt( talker,CHAR_Y ),
-							ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-							ITEM_getChar( itemindex, ITEM_NAME),
-							ITEM_getInt( itemindex, ITEM_ID)
+							ITEM_getChar( item_index, ITEM_UNIQUECODE),
+							ITEM_getChar( item_index, ITEM_NAME),
+							ITEM_getInt( item_index, ITEM_ID)
 						);
 						if(breakflg == 1){
-							sprintf(token,"%s 坏了",ITEM_getChar( itemindex, ITEM_NAME));
+							sprintf(token,"%s 坏了",ITEM_getChar( item_index, ITEM_NAME));
 							CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 						}else{
 							sprintf( token, "交出%s。",
-										ITEM_getChar( itemindex, ITEM_NAME));
+										ITEM_getChar( item_index, ITEM_NAME));
 							CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 						}
 						CHAR_setItemIndex( talker, j ,-1);
-						ITEM_endExistItemsOne( itemindex);
+						ITEM_endExistItemsOne( item_index);
 						CHAR_sendItemDataOne( talker, j);
 					}
 				}
@@ -3899,7 +3899,7 @@ BOOL NPC_EventDelItemEVDEL(int meindex,int talker,char *buf,char *nbuf,int break
 #ifdef _SHOW_ITEM_NAME
 BOOL NPC_EventAddShowItem(int meindex,int talker,char *buf)
 {
-  int itemID,itemindex=-1;
+  int itemID,item_index=-1;
 
   char buff3[256], msgbuf[64], token[256];
   int ret;
@@ -3913,20 +3913,20 @@ BOOL NPC_EventAddShowItem(int meindex,int talker,char *buf)
 		}
     itemID = atoi( buff3);
     if( itemID  )
-			itemindex = ITEM_makeItemAndRegist( itemID);
-		if(itemindex == -1)
+			item_index = ITEM_makeItemAndRegist( itemID);
+		if(item_index == -1)
 			return FALSE;
-		ret = CHAR_addItemSpecificItemIndex( talker, itemindex);
+		ret = CHAR_addItemSpecificItemIndex( talker, item_index);
 		if( ret < 0 || ret >= CheckCharMaxItem(talker) ) {
-			ITEM_endExistItemsOne( itemindex);
+			ITEM_endExistItemsOne( item_index);
 			print ("\n ret error!!");
 			return FALSE;
 		}
 		if( getStringFromIndexWithDelim(buf , ";" , 2, buff3, sizeof(buff3)) !=FALSE ){
 			sprintf(token,  buff3, CHAR_getChar(talker, CHAR_NAME));
-			ITEM_setChar(itemindex, ITEM_EFFECTSTRING, token);
+			ITEM_setChar(item_index, ITEM_EFFECTSTRING, token);
 		}
-		sprintf( token,"拿到%s",ITEM_getChar( itemindex, ITEM_NAME));
+		sprintf( token,"拿到%s",ITEM_getChar( item_index, ITEM_NAME));
 		CHAR_talkToCli( talker, -1, token, CHAR_COLORYELLOW );
 		CHAR_sendItemDataOne( talker, ret);
   }
@@ -3942,7 +3942,7 @@ BOOL NPC_EventAddItem(int meindex,int talker,char *buf)
 
 	char buff3[128];
 	int i = 1;
-	int itemindex;
+	int item_index;
 	char buf3[32];
 	int ret;
 	char token[256];
@@ -3963,73 +3963,73 @@ BOOL NPC_EventAddItem(int meindex,int talker,char *buf)
 			kosuu = atoi( buf3);
 	
 			for(loop = 0 ; loop < kosuu ; loop++) {
-				itemindex = ITEM_makeItemAndRegist( itemno);
+				item_index = ITEM_makeItemAndRegist( itemno);
 	
-				if(itemindex == -1) return FALSE;
+				if(item_index == -1) return FALSE;
 			/*失奶  丞及馨笛(  涛失奶  丞  卞中木化仄引丹  */
-				ret = CHAR_addItemSpecificItemIndex( talker, itemindex);
+				ret = CHAR_addItemSpecificItemIndex( talker, item_index);
 				if( ret < 0 || ret >= CheckCharMaxItem(talker) ) {
-				    print("npc_exchange:ACCEPTadditem error itemindex[%d]\n",itemindex);
-					ITEM_endExistItemsOne( itemindex);
+				    print("npc_exchange:ACCEPTadditem error item_index[%d]\n",item_index);
+					ITEM_endExistItemsOne( item_index);
 					return FALSE;
 				}
 
-				if(itemindex != -1) {
+				if(item_index != -1) {
 					LogItem(
 						CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 						CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-						itemindex,
+						item_index,
 #else
-	    				ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+	    				ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 						"EventAddItem(任务需求所得到的道具)",
 						CHAR_getInt( talker, CHAR_FLOOR),
 						CHAR_getInt( talker, CHAR_X ),
 						CHAR_getInt( talker, CHAR_Y ),
-						ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-						ITEM_getChar( itemindex, ITEM_NAME),
-						ITEM_getInt( itemindex, ITEM_ID)
+						ITEM_getChar( item_index, ITEM_UNIQUECODE),
+						ITEM_getChar( item_index, ITEM_NAME),
+						ITEM_getInt( item_index, ITEM_ID)
 					);
 				}
-				sprintf( token, "拿到%s。", ITEM_getChar( itemindex, ITEM_NAME));
+				sprintf( token, "拿到%s。", ITEM_getChar( item_index, ITEM_NAME));
 				CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 
 				CHAR_sendItemDataOne( talker, ret);
 			}
 		}else{
-			itemindex = ITEM_makeItemAndRegist( atoi( buff3));
+			item_index = ITEM_makeItemAndRegist( atoi( buff3));
 	
-			if(itemindex == -1) return FALSE;
+			if(item_index == -1) return FALSE;
 
 
 			/*失奶  丞及馨笛(  涛失奶  丞  卞中木化仄引丹  */
-			ret = CHAR_addItemSpecificItemIndex( talker, itemindex);
+			ret = CHAR_addItemSpecificItemIndex( talker, item_index);
 			if( ret < 0 || ret >= CheckCharMaxItem(talker) ) {
-				print( "npc_exchange.c: ACCEPTadditem error itemindex[%d]\n", itemindex);
-				ITEM_endExistItemsOne( itemindex);
+				print( "npc_exchange.c: ACCEPTadditem error item_index[%d]\n", item_index);
+				ITEM_endExistItemsOne( item_index);
 				return FALSE;
 			}
 
-			if(itemindex != -1) {
+			if(item_index != -1) {
 				LogItem(
 				CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 				CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-				itemindex,
+				item_index,
 #else
-	       		ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+	       		ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 				"EventAddItem(任务需求所得到的道具)",
 				CHAR_getInt( talker, CHAR_FLOOR),
 				CHAR_getInt( talker, CHAR_X ),
  				CHAR_getInt( talker, CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-				ITEM_getChar( itemindex, ITEM_NAME),
-				ITEM_getInt( itemindex, ITEM_ID)
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+				ITEM_getChar( item_index, ITEM_NAME),
+				ITEM_getInt( item_index, ITEM_ID)
 			);
 			}
-			sprintf(token,"拿到%s。", ITEM_getChar( itemindex, ITEM_NAME));
+			sprintf(token,"拿到%s。", ITEM_getChar( item_index, ITEM_NAME));
 			CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 
 			CHAR_sendItemDataOne( talker, ret);
@@ -4111,7 +4111,7 @@ BOOL NPC_EventReduce(int meindex,int talker,char *buf)
 	char buf3[256];
 	int id = 0;
 	int i;
-	int itemindex;
+	int item_index;
 	int itemno;
 	int kosuu;
 	int cnt = 0;
@@ -4123,12 +4123,12 @@ BOOL NPC_EventReduce(int meindex,int talker,char *buf)
 	kosuu = atoi( buf3);
 	
 	for( i = 0 ; i < CheckCharMaxItem(talker) ; i++ ){
-		itemindex = CHAR_getItemIndex( talker , i );
-		if( ITEM_CHECKINDEX( itemindex) ){
-			id = ITEM_getInt( itemindex ,ITEM_ID);
+		item_index = CHAR_getItemIndex( talker , i );
+		if( ITEM_CHECKINDEX( item_index) ){
+			id = ITEM_getInt( item_index ,ITEM_ID);
 			if(itemno == id){
 				//change add 增加对堆叠的判断
-				int pilenum = ITEM_getInt( itemindex, ITEM_USEPILENUMS);
+				int pilenum = ITEM_getInt( item_index, ITEM_USEPILENUMS);
 				if( pilenum )
 					cnt+=pilenum;
 				else
@@ -4238,7 +4238,7 @@ BOOL NPC_ItemFullCheck(int meindex,int talker,char *buf,int mode,int evcnt)
 	int i = 1,j = 1;
 	int maxitem = 0;
 	int kosuucnt = 0;
-	int itemindex;
+	int item_index;
 	char buf3[256];
 	int rand_j = 0;
 	int rand_cnt = 0;
@@ -4296,9 +4296,9 @@ BOOL NPC_ItemFullCheck(int meindex,int talker,char *buf,int mode,int evcnt)
 						}
 						if(l == -1) continue;
 						for( i = CHAR_STARTITEMARRAY ; i < CheckCharMaxItem(talker) ; i++ ) {
-							itemindex = CHAR_getItemIndex( talker , i );
-							if( ITEM_CHECKINDEX( itemindex)) {
-								if(atoi( buff5) == ITEM_getInt( itemindex, ITEM_ID)) {
+							item_index = CHAR_getItemIndex( talker , i );
+							if( ITEM_CHECKINDEX( item_index)) {
+								if(atoi( buff5) == ITEM_getInt( item_index, ITEM_ID)) {
 									maxitem--;
 								}
 							}
@@ -4316,9 +4316,9 @@ BOOL NPC_ItemFullCheck(int meindex,int talker,char *buf,int mode,int evcnt)
 					maxitem -= atoi( buf3);
 				}else{
 					for( i = CHAR_STARTITEMARRAY ; i < CheckCharMaxItem(talker) ; i++ ) {
-						itemindex=CHAR_getItemIndex( talker , i );
-						if( ITEM_CHECKINDEX( itemindex)) {
-							if(atoi( buff3) == ITEM_getInt( itemindex, ITEM_ID)) {
+						item_index=CHAR_getItemIndex( talker , i );
+						if( ITEM_CHECKINDEX( item_index)) {
+							if(atoi( buff3) == ITEM_getInt( item_index, ITEM_ID)) {
 							maxitem--;
 							}
 						}
@@ -4337,8 +4337,8 @@ BOOL NPC_ItemFullCheck(int meindex,int talker,char *buf,int mode,int evcnt)
 		}
 		rand_cnt = 1;
 		for( i = CHAR_STARTITEMARRAY ; i <CheckCharMaxItem(talker) ; i++ ) {
-			itemindex = CHAR_getItemIndex( talker , i );
-			if( !ITEM_CHECKINDEX(itemindex) ){
+			item_index = CHAR_getItemIndex( talker , i );
+			if( !ITEM_CHECKINDEX(item_index) ){
 				kosuucnt++;
 			}
 		}
@@ -4363,8 +4363,8 @@ BOOL NPC_ItemFullCheck(int meindex,int talker,char *buf,int mode,int evcnt)
 		}
 		kosuucnt=0;
 		for( i = CHAR_STARTITEMARRAY ; i < CheckCharMaxItem(talker) ; i++ ){
-			itemindex = CHAR_getItemIndex( talker , i );
-			if( !ITEM_CHECKINDEX( itemindex)){
+			item_index = CHAR_getItemIndex( talker , i );
+			if( !ITEM_CHECKINDEX( item_index)){
 				kosuucnt++;
 			 }
 		}

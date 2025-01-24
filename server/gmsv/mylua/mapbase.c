@@ -9,7 +9,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 
 #ifdef _ALLBLUES_LUA   
 #ifdef _ALLBLUES_LUA_1_1
@@ -73,17 +73,17 @@ static int getfloorY(lua_State *L)
 
 static int getFrontTile(lua_State *L)
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 
 	int 	dir, ff, fx, fy;
 	int		tile, obj;
 	int		fixtile, fixobj;
 	char  buf[16];
 
-	ff = CHAR_getInt( charaindex, CHAR_FLOOR );
-	fx = CHAR_getInt( charaindex, CHAR_X );
-	fy = CHAR_getInt( charaindex, CHAR_Y );
-	dir = CHAR_getInt( charaindex, CHAR_DIR );
+	ff = CHAR_getInt( char_index, CHAR_FLOOR );
+	fx = CHAR_getInt( char_index, CHAR_X );
+	fy = CHAR_getInt( char_index, CHAR_Y );
+	dir = CHAR_getInt( char_index, CHAR_DIR );
 
 	fx += CHAR_getDX(dir);
 	fy += CHAR_getDY(dir);
@@ -111,19 +111,19 @@ static int getFloorName(lua_State *L)
 
 static int getCharaindex(lua_State *L) 
 {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int distance = luaL_checkint(L, 2);
 	const int type = luaL_checkint(L, 3);
 	
 	int fl ,x,y;
 	OBJECT  object;
-	fl = CHAR_getInt(charaindex,CHAR_FLOOR);
+	fl = CHAR_getInt(char_index,CHAR_FLOOR);
 	int i;
 	for(i=1; i <=distance; i ++)
 	{
-		CHAR_getCoordinationDir( CHAR_getInt(charaindex,CHAR_DIR),
-								 CHAR_getInt(charaindex,CHAR_X),
-								 CHAR_getInt(charaindex,CHAR_Y),
+		CHAR_getCoordinationDir( CHAR_getInt(char_index,CHAR_DIR),
+								 CHAR_getInt(char_index,CHAR_X),
+								 CHAR_getInt(char_index,CHAR_Y),
 								 i, &x, &y );
 
 		for( object=MAP_getTopObj(fl,x,y) ; object ;
@@ -143,7 +143,7 @@ static int getCharaindex(lua_State *L)
 }
 
 static int getCharaNearBy(lua_State *L) {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int area = luaL_checkint(L, 2);
 	const int type = luaL_checkint(L, 3);
 
@@ -157,9 +157,9 @@ static int getCharaNearBy(lua_State *L) {
 	int fl, x, y;
 	OBJECT object;
 	int i,j;
-	fl = CHAR_getInt(charaindex, CHAR_FLOOR);
-	x = CHAR_getInt(charaindex, CHAR_X);
-	y = CHAR_getInt(charaindex, CHAR_Y);
+	fl = CHAR_getInt(char_index, CHAR_FLOOR);
+	x = CHAR_getInt(char_index, CHAR_X);
+	y = CHAR_getInt(char_index, CHAR_Y);
 	for (i = y - area; i <= y + area; i++) {
 		for (j = x - area; j <= x + area; j++) {
 			for (object = MAP_getTopObj(fl, j, i); object; object =
@@ -172,7 +172,7 @@ static int getCharaNearBy(lua_State *L) {
 					if ( CHAR_getInt(chara_index, CHAR_WHICHTYPE)
 							!= type)
 						continue;
-					if (chara_index == charaindex)
+					if (chara_index == char_index)
 						continue;  //找到自己了
 
 					lua_pushinteger(L,chara_index);
@@ -186,7 +186,7 @@ static int getCharaNearBy(lua_State *L) {
 }
 
 static int getCharaAhead(lua_State *L) {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int distance = luaL_checkint(L, 2);
 	const int area = luaL_checkint(L, 3);
 	const int type = luaL_checkint(L, 4);
@@ -201,11 +201,11 @@ static int getCharaAhead(lua_State *L) {
 	int fl, x, y;
 	OBJECT object;
 	int i,j;
-	fl = CHAR_getInt(charaindex, CHAR_FLOOR);
+	fl = CHAR_getInt(char_index, CHAR_FLOOR);
 
-	CHAR_getCoordinationDir( CHAR_getInt(charaindex,CHAR_DIR),
-							 CHAR_getInt(charaindex,CHAR_X),
-							 CHAR_getInt(charaindex,CHAR_Y),
+	CHAR_getCoordinationDir( CHAR_getInt(char_index,CHAR_DIR),
+							 CHAR_getInt(char_index,CHAR_X),
+							 CHAR_getInt(char_index,CHAR_Y),
 							 distance, &x, &y );
 
 
@@ -221,7 +221,7 @@ static int getCharaAhead(lua_State *L) {
 					if ( CHAR_getInt(chara_index, CHAR_WHICHTYPE)
 							!= type)
 						continue;
-					if (chara_index == charaindex)
+					if (chara_index == char_index)
 						continue;  //找到自己了
 
 					lua_pushinteger(L,chara_index);
@@ -235,7 +235,7 @@ static int getCharaAhead(lua_State *L) {
 }
 
 static int getCharaByCoord(lua_State *L) {
-	const int charaindex = luaL_checkint(L, 1);
+	const int char_index = luaL_checkint(L, 1);
 	const int fl = luaL_checkint(L, 2);
 	const int x = luaL_checkint(L, 3);
 	const int y = luaL_checkint(L, 4);
@@ -262,7 +262,7 @@ static int getCharaByCoord(lua_State *L) {
 					if ( CHAR_getInt(chara_index, CHAR_WHICHTYPE)
 							!= type)
 						continue;
-					if (chara_index == charaindex)
+					if (chara_index == char_index)
 						continue;  //找到自己了
 
 					lua_pushinteger(L,chara_index);

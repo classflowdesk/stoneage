@@ -1,5 +1,6 @@
 #include "version.h"
-
+#include "util.h"
+//
 #include "autil.h"
 #include "buf.h"
 #include "char.h"
@@ -8,8 +9,6 @@
 #include "map_warppoint.h"
 #include "object.h"
 #include "readmap.h"
-#include "util.h"
-#include "utils/file.h"
 
 #ifdef __MAP_WARP_POINT
 #define MAX_MAP_WARP_POINT 6000

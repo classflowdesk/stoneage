@@ -6,7 +6,7 @@
 #include "config_file.h"
 #include "encount.h"
 #include "handletime.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "map_deal.h"
 #include "net.h"
 #include "npc_npcenemy.h"
@@ -19,9 +19,9 @@
 #ifdef _ALLBLUES_LUA
 #include "mylua/function.h"
 #endif
-void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
+void CHAR_sendCharaAtWalk(int char_index, int of, int ox, int oy, int xflg,
                           int yflg);
-static void CHAR_sendCDCharaAtWalk(int charaindex, int of, int ox, int oy,
+static void CHAR_sendCDCharaAtWalk(int char_index, int of, int ox, int oy,
                                    int xflg, int yflg);
 
 static CHAR_WALKRET CHAR_walk_turn(int index, int dir) {
@@ -113,7 +113,7 @@ static void CHAR_sendMapAtWalk(int index, int fl, int ox, int oy, int fx,
         if (mapdata != NULL && !(get.width == 0 && get.height == 0)) {
           int fd = getfdFromCharaIndex(index);
           if (fd != -1)
-            lssproto_MC_send(fd, fl, get.x, get.y, get.x + get.width,
+            GmsvServer_MC_send(fd, fl, get.x, get.y, get.x + get.width,
                              get.y + get.height, tilesum, objsum, eventsum,
                              mapdata);
         }
@@ -143,7 +143,7 @@ static void CHAR_sendMapAtWalk(int index, int fl, int ox, int oy, int fx,
         if (mapdata != NULL && !(get.width == 0 && get.height == 0)) {
           int fd = getfdFromCharaIndex(index);
           if (fd != -1)
-            lssproto_MC_send(fd, fl, get.x, get.y, get.x + get.width,
+            GmsvServer_MC_send(fd, fl, get.x, get.y, get.x + get.width,
                              get.y + get.height, tilesum, objsum, eventsum,
                              mapdata);
         }
@@ -151,7 +151,7 @@ static void CHAR_sendMapAtWalk(int index, int fl, int ox, int oy, int fx,
     }
   }
 }
-static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir);
+static CHAR_WALKRET CHAR_walk_move(int char_index, int dir);
 /*------------------------------------------------------------
  * 啖  允月［
  * 娄醒
@@ -160,7 +160,7 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir);
  * 忒曰袄
  *  CHAR_WALKRET
  ------------------------------------------------------------*/
-static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
+static CHAR_WALKRET CHAR_walk_move(int char_index, int dir) {
   int i;
   int fx, fy, ff;
   int ox, oy, of;
@@ -169,21 +169,21 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
   int notover = FALSE;
   int retvalue = CHAR_WALKSUCCESSED;
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return CHAR_WALKSYSTEMERROR;
-  ox = CHAR_getInt(charaindex, CHAR_X);
-  oy = CHAR_getInt(charaindex, CHAR_Y);
-  of = CHAR_getInt(charaindex, CHAR_FLOOR);
+  ox = CHAR_getInt(char_index, CHAR_X);
+  oy = CHAR_getInt(char_index, CHAR_Y);
+  of = CHAR_getInt(char_index, CHAR_FLOOR);
   CHAR_getCoordinationDir(dir, ox, oy, 1, &fx, &fy);
   ff = of;
 
-  if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEENEMY) {
+  if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEENEMY) {
     RECT walkr;
     POINT nextp;
     int npccreateindex;
-    npccreateindex = CHAR_getInt(charaindex, CHAR_NPCCREATEINDEX);
+    npccreateindex = CHAR_getInt(char_index, CHAR_NPCCREATEINDEX);
     if (CHAR_isInvincibleArea(ff, fx, fy)) {
-      CHAR_setInt(charaindex, CHAR_DIR, dir);
+      CHAR_setInt(char_index, CHAR_DIR, dir);
       retvalue = CHAR_WALKEXTEND;
       goto CHAR_AFTERWALK;
     }
@@ -192,7 +192,7 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
       nextp.x = fx;
       nextp.y = fy;
       if (PointInRect(&walkr, &nextp) == FALSE) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALKEXTEND;
         goto CHAR_AFTERWALK;
       }
@@ -201,14 +201,14 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
     }
   }
 
-  if (CHAR_getFlg(charaindex, CHAR_ISBIG) == 1) {
+  if (CHAR_getFlg(char_index, CHAR_ISBIG) == 1) {
     static POINT offset[5] = {
         {0, -1}, {-1, 0}, {0, 0}, {1, 0}, {0, 1},
     };
     int k;
     for (k = 0; k < 5; k++) {
-      if (!MAP_walkAble(charaindex, ff, fx + offset[k].x, fy + offset[k].y)) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+      if (!MAP_walkAble(char_index, ff, fx + offset[k].x, fy + offset[k].y)) {
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALK1357;
         goto CHAR_AFTERWALK;
       }
@@ -216,24 +216,24 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
 
   } else {
     if (CHAR_getDX(dir) * CHAR_getDY(dir) == 0) {
-      if (!MAP_walkAble(charaindex, ff, fx, fy)) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+      if (!MAP_walkAble(char_index, ff, fx, fy)) {
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALK1357;
         goto CHAR_AFTERWALK;
       }
     } else {
       int xflg, yflg;
-      if (!MAP_walkAble(charaindex, ff, fx, fy)) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+      if (!MAP_walkAble(char_index, ff, fx, fy)) {
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALK1357;
         goto CHAR_AFTERWALK;
       }
 
-      xflg = MAP_walkAble(charaindex, of, ox + CHAR_getDX(dir), oy);
-      yflg = MAP_walkAble(charaindex, of, ox, oy + CHAR_getDY(dir));
+      xflg = MAP_walkAble(char_index, of, ox + CHAR_getDX(dir), oy);
+      yflg = MAP_walkAble(char_index, of, ox, oy + CHAR_getDY(dir));
 
       if (!xflg || !yflg) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALK1357;
         goto CHAR_AFTERWALK;
       }
@@ -248,16 +248,16 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
       if (CHAR_CHECKINDEX(OBJECT_getIndex(objindex)) == TRUE) {
 #ifdef _ALLBLUES_LUA
         int meindex = -1, toindex = -1;
-        if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+        if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
           if (CHAR_getInt(OBJECT_getIndex(objindex), CHAR_WHICHTYPE) ==
               CHAR_TYPELUANPC) {
             meindex = OBJECT_getIndex(objindex);
-            toindex = charaindex;
+            toindex = char_index;
           }
-        } else if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPELUANPC) {
+        } else if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPELUANPC) {
           if (CHAR_getInt(OBJECT_getIndex(objindex), CHAR_WHICHTYPE) ==
               CHAR_TYPEPLAYER) {
-            meindex = charaindex;
+            meindex = char_index;
             toindex = OBJECT_getIndex(objindex);
           }
         }
@@ -280,27 +280,27 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
         }
 #endif
 #ifdef _PLAYER_OVERLAP_PK
-        if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER &&
+        if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER &&
             CHAR_getInt(OBJECT_getIndex(objindex), CHAR_WHICHTYPE) ==
                 CHAR_TYPEPLAYER) {
-          if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) !=
+          if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) !=
               CHAR_PARTY_NONE) {
             int i;
-            for (i = 0; i < getPartyNum(charaindex); i++) {
+            for (i = 0; i < getPartyNum(char_index); i++) {
               int subindex =
-                  CHAR_getWorkInt(charaindex, CHAR_WORKPARTYINDEX1 + i);
+                  CHAR_getWorkInt(char_index, CHAR_WORKPARTYINDEX1 + i);
               if (CHAR_CHECKINDEX(subindex) == FALSE)
                 continue;
               if (OBJECT_getIndex(objindex) == subindex)
                 break;
             }
 
-            if (i == getPartyNum(charaindex)) {
+            if (i == getPartyNum(char_index)) {
               int j;
               for (j = 0; j < 32; j++) {
-                if (CHAR_getInt(charaindex, CHAR_FLOOR) ==
+                if (CHAR_getInt(char_index, CHAR_FLOOR) ==
                     getPlayerOverlapPk(j)) {
-                  BATTLE_CreateVsPlayer(charaindex, OBJECT_getIndex(objindex));
+                  BATTLE_CreateVsPlayer(char_index, OBJECT_getIndex(objindex));
                   break;
                 }
               }
@@ -329,7 +329,7 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
     }
   }
   if (notover == TRUE) {
-    CHAR_setInt(charaindex, CHAR_DIR, dir);
+    CHAR_setInt(char_index, CHAR_DIR, dir);
     retvalue = CHAR_WALKHITOBJECT;
   } else {
     for (i = 0; i < objbufindex; i++) {
@@ -346,7 +346,7 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
                                                   ITEM_PREOVERFUNC);
 #ifdef _ALLBLUES_LUA_1_2
         if (!pfunc) {
-          RunItemPreOverEvent(OBJECT_getIndex(objindex), charaindex);
+          RunItemPreOverEvent(OBJECT_getIndex(objindex), char_index);
         }
 #endif
         break;
@@ -356,29 +356,29 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
         break;
       }
       if (pfunc)
-        pfunc(OBJECT_getIndex(objindex), charaindex);
+        pfunc(OBJECT_getIndex(objindex), char_index);
     }
 
-    CHAR_setInt(charaindex, CHAR_X, fx);
-    CHAR_setInt(charaindex, CHAR_Y, fy);
-    CHAR_setInt(charaindex, CHAR_FLOOR, ff);
-    CHAR_setInt(charaindex, CHAR_DIR, dir);
+    CHAR_setInt(char_index, CHAR_X, fx);
+    CHAR_setInt(char_index, CHAR_Y, fy);
+    CHAR_setInt(char_index, CHAR_FLOOR, ff);
+    CHAR_setInt(char_index, CHAR_DIR, dir);
     {
       int objindex;
       int ox, oy, of;
-      objindex = CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX);
-      of = OBJECT_setFloor(objindex, CHAR_getInt(charaindex, CHAR_FLOOR));
-      ox = OBJECT_setX(objindex, CHAR_getInt(charaindex, CHAR_X));
-      oy = OBJECT_setY(objindex, CHAR_getInt(charaindex, CHAR_Y));
+      objindex = CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX);
+      of = OBJECT_setFloor(objindex, CHAR_getInt(char_index, CHAR_FLOOR));
+      ox = OBJECT_setX(objindex, CHAR_getInt(char_index, CHAR_X));
+      oy = OBJECT_setY(objindex, CHAR_getInt(char_index, CHAR_Y));
       if (!MAP_objmove(objindex, of, ox, oy, ff, fx, fy)) {
         /*  仇氏卅氏升丹仄方丹手卅中    */
         //             fprint( "ERROR MAP_OBJMOVE objindex=%d(%s)\n",objindex,
-        //             CHAR_getUseName( charaindex ) );
+        //             CHAR_getUseName( char_index ) );
       }
     }
 
-    CHAR_setInt(charaindex, CHAR_WALKCOUNT,
-                CHAR_getInt(charaindex, CHAR_WALKCOUNT) + 1);
+    CHAR_setInt(char_index, CHAR_WALKCOUNT,
+                CHAR_getInt(char_index, CHAR_WALKCOUNT) + 1);
 
     for (i = 0; i < objbufindex; i++) {
       typedef void (*POSTOFUNC)(int, int);
@@ -395,7 +395,7 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
                                                    ITEM_POSTOVERFUNC);
 #ifdef _ALLBLUES_LUA_1_2
         if (!pfunc) {
-          RunItemPostOverEvent(OBJECT_getIndex(objindex), charaindex);
+          RunItemPostOverEvent(OBJECT_getIndex(objindex), char_index);
         }
 #endif
         break;
@@ -405,7 +405,7 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
         break;
       }
       if (pfunc)
-        pfunc(OBJECT_getIndex(objindex), charaindex);
+        pfunc(OBJECT_getIndex(objindex), char_index);
     }
     objbufindex =
         CHAR_getSameCoordinateObjects(objbuf, arraysizeof(objbuf), of, ox, oy);
@@ -429,72 +429,72 @@ static CHAR_WALKRET CHAR_walk_move(int charaindex, int dir) {
         break;
       }
       if (ofunc)
-        ofunc(OBJECT_getIndex(objindex), charaindex);
+        ofunc(OBJECT_getIndex(objindex), char_index);
     }
   }
 CHAR_AFTERWALK:
   if (retvalue == CHAR_WALK1357 || retvalue == CHAR_WALKHITOBJECT) {
     {
       int opt[2] = {ox, oy};
-      CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+      CHAR_sendWatchEvent(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                           CHAR_ACTWALK, opt, 2, TRUE);
     }
-    CHAR_setWorkChar(charaindex, CHAR_WORKWALKARRAY, "");
-    if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-      CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+    CHAR_setWorkChar(char_index, CHAR_WORKWALKARRAY, "");
+    if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+      CHAR_sendWatchEvent(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                           CHAR_ACTWARP, NULL, 0, TRUE);
     }
-  } else if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+  } else if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
 
     BOOL flg = FALSE;
     int par;
     int count;
-    CHAR_setWorkInt(charaindex, CHAR_WORKACTION, -1);
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+    CHAR_setWorkInt(char_index, CHAR_WORKACTION, -1);
+    if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
         BATTLE_CHARMODE_NONE) {
-      CHAR_sendCharaAtWalk(charaindex, of, ox, oy, CHAR_getDX(dir),
+      CHAR_sendCharaAtWalk(char_index, of, ox, oy, CHAR_getDX(dir),
                            CHAR_getDY(dir));
     }
 
     {
       int opt[2] = {ox, oy};
-      CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+      CHAR_sendWatchEvent(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                           CHAR_ACTWALK, opt, 2, TRUE);
     }
-    // if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE) == CHAR_PARTY_CLIENT
+    // if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE) == CHAR_PARTY_CLIENT
     // ) {
 #ifdef _MO_MAP_AUTO_UPDATE
-    CHAR_sendMapAtWalk(charaindex, of, ox, oy, CHAR_getInt(charaindex, CHAR_X),
-                       CHAR_getInt(charaindex, CHAR_Y));
+    CHAR_sendMapAtWalk(char_index, of, ox, oy, CHAR_getInt(char_index, CHAR_X),
+                       CHAR_getInt(char_index, CHAR_Y));
 #endif
     //}
-    count = CHAR_getWorkInt(charaindex, CHAR_WORK_TOHELOS_COUNT);
+    count = CHAR_getWorkInt(char_index, CHAR_WORK_TOHELOS_COUNT);
     if (count > 0) {
-      CHAR_setWorkInt(charaindex, CHAR_WORK_TOHELOS_COUNT, count - 1);
+      CHAR_setWorkInt(char_index, CHAR_WORK_TOHELOS_COUNT, count - 1);
       if (count - 1 == 0) {
-        CHAR_talkToCli(charaindex, -1, "道具的效力已到。", CHAR_COLORWHITE);
+        CHAR_talkToCli(char_index, -1, "道具的效力已到。", CHAR_COLORWHITE);
       }
     }
-    par = ENCOUNT_getEncountPercentMin(charaindex, of, ox, oy);
+    par = ENCOUNT_getEncountPercentMin(char_index, of, ox, oy);
     if (par != -1) {
-      if (CHAR_getWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MIN) != par) {
+      if (CHAR_getWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MIN) != par) {
         flg = TRUE;
-        CHAR_setWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MIN, par);
+        CHAR_setWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MIN, par);
       }
     }
 
-    par = ENCOUNT_getEncountPercentMax(charaindex, of, ox, oy);
+    par = ENCOUNT_getEncountPercentMax(char_index, of, ox, oy);
     if (par != -1) {
-      if (CHAR_getWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MAX) != par) {
+      if (CHAR_getWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MAX) != par) {
         flg = TRUE;
-        CHAR_setWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MAX, par);
+        CHAR_setWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MAX, par);
       }
     }
 #ifdef _ALLBLUES_LUA_1_9
-//			if(WalkFunction( charaindex ) == FALSE)
+//			if(WalkFunction( char_index ) == FALSE)
 #endif
     {
-      int enfd = getfdFromCharaIndex(charaindex);
+      int enfd = getfdFromCharaIndex(char_index);
       int eqen = getEqNoenemy(enfd); // Arminius 7.2: Ra's amulet
       int noen = getNoenemy(enfd);
 
@@ -527,19 +527,19 @@ CHAR_AFTERWALK:
       // print("\n noen=%d", noen);
       if (noen == 0) {
         int maxep =
-            CHAR_getWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MAX);
+            CHAR_getWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MAX);
         int minep =
-            CHAR_getWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MIN);
+            CHAR_getWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MIN);
         int cep = CONNECT_get_CEP(enfd);
 
 #ifdef _PROFESSION_SKILL // WON ADD 人物职业技能
         int temp = 0;
-        int p_cep = CHAR_getWorkInt(charaindex, CHAR_ENCOUNT_FIX);
+        int p_cep = CHAR_getWorkInt(char_index, CHAR_ENCOUNT_FIX);
         if (p_cep != 0) {
-          if (CHAR_getWorkInt(charaindex, CHAR_ENCOUNT_NUM) < (int)time(NULL)) {
-            CHAR_talkToCli(charaindex, -1, "技能效用结束。", CHAR_COLORYELLOW);
-            CHAR_setWorkInt(charaindex, CHAR_ENCOUNT_FIX, 0);
-            CHAR_setWorkInt(charaindex, CHAR_ENCOUNT_NUM, 0);
+          if (CHAR_getWorkInt(char_index, CHAR_ENCOUNT_NUM) < (int)time(NULL)) {
+            CHAR_talkToCli(char_index, -1, "技能效用结束。", CHAR_COLORYELLOW);
+            CHAR_setWorkInt(char_index, CHAR_ENCOUNT_FIX, 0);
+            CHAR_setWorkInt(char_index, CHAR_ENCOUNT_NUM, 0);
           }
           temp = cep * (100 + p_cep) / 100;
         } else {
@@ -551,7 +551,7 @@ CHAR_AFTERWALK:
           cep = minep;
         if (cep > maxep)
           cep = maxep;
-        if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+        if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
             BATTLE_CHARMODE_NONE) {
           int entflag = 1;
           {
@@ -567,12 +567,12 @@ CHAR_AFTERWALK:
                 if (CHAR_getInt(index, CHAR_WHICHTYPE) == CHAR_TYPENPCENEMY &&
                     CHAR_getWorkInt(index, CHAR_WORKEVENTTYPE) ==
                         CHAR_EVENT_ENEMY) {
-                  CHAR_setInt(charaindex, CHAR_X, ox);
-                  CHAR_setInt(charaindex, CHAR_Y, oy);
-                  lssproto_XYD_send(getfdFromCharaIndex(charaindex),
-                                    CHAR_getInt(charaindex, CHAR_X),
-                                    CHAR_getInt(charaindex, CHAR_Y),
-                                    CHAR_getInt(charaindex, CHAR_DIR));
+                  CHAR_setInt(char_index, CHAR_X, ox);
+                  CHAR_setInt(char_index, CHAR_Y, oy);
+                  GmsvServer_XYD_send(getfdFromCharaIndex(char_index),
+                                    CHAR_getInt(char_index, CHAR_X),
+                                    CHAR_getInt(char_index, CHAR_Y),
+                                    CHAR_getInt(char_index, CHAR_DIR));
                   break;
                 }
                 etype = CHAR_getWorkInt(index, CHAR_WORKEVENTTYPE);
@@ -608,14 +608,14 @@ CHAR_AFTERWALK:
 #endif
                   // encounter!!
                   cep = minep;
-                  lssproto_EN_recv(enfd, CHAR_getInt(charaindex, CHAR_X),
-                                   CHAR_getInt(charaindex, CHAR_Y));
+                  GmsvServer_EN_recv(enfd, CHAR_getInt(char_index, CHAR_X),
+                                   CHAR_getInt(char_index, CHAR_Y));
 #ifdef _Item_MoonAct
                 }
               } else {
                 cep = minep;
-                lssproto_EN_recv(enfd, CHAR_getInt(charaindex, CHAR_X),
-                                 CHAR_getInt(charaindex, CHAR_Y));
+                GmsvServer_EN_recv(enfd, CHAR_getInt(char_index, CHAR_X),
+                                 CHAR_getInt(char_index, CHAR_Y));
               }
 #endif
             }
@@ -627,37 +627,37 @@ CHAR_AFTERWALK:
         CONNECT_set_CEP(enfd, cep);
       }
     }
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) != CHAR_PARTY_CLIENT) {
-      CHAR_setFlg(charaindex, CHAR_ISWARP, 0);
+    if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) != CHAR_PARTY_CLIENT) {
+      CHAR_setFlg(char_index, CHAR_ISWARP, 0);
     }
-  } else if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPET ||
-             CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEBUS
+  } else if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPET ||
+             CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEBUS
 #ifdef _GAMBLE_ROULETTE
-             || CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_GAMBLEROULETTE
+             || CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_GAMBLEROULETTE
 #endif
 #ifdef _PETRACE
-             || CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_PETRACEPET
+             || CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_PETRACEPET
 #endif
 #ifdef _ALLBLUES_LUA
-             || CHAR_getInt(charaindex, CHAR_WHICHTYPE) >= CHAR_TYPELUANPC
+             || CHAR_getInt(char_index, CHAR_WHICHTYPE) >= CHAR_TYPELUANPC
 #endif
   ) {
-    CHAR_setWorkInt(charaindex, CHAR_WORKACTION, -1);
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+    CHAR_setWorkInt(char_index, CHAR_WORKACTION, -1);
+    if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
         BATTLE_CHARMODE_NONE) {
-      CHAR_sendCharaAtWalk(charaindex, of, ox, oy, CHAR_getDX(dir),
+      CHAR_sendCharaAtWalk(char_index, of, ox, oy, CHAR_getDX(dir),
                            CHAR_getDY(dir));
     }
     {
       int opt[2] = {ox, oy};
-      CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+      CHAR_sendWatchEvent(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                           CHAR_ACTWALK, opt, 2, TRUE);
     }
   }
   if (retvalue == CHAR_WALKSUCCESSED) {
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+    if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
         BATTLE_CHARMODE_NONE) {
-      CHAR_sendCDCharaAtWalk(charaindex, of, ox, oy, CHAR_getDX(dir),
+      CHAR_sendCDCharaAtWalk(char_index, of, ox, oy, CHAR_getDX(dir),
                              CHAR_getDY(dir));
     }
   }
@@ -1127,7 +1127,7 @@ void CHAR_walk_init(int fd, int x, int y, char *direction, BOOL mapsendmode) {
   }
 }
 
-void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
+void CHAR_sendCharaAtWalk(int char_index, int of, int ox, int oy, int xflg,
                           int yflg) {
   int fd = -1;
   int i, j, fl, x, y;
@@ -1139,9 +1139,9 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
   char myintroduction[1024 * 4];
   int whichtype;
 
-  whichtype = CHAR_getInt(charaindex, CHAR_WHICHTYPE);
+  whichtype = CHAR_getInt(char_index, CHAR_WHICHTYPE);
   if (whichtype == CHAR_TYPEPLAYER) {
-    fd = getfdFromCharaIndex(charaindex);
+    fd = getfdFromCharaIndex(char_index);
     if (fd == -1)
       return;
   }
@@ -1153,19 +1153,19 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
     print("%s:%d: arg err[yflg]\n", __FILE__, __LINE__);
     return;
   }
-  fl = CHAR_getInt(charaindex, CHAR_FLOOR);
-  x = CHAR_getInt(charaindex, CHAR_X);
-  y = CHAR_getInt(charaindex, CHAR_Y);
+  fl = CHAR_getInt(char_index, CHAR_FLOOR);
+  x = CHAR_getInt(char_index, CHAR_X);
+  y = CHAR_getInt(char_index, CHAR_Y);
 
   if (of != fl || ABS(x - ox) > seesiz / 2 || ABS(y - oy) > seesiz / 2)
     return;
 
-  if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) != CHAR_TYPEPLAYER) {
+  if (CHAR_getInt(char_index, CHAR_WHICHTYPE) != CHAR_TYPEPLAYER) {
     return;
   }
   c_msg[0] = '\0';
 #ifndef _NPC_EVENT_NOTICE
-  if (!CHAR_makeObjectCString(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+  if (!CHAR_makeObjectCString(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                               myintroduction, sizeof(myintroduction))) {
     myintroduction[0] = '\0';
   }
@@ -1194,12 +1194,12 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
                 CDsend(tofd);
 #ifdef _NPC_EVENT_NOTICE
                 if (!CHAR_makeObjectCStringNew(
-                        CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX), c_index,
+                        CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX), c_index,
                         myintroduction, sizeof(myintroduction))) {
                   myintroduction[0] = '\0';
                 }
 #endif
-                lssproto_C_send(tofd, myintroduction);
+                GmsvServer_C_send(tofd, myintroduction);
               }
             }
           }
@@ -1207,7 +1207,7 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
         if (whichtype == CHAR_TYPEPLAYER) {
           /* Make C*/
 #ifdef _NPC_EVENT_NOTICE
-          if (CHAR_makeObjectCStringNew(objindex, charaindex, introduction,
+          if (CHAR_makeObjectCStringNew(objindex, char_index, introduction,
                                         sizeof(introduction))) {
 #else
           if (CHAR_makeObjectCString(objindex, introduction,
@@ -1229,14 +1229,14 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
               }
             }
             if ((CHAR_getInt(c_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) &&
-                CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) ==
+                CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) ==
                     CHAR_PARTY_LEADER &&
                 CHAR_getWorkInt(c_index, CHAR_WORKBATTLEMODE) ==
                     BATTLE_CHARMODE_NONE) {
               int tofd = getfdFromCharaIndex(c_index);
               if (tofd != -1) {
                 if (CHAR_makeCAOPT1String(
-                        CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX), cabuf,
+                        CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX), cabuf,
                         sizeof(cabuf), CHAR_ACTLEADER, 1)) {
                   CONNECT_appendCAbuf(tofd, cabuf, strlen(cabuf));
                 }
@@ -1400,7 +1400,7 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
               int tofd = getfdFromCharaIndex(c_index);
               if (tofd != -1) {
                 CDsend(tofd);
-                lssproto_C_send(tofd, myintroduction);
+                GmsvServer_C_send(tofd, myintroduction);
               }
             }
           }
@@ -1408,7 +1408,7 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
         if (whichtype == CHAR_TYPEPLAYER) {
           /* Make C*/
 #ifdef _NPC_EVENT_NOTICE
-          if (CHAR_makeObjectCStringNew(objindex, charaindex, introduction,
+          if (CHAR_makeObjectCStringNew(objindex, char_index, introduction,
                                         sizeof(introduction))) {
 #else
           if (CHAR_makeObjectCString(objindex, introduction,
@@ -1430,14 +1430,14 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
               }
             }
             if ((CHAR_getInt(c_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) &&
-                CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) ==
+                CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) ==
                     CHAR_PARTY_LEADER &&
                 CHAR_getWorkInt(c_index, CHAR_WORKBATTLEMODE) ==
                     BATTLE_CHARMODE_NONE) {
               int tofd = getfdFromCharaIndex(c_index);
               if (tofd != -1) {
                 if (CHAR_makeCAOPT1String(
-                        CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX), cabuf,
+                        CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX), cabuf,
                         sizeof(cabuf), CHAR_ACTLEADER, 1)) {
                   CONNECT_appendCAbuf(tofd, cabuf, strlen(cabuf));
                 }
@@ -1577,12 +1577,12 @@ void CHAR_sendCharaAtWalk(int charaindex, int of, int ox, int oy, int xflg,
   }
   dchop(c_msg, ",");
   if (strlen(c_msg) != 0) {
-    CDflush(charaindex);
-    lssproto_C_send(fd, c_msg);
+    CDflush(char_index);
+    GmsvServer_C_send(fd, c_msg);
   }
 }
 
-static void CHAR_sendCDCharaAtWalk(int charaindex, int of, int ox, int oy,
+static void CHAR_sendCDCharaAtWalk(int char_index, int of, int ox, int oy,
                                    int xflg, int yflg) {
   int i, j, fl, x, y;
   int seesiz = CHAR_DEFAULTSEESIZ / 2;
@@ -1595,16 +1595,16 @@ static void CHAR_sendCDCharaAtWalk(int charaindex, int of, int ox, int oy,
     print("%s:%d: arg err[yflg]\n", __FILE__, __LINE__);
     return;
   }
-  fl = CHAR_getInt(charaindex, CHAR_FLOOR);
-  x = CHAR_getInt(charaindex, CHAR_X);
-  y = CHAR_getInt(charaindex, CHAR_Y);
+  fl = CHAR_getInt(char_index, CHAR_FLOOR);
+  x = CHAR_getInt(char_index, CHAR_X);
+  y = CHAR_getInt(char_index, CHAR_Y);
 
   if (of != fl ||                 /*  白夫失互啜丹    */
       ABS(x - ox) > seesiz / 2 || /*  犒互  五中  */
       ABS(y - oy) > seesiz / 2)   /*  犒互  五中  */
     return;
 
-  fd = getfdFromCharaIndex(charaindex);
+  fd = getfdFromCharaIndex(char_index);
   if (xflg != 0) {
     i = x + (seesiz * xflg + xflg) * -1;
     for (j = y - seesiz + (yflg * -1); j <= y + seesiz + (yflg * -1); j++) {
@@ -1628,13 +1628,13 @@ static void CHAR_sendCDCharaAtWalk(int charaindex, int of, int ox, int oy,
           CONNECT_appendCDbuf(fd, buf, strlen(buf));
         }
         if (OBJECT_getType(objindex) == OBJTYPE_CHARA) {
-          int tocharaindex = OBJECT_getIndex(objindex);
-          if (CHAR_getInt(tocharaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-            if (CHAR_getWorkInt(tocharaindex, CHAR_WORKBATTLEMODE) ==
+          int tochar_index = OBJECT_getIndex(objindex);
+          if (CHAR_getInt(tochar_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+            if (CHAR_getWorkInt(tochar_index, CHAR_WORKBATTLEMODE) ==
                 BATTLE_CHARMODE_NONE) {
-              tofd = getfdFromCharaIndex(tocharaindex);
+              tofd = getfdFromCharaIndex(tochar_index);
               if (tofd != -1) {
-                cnv10to62(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX), buf,
+                cnv10to62(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX), buf,
                           sizeof(buf));
                 CONNECT_appendCDbuf(tofd, buf, strlen(buf));
                 CAsend(tofd);
@@ -1665,13 +1665,13 @@ static void CHAR_sendCDCharaAtWalk(int charaindex, int of, int ox, int oy,
           CONNECT_appendCDbuf(fd, buf, strlen(buf));
         }
         if (OBJECT_getType(objindex) == OBJTYPE_CHARA) {
-          int tocharaindex = OBJECT_getIndex(objindex);
-          if (CHAR_getInt(tocharaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-            if (CHAR_getWorkInt(tocharaindex, CHAR_WORKBATTLEMODE) ==
+          int tochar_index = OBJECT_getIndex(objindex);
+          if (CHAR_getInt(tochar_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+            if (CHAR_getWorkInt(tochar_index, CHAR_WORKBATTLEMODE) ==
                 BATTLE_CHARMODE_NONE) {
-              tofd = getfdFromCharaIndex(tocharaindex);
+              tofd = getfdFromCharaIndex(tochar_index);
               if (tofd != -1) {
-                cnv10to62(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX), buf,
+                cnv10to62(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX), buf,
                           sizeof(buf));
                 CONNECT_appendCDbuf(tofd, buf, strlen(buf));
                 CAsend(tofd);
@@ -1696,7 +1696,7 @@ void CHAR_ctodirmode(char moji, int *dir, int *mode) {
   *dir = tolower(moji) - 'a';
 }
 #ifdef _MO_LNS_NLGSUOXU
-CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
+CHAR_WALKRET CHAR_walk_jc(int char_index, int of, int ox, int oy, int dir) {
   int i;
   int fx, fy, ff;
   int objbuf[128];
@@ -1704,19 +1704,19 @@ CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
   int notover = FALSE;
   int retvalue = CHAR_WALKSUCCESSED;
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return CHAR_WALKSYSTEMERROR;
 
   CHAR_getCoordinationDir(dir, ox, oy, 1, &fx, &fy);
   ff = of;
 
-  if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEENEMY) {
+  if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEENEMY) {
     RECT walkr;
     POINT nextp;
     int npccreateindex;
-    npccreateindex = CHAR_getInt(charaindex, CHAR_NPCCREATEINDEX);
+    npccreateindex = CHAR_getInt(char_index, CHAR_NPCCREATEINDEX);
     if (CHAR_isInvincibleArea(ff, fx, fy)) {
-      CHAR_setInt(charaindex, CHAR_DIR, dir);
+      CHAR_setInt(char_index, CHAR_DIR, dir);
       retvalue = CHAR_WALKEXTEND;
       return retvalue;
     }
@@ -1725,7 +1725,7 @@ CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
       nextp.x = fx;
       nextp.y = fy;
       if (PointInRect(&walkr, &nextp) == FALSE) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALKEXTEND;
         return retvalue;
       }
@@ -1734,14 +1734,14 @@ CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
     }
   }
 
-  if (CHAR_getFlg(charaindex, CHAR_ISBIG) == 1) {
+  if (CHAR_getFlg(char_index, CHAR_ISBIG) == 1) {
     static POINT offset[5] = {
         {0, -1}, {-1, 0}, {0, 0}, {1, 0}, {0, 1},
     };
     int k;
     for (k = 0; k < 5; k++) {
-      if (!MAP_walkAble(charaindex, ff, fx + offset[k].x, fy + offset[k].y)) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+      if (!MAP_walkAble(char_index, ff, fx + offset[k].x, fy + offset[k].y)) {
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALK1357;
         return retvalue;
       }
@@ -1749,24 +1749,24 @@ CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
 
   } else {
     if (CHAR_getDX(dir) * CHAR_getDY(dir) == 0) {
-      if (!MAP_walkAble(charaindex, ff, fx, fy)) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+      if (!MAP_walkAble(char_index, ff, fx, fy)) {
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALK1357;
         return retvalue;
       }
     } else {
       int xflg, yflg;
-      if (!MAP_walkAble(charaindex, ff, fx, fy)) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+      if (!MAP_walkAble(char_index, ff, fx, fy)) {
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALK1357;
         return retvalue;
       }
 
-      xflg = MAP_walkAble(charaindex, of, ox + CHAR_getDX(dir), oy);
-      yflg = MAP_walkAble(charaindex, of, ox, oy + CHAR_getDY(dir));
+      xflg = MAP_walkAble(char_index, of, ox + CHAR_getDX(dir), oy);
+      yflg = MAP_walkAble(char_index, of, ox, oy + CHAR_getDY(dir));
 
       if (!xflg || !yflg) {
-        CHAR_setInt(charaindex, CHAR_DIR, dir);
+        CHAR_setInt(char_index, CHAR_DIR, dir);
         retvalue = CHAR_WALK1357;
         return retvalue;
       }
@@ -1798,7 +1798,7 @@ CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
     }
   }
   if (notover == TRUE) {
-    CHAR_setInt(charaindex, CHAR_DIR, dir);
+    CHAR_setInt(char_index, CHAR_DIR, dir);
     retvalue = CHAR_WALKHITOBJECT;
     return retvalue;
   } else {
@@ -1821,30 +1821,30 @@ CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
         break;
       }
       if (pfunc)
-        pfunc(OBJECT_getIndex(objindex), charaindex);
+        pfunc(OBJECT_getIndex(objindex), char_index);
     }
 
-    CHAR_setInt(charaindex, CHAR_X, fx);
-    CHAR_setInt(charaindex, CHAR_Y, fy);
-    CHAR_setInt(charaindex, CHAR_FLOOR, ff);
-    CHAR_setInt(charaindex, CHAR_DIR, dir);
+    CHAR_setInt(char_index, CHAR_X, fx);
+    CHAR_setInt(char_index, CHAR_Y, fy);
+    CHAR_setInt(char_index, CHAR_FLOOR, ff);
+    CHAR_setInt(char_index, CHAR_DIR, dir);
 
     {
       int objindex;
       int ox, oy, of;
-      objindex = CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX);
-      of = OBJECT_setFloor(objindex, CHAR_getInt(charaindex, CHAR_FLOOR));
-      ox = OBJECT_setX(objindex, CHAR_getInt(charaindex, CHAR_X));
-      oy = OBJECT_setY(objindex, CHAR_getInt(charaindex, CHAR_Y));
+      objindex = CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX);
+      of = OBJECT_setFloor(objindex, CHAR_getInt(char_index, CHAR_FLOOR));
+      ox = OBJECT_setX(objindex, CHAR_getInt(char_index, CHAR_X));
+      oy = OBJECT_setY(objindex, CHAR_getInt(char_index, CHAR_Y));
       if (!MAP_objmove(objindex, of, ox, oy, ff, fx, fy)) {
         /*  仇氏卅氏升丹仄方丹手卅中    */
         fprint("ERROR MAP_OBJMOVE objindex=%d(%s)\n", objindex,
-               CHAR_getUseName(charaindex));
+               CHAR_getUseName(char_index));
       }
     }
 
-    CHAR_setInt(charaindex, CHAR_WALKCOUNT,
-                CHAR_getInt(charaindex, CHAR_WALKCOUNT) + 1);
+    CHAR_setInt(char_index, CHAR_WALKCOUNT,
+                CHAR_getInt(char_index, CHAR_WALKCOUNT) + 1);
 
     for (i = 0; i < objbufindex; i++) {
       typedef void (*POSTOFUNC)(int, int);
@@ -1866,7 +1866,7 @@ CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
         break;
       }
       if (pfunc)
-        pfunc(OBJECT_getIndex(objindex), charaindex);
+        pfunc(OBJECT_getIndex(objindex), char_index);
     }
     objbufindex =
         CHAR_getSameCoordinateObjects(objbuf, arraysizeof(objbuf), of, ox, oy);
@@ -1890,73 +1890,73 @@ CHAR_WALKRET CHAR_walk_jc(int charaindex, int of, int ox, int oy, int dir) {
         break;
       }
       if (ofunc)
-        ofunc(OBJECT_getIndex(objindex), charaindex);
+        ofunc(OBJECT_getIndex(objindex), char_index);
     }
   }
 CHAR_AFTERWALK:
   if (retvalue == CHAR_WALK1357 || retvalue == CHAR_WALKHITOBJECT) {
     {
       int opt[2] = {ox, oy};
-      CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+      CHAR_sendWatchEvent(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                           CHAR_ACTWALK, opt, 2, TRUE);
     }
-    CHAR_setWorkChar(charaindex, CHAR_WORKWALKARRAY, "");
-    if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-      CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+    CHAR_setWorkChar(char_index, CHAR_WORKWALKARRAY, "");
+    if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+      CHAR_sendWatchEvent(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                           CHAR_ACTWARP, NULL, 0, TRUE);
     }
-  } else if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+  } else if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
 
     BOOL flg = FALSE;
     int par;
     int count;
-    CHAR_setWorkInt(charaindex, CHAR_WORKACTION, -1);
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+    CHAR_setWorkInt(char_index, CHAR_WORKACTION, -1);
+    if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
         BATTLE_CHARMODE_NONE) {
-      CHAR_sendCharaAtWalk(charaindex, of, ox, oy, CHAR_getDX(dir),
+      CHAR_sendCharaAtWalk(char_index, of, ox, oy, CHAR_getDX(dir),
                            CHAR_getDY(dir));
     }
 
     {
       int opt[2] = {ox, oy};
-      CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+      CHAR_sendWatchEvent(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                           CHAR_ACTWALK, opt, 2, TRUE);
     }
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) == CHAR_PARTY_CLIENT) {
-      CHAR_sendMapAtWalk(charaindex, of, ox, oy,
-                         CHAR_getInt(charaindex, CHAR_X),
-                         CHAR_getInt(charaindex, CHAR_Y));
+    if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) == CHAR_PARTY_CLIENT) {
+      CHAR_sendMapAtWalk(char_index, of, ox, oy,
+                         CHAR_getInt(char_index, CHAR_X),
+                         CHAR_getInt(char_index, CHAR_Y));
     }
     count =
-        CHAR_getWorkInt(charaindex, CHAR_WORK_TOHELOS_COUNT); // 什么道具的效力
+        CHAR_getWorkInt(char_index, CHAR_WORK_TOHELOS_COUNT); // 什么道具的效力
     if (count > 0) {
-      CHAR_setWorkInt(charaindex, CHAR_WORK_TOHELOS_COUNT, count - 1);
+      CHAR_setWorkInt(char_index, CHAR_WORK_TOHELOS_COUNT, count - 1);
       if (count - 1 == 0) {
-        // CHAR_talkToCli( charaindex, -1, "道具的效力已到。", CHAR_COLORWHITE);
+        // CHAR_talkToCli( char_index, -1, "道具的效力已到。", CHAR_COLORWHITE);
       }
     }
-    par = ENCOUNT_getEncountPercentMin(charaindex, of, ox, oy);
+    par = ENCOUNT_getEncountPercentMin(char_index, of, ox, oy);
     if (par != -1) {
-      if (CHAR_getWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MIN) != par) {
+      if (CHAR_getWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MIN) != par) {
         flg = TRUE;
-        CHAR_setWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MIN, par);
+        CHAR_setWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MIN, par);
       }
     }
 
-    par = ENCOUNT_getEncountPercentMax(charaindex, of, ox, oy);
+    par = ENCOUNT_getEncountPercentMax(char_index, of, ox, oy);
     if (par != -1) {
-      if (CHAR_getWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MAX) != par) {
+      if (CHAR_getWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MAX) != par) {
         flg = TRUE;
-        CHAR_setWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MAX, par);
+        CHAR_setWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MAX, par);
       }
     }
     // Arminius 7.12 login announce
     /*
     {
-      int enfd = getfdFromCharaIndex( charaindex );
+      int enfd = getfdFromCharaIndex( char_index );
       if (CONNECT_get_announced(enfd)==0) {
         // Robin 0720
-        //AnnounceToPlayer(charaindex);
+        //AnnounceToPlayer(char_index);
         AnnounceToPlayerWN( enfd );
         CONNECT_set_announced(enfd,1);
       }
@@ -1965,7 +1965,7 @@ CHAR_AFTERWALK:
     // Arminius 6.22 check Encounter
     // Nuke 0622: Provide No Enemy function
     {
-      int enfd = getfdFromCharaIndex(charaindex);
+      int enfd = getfdFromCharaIndex(char_index);
       int eqen = getEqNoenemy(enfd); // Arminius 7.2: Ra's amulet
       int noen = getNoenemy(enfd);
 
@@ -1993,19 +1993,19 @@ CHAR_AFTERWALK:
       // print("\n noen=%d", noen);
       if (noen == 0) {
         int maxep =
-            CHAR_getWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MAX);
+            CHAR_getWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MAX);
         int minep =
-            CHAR_getWorkInt(charaindex, CHAR_WORKENCOUNTPROBABILITY_MIN);
+            CHAR_getWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MIN);
         int cep = CONNECT_get_CEP(enfd);
 
 #ifdef _PROFESSION_SKILL // WON ADD 人物职业技能
         int temp = 0;
-        int p_cep = CHAR_getWorkInt(charaindex, CHAR_ENCOUNT_FIX);
+        int p_cep = CHAR_getWorkInt(char_index, CHAR_ENCOUNT_FIX);
         if (p_cep != 0) {
-          if (CHAR_getWorkInt(charaindex, CHAR_ENCOUNT_NUM) < (int)time(NULL)) {
-            CHAR_talkToCli(charaindex, -1, "技能效用结束。", CHAR_COLORYELLOW);
-            CHAR_setWorkInt(charaindex, CHAR_ENCOUNT_FIX, 0);
-            CHAR_setWorkInt(charaindex, CHAR_ENCOUNT_NUM, 0);
+          if (CHAR_getWorkInt(char_index, CHAR_ENCOUNT_NUM) < (int)time(NULL)) {
+            CHAR_talkToCli(char_index, -1, "技能效用结束。", CHAR_COLORYELLOW);
+            CHAR_setWorkInt(char_index, CHAR_ENCOUNT_FIX, 0);
+            CHAR_setWorkInt(char_index, CHAR_ENCOUNT_NUM, 0);
           }
           temp = cep * (100 + p_cep) / 100;
         } else {
@@ -2017,7 +2017,7 @@ CHAR_AFTERWALK:
           cep = minep;
         if (cep > maxep)
           cep = maxep;
-        if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+        if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
             BATTLE_CHARMODE_NONE) {
           int entflag = 1;
           {
@@ -2033,12 +2033,12 @@ CHAR_AFTERWALK:
                 if (CHAR_getInt(index, CHAR_WHICHTYPE) == CHAR_TYPENPCENEMY &&
                     CHAR_getWorkInt(index, CHAR_WORKEVENTTYPE) ==
                         CHAR_EVENT_ENEMY) {
-                  CHAR_setInt(charaindex, CHAR_X, ox);
-                  CHAR_setInt(charaindex, CHAR_Y, oy);
-                  lssproto_XYD_send(getfdFromCharaIndex(charaindex),
-                                    CHAR_getInt(charaindex, CHAR_X),
-                                    CHAR_getInt(charaindex, CHAR_Y),
-                                    CHAR_getInt(charaindex, CHAR_DIR));
+                  CHAR_setInt(char_index, CHAR_X, ox);
+                  CHAR_setInt(char_index, CHAR_Y, oy);
+                  GmsvServer_XYD_send(getfdFromCharaIndex(char_index),
+                                    CHAR_getInt(char_index, CHAR_X),
+                                    CHAR_getInt(char_index, CHAR_Y),
+                                    CHAR_getInt(char_index, CHAR_DIR));
                   break;
                 }
                 etype = CHAR_getWorkInt(index, CHAR_WORKEVENTTYPE);
@@ -2073,14 +2073,14 @@ CHAR_AFTERWALK:
 #endif
                   // encounter!!
                   cep = minep;
-                  lssproto_EN_recv(enfd, CHAR_getInt(charaindex, CHAR_X),
-                                   CHAR_getInt(charaindex, CHAR_Y));
+                  GmsvServer_EN_recv(enfd, CHAR_getInt(char_index, CHAR_X),
+                                   CHAR_getInt(char_index, CHAR_Y));
 #ifdef _Item_MoonAct
                 }
               } else {
                 cep = minep;
-                lssproto_EN_recv(enfd, CHAR_getInt(charaindex, CHAR_X),
-                                 CHAR_getInt(charaindex, CHAR_Y));
+                GmsvServer_EN_recv(enfd, CHAR_getInt(char_index, CHAR_X),
+                                 CHAR_getInt(char_index, CHAR_Y));
               }
 #endif
             }
@@ -2092,34 +2092,34 @@ CHAR_AFTERWALK:
         CONNECT_set_CEP(enfd, cep);
       }
     }
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) != CHAR_PARTY_CLIENT) {
-      CHAR_setFlg(charaindex, CHAR_ISWARP, 0);
+    if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) != CHAR_PARTY_CLIENT) {
+      CHAR_setFlg(char_index, CHAR_ISWARP, 0);
     }
-  } else if (CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEPET ||
-             CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEBUS
+  } else if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPET ||
+             CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEBUS
 #ifdef _GAMBLE_ROULETTE
-             || CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_GAMBLEROULETTE
+             || CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_GAMBLEROULETTE
 #endif
 #ifdef _PETRACE
-             || CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_PETRACEPET
+             || CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_PETRACEPET
 #endif
   ) {
-    CHAR_setWorkInt(charaindex, CHAR_WORKACTION, -1);
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+    CHAR_setWorkInt(char_index, CHAR_WORKACTION, -1);
+    if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
         BATTLE_CHARMODE_NONE) {
-      CHAR_sendCharaAtWalk(charaindex, of, ox, oy, CHAR_getDX(dir),
+      CHAR_sendCharaAtWalk(char_index, of, ox, oy, CHAR_getDX(dir),
                            CHAR_getDY(dir));
     }
     {
       int opt[2] = {ox, oy};
-      CHAR_sendWatchEvent(CHAR_getWorkInt(charaindex, CHAR_WORKOBJINDEX),
+      CHAR_sendWatchEvent(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX),
                           CHAR_ACTWALK, opt, 2, TRUE);
     }
   }
   if (retvalue == CHAR_WALKSUCCESSED) {
-    if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+    if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
         BATTLE_CHARMODE_NONE) {
-      CHAR_sendCDCharaAtWalk(charaindex, of, ox, oy, CHAR_getDX(dir),
+      CHAR_sendCDCharaAtWalk(char_index, of, ox, oy, CHAR_getDX(dir),
                              CHAR_getDY(dir));
     }
   }

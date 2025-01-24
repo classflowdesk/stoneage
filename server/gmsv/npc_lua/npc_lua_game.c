@@ -9,7 +9,7 @@
 #include "npcutil.h"
 #include "item.h"
 #include "readmap.h"
-#include "saacproto_cli.h"
+#include "saac_client.h"
 #include "family.h"
 
 int NPC_Lua_Game_FMPOINT_GetData(lua_State *_NLL)
@@ -89,7 +89,7 @@ if(CHAR_getInt( loseindex, CHAR_FMLEADERFLAG ) != FMMEMBER_LEADER)//不是族长
   {
 		LRetErrNull(_NLL, "传入的索引对象并不是族长");
   }
-	saacproto_ACFixFMPoint_send(acfd,	CHAR_getChar(winindex,CHAR_FMNAME),CHAR_getInt(winindex,CHAR_FMINDEX) + 1,CHAR_getInt(winindex,CHAR_FMINDEX),
+	SaacClient_ACFixFMPoint_send(acfd,	CHAR_getChar(winindex,CHAR_FMNAME),CHAR_getInt(winindex,CHAR_FMINDEX) + 1,CHAR_getInt(winindex,CHAR_FMINDEX),
 	CHAR_getChar(loseindex,CHAR_FMNAME),CHAR_getInt(loseindex,CHAR_FMINDEX) + 1,CHAR_getInt(loseindex,CHAR_FMINDEX),id);
 	LRetInt(_NLL, 0);
 }
@@ -103,7 +103,7 @@ int NPC_Lua_Game_FMPOINT_ACCleanFMPoint(lua_State *_NLL)
 	{
 	  LRetErrNull(_NLL, "传入的庄园编号是无效的。");
 	}
-	saacproto_ACDelFmPoint_send(acfd,id);
+	SaacClient_ACDelFmPoint_send(acfd,id);
 	LRetInt(_NLL, 0);
 }
 */

@@ -6,7 +6,7 @@
 #include "char.h"
 #include "char_base.h"
 #include "battle.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npcutil.h"
 #include "npc_bus.h"
 #include "npc_airplane.h"       // Arminius 7.10 Airplane
@@ -31,16 +31,16 @@ extern int CheckCharMaxItem(int charindex);
  * 坞中化中月由□  奴  毛茧允
  * 卅仃木壬-1毛忒允［
  ------------------------------------------------------------*/
-int CHAR_getEmptyPartyArray( int charaindex)
+int CHAR_getEmptyPartyArray( int char_index)
 {
 	int     i = -1;
 	int     rc = FALSE;
 	int		toindex;
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE) == CHAR_PARTY_NONE ) {
-		toindex = charaindex;
+	if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE) == CHAR_PARTY_NONE ) {
+		toindex = char_index;
 	}
 	else {
-		toindex = CHAR_getPartyIndex( charaindex, 0);
+		toindex = CHAR_getPartyIndex( char_index, 0);
 	}
 	if( CHAR_CHECKINDEX( toindex)){
 		for( i = 1; i < getPartyNum( toindex ); i ++ ) {
@@ -55,10 +55,10 @@ int CHAR_getEmptyPartyArray( int charaindex)
 /*------------------------------------------------------------
  *   端卞由□  奴卞  月质
  *
- *  charaindex		int		愤坌
+ *  char_index		int		愤坌
  *  targetindex		int		  月锹澎及谛
  ------------------------------------------------------------*/
-BOOL CHAR_JoinParty_Main( int charaindex, int targetindex)
+BOOL CHAR_JoinParty_Main( int char_index, int targetindex)
 {
 	int		firstflg = FALSE;
 	int		i;
@@ -79,7 +79,7 @@ BOOL CHAR_JoinParty_Main( int charaindex, int targetindex)
 		return FALSE;
 	}
 #ifdef _ALLBLUES_LUA_1_5
-	if(FreePartyJoin(charaindex, toindex) == FALSE){
+	if(FreePartyJoin(char_index, toindex) == FALSE){
 		return FALSE;
 	}
 #endif
@@ -99,13 +99,13 @@ BOOL CHAR_JoinParty_Main( int charaindex, int targetindex)
 		CHAR_setWorkInt( toindex, CHAR_WORKPARTYINDEX1, toindex);
 		firstflg = TRUE;
 	}
-	CHAR_setWorkInt( toindex, parray + CHAR_WORKPARTYINDEX1, charaindex);
+	CHAR_setWorkInt( toindex, parray + CHAR_WORKPARTYINDEX1, char_index);
 
-	CHAR_setWorkChar( charaindex, CHAR_WORKWALKARRAY, "");
+	CHAR_setWorkChar( char_index, CHAR_WORKWALKARRAY, "");
 
-	CHAR_setWorkInt( charaindex, CHAR_WORKPARTYMODE, CHAR_PARTY_CLIENT);
+	CHAR_setWorkInt( char_index, CHAR_WORKPARTYMODE, CHAR_PARTY_CLIENT);
 
-	CHAR_setWorkInt( charaindex, CHAR_WORKPARTYINDEX1, toindex);
+	CHAR_setWorkInt( char_index, CHAR_WORKPARTYINDEX1, toindex);
 
 	if( firstflg ) {
 		CHAR_sendStatusString( toindex, "N0");
@@ -115,17 +115,17 @@ BOOL CHAR_JoinParty_Main( int charaindex, int targetindex)
 		int index = CHAR_getWorkInt( toindex, i + CHAR_WORKPARTYINDEX1);
 		if( CHAR_CHECKINDEX(index)) {
 				snprintf( c, sizeof(c), "N%d", i);
-				CHAR_sendStatusString( charaindex, c);
+				CHAR_sendStatusString( char_index, c);
 		}
 	}
 
 	snprintf( buf,sizeof( buf), "%s 加入团队！",
-			  CHAR_getChar( charaindex, CHAR_NAME));
+			  CHAR_getChar( char_index, CHAR_NAME));
 
 	for( i = 0; i < getPartyNum( toindex ); i ++ ) {
 		int index = CHAR_getWorkInt( toindex, i + CHAR_WORKPARTYINDEX1);
 		if( CHAR_CHECKINDEX(index)) {
-			if( index != charaindex ) {
+			if( index != char_index ) {
 				snprintf( c, sizeof(c), "N%d", parray);
 				CHAR_sendStatusString( index, c);
 				CHAR_talkToCli( index, -1, buf, CHAR_COLORYELLOW);
@@ -138,7 +138,7 @@ BOOL CHAR_JoinParty_Main( int charaindex, int targetindex)
 	return TRUE;
 }
 
-BOOL CHAR_JoinParty_Main_New( int charaindex, int targetindex,int flg)
+BOOL CHAR_JoinParty_Main_New( int char_index, int targetindex,int flg)
 {
 	int		firstflg = FALSE;
 	int		i;
@@ -159,7 +159,7 @@ BOOL CHAR_JoinParty_Main_New( int charaindex, int targetindex,int flg)
 		return FALSE;
 	}
 #ifdef _ALLBLUES_LUA_1_5
-	if(FreePartyJoin(charaindex, toindex) == FALSE){
+	if(FreePartyJoin(char_index, toindex) == FALSE){
 		return FALSE;
 	}
 #endif
@@ -179,13 +179,13 @@ BOOL CHAR_JoinParty_Main_New( int charaindex, int targetindex,int flg)
 		CHAR_setWorkInt( toindex, CHAR_WORKPARTYINDEX1, toindex);
 		firstflg = TRUE;
 	}
-	CHAR_setWorkInt( toindex, parray + CHAR_WORKPARTYINDEX1, charaindex);
+	CHAR_setWorkInt( toindex, parray + CHAR_WORKPARTYINDEX1, char_index);
 
-	CHAR_setWorkChar( charaindex, CHAR_WORKWALKARRAY, "");
+	CHAR_setWorkChar( char_index, CHAR_WORKWALKARRAY, "");
 
-	CHAR_setWorkInt( charaindex, CHAR_WORKPARTYMODE, CHAR_PARTY_CLIENT);
+	CHAR_setWorkInt( char_index, CHAR_WORKPARTYMODE, CHAR_PARTY_CLIENT);
 
-	CHAR_setWorkInt( charaindex, CHAR_WORKPARTYINDEX1, toindex);
+	CHAR_setWorkInt( char_index, CHAR_WORKPARTYINDEX1, toindex);
 
 	if( firstflg ) {
 		CHAR_sendStatusString( toindex, "N0");
@@ -195,15 +195,15 @@ BOOL CHAR_JoinParty_Main_New( int charaindex, int targetindex,int flg)
 		int index = CHAR_getWorkInt( toindex, i + CHAR_WORKPARTYINDEX1);
 		if( CHAR_CHECKINDEX(index)) {
 				snprintf( c, sizeof(c), "N%d", i);
-				CHAR_sendStatusString( charaindex, c);
+				CHAR_sendStatusString( char_index, c);
 		}
 	}
-	if(flg) snprintf( buf,sizeof( buf), "%s 加入团队！",CHAR_getChar( charaindex, CHAR_NAME));
+	if(flg) snprintf( buf,sizeof( buf), "%s 加入团队！",CHAR_getChar( char_index, CHAR_NAME));
 
 	for( i = 0; i < getPartyNum( toindex ); i ++ ) {
 		int index = CHAR_getWorkInt( toindex, i + CHAR_WORKPARTYINDEX1);
 		if( CHAR_CHECKINDEX(index)) {
-			if( index != charaindex ) {
+			if( index != char_index ) {
 				snprintf( c, sizeof(c), "N%d", parray);
 				CHAR_sendStatusString( index, c);
 				if(flg) CHAR_talkToCli( index, -1, buf, CHAR_COLORYELLOW);
@@ -217,7 +217,7 @@ BOOL CHAR_JoinParty_Main_New( int charaindex, int targetindex,int flg)
 /*------------------------------------------------------------
  * 由□  奴卞  欠丹午允月［
  ------------------------------------------------------------*/
-BOOL CHAR_JoinParty( int charaindex )
+BOOL CHAR_JoinParty( int char_index )
 {
 
 	int     result = -1;
@@ -228,33 +228,33 @@ BOOL CHAR_JoinParty( int charaindex )
 	int		cnt;
 	int	i;
 
-	fd = getfdFromCharaIndex( charaindex );
+	fd = getfdFromCharaIndex( char_index );
 	if( fd == -1 ) {
 		print( "%s : %d err\n", __FILE__, __LINE__);
 		return FALSE;
 	}
 
         /* 愤坌互由□  奴赚氏匹凶日蛲   */
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE) != CHAR_PARTY_NONE ) {
-		lssproto_PR_send( fd, 1, FALSE);
+	if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE) != CHAR_PARTY_NONE ) {
+		GmsvServer_PR_send( fd, 1, FALSE);
 		return FALSE;
 	}
 
 	/*   及蟆及甄  毛  月 */
-	CHAR_getCoordinationDir( CHAR_getInt( charaindex, CHAR_DIR ) ,
-							 CHAR_getInt( charaindex , CHAR_X ),
-							 CHAR_getInt( charaindex , CHAR_Y ) ,
+	CHAR_getCoordinationDir( CHAR_getInt( char_index, CHAR_DIR ) ,
+							 CHAR_getInt( char_index , CHAR_X ),
+							 CHAR_getInt( char_index , CHAR_Y ) ,
 							 1 , &x , &y );
 
 	/* 赓渝祭允月 */
 	for( i = 0; i < CONNECT_WINDOWBUFSIZE; i ++ ) {
-        CONNECT_setJoinpartycharaindex(fd,i,-1);
+        CONNECT_setJoinpartychar_index(fd,i,-1);
     }
 	cnt = 0;
 
 	/*愤坌及  及蟆及平乓仿毛潸  允月 */
 
-	for( object = MAP_getTopObj( CHAR_getInt( charaindex, CHAR_FLOOR),x,y) ;
+	for( object = MAP_getTopObj( CHAR_getInt( char_index, CHAR_FLOOR),x,y) ;
 		 object ;
 		 object = NEXT_OBJECT(object ) )
 	{
@@ -268,11 +268,11 @@ BOOL CHAR_JoinParty( int charaindex )
 		toindex = OBJECT_getIndex( objindex);
 	
                 // shan begin
-                if( CHAR_getInt(charaindex, CHAR_FMINDEX) > 0 && CHAR_getInt(toindex, CHAR_FMINDEX) >0){
+                if( CHAR_getInt(char_index, CHAR_FMINDEX) > 0 && CHAR_getInt(toindex, CHAR_FMINDEX) >0){
                     for( i = 0; i < FAMILY_FMPKFLOOR; i++){
-                        if( fmpkflnum[i].fl == CHAR_getInt( charaindex, CHAR_FLOOR) )
-                            if( CHAR_getInt(charaindex, CHAR_FMINDEX) != CHAR_getInt(toindex, CHAR_FMINDEX) ){
-                                lssproto_PR_send( fd, 1, FALSE);
+                        if( fmpkflnum[i].fl == CHAR_getInt( char_index, CHAR_FLOOR) )
+                            if( CHAR_getInt(char_index, CHAR_FMINDEX) != CHAR_getInt(toindex, CHAR_FMINDEX) ){
+                                GmsvServer_PR_send( fd, 1, FALSE);
                                 return FALSE;
                             }
                     }
@@ -302,7 +302,7 @@ BOOL CHAR_JoinParty( int charaindex )
 			}
 
 			/*   褪午  ㄠ汹动  卞中月井 */
-			if( NPC_Util_CharDistance( charaindex, targetindex ) > 1) {
+			if( NPC_Util_CharDistance( char_index, targetindex ) > 1) {
 				continue;
 			}
 
@@ -316,7 +316,7 @@ BOOL CHAR_JoinParty( int charaindex )
 #ifdef _NO_JOIN_FLOOR
 			{
 				int i;
-				int floor = CHAR_getInt( charaindex, CHAR_FLOOR); 
+				int floor = CHAR_getInt( char_index, CHAR_FLOOR); 
 				for(i=0;i<32;i++){
 					if(floor == getNoJoinFloor(i)){
 						break;
@@ -330,7 +330,7 @@ BOOL CHAR_JoinParty( int charaindex )
 
 #ifdef _ANGEL_SUMMON
 			if( CHAR_getWorkInt( targetindex, CHAR_WORKANGELMODE) == TRUE) {
-				CHAR_talkToCli( charaindex, -1, "使者不可以当领队。", CHAR_COLORYELLOW);
+				CHAR_talkToCli( char_index, -1, "使者不可以当领队。", CHAR_COLORYELLOW);
 				continue;
 			}
 #endif
@@ -339,7 +339,7 @@ BOOL CHAR_JoinParty( int charaindex )
 		else if( CHAR_getInt( toindex, CHAR_WHICHTYPE) == CHAR_TYPEBUS ) {
 			targetindex = toindex;
 			cnt = 0;
-			if( !NPC_BusCheckJoinParty( toindex, charaindex, TRUE)) {
+			if( !NPC_BusCheckJoinParty( toindex, char_index, TRUE)) {
 				/* 椭瘀毛  凶今卅井匀凶［醮棉  月及反蔽歹月［谛棉及质  手仄卅中［
 				 * 支支仇仄中及匹［
 				 */
@@ -350,27 +350,27 @@ BOOL CHAR_JoinParty( int charaindex )
 		    if ((busimg!=100355) && (busimg!=100461)) {
 #ifdef _SHIP_MATEMO
 					if(busimg==100348){
-						int metamo = (CHAR_getInt(charaindex,CHAR_BASEBASEIMAGENUMBER) - 100000) / 20;
+						int metamo = (CHAR_getInt(char_index,CHAR_BASEBASEIMAGENUMBER) - 100000) / 20;
 						if(metamo < 0) metamo = 0;
 						else if(metamo > 11 ) metamo = 11;
-						CHAR_setInt(charaindex,CHAR_BASEIMAGENUMBER, 102062 + metamo);
+						CHAR_setInt(char_index,CHAR_BASEIMAGENUMBER, 102062 + metamo);
 					}else
 #endif
-		    		CHAR_setInt(charaindex,CHAR_BASEIMAGENUMBER,busimg);
-		    		CHAR_setInt(charaindex,CHAR_RIDEPET,-1);
-				  CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex ,
+		    		CHAR_setInt(char_index,CHAR_BASEIMAGENUMBER,busimg);
+		    		CHAR_setInt(char_index,CHAR_RIDEPET,-1);
+				  CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index ,
 					CHAR_WORKOBJINDEX ));
 					// Robin debug 01/11/21
-					if( CHAR_getInt( charaindex, CHAR_RIDEPET) != -1 ) {
-						CHAR_setInt( charaindex, CHAR_RIDEPET, -1);
-						CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_RIDEPET);
+					if( CHAR_getInt( char_index, CHAR_RIDEPET) != -1 ) {
+						CHAR_setInt( char_index, CHAR_RIDEPET, -1);
+						CHAR_send_P_StatusString( char_index, CHAR_P_STRING_RIDEPET);
 					}
 			/*
-			    CHAR_sendPMEToArroundCharacterFLXY(charaindex,
-			        CHAR_getInt( charaindex, CHAR_FLOOR),
-			        CHAR_getInt( charaindex, CHAR_X),
-			        CHAR_getInt( charaindex, CHAR_Y),
-			        0,1,CHAR_getInt( charaindex, CHAR_PETMAILEFFECT)
+			    CHAR_sendPMEToArroundCharacterFLXY(char_index,
+			        CHAR_getInt( char_index, CHAR_FLOOR),
+			        CHAR_getInt( char_index, CHAR_X),
+			        CHAR_getInt( char_index, CHAR_Y),
+			        0,1,CHAR_getInt( char_index, CHAR_PETMAILEFFECT)
 			        );
 			*/
 		    }
@@ -385,7 +385,7 @@ BOOL CHAR_JoinParty( int charaindex )
 		if( parray == -1 ) continue;
 
 		/* 仇仇引匹仁木壬     */
-        CONNECT_setJoinpartycharaindex( fd,cnt,toindex);
+        CONNECT_setJoinpartychar_index( fd,cnt,toindex);
 		cnt++;
 		if( cnt == CONNECT_WINDOWBUFSIZE ) break;
 		
@@ -396,12 +396,12 @@ BOOL CHAR_JoinParty( int charaindex )
 
 	if( cnt == 0 ) {
 		if( found == TRUE) {
-			CHAR_talkToCli( charaindex, -1, "无法加入团队。", CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index, -1, "无法加入团队。", CHAR_COLORYELLOW);
 		}
 		result = FALSE;
 	}else if( cnt == 1 ) {
 			{
-				CHAR_JoinParty_Main( charaindex, CONNECT_getJoinpartycharaindex(fd,0));
+				CHAR_JoinParty_Main( char_index, CONNECT_getJoinpartychar_index(fd,0));
 				result = TRUE;
 			}
 	}else {
@@ -411,11 +411,11 @@ BOOL CHAR_JoinParty( int charaindex )
 		strcpy( msgbuf, "1\n和谁组成团队呢？\n");
 		strlength = strlen( msgbuf);
 		for( i = 0;
-             CONNECT_getJoinpartycharaindex( fd,i ) != -1
+             CONNECT_getJoinpartychar_index( fd,i ) != -1
 			&& i< CONNECT_WINDOWBUFSIZE;
 			i ++ ){
 			char	*a = CHAR_getChar(
-                CONNECT_getJoinpartycharaindex(fd,i) , CHAR_NAME);
+                CONNECT_getJoinpartychar_index(fd,i) , CHAR_NAME);
 			char	buf[256];
 			snprintf( buf, sizeof( buf),"%s\n", a);
 			if( strlength + strlen( buf) > arraysizeof( msgbuf)){
@@ -426,7 +426,7 @@ BOOL CHAR_JoinParty( int charaindex )
 			strcpy( &msgbuf[strlength], buf);
 			strlength += strlen(buf);
 		}
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT,
 						WINDOW_BUTTONTYPE_CANCEL,
 						CHAR_WINDOWTYPE_SELECTPARTY,
 						-1,
@@ -436,13 +436,13 @@ BOOL CHAR_JoinParty( int charaindex )
 	}
 
 	if( result != -1 ) {
-		lssproto_PR_send( fd, 1, result);
+		GmsvServer_PR_send( fd, 1, result);
 	}
 
 	return result;
 }
 
-static BOOL CHAR_DischargePartySub( int charaindex, int msgflg)
+static BOOL CHAR_DischargePartySub( int char_index, int msgflg)
 {
 	char buf[64], c[3];
 	int toindex,flg,i;
@@ -450,22 +450,22 @@ static BOOL CHAR_DischargePartySub( int charaindex, int msgflg)
     int j = 0,k;
 #endif
 
-	if( !CHAR_CHECKINDEX( charaindex) ) return FALSE;
+	if( !CHAR_CHECKINDEX( char_index) ) return FALSE;
 
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE) == CHAR_PARTY_LEADER ) {
+	if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE) == CHAR_PARTY_LEADER ) {
 		int pindex, airplaneflag=0;
 		// Arminius 7.10 Airplane
-		if( CHAR_getInt(charaindex, CHAR_WHICHTYPE) == CHAR_TYPEBUS ) {
-		  if ((CHAR_getInt(charaindex, CHAR_BASEIMAGENUMBER) !=100355) &&
-		      (CHAR_getInt(charaindex, CHAR_BASEIMAGENUMBER) !=100461)){
+		if( CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEBUS ) {
+		  if ((CHAR_getInt(char_index, CHAR_BASEIMAGENUMBER) !=100355) &&
+		      (CHAR_getInt(char_index, CHAR_BASEIMAGENUMBER) !=100461)){
 		    airplaneflag=1;
 		  }
 		}
-		for( i = 0; i < getPartyNum( charaindex ); i ++ ) {
+		for( i = 0; i < getPartyNum( char_index ); i ++ ) {
 			
-			pindex = CHAR_getWorkInt( charaindex, i + CHAR_WORKPARTYINDEX1);
+			pindex = CHAR_getWorkInt( char_index, i + CHAR_WORKPARTYINDEX1);
 			if( CHAR_CHECKINDEX( pindex) ) {
-				CHAR_setWorkInt( charaindex, i + CHAR_WORKPARTYINDEX1, -1);
+				CHAR_setWorkInt( char_index, i + CHAR_WORKPARTYINDEX1, -1);
 #ifdef _PLAYER_NPC
 				if(CHAR_getInt( pindex, CHAR_WHICHTYPE ) == CHAR_TYPEPLAYERNPC || CHAR_getInt( pindex, CHAR_WHICHTYPE ) == CHAR_TYPELUANPC){
 					CHAR_CharaDeleteHavePet( pindex);
@@ -495,7 +495,7 @@ static BOOL CHAR_DischargePartySub( int charaindex, int msgflg)
 				}
 				int fd = getfdFromCharaIndex( pindex );
 				if( fd != -1 ) {
-					lssproto_PR_send( fd, 0, 1);
+					GmsvServer_PR_send( fd, 0, 1);
 				}
 				// Arminius 7.10 Airplane
 				if (airplaneflag && (CHAR_getInt(pindex,CHAR_WHICHTYPE)!=CHAR_TYPEBUS)) {
@@ -516,49 +516,49 @@ static BOOL CHAR_DischargePartySub( int charaindex, int msgflg)
 				}
 			}
 		}
-		CHAR_sendLeader( CHAR_getWorkInt( charaindex, CHAR_WORKOBJINDEX), 0);
-	}else if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE) == CHAR_PARTY_CLIENT ) {
+		CHAR_sendLeader( CHAR_getWorkInt( char_index, CHAR_WORKOBJINDEX), 0);
+	}else if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE) == CHAR_PARTY_CLIENT ) {
 		int		myarray = -1;
-		int     fd = getfdFromCharaIndex( charaindex );
-		CHAR_setWorkInt( charaindex, CHAR_WORKPARTYMODE, CHAR_PARTY_NONE);
-		toindex = CHAR_getWorkInt( charaindex, CHAR_WORKPARTYINDEX1);
+		int     fd = getfdFromCharaIndex( char_index );
+		CHAR_setWorkInt( char_index, CHAR_WORKPARTYMODE, CHAR_PARTY_NONE);
+		toindex = CHAR_getWorkInt( char_index, CHAR_WORKPARTYINDEX1);
 		if( !CHAR_CHECKINDEX(toindex ) ) return FALSE;
 		if( CHAR_getInt( toindex, CHAR_WHICHTYPE) == CHAR_TYPEBUS ) {
-			NPC_BusCheckAllowItem( toindex, charaindex, TRUE);
+			NPC_BusCheckAllowItem( toindex, char_index, TRUE);
 		  // Arminius 7.9 Airplane
 		  if ((CHAR_getInt( toindex, CHAR_BASEIMAGENUMBER) !=100355) &&
 		      (CHAR_getInt( toindex, CHAR_BASEIMAGENUMBER) !=100461)){
 		    int bi,bbi,ii,category;
 		    
-		    bbi=CHAR_getInt(charaindex,CHAR_BASEBASEIMAGENUMBER);
-		    ii=CHAR_getItemIndex(charaindex,CHAR_ARM);
+		    bbi=CHAR_getInt(char_index,CHAR_BASEBASEIMAGENUMBER);
+		    ii=CHAR_getItemIndex(char_index,CHAR_ARM);
 		    if (!ITEM_CHECKINDEX(ii))
 		      category=ITEM_FIST;
 		    else
 		      category=ITEM_getInt(ii,ITEM_TYPE);
-		    bi=CHAR_getNewImagenumberFromEquip(charaindex,bbi,category);
+		    bi=CHAR_getNewImagenumberFromEquip(char_index,bbi,category);
 		    if (bi==-1) bi=bbi;
-		    CHAR_setInt(charaindex,CHAR_BASEIMAGENUMBER,bi);
-				CHAR_setInt(charaindex,CHAR_RIDEPET,-1);
+		    CHAR_setInt(char_index,CHAR_BASEIMAGENUMBER,bi);
+				CHAR_setInt(char_index,CHAR_RIDEPET,-1);
 		    // Robin 0810 debug
-		    CHAR_complianceParameter( charaindex );		    
+		    CHAR_complianceParameter( char_index );		    
 
-		    CHAR_sendCToArroundCharacter( CHAR_getWorkInt( charaindex , CHAR_WORKOBJINDEX ));
+		    CHAR_sendCToArroundCharacter( CHAR_getWorkInt( char_index , CHAR_WORKOBJINDEX ));
 		    if(CHAR_getWorkInt(toindex,CHAR_NPCWORKINT5)==1) {
-		      if( CHAR_getInt( charaindex, CHAR_LASTTALKELDER)>=0){
+		      if( CHAR_getInt( char_index, CHAR_LASTTALKELDER)>=0){
 		        int fl,x,y;
-		        CHAR_getElderPosition( CHAR_getInt( charaindex, CHAR_LASTTALKELDER),
+		        CHAR_getElderPosition( CHAR_getInt( char_index, CHAR_LASTTALKELDER),
 		          &fl, &x, &y );
-		        CHAR_warpToSpecificPoint(charaindex, fl, x, y);
+		        CHAR_warpToSpecificPoint(char_index, fl, x, y);
 		      }
 		    }
 		  }
 		}
-		CHAR_setWorkInt( charaindex, CHAR_WORKPARTYINDEX1, -1);
+		CHAR_setWorkInt( char_index, CHAR_WORKPARTYINDEX1, -1);
 		for( i = 0; i < getPartyNum( toindex ); i ++ ) {
 			int index = CHAR_getWorkInt( toindex, i + CHAR_WORKPARTYINDEX1);
 			if( CHAR_CHECKINDEX(index) ){
-				if( index == charaindex) {
+				if( index == char_index) {
 					myarray = i;
 					break;
 				}
@@ -570,19 +570,19 @@ static BOOL CHAR_DischargePartySub( int charaindex, int msgflg)
 		}
 		CHAR_setWorkInt( toindex, CHAR_WORKPARTYINDEX1 + myarray, -1);
 		snprintf( buf,sizeof( buf), "%s 脱离团队！",
-				  CHAR_getChar( charaindex, CHAR_NAME));
+				  CHAR_getChar( char_index, CHAR_NAME));
 		if( msgflg ){
-			CHAR_talkToCli( charaindex, -1, "脱离团队！", CHAR_COLORYELLOW);
+			CHAR_talkToCli( char_index, -1, "脱离团队！", CHAR_COLORYELLOW);
 #ifdef _ITEM_QUITPARTY
 			// won fix
-	        for( i=0;i<CheckCharMaxItem(charaindex);i++ ){
-				int del_item_index = CHAR_getItemIndex( charaindex , j );
+	        for( i=0;i<CheckCharMaxItem(char_index);i++ ){
+				int del_item_index = CHAR_getItemIndex( char_index , j );
 				if( ITEM_CHECKINDEX(del_item_index) ){ //格子内有道具
                    for( j=0;j<itemquitparty_num;j++ ){
 					    if( ITEM_getInt( del_item_index, ITEM_ID) == atoi(Disappear_Item[j].string) ){ //若等於所设定的道具ID
-			                CHAR_setItemIndex( charaindex, i, -1); //格子内道具消失
+			                CHAR_setItemIndex( char_index, i, -1); //格子内道具消失
 							ITEM_endExistItemsOne( del_item_index );
-			                CHAR_sendItemDataOne( charaindex, i);
+			                CHAR_sendItemDataOne( char_index, i);
 						}
 					}
 				}
@@ -591,7 +591,7 @@ static BOOL CHAR_DischargePartySub( int charaindex, int msgflg)
 		}
 		snprintf( c, sizeof(c), "N%d", myarray);
 		if( fd != -1 ) {
-			lssproto_PR_send( fd, 0, 1);
+			GmsvServer_PR_send( fd, 0, 1);
 		}
 		for( i = 0; i < getPartyNum( toindex ); i ++ ) {
 			int index = CHAR_getWorkInt( toindex, i + CHAR_WORKPARTYINDEX1);
@@ -633,8 +633,8 @@ static BOOL CHAR_DischargePartySub( int charaindex, int msgflg)
 
 			POINT	start,end;
 			int 	previndex = toindex;
-			end.x = CHAR_getInt( charaindex, CHAR_X);
-			end.y = CHAR_getInt( charaindex, CHAR_Y);
+			end.x = CHAR_getInt( char_index, CHAR_X);
+			end.y = CHAR_getInt( char_index, CHAR_Y);
 			for( i = 1; i < getPartyNum( toindex ); i ++ ) {
 				int index = CHAR_getWorkInt( toindex, i + CHAR_WORKPARTYINDEX1);
 				if( CHAR_CHECKINDEX( index) ) {
@@ -657,19 +657,19 @@ static BOOL CHAR_DischargePartySub( int charaindex, int msgflg)
 
 	return TRUE;
 }
-BOOL CHAR_DischargeParty( int charaindex, int flg)
+BOOL CHAR_DischargeParty( int char_index, int flg)
 {
-	return CHAR_DischargePartySub( charaindex, 1);
+	return CHAR_DischargePartySub( char_index, 1);
 }
 
-BOOL CHAR_DischargeParty_New( int charaindex, int flg)
+BOOL CHAR_DischargeParty_New( int char_index, int flg)
 {
-	return CHAR_DischargePartySub( charaindex, flg);
+	return CHAR_DischargePartySub( char_index, flg);
 }
 
-BOOL CHAR_DischargePartyNoMsg( int charaindex)
+BOOL CHAR_DischargePartyNoMsg( int char_index)
 {
-	return CHAR_DischargePartySub( charaindex, 0);
+	return CHAR_DischargePartySub( char_index, 0);
 }
 
 
@@ -708,24 +708,24 @@ int CHAR_getPartyIndex( int index, int num)
  * 丢永本□斥毛霜耨允月［
  * 醮棉互中木壬公及醮棉卞手丢永本□斥毛霜耨允月［
  ------------------------------------------------------------*/
-void CHAR_talkToCliAndParty( int talkedcharaindex,int talkcharaindex,
+void CHAR_talkToCliAndParty( int talkedchar_index,int talkchar_index,
 					 char* message, CHAR_COLOR color )
 {
 	int		i;
 	/* 引内愤坌 */
-	CHAR_talkToCli( talkedcharaindex, talkcharaindex, message, color);
+	CHAR_talkToCli( talkedchar_index, talkchar_index, message, color);
 
-	for( i = 0; i < getPartyNum( talkedcharaindex ); i ++ ) {
-		int index = CHAR_getPartyIndex( talkedcharaindex, i);
+	for( i = 0; i < getPartyNum( talkedchar_index ); i ++ ) {
+		int index = CHAR_getPartyIndex( talkedchar_index, i);
 		if( CHAR_CHECKINDEX( index) &&
-			index != talkedcharaindex)
+			index != talkedchar_index)
 		{
-			CHAR_talkToCli( index, talkcharaindex, message, color);
+			CHAR_talkToCli( index, talkchar_index, message, color);
 		}
 	}
 }
 
-int getPartyNum(int charaindex)
+int getPartyNum(int char_index)
 {
 	return CHAR_PARTYMAX;
 }

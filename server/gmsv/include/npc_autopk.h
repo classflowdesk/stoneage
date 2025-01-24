@@ -10,7 +10,7 @@ void AutoPk_PKSystemInfo();
 void AutoPk_PKTimeSet( int pktime );
 int AutoPk_PKTimeGet( void );
 void AutoPk_AwardSet( int petid, char *pet, int itemid, char *item );
-void AutoPk_ChampionShipSet( int charaindex, int winnum, int win );
+void AutoPk_ChampionShipSet( int char_index, int winnum, int win );
 void AutoPk_SetHistoryStr( void );
 void AutoPk_SetAwardStr( char *token );
 BOOL AutoPk_GetAwardStr( void );

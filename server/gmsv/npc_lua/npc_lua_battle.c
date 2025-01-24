@@ -36,7 +36,7 @@ int NPC_Lua_Battle_GetPlayIndex(lua_State *_NLL)
 
 	if(TM_side >= 0 && TM_side < 2 && TM_num >=0 && TM_num < BATTLE_ENTRY_MAX)
 	{
-		TM_Ret = TM_Battle->Side[TM_side].Entry[TM_num].charaindex;
+		TM_Ret = TM_Battle->Side[TM_side].Entry[TM_num].char_index;
 	}else
 	{
 		LRetErrInt(_NLL , -3, "范围错误。");
@@ -464,7 +464,7 @@ int NPC_Lua_Battle_Exit(lua_State *_NLL)
 	CHAR_talkToCli( TM_index, -1,
 		"战斗中止。", CHAR_COLORYELLOW );
 
-	lssproto_B_send( getfdFromCharaIndex( TM_index ), "BU" );
+	GmsvServer_B_send( getfdFromCharaIndex( TM_index ), "BU" );
 
 
 	LRetInt(_NLL, 0);

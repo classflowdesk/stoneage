@@ -5,8 +5,8 @@ BOOL MAP_walkAbleFromPoint(int ff, int fx, int fy, BOOL isfly);
 BOOL MAP_walkAble(int index, int ff, int fx, int fy);
 void MAP_preovered(int index);
 void MAP_postovered(int index);
-BOOL MAP_sendArroundCharNeedFD(int fd, int charaindex);
-BOOL MAP_sendArroundChar(int charaindex);
+BOOL MAP_sendArroundCharNeedFD(int fd, int char_index);
+BOOL MAP_sendArroundChar(int char_index);
 
 #ifdef _MO_LNS_NLGSUOXU
 int QuBiao(const int map_id);

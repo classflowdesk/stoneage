@@ -9,7 +9,7 @@
 #include "title.h"
 #include "char_data.h"
 #include "readmap.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "log.h"
 #include "handletime.h"
 

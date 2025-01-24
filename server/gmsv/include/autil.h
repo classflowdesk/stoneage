@@ -1,7 +1,7 @@
 #include "version.h"
 
-#ifndef __AUTIL_H_
-#define __AUTIL_H_
+#ifndef __AUTIL_H__
+#define __AUTIL_H__
 
 #define SLICE_MAX 20
 #define SLICE_SIZE 1024 * 96
@@ -57,4 +57,4 @@ void DecryptKey(char *usrkey);
 void List(char *path);
 #endif
 
-#endif
+#endif // __AUTIL_H__

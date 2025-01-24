@@ -318,7 +318,7 @@ int NPC_Lua_Map_Upmap(lua_State *_NLL)          //���µ�ͼ
 	int TM_Index = (int)lua_tointeger(_NLL, 1);
 	int formatmap = (int)lua_tointeger(_NLL, 2);
 	int tomap = (int)lua_tointeger(_NLL, 3);
-	lssproto_Upmap_send(TM_Index,formatmap,tomap);
+	GmsvServer_Upmap_send(TM_Index,formatmap,tomap);
 	LRetBool(_NLL, TRUE);
 }
 */

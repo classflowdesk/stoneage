@@ -8,7 +8,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_scheduleman.h"
 #include "mylua/mylua.h"
 

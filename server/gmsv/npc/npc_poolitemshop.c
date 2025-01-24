@@ -1,7 +1,7 @@
 #include "version.h"
 #include "config_file.h"
 #include "char.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npcutil.h"
 #include "npc_poolitemshop.h"
 #include "log.h"
@@ -261,7 +261,7 @@ void NPC_PoolItemShop_printWindow_Start( int meindex, int talkerindex)
 		);
 #endif
 
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
 						WINDOW_BUTTONTYPE_NONE,
 						CHAR_WINDOWTYPE_POOLITEMSHOP_START,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -286,7 +286,7 @@ void NPC_PoolItemShop_DepotItem_Menu( int meindex, int talkerindex)
 			"          ＜取回道具＞\n"
 		);
 
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT, 
 						WINDOW_BUTTONTYPE_CANCEL,
 						CHAR_WINDOWTYPE_DEPOTITEMSHOP_HANDLE,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -297,7 +297,7 @@ void NPC_PoolItemShop_DepotItem_Menu( int meindex, int talkerindex)
 void NPC_DepotItem_MakeItemString( int meindex, int talkerindex, char *retstring,int retstringlen)
 {
 	int		i;
-	int		itemindex;
+	int		item_index;
 	int		pos = 0;
 	char	buff[1024];
 		
@@ -309,11 +309,11 @@ void NPC_DepotItem_MakeItemString( int meindex, int talkerindex, char *retstring
 			for( i = CHAR_STARTITEMARRAY; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
 		int poolflg = FALSE;
-		itemindex = CHAR_getItemIndex( talkerindex, i);
-		if( !ITEM_CHECKINDEX( itemindex) ) continue;
+		item_index = CHAR_getItemIndex( talkerindex, i);
+		if( !ITEM_CHECKINDEX( item_index) ) continue;
 			
-		if( ITEM_getInt( itemindex, ITEM_DROPATLOGOUT) || ITEM_getInt( itemindex, ITEM_VANISHATDROP) || 
-			!ITEM_getInt( itemindex, ITEM_CANPETMAIL) ) {
+		if( ITEM_getInt( item_index, ITEM_DROPATLOGOUT) || ITEM_getInt( item_index, ITEM_VANISHATDROP) || 
+			!ITEM_getInt( item_index, ITEM_CANPETMAIL) ) {
 			poolflg = TRUE;
 		}
 		snprintf( buff, sizeof( buff), 
@@ -322,12 +322,12 @@ void NPC_DepotItem_MakeItemString( int meindex, int talkerindex, char *retstring
 #else
 			"%s|%d|%d|%d|%s|%d|",
 #endif
-			ITEM_getChar( itemindex, ITEM_SECRETNAME),
+			ITEM_getChar( item_index, ITEM_SECRETNAME),
 			poolflg,CHAR_getWorkInt( meindex, NPC_WORK_COST),
-			ITEM_getInt( itemindex, ITEM_BASEIMAGENUMBER),
-			ITEM_getChar( itemindex, ITEM_EFFECTSTRING),
+			ITEM_getInt( item_index, ITEM_BASEIMAGENUMBER),
+			ITEM_getChar( item_index, ITEM_EFFECTSTRING),
 #ifdef _ITEM_PILENUMS
-			ITEM_getInt( itemindex, ITEM_USEPILENUMS),
+			ITEM_getInt( item_index, ITEM_USEPILENUMS),
 #endif
 			i + 1 );
 
@@ -365,7 +365,7 @@ void NPC_DepotItem_Item_printWindow( int meindex, int talkerindex)
 
 	NPC_DepotItem_MakeItemString( meindex, talkerindex, itemstring, sizeof( itemstring));
 	strcat( sendstring, itemstring);
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_POOLITEMSHOPMAIN,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_POOLITEMSHOPMAIN,
 				WINDOW_BUTTONTYPE_NONE, 
 				CHAR_WINDOWTYPE_DEPOTITEMSHOP_ADD,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), sendstring);
@@ -375,29 +375,29 @@ void NPC_DepotItem_Item_printWindow( int meindex, int talkerindex)
 void NPC_DepotItem_MakeDepotString( int meindex, int talkerindex, char *retstring,int retstringlen)
 {
 	int		i;
-	int		itemindex;
+	int		item_index;
 	int		pos = 0;
 	char	buff[1024];
 
 	retstring[0] = '\0';
 	for( i = 0; i < /*60*/CHAR_MAXDEPOTITEMHAVE; i ++ ) {
 		int poolflg = FALSE;
-		itemindex = CHAR_getDepotItemIndex( talkerindex, i);
-		if( !ITEM_CHECKINDEX( itemindex)) continue;
+		item_index = CHAR_getDepotItemIndex( talkerindex, i);
+		if( !ITEM_CHECKINDEX( item_index)) continue;
 		snprintf( buff, sizeof( buff),
 #ifdef _ITEM_PILENUMS
 			"%s|%d|%d|%d|%d|%s|%d|",
 #else
 			"%s|%d|%d|%d|%d|%s|",
 #endif
-			ITEM_getChar( itemindex, ITEM_SECRETNAME),
+			ITEM_getChar( item_index, ITEM_SECRETNAME),
 			poolflg,
-			ITEM_getInt( itemindex, ITEM_LEVEL),
-			ITEM_getInt( itemindex, ITEM_COST),
-			ITEM_getInt( itemindex, ITEM_BASEIMAGENUMBER),
-			ITEM_getChar( itemindex, ITEM_EFFECTSTRING)
+			ITEM_getInt( item_index, ITEM_LEVEL),
+			ITEM_getInt( item_index, ITEM_COST),
+			ITEM_getInt( item_index, ITEM_BASEIMAGENUMBER),
+			ITEM_getChar( item_index, ITEM_EFFECTSTRING)
 #ifdef _ITEM_PILENUMS
-			,ITEM_getInt( itemindex, ITEM_USEPILENUMS)
+			,ITEM_getInt( item_index, ITEM_USEPILENUMS)
 #endif
 			);
 		if( pos +strlen( buff)>= retstringlen) {
@@ -430,7 +430,7 @@ void NPC_DepotItem_Depot_printWindow( int meindex, int talkerindex)
 			);
 	NPC_DepotItem_MakeDepotString( meindex, talkerindex, itemstring, sizeof( itemstring));
 	strcat( sendstring, itemstring);
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_POOLITEMSHOPMAIN,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_POOLITEMSHOPMAIN,
 				WINDOW_BUTTONTYPE_NONE, 
 				CHAR_WINDOWTYPE_DEPOTITEMSHOP_GET,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -439,50 +439,50 @@ void NPC_DepotItem_Depot_printWindow( int meindex, int talkerindex)
 	//print("\n NPC_DepotItem_Depot_printWindow:%s size:%d ", sendstring, strlen(sendstring));
 }
 
-void NPC_DepotItem_CheckRepeat_Del( int charaindex, int ti, int itemindex)
+void NPC_DepotItem_CheckRepeat_Del( int char_index, int ti, int item_index)
 {
 	char token[256];
 	sprintf( token, "仓库道具%s，编码重复！(系统清除)",
-					ITEM_getChar( itemindex, ITEM_NAME));
-	CHAR_talkToCli( charaindex, -1, token, CHAR_COLORYELLOW);
+					ITEM_getChar( item_index, ITEM_NAME));
+	CHAR_talkToCli( char_index, -1, token, CHAR_COLORYELLOW);
 	LogItem(
-			CHAR_getChar( charaindex, CHAR_NAME ),
-			CHAR_getChar( charaindex, CHAR_CDKEY ),
+			CHAR_getChar( char_index, CHAR_NAME ),
+			CHAR_getChar( char_index, CHAR_CDKEY ),
 #ifdef _add_item_log_name
-			itemindex,
+			item_index,
 #else
-			ITEM_getInt( itemindex, ITEM_ID),
+			ITEM_getInt( item_index, ITEM_ID),
 #endif
 			"repeat(仓库道具重复)",
 			0, 0, 0,
-			ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-			ITEM_getChar( itemindex, ITEM_NAME),
-			ITEM_getInt( itemindex, ITEM_ID) );
+			ITEM_getChar( item_index, ITEM_UNIQUECODE),
+			ITEM_getChar( item_index, ITEM_NAME),
+			ITEM_getInt( item_index, ITEM_ID) );
 
-	CHAR_setDepotItemIndex( charaindex, ti, -1);
-	ITEM_endExistItemsOne( itemindex);
+	CHAR_setDepotItemIndex( char_index, ti, -1);
+	ITEM_endExistItemsOne( item_index);
 }
 
 void NPC_DepotItem_CheckRepeat( int talkerindex)
 {
-	int i, j, cnt=0, itemindex, itemindex1;
+	int i, j, cnt=0, item_index, item_index1;
 
 	for( i=0; i<(CHAR_MAXDEPOTITEMHAVE-1); i++){
-		itemindex = CHAR_getDepotItemIndex( talkerindex, i);
-		if( !ITEM_CHECKINDEX( itemindex)) continue;
+		item_index = CHAR_getDepotItemIndex( talkerindex, i);
+		if( !ITEM_CHECKINDEX( item_index)) continue;
 		cnt=0;
 		for( j=(i+1); j<CHAR_MAXDEPOTITEMHAVE; j++ ){
-			itemindex1 = CHAR_getDepotItemIndex( talkerindex, j);
-			if( itemindex==itemindex1) continue;
-			if( !ITEM_CHECKINDEX( itemindex1)) continue;
-			if( !strcmp( ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-				ITEM_getChar( itemindex1, ITEM_UNIQUECODE) ) ){
-				NPC_DepotItem_CheckRepeat_Del( talkerindex, j, itemindex1);
+			item_index1 = CHAR_getDepotItemIndex( talkerindex, j);
+			if( item_index==item_index1) continue;
+			if( !ITEM_CHECKINDEX( item_index1)) continue;
+			if( !strcmp( ITEM_getChar( item_index, ITEM_UNIQUECODE),
+				ITEM_getChar( item_index1, ITEM_UNIQUECODE) ) ){
+				NPC_DepotItem_CheckRepeat_Del( talkerindex, j, item_index1);
 				cnt++;
 			}
 		}
 		if( cnt != 0 ){
-			NPC_DepotItem_CheckRepeat_Del( talkerindex, i, itemindex);
+			NPC_DepotItem_CheckRepeat_Del( talkerindex, i, item_index);
 		}
 	}
 }
@@ -490,17 +490,17 @@ void NPC_DepotItem_CheckRepeat( int talkerindex)
 BOOL NPC_DepotItem_InsertItem( int meindex, int talkerindex, int num)
 {
 	int emptyindex;
-	int itemindex;
+	int item_index;
 	int cost = CHAR_getWorkInt( meindex, NPC_WORK_COST);
 
 	if( !CHAR_CheckDepotItem( talkerindex) ) return FALSE;
 	if( (emptyindex=CHAR_findEmptyDepotItem( talkerindex) ) == -1 ) return FALSE;
-	itemindex = CHAR_getItemIndex( talkerindex, num);
-	if( !ITEM_CHECKINDEX( itemindex) )return FALSE;
+	item_index = CHAR_getItemIndex( talkerindex, num);
+	if( !ITEM_CHECKINDEX( item_index) )return FALSE;
 #if 1 // 共同仓库不可存的物品
-	if( ITEM_getInt( itemindex, ITEM_DROPATLOGOUT) || // 登出後消失
-			ITEM_getInt( itemindex, ITEM_VANISHATDROP) || // 丢弃後消失
-			!ITEM_getInt( itemindex, ITEM_CANPETMAIL)) { // 不可宠邮寄
+	if( ITEM_getInt( item_index, ITEM_DROPATLOGOUT) || // 登出後消失
+			ITEM_getInt( item_index, ITEM_VANISHATDROP) || // 丢弃後消失
+			!ITEM_getInt( item_index, ITEM_CANPETMAIL)) { // 不可宠邮寄
 		print("\n 改封包!!非法存放道具:%s ", CHAR_getChar( talkerindex, CHAR_CDKEY) );
 #ifdef _POOL_ITEM_BUG
 		if( getPoolItemBug()==1 || getPoolItemBug()==3 )
@@ -512,7 +512,7 @@ BOOL NPC_DepotItem_InsertItem( int meindex, int talkerindex, int num)
 
 	CHAR_setItemIndex( talkerindex, num, -1);
 	CHAR_sendItemDataOne( talkerindex, num);
-	CHAR_setDepotItemIndex( talkerindex, emptyindex, itemindex);
+	CHAR_setDepotItemIndex( talkerindex, emptyindex, item_index);
 
 //	CHAR_DelGold( talkerindex, cost );
 	CHAR_send_P_StatusString( talkerindex, CHAR_P_STRING_GOLD);
@@ -521,17 +521,17 @@ BOOL NPC_DepotItem_InsertItem( int meindex, int talkerindex, int num)
 		CHAR_getChar( talkerindex, CHAR_NAME ),
 		CHAR_getChar( talkerindex, CHAR_CDKEY ),
 #ifdef _add_item_log_name
-		itemindex,
+		item_index,
 #else
-		ITEM_getInt( itemindex, ITEM_ID),
+		ITEM_getInt( item_index, ITEM_ID),
 #endif
 		"Depot(存放道具)",
 		CHAR_getInt( talkerindex,CHAR_FLOOR),
 		CHAR_getInt( talkerindex,CHAR_X ),
  		CHAR_getInt( talkerindex,CHAR_Y ),
-		ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-		ITEM_getChar( itemindex, ITEM_NAME),
-		ITEM_getInt( itemindex, ITEM_ID) );
+		ITEM_getChar( item_index, ITEM_UNIQUECODE),
+		ITEM_getChar( item_index, ITEM_NAME),
+		ITEM_getInt( item_index, ITEM_ID) );
 
 	NPC_DepotItem_CheckRepeat( talkerindex);
 
@@ -557,20 +557,20 @@ BOOL NPC_DepotItem_InsertItem( int meindex, int talkerindex, int num)
 BOOL NPC_DepotItem_gettItem( int meindex, int talkerindex, int num)
 {
 	int emptyindex;
-	int itemindex;
+	int item_index;
 
 	if( !CHAR_CheckDepotItem( talkerindex) ) return FALSE;
 
 	if( (emptyindex=CHAR_findEmptyItemBox( talkerindex)) == -1 ) return FALSE;
-	itemindex = CHAR_getDepotItemIndex( talkerindex, num);
-	if( !ITEM_CHECKINDEX( itemindex) )return FALSE;
+	item_index = CHAR_getDepotItemIndex( talkerindex, num);
+	if( !ITEM_CHECKINDEX( item_index) )return FALSE;
 
 #ifdef _AUTO_DEL_ITEM
 {
 		int	j;
 		int itemid;
 	  for( j= 0;j<AUTODELITEMNUM;j++){
-	  	itemid = ITEM_getInt( itemindex, ITEM_ID);
+	  	itemid = ITEM_getInt( item_index, ITEM_ID);
 			if( itemid != -1 && itemid == getAutoDelItem(j) ) {
 				{
 					LogItem(
@@ -590,7 +590,7 @@ BOOL NPC_DepotItem_gettItem( int meindex, int talkerindex, int num)
 						ITEM_getInt( itemid, ITEM_ID)
 					);
 				}
-				ITEM_endExistItemsOne( itemindex);
+				ITEM_endExistItemsOne( item_index);
 				CHAR_talkToCli(talkerindex,-1,"系统清除你身上的物品",CHAR_COLORRED);
 				return TRUE;
 			}
@@ -598,7 +598,7 @@ BOOL NPC_DepotItem_gettItem( int meindex, int talkerindex, int num)
 }
 #endif
 	CHAR_setDepotItemIndex( talkerindex, num, -1);
-	CHAR_setItemIndex( talkerindex, emptyindex, itemindex);
+	CHAR_setItemIndex( talkerindex, emptyindex, item_index);
 	CHAR_sendItemDataOne( talkerindex, emptyindex);
 	
 	CHAR_send_P_StatusString( talkerindex, CHAR_P_STRING_GOLD);
@@ -607,17 +607,17 @@ BOOL NPC_DepotItem_gettItem( int meindex, int talkerindex, int num)
 		CHAR_getChar( talkerindex, CHAR_NAME ),
 		CHAR_getChar( talkerindex, CHAR_CDKEY ),
 #ifdef _add_item_log_name
-		itemindex,
+		item_index,
 #else
-		ITEM_getInt( itemindex, ITEM_ID),
+		ITEM_getInt( item_index, ITEM_ID),
 #endif
 		"Depot(取出道具)",
 		CHAR_getInt( talkerindex,CHAR_FLOOR),
 		CHAR_getInt( talkerindex,CHAR_X ),
  		CHAR_getInt( talkerindex,CHAR_Y ),
-		ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-		ITEM_getChar( itemindex, ITEM_NAME),
-		ITEM_getInt( itemindex, ITEM_ID) );
+		ITEM_getChar( item_index, ITEM_UNIQUECODE),
+		ITEM_getChar( item_index, ITEM_NAME),
+		ITEM_getInt( item_index, ITEM_ID) );
 
 	{
 		int i, cnt=0;
@@ -626,9 +626,9 @@ BOOL NPC_DepotItem_gettItem( int meindex, int talkerindex, int num)
 			work[i] = -1;
 		}
 		for( i = 0; i < CHAR_MAXDEPOTITEMHAVE; i ++ ) {
-			itemindex = CHAR_getDepotItemIndex( talkerindex, i);
-			if( !ITEM_CHECKINDEX( itemindex)) continue;
-			work[ cnt++] = itemindex;
+			item_index = CHAR_getDepotItemIndex( talkerindex, i);
+			if( !ITEM_CHECKINDEX( item_index)) continue;
+			work[ cnt++] = item_index;
 		}
 		for( i = 0; i < CHAR_MAXDEPOTITEMHAVE; i ++ ) {
 			CHAR_setDepotItemIndex( talkerindex, i, work[i]);
@@ -667,7 +667,7 @@ static void NPC_PoolItemShop_printWindow_Full( int meindex, int talkerindex)
 		strcpy( message, 
 			"\n\n    超过的无法处理喔"
 				);
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
 						WINDOW_BUTTONTYPE_OK,
 						CHAR_WINDOWTYPE_POOLITEMSHOP_FULL_MSG,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -688,7 +688,7 @@ static void NPC_PoolItemShop_printWindow_HaveItemFull( int meindex, int talkerin
 		strcpy( message, 
 			"\n\n    道具不是已经满了吗"
 				);
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE, 
 						WINDOW_BUTTONTYPE_OK,
 						CHAR_WINDOWTYPE_POOLITEMSHOP_HAVEITEMFULL_MSG,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -727,7 +727,7 @@ static void NPC_PoolItemShop_printWindow_Pool( int meindex, int talkerindex)
 	
 	NPC_PoolItemShop_MakeItemString_Pool( meindex, talkerindex, itemstring, sizeof( itemstring));
 	strcat( sendstring, itemstring);
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_POOLITEMSHOPMAIN,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_POOLITEMSHOPMAIN,
 				WINDOW_BUTTONTYPE_NONE, 
 				CHAR_WINDOWTYPE_POOLITEMSHOP_POOL_MSG,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -765,7 +765,7 @@ static void NPC_PoolItemShop_printWindow_Draw( int meindex, int talkerindex)
 	NPC_PoolItemShop_MakeItemString_Draw( meindex, talkerindex, 
 									itemstring, sizeof( itemstring));
 	strcat( sendstring, itemstring);
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_POOLITEMSHOPMAIN,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_POOLITEMSHOPMAIN,
 				WINDOW_BUTTONTYPE_NONE, 
 				CHAR_WINDOWTYPE_POOLITEMSHOP_DRAW_MSG,
 				CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -791,7 +791,7 @@ static void NPC_PoolItemShop_MakeItemString_Pool( int meindex, int talkerindex,
 								char *retstring,int retstringlen)
 {
 	int		i;
-	int		itemindex;
+	int		item_index;
 	int		pos = 0;
 	char	buff[1024];
 		
@@ -802,12 +802,12 @@ static void NPC_PoolItemShop_MakeItemString_Pool( int meindex, int talkerindex,
 #else
 	for( i = CHAR_STARTITEMARRAY; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif		
-		itemindex = CHAR_getItemIndex( talkerindex, i);
-		if( ITEM_CHECKINDEX( itemindex)) {
+		item_index = CHAR_getItemIndex( talkerindex, i);
+		if( ITEM_CHECKINDEX( item_index)) {
 			int poolflg = FALSE;
-			if( ITEM_getInt( itemindex, ITEM_DROPATLOGOUT) || 
-				ITEM_getInt( itemindex, ITEM_VANISHATDROP) ||
-				!ITEM_getInt( itemindex, ITEM_CANPETMAIL)){
+			if( ITEM_getInt( item_index, ITEM_DROPATLOGOUT) || 
+				ITEM_getInt( item_index, ITEM_VANISHATDROP) ||
+				!ITEM_getInt( item_index, ITEM_CANPETMAIL)){
 				poolflg = TRUE;
 			}
 			snprintf( buff, sizeof( buff), 
@@ -816,12 +816,12 @@ static void NPC_PoolItemShop_MakeItemString_Pool( int meindex, int talkerindex,
 #else
 						"%s|%d|%d|%d|%s|%d|",
 #endif
-						ITEM_getChar( itemindex, ITEM_SECRETNAME),
+						ITEM_getChar( item_index, ITEM_SECRETNAME),
 						poolflg,CHAR_getWorkInt( meindex, NPC_WORK_COST),
-						ITEM_getInt( itemindex, ITEM_BASEIMAGENUMBER),
-						ITEM_getChar( itemindex, ITEM_EFFECTSTRING),
+						ITEM_getInt( item_index, ITEM_BASEIMAGENUMBER),
+						ITEM_getChar( item_index, ITEM_EFFECTSTRING),
 #ifdef _ITEM_PILENUMS
-						ITEM_getInt( itemindex, ITEM_USEPILENUMS),
+						ITEM_getInt( item_index, ITEM_USEPILENUMS),
 #endif
 						i + 1 );
 			if( pos +strlen( buff)>= retstringlen) {
@@ -838,14 +838,14 @@ static void NPC_PoolItemShop_MakeItemString_Draw( int meindex, int talkerindex,
 								char *retstring,int retstringlen)
 {
 	int		i;
-	int		itemindex;
+	int		item_index;
 	int		pos = 0;
 	char	buff[1024];
 		
 	retstring[0] = '\0';
 	for( i = 0; i < CHAR_MAXPOOLITEMHAVE; i ++ ) {
-		itemindex = CHAR_getPoolItemIndex( talkerindex, i);
-		if( ITEM_CHECKINDEX( itemindex)) {
+		item_index = CHAR_getPoolItemIndex( talkerindex, i);
+		if( ITEM_CHECKINDEX( item_index)) {
 			int poolflg = FALSE;
 			snprintf( buff, sizeof( buff),
 #ifdef _ITEM_PILENUMS
@@ -854,14 +854,14 @@ static void NPC_PoolItemShop_MakeItemString_Draw( int meindex, int talkerindex,
 #else
 						"%s|%d|%d|%d|%d|%s|",
 #endif
-						ITEM_getChar( itemindex, ITEM_SECRETNAME),
+						ITEM_getChar( item_index, ITEM_SECRETNAME),
 						poolflg,
-						ITEM_getInt( itemindex, ITEM_LEVEL),
-						ITEM_getInt( itemindex, ITEM_COST),
-						ITEM_getInt( itemindex, ITEM_BASEIMAGENUMBER),
-						ITEM_getChar( itemindex, ITEM_EFFECTSTRING)
+						ITEM_getInt( item_index, ITEM_LEVEL),
+						ITEM_getInt( item_index, ITEM_COST),
+						ITEM_getInt( item_index, ITEM_BASEIMAGENUMBER),
+						ITEM_getChar( item_index, ITEM_EFFECTSTRING)
 #ifdef _ITEM_PILENUMS
-						,ITEM_getInt( itemindex, ITEM_USEPILENUMS)
+						,ITEM_getInt( item_index, ITEM_USEPILENUMS)
 #endif
 						);
 			if( pos +strlen( buff)>= retstringlen) {
@@ -877,7 +877,7 @@ static void NPC_PoolItemShop_MakeItemString_Draw( int meindex, int talkerindex,
 static BOOL NPC_PoolItemShop_PoolItem( int meindex, int talkerindex, int num)
 {
 	int emptyindex;
-	int itemindex;
+	int item_index;
 	int cost = CHAR_getWorkInt( meindex, NPC_WORK_COST);
 
 	emptyindex = CHAR_getCharPoolItemIndexElement( talkerindex);
@@ -885,16 +885,16 @@ static BOOL NPC_PoolItemShop_PoolItem( int meindex, int talkerindex, int num)
 		return FALSE;
 	}
 
-	itemindex = CHAR_getItemIndex( talkerindex, num);
-	if( !ITEM_CHECKINDEX( itemindex)) {
+	item_index = CHAR_getItemIndex( talkerindex, num);
+	if( !ITEM_CHECKINDEX( item_index)) {
 		fprint( "err");
 		return FALSE;
 	}
 	
 #if 1 // 共同仓库不可存的物品
-	if( ITEM_getInt( itemindex, ITEM_DROPATLOGOUT) || // 登出後消失
-			ITEM_getInt( itemindex, ITEM_VANISHATDROP) || // 丢弃後消失
-			!ITEM_getInt( itemindex, ITEM_CANPETMAIL)) { // 不可宠邮寄
+	if( ITEM_getInt( item_index, ITEM_DROPATLOGOUT) || // 登出後消失
+			ITEM_getInt( item_index, ITEM_VANISHATDROP) || // 丢弃後消失
+			!ITEM_getInt( item_index, ITEM_CANPETMAIL)) { // 不可宠邮寄
 		print("\n 改封包!!非法存放道具:%s ", CHAR_getChar( talkerindex, CHAR_CDKEY) );
 #ifdef _POOL_ITEM_BUG
 		if( getPoolItemBug()==2 || getPoolItemBug()==3 )
@@ -902,7 +902,7 @@ static BOOL NPC_PoolItemShop_PoolItem( int meindex, int talkerindex, int num)
 			if(getPoolItemBug()==3){
 				int i;
 				for(i = 0; i < 32; i ++){
-					if(getPoolItem(i) == ITEM_getInt( itemindex, ITEM_ID)){
+					if(getPoolItem(i) == ITEM_getInt( item_index, ITEM_ID)){
 						break;
 					}
 				}
@@ -921,7 +921,7 @@ static BOOL NPC_PoolItemShop_PoolItem( int meindex, int talkerindex, int num)
 	
 	CHAR_DelGold( talkerindex, cost );
 
-	CHAR_setPoolItemIndex( talkerindex, emptyindex, itemindex);
+	CHAR_setPoolItemIndex( talkerindex, emptyindex, item_index);
 
 	CHAR_setItemIndex( talkerindex, num, -1);
 	CHAR_sendItemDataOne( talkerindex, num);
@@ -931,17 +931,17 @@ static BOOL NPC_PoolItemShop_PoolItem( int meindex, int talkerindex, int num)
 		CHAR_getChar( talkerindex, CHAR_NAME ), /* 平乓仿   */
 		CHAR_getChar( talkerindex, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-		itemindex,
+		item_index,
 #else
-		ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+		ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 		"pool(寄放道具)",
 		CHAR_getInt( talkerindex,CHAR_FLOOR),
 		CHAR_getInt( talkerindex,CHAR_X ),
  		CHAR_getInt( talkerindex,CHAR_Y ),
-		ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-				ITEM_getChar( itemindex, ITEM_NAME),
-				ITEM_getInt( itemindex, ITEM_ID)
+		ITEM_getChar( item_index, ITEM_UNIQUECODE),
+				ITEM_getChar( item_index, ITEM_NAME),
+				ITEM_getInt( item_index, ITEM_ID)
 
 	);
 
@@ -958,7 +958,7 @@ static BOOL NPC_PoolItemShop_PoolItem( int meindex, int talkerindex, int num)
 static BOOL NPC_PoolItemShop_DrawItem( int meindex, int talkerindex, int num)
 {
 	int emptyindex;
-	int itemindex;
+	int item_index;
 	int i;
 	int cnt;
 	int work[CHAR_MAXPOOLITEMHAVE];
@@ -966,12 +966,12 @@ static BOOL NPC_PoolItemShop_DrawItem( int meindex, int talkerindex, int num)
 	emptyindex = CHAR_findEmptyItemBox( talkerindex);
 	if( emptyindex == -1 ) return FALSE;
 	
-	itemindex = CHAR_getPoolItemIndex( talkerindex, num);
-	if( !ITEM_CHECKINDEX( itemindex)) {
+	item_index = CHAR_getPoolItemIndex( talkerindex, num);
+	if( !ITEM_CHECKINDEX( item_index)) {
 		fprint( "err\n");
 		return FALSE;
 	}
-	CHAR_setItemIndex( talkerindex, emptyindex, itemindex);
+	CHAR_setItemIndex( talkerindex, emptyindex, item_index);
 	CHAR_setPoolItemIndex( talkerindex, num, -1);
 	CHAR_sendItemDataOne( talkerindex, emptyindex);
 	for( i = 0; i < CHAR_MAXPOOLITEMHAVE; i ++ ) {
@@ -979,9 +979,9 @@ static BOOL NPC_PoolItemShop_DrawItem( int meindex, int talkerindex, int num)
 	}
 	cnt = 0;
 	for( i = 0; i < CHAR_MAXPOOLITEMHAVE; i ++ ) {
-		itemindex = CHAR_getPoolItemIndex( talkerindex, i);
-		if( ITEM_CHECKINDEX( itemindex)) {
-			work[ cnt++] = itemindex;
+		item_index = CHAR_getPoolItemIndex( talkerindex, i);
+		if( ITEM_CHECKINDEX( item_index)) {
+			work[ cnt++] = item_index;
 		}
 	}
 	for( i = 0; i < CHAR_MAXPOOLITEMHAVE; i ++ ) {
@@ -991,17 +991,17 @@ static BOOL NPC_PoolItemShop_DrawItem( int meindex, int talkerindex, int num)
 		CHAR_getChar( talkerindex, CHAR_NAME ),
 		CHAR_getChar( talkerindex, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-		itemindex,
+		item_index,
 #else
-		ITEM_getInt( itemindex, ITEM_ID),
+		ITEM_getInt( item_index, ITEM_ID),
 #endif
 		"draw(领取道具)",
 		CHAR_getInt( talkerindex,CHAR_FLOOR),
 		CHAR_getInt( talkerindex,CHAR_X ),
  		CHAR_getInt( talkerindex,CHAR_Y ),
-		ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-		ITEM_getChar( itemindex, ITEM_NAME),
-		ITEM_getInt( itemindex, ITEM_ID)
+		ITEM_getChar( item_index, ITEM_UNIQUECODE),
+		ITEM_getChar( item_index, ITEM_NAME),
+		ITEM_getInt( item_index, ITEM_ID)
 	);
 
 #ifdef _SAMETHING_SAVEPOINT

@@ -1,4 +1,8 @@
 #include "version.h"
+//
+#include "gmsv_server.h"
+#include "saac_client.h"
+//
 #include "anim_tbl.h"
 #include "battle.h"
 #include "battle_event.h"
@@ -13,14 +17,12 @@
 #include "handletime.h"
 #include "item.h"
 #include "log.h"
-#include "lssproto_serv.h"
 #include "magic.h"
 #include "net.h"
 #include "npcutil.h"
 #include "object.h"
 #include "pet.h"
 #include "readmap.h"
-#include "saacproto_cli.h"
 #include "util.h"
 #include "item_event.h"
 #ifdef _Item_ReLifeAct
@@ -67,45 +69,45 @@ int ITEM_TimeDelCheck(int item_index) {
   return TRUE;
 }
 
-int ITEM_eventDrop(int itemindex, int char_index, int itemchar_index) {
+int ITEM_eventDrop(int item_index, int char_index, int itemchar_index) {
   typedef void (*DROPF)(int, int);
   char szBuffer[256] = "";
   DROPF dropfunc = NULL;
 
-  if (ITEM_CHECKINDEX(itemindex) == FALSE)
+  if (ITEM_CHECKINDEX(item_index) == FALSE)
     return -1;
 
-  dropfunc = (DROPF)ITEM_getFunctionPointer(itemindex, ITEM_DROPFUNC);
+  dropfunc = (DROPF)ITEM_getFunctionPointer(item_index, ITEM_DROPFUNC);
   if (dropfunc) {
-    dropfunc(char_index, itemindex);
+    dropfunc(char_index, item_index);
   }
 #ifdef _ALLBLUES_LUA_1_2
   else {
-    RunItemDropEvent(char_index, itemindex);
+    RunItemDropEvent(char_index, item_index);
   }
 #endif
-  if (ITEM_getInt(itemindex, ITEM_VANISHATDROP) != 1)
+  if (ITEM_getInt(item_index, ITEM_VANISHATDROP) != 1)
     return 0;
   snprintf(szBuffer, sizeof(szBuffer), "%s �����ˡ�",
-           ITEM_getAppropriateName(itemindex));
+           ITEM_getAppropriateName(item_index));
   CHAR_talkToCli(char_index, -1, szBuffer, CHAR_COLORWHITE);
 
   {
     LogItem(CHAR_getChar(char_index, CHAR_NAME),
             CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD
-            itemindex,
+            item_index,
 #else
-             ITEM_getInt(itemindex, ITEM_ID),
+             ITEM_getInt(item_index, ITEM_ID),
 #endif
             "Drop&Delete(��������ʧ)", CHAR_getInt(char_index, CHAR_FLOOR),
             CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
-            ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-            ITEM_getChar(itemindex, ITEM_NAME),
-            ITEM_getInt(itemindex, ITEM_ID));
+            ITEM_getChar(item_index, ITEM_UNIQUECODE),
+            ITEM_getChar(item_index, ITEM_NAME),
+            ITEM_getInt(item_index, ITEM_ID));
   }
   CHAR_setItemIndex(char_index, itemchar_index, -1);
-  ITEM_endExistItemsOne(itemindex);
+  ITEM_endExistItemsOne(item_index);
   return 1;
 }
 
@@ -248,7 +250,7 @@ static BOOL ITEM_medicineRaiseEffect(int char_index, char *cmd, int value) {
   return FALSE;
 }
 
-void ITEM_MedicineUsed(int char_index, int to_char_index, int itemindex) {
+void ITEM_MedicineUsed(int char_index, int to_char_index, int item_index) {
   int item_id;
   int usedf = 0;
   char cmd[ID_BUF_LEN_MAX], arg[ID_BUF_LEN_MAX];
@@ -256,7 +258,7 @@ void ITEM_MedicineUsed(int char_index, int to_char_index, int itemindex) {
   char *p, *q;
   char *effectarg;
   char ansmsg[256];
-  item_id = CHAR_getItemIndex(char_index, itemindex);
+  item_id = CHAR_getItemIndex(char_index, item_index);
   if (!ITEM_CHECKINDEX(item_id))
     return;
   effectarg = ITEM_getChar(item_id, ITEM_ARGUMENT);
@@ -284,7 +286,7 @@ void ITEM_MedicineUsed(int char_index, int to_char_index, int itemindex) {
     }
   }
   if (usedf) {
-    CHAR_DelItem(char_index, itemindex);
+    CHAR_DelItem(char_index, item_index);
     CHAR_sendStatusString(char_index, "P");
 
   } else
@@ -311,24 +313,24 @@ void ITEM_SandClockLogin(int char_index) {
   int i;
   int dTime;
   for (i = 0; i < CheckCharMaxItem(char_index); i++) {
-    int itemindex = CHAR_getItemIndex(char_index, i);
-    if (ITEM_getInt(itemindex, ITEM_ID) != 29)
+    int item_index = CHAR_getItemIndex(char_index, i);
+    if (ITEM_getInt(item_index, ITEM_ID) != 29)
       continue;
-    if (ITEM_getInt(itemindex, ITEM_VAR4) == 0)
+    if (ITEM_getInt(item_index, ITEM_VAR4) == 0)
       continue;
-    dTime = NowTime.tv_sec - ITEM_getInt(itemindex, ITEM_VAR4);
-    ITEM_setInt(itemindex, ITEM_VAR3,
-                ITEM_getInt(itemindex, ITEM_VAR3) + dTime);
+    dTime = NowTime.tv_sec - ITEM_getInt(item_index, ITEM_VAR4);
+    ITEM_setInt(item_index, ITEM_VAR3,
+                ITEM_getInt(item_index, ITEM_VAR3) + dTime);
   }
 }
 
 void ITEM_SandClockLogout(int char_index) {
   int i;
   for (i = 0; i < CheckCharMaxItem(char_index); i++) {
-    int itemindex = CHAR_getItemIndex(char_index, i);
-    if (ITEM_getInt(itemindex, ITEM_ID) != 29)
+    int item_index = CHAR_getItemIndex(char_index, i);
+    if (ITEM_getInt(item_index, ITEM_ID) != 29)
       continue;
-    ITEM_setInt(itemindex, ITEM_VAR4, NowTime.tv_sec);
+    ITEM_setInt(item_index, ITEM_VAR4, NowTime.tv_sec);
   }
 }
 
@@ -352,17 +354,17 @@ BOOL ITEM_getArgument(const char *argument, const char *entry, char *val, const 
   return FALSE;
 }
 
-void ITEM_addTitleAttach(int char_index, int itemindex) {
+void ITEM_addTitleAttach(int char_index, int item_index) {
   char titlenumstring[256];
   int titleindex;
 
-  if (ITEM_CHECKINDEX(itemindex) == FALSE)
+  if (ITEM_CHECKINDEX(item_index) == FALSE)
     return;
 
-  if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "addt",
+  if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "addt",
                        titlenumstring, sizeof(titlenumstring)) == FALSE) {
     print("Can't find \"addt\" entry: %s\n",
-          ITEM_getChar(itemindex, ITEM_ARGUMENT));
+          ITEM_getChar(item_index, ITEM_ARGUMENT));
     return;
   }
   titleindex = atoi(titlenumstring);
@@ -370,17 +372,17 @@ void ITEM_addTitleAttach(int char_index, int itemindex) {
   CHAR_sendStatusString(char_index, "T");
 }
 
-void ITEM_delTitleDetach(int char_index, int itemindex) {
+void ITEM_delTitleDetach(int char_index, int item_index) {
   char titlenumstring[256];
   int titleindex;
 
-  if (ITEM_CHECKINDEX(itemindex) == FALSE)
+  if (ITEM_CHECKINDEX(item_index) == FALSE)
     return;
 
-  if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "delt",
+  if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "delt",
                        titlenumstring, sizeof(titlenumstring)) == FALSE) {
     print("Can't find \"delt\" entry: %s\n",
-          ITEM_getChar(itemindex, ITEM_ARGUMENT));
+          ITEM_getChar(item_index, ITEM_ARGUMENT));
     return;
   }
   titleindex = atoi(titlenumstring);
@@ -391,117 +393,117 @@ void ITEM_delTitleDetach(int char_index, int itemindex) {
 void ITEM_DeleteByWatched(int myobjindex, int moveobjindex, CHAR_ACTION act,
                           int x, int y, int dir, int *opt, int optlen) {
 
-  int itemindex, moveindex;
+  int item_index, moveindex;
   char szBuffer[256] = "";
-  itemindex = OBJECT_getIndex(myobjindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = OBJECT_getIndex(myobjindex);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   if (OBJECT_getType(moveobjindex) == OBJTYPE_CHARA) {
     moveindex = OBJECT_getIndex(moveobjindex);
     if (CHAR_getInt(moveindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
       snprintf(szBuffer, sizeof(szBuffer), "%s",
-               ITEM_getAppropriateName(itemindex));
+               ITEM_getAppropriateName(item_index));
       CHAR_talkToCli(moveindex, -1, "%s �����ˡ�", CHAR_COLORWHITE);
     }
   }
 
-  ITEM_endExistItemsOne(itemindex);
+  ITEM_endExistItemsOne(item_index);
   CHAR_ObjectDelete(myobjindex);
 }
 
 void ITEM_DeleteTimeWatched(int objindex, int moveobjindex, CHAR_ACTION act,
                             int x, int y, int dir, int *opt, int optlen) {
-  int itemindex;
+  int item_index;
   int itemputtime;
 
   if (!CHECKOBJECTUSE(objindex)) {
     return;
   }
-  itemindex = OBJECT_getIndex(objindex);
-  if (!ITEM_CHECKINDEX(itemindex)) {
+  item_index = OBJECT_getIndex(objindex);
+  if (!ITEM_CHECKINDEX(item_index)) {
     return;
   }
-  itemputtime = ITEM_getInt(itemindex, ITEM_PUTTIME);
-  if (!ITEM_CHECKINDEX(itemindex))
+  itemputtime = ITEM_getInt(item_index, ITEM_PUTTIME);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   if ((int)NowTime.tv_sec > (int)(itemputtime + getItemdeletetime())) {
-    if (ITEM_TimeDelCheck(itemindex) == FALSE) {
+    if (ITEM_TimeDelCheck(item_index) == FALSE) {
       return;
     }
     {
       LogItem("NULL", "NULL",
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-              itemindex,
+              item_index,
 #else
-               ITEM_getInt(itemindex, ITEM_ID),
+               ITEM_getInt(item_index, ITEM_ID),
 #endif
               "TiemDelete", OBJECT_getFloor(objindex), OBJECT_getX(objindex),
-              OBJECT_getY(objindex), ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-              ITEM_getChar(itemindex, ITEM_NAME),
-              ITEM_getInt(itemindex, ITEM_ID));
+              OBJECT_getY(objindex), ITEM_getChar(item_index, ITEM_UNIQUECODE),
+              ITEM_getChar(item_index, ITEM_NAME),
+              ITEM_getInt(item_index, ITEM_ID));
     }
-    ITEM_endExistItemsOne(itemindex);
+    ITEM_endExistItemsOne(item_index);
     CHAR_ObjectDelete(objindex);
   }
 }
 
 void ITEM_useEffectTohelos(int char_index, int to_char_index,
-                           int haveitemindex) {
+                           int haveitem_index) {
   char buf[64];
   char msgbuf[64];
   int ret;
-  int itemindex;
+  int item_index;
   int cutrate, limitcount;
   int per;
   int sendchar_index = char_index;
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  CHAR_setItemIndex(char_index, haveitemindex, -1);
-  CHAR_sendItemDataOne(char_index, haveitemindex);
-  ret = getStringFromIndexWithDelim(ITEM_getChar(itemindex, ITEM_ARGUMENT), "|",
+  CHAR_setItemIndex(char_index, haveitem_index, -1);
+  CHAR_sendItemDataOne(char_index, haveitem_index);
+  ret = getStringFromIndexWithDelim(ITEM_getChar(item_index, ITEM_ARGUMENT), "|",
                                     1, buf, sizeof(buf));
   if (ret != TRUE) {
     {
       LogItem(CHAR_getChar(char_index, CHAR_NAME),
               CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-              itemindex,
+              item_index,
 #else
-               ITEM_getInt(itemindex, ITEM_ID),
+               ITEM_getInt(item_index, ITEM_ID),
 #endif
               "FieldErrorUse", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
-              ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-              ITEM_getChar(itemindex, ITEM_NAME),
-              ITEM_getInt(itemindex, ITEM_ID));
+              ITEM_getChar(item_index, ITEM_UNIQUECODE),
+              ITEM_getChar(item_index, ITEM_NAME),
+              ITEM_getInt(item_index, ITEM_ID));
     }
-    ITEM_endExistItemsOne(itemindex);
+    ITEM_endExistItemsOne(item_index);
     return;
   }
   cutrate = atoi(buf);
   if (cutrate < 0)
     cutrate = 0;
-  ret = getStringFromIndexWithDelim(ITEM_getChar(itemindex, ITEM_ARGUMENT), "|",
+  ret = getStringFromIndexWithDelim(ITEM_getChar(item_index, ITEM_ARGUMENT), "|",
                                     2, buf, sizeof(buf));
   if (ret != TRUE) {
     {
       LogItem(CHAR_getChar(char_index, CHAR_NAME),
               CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-              itemindex,
+              item_index,
 #else
-               ITEM_getInt(itemindex, ITEM_ID),
+               ITEM_getInt(item_index, ITEM_ID),
 #endif
               "FieldUse", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
-              ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-              ITEM_getChar(itemindex, ITEM_NAME),
-              ITEM_getInt(itemindex, ITEM_ID));
+              ITEM_getChar(item_index, ITEM_UNIQUECODE),
+              ITEM_getChar(item_index, ITEM_NAME),
+              ITEM_getInt(item_index, ITEM_ID));
     }
-    ITEM_endExistItemsOne(itemindex);
+    ITEM_endExistItemsOne(item_index);
     return;
   }
   limitcount = atoi(buf);
@@ -514,13 +516,13 @@ void ITEM_useEffectTohelos(int char_index, int to_char_index,
   CHAR_setWorkInt(sendchar_index, CHAR_WORK_TOHELOS_COUNT, limitcount);
 
   snprintf(msgbuf, sizeof(msgbuf), "ץ����%s ��",
-           ITEM_getChar(itemindex, ITEM_NAME));
+           ITEM_getChar(item_index, ITEM_NAME));
   CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORWHITE);
 
   if (sendchar_index != char_index) {
     snprintf(msgbuf, sizeof(msgbuf), "%s ץ���� %s�� ",
              CHAR_getChar(char_index, CHAR_NAME),
-             ITEM_getChar(itemindex, ITEM_NAME));
+             ITEM_getChar(item_index, ITEM_NAME));
     CHAR_talkToCli(sendchar_index, -1, msgbuf, CHAR_COLORWHITE);
   }
 
@@ -528,17 +530,17 @@ void ITEM_useEffectTohelos(int char_index, int to_char_index,
     LogItem(CHAR_getChar(char_index, CHAR_NAME),
             CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-            itemindex,
+            item_index,
 #else
-             ITEM_getInt(itemindex, ITEM_ID),
+             ITEM_getInt(item_index, ITEM_ID),
 #endif
             "FieldUse", CHAR_getInt(char_index, CHAR_FLOOR),
             CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
-            ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-            ITEM_getChar(itemindex, ITEM_NAME),
-            ITEM_getInt(itemindex, ITEM_ID));
+            ITEM_getChar(item_index, ITEM_UNIQUECODE),
+            ITEM_getChar(item_index, ITEM_NAME),
+            ITEM_getInt(item_index, ITEM_ID));
   }
-  ITEM_endExistItemsOne(itemindex);
+  ITEM_endExistItemsOne(item_index);
   per = ENCOUNT_getEncountPercentMin(
       sendchar_index, CHAR_getInt(sendchar_index, CHAR_FLOOR),
       CHAR_getInt(sendchar_index, CHAR_X), CHAR_getInt(sendchar_index, CHAR_Y));
@@ -554,15 +556,15 @@ void ITEM_useEffectTohelos(int char_index, int to_char_index,
   CHAR_sendStatusString(sendchar_index, "E");
 }
 
-void ITEM_dropMic(int char_index, int itemindex) {
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_dropMic(int char_index, int item_index) {
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
   CHAR_setWorkInt(char_index, CHAR_WORKFLG,
                   CHAR_getWorkInt(char_index, CHAR_WORKFLG) & ~WORKFLG_MICMODE);
 }
 
-void ITEM_useMic_Field(int char_index, int to_char_index, int haveitemindex) {
+void ITEM_useMic_Field(int char_index, int to_char_index, int haveitem_index) {
   if (CHAR_getWorkInt(char_index, CHAR_WORKFLG) & WORKFLG_MICMODE) {
     CHAR_setWorkInt(char_index, CHAR_WORKFLG,
                     CHAR_getWorkInt(char_index, CHAR_WORKFLG) &
@@ -594,18 +596,18 @@ char *aszKeyString[] = {"��", "��", "��", "��", ""};
 int aHealInt[] = {CHAR_HP, CHAR_MP, CHAR_CHARM, CHAR_VARIABLEAI, -1};
 int aHealMaxWork[] = {CHAR_WORKMAXHP, CHAR_WORKMAXMP, -1, -1, -1};
 
-void ITEM_useRecovery_Field(int char_index, int toindex, int haveitemindex) {
+void ITEM_useRecovery_Field(int char_index, int toindex, int haveitem_index) {
   int work, workmax, workmin;
   int power[BD_KIND_END] = {0, 0, 0}, prevhp = 0, workhp = 0,
       recovery[BD_KIND_END] = {0, 0, 0};
-  int itemindex, kind = BD_KIND_HP, HealFlg = 0, j;
+  int item_index, kind = BD_KIND_HP, HealFlg = 0, j;
   char *p = NULL, *arg, msgbuf[256];
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   if (CHAR_CHECKINDEX(toindex) == FALSE)
     return;
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return;
 
@@ -617,7 +619,7 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitemindex) {
       CHAR_sendCToArroundCharacter(CHAR_getWorkInt(toindex, CHAR_WORKOBJINDEX));
       CHAR_send_P_StatusString(toindex, CHAR_P_STRING_BASEBASEIMAGENUMBER);
       CHAR_talkToCli(toindex, -1, "������ʧЧ�ˡ�", CHAR_COLORWHITE);
-      CHAR_DelItemMess(char_index, haveitemindex, 0);
+      CHAR_DelItemMess(char_index, haveitem_index, 0);
     }
     return;
   }
@@ -650,7 +652,7 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitemindex) {
       if (lv % 4 != lvup ||
           CHAR_getInt(toindex, CHAR_LIMITLEVEL) - lv >= 1) { //
         CHAR_talkToCli(char_index, -1, "�Ƴ���ӡʧ��", CHAR_COLORWHITE);
-        CHAR_DelItemMess(char_index, haveitemindex, 0);
+        CHAR_DelItemMess(char_index, haveitem_index, 0);
         return;
       }
       CHAR_setInt(toindex, CHAR_LIMITLEVEL,
@@ -660,7 +662,7 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitemindex) {
         CHAR_setInt(toindex, CHAR_LIMITLEVEL, 0);
         CHAR_talkToCli(char_index, -1, "��ӡħ������", CHAR_COLORWHITE);
       }
-      CHAR_DelItemMess(char_index, haveitemindex, 0);
+      CHAR_DelItemMess(char_index, haveitem_index, 0);
       CHAR_complianceParameter(toindex);
       CHAR_sendCToArroundCharacter(CHAR_getWorkInt(toindex, CHAR_WORKOBJINDEX));
     }
@@ -684,7 +686,7 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitemindex) {
       }
       CHAR_setInt(toindex, CHAR_LIMITLEVEL, 0);
       CHAR_talkToCli(char_index, -1, "��ӡħ������", CHAR_COLORWHITE);
-      CHAR_DelItemMess(char_index, haveitemindex, 0);
+      CHAR_DelItemMess(char_index, haveitem_index, 0);
       CHAR_complianceParameter(toindex);
       CHAR_sendCToArroundCharacter(CHAR_getWorkInt(toindex, CHAR_WORKOBJINDEX));
     }
@@ -788,7 +790,7 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitemindex) {
             CHAR_setInt(toindex, CHAR_EARTHAT,
                         CHAR_getInt(toindex, CHAR_EARTHAT) - 10);
     }
-    CHAR_DelItemMess(char_index, haveitemindex, 0);
+    CHAR_DelItemMess(char_index, haveitem_index, 0);
     CHAR_complianceParameter(toindex);
     CHAR_sendCToArroundCharacter(CHAR_getWorkInt(toindex, CHAR_WORKOBJINDEX));
     CHAR_send_P_StatusString(toindex,
@@ -844,7 +846,7 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitemindex) {
               "��ʯͷ....(�޷��б��޷����Ӿ���)",
               CHAR_COLORWHITE);
       }
-      CHAR_DelItemMess(char_index, haveitemindex, 0);
+      CHAR_DelItemMess(char_index, haveitem_index, 0);
       CHAR_complianceParameter(toindex);
       CHAR_sendCToArroundCharacter(CHAR_getWorkInt(toindex, CHAR_WORKOBJINDEX));
       return;
@@ -1004,66 +1006,66 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitemindex) {
     LogItem(CHAR_getChar(char_index, CHAR_NAME),
             CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-            itemindex,
+            item_index,
 #else
-             ITEM_getInt(itemindex, ITEM_ID),
+             ITEM_getInt(item_index, ITEM_ID),
 #endif
             "FieldUse", CHAR_getInt(char_index, CHAR_FLOOR),
             CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
-            ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-            ITEM_getChar(itemindex, ITEM_NAME),
-            ITEM_getInt(itemindex, ITEM_ID));
+            ITEM_getChar(item_index, ITEM_UNIQUECODE),
+            ITEM_getChar(item_index, ITEM_NAME),
+            ITEM_getInt(item_index, ITEM_ID));
   }
-  CHAR_DelItemMess(char_index, haveitemindex, 0);
+  CHAR_DelItemMess(char_index, haveitem_index, 0);
 }
 
 #endif
 
-void ITEM_useRecovery(int char_index, int toindex, int haveitemindex) {
+void ITEM_useRecovery(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useRecovery_Battle(char_index, toindex, haveitemindex);
+    ITEM_useRecovery_Battle(char_index, toindex, haveitem_index);
   } else {
-    ITEM_useRecovery_Field(char_index, toindex, haveitemindex);
+    ITEM_useRecovery_Field(char_index, toindex, haveitem_index);
   }
 }
 
 #ifdef _ITEM_MAGICRECOVERY
-void ITEM_useMRecovery(int char_index, int toindex, int haveitemindex) {
+void ITEM_useMRecovery(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useMRecovery_Battle(char_index, toindex, haveitemindex);
+    ITEM_useMRecovery_Battle(char_index, toindex, haveitem_index);
   } else {
-    //      ITEM_useRecovery_Field(  char_index, toindex, haveitemindex );
+    //      ITEM_useRecovery_Field(  char_index, toindex, haveitem_index );
   }
 }
 
 #endif
 
 #ifdef _ITEM_USEMAGIC
-void ITEM_useMagic(int char_index, int toindex, int haveitemindex) {
+void ITEM_useMagic(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useMagic_Battle(char_index, toindex, haveitemindex);
+    ITEM_useMagic_Battle(char_index, toindex, haveitem_index);
   }
 }
 #endif
 
 #ifdef _PET_LIMITLEVEL
-void ITEM_useOtherEditBase(int char_index, int toindex, int haveitemindex) {
-  int itemindex, i;
+void ITEM_useOtherEditBase(int char_index, int toindex, int haveitem_index) {
+  int item_index, i;
   int work[4];
   int num = -1, type;
   int LevelUpPoint, petrank;
@@ -1076,8 +1078,8 @@ void ITEM_useOtherEditBase(int char_index, int toindex, int haveitemindex) {
     return;
 #define RAND(x, y)                                                             \
   ((x - 1) + 1 + (int)((double)(y - (x - 1)) * rand() / (RAND_MAX + 1.0)))
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   if (CHAR_getInt(toindex, CHAR_PETID) == 718
 #ifdef _PET_2LIMITLEVEL
@@ -1098,7 +1100,7 @@ void ITEM_useOtherEditBase(int char_index, int toindex, int haveitemindex) {
       work[1] = ((LevelUpPoint >> 8) & 0xFF);
       work[2] = ((LevelUpPoint >> 0) & 0xFF);
       for (i = 0; i < 4; i++) {
-        type = ITEM_getInt(itemindex, (num + i));
+        type = ITEM_getInt(item_index, (num + i));
         work[i] += type;
         strcpy(buf1, "\0");
         if (work[i] > maxnums) {
@@ -1138,82 +1140,82 @@ void ITEM_useOtherEditBase(int char_index, int toindex, int haveitemindex) {
   } else {
     sprintf(buf1, "������");
   }
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
   return;
 }
 #endif
 
-void ITEM_useStatusChange(int char_index, int toindex, int haveitemindex) {
+void ITEM_useStatusChange(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return; // ����
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useStatusChange_Battle(char_index, toindex, haveitemindex);
+    ITEM_useStatusChange_Battle(char_index, toindex, haveitem_index);
   } else {
   }
 }
 
-void ITEM_useStatusRecovery(int char_index, int toindex, int haveitemindex) {
+void ITEM_useStatusRecovery(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return; // ����
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useStatusRecovery_Battle(char_index, toindex, haveitemindex);
+    ITEM_useStatusRecovery_Battle(char_index, toindex, haveitem_index);
   } else {
   }
 }
 
-void ITEM_useMagicDef(int char_index, int toindex, int haveitemindex) {
+void ITEM_useMagicDef(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useMagicDef_Battle(char_index, toindex, haveitemindex);
+    ITEM_useMagicDef_Battle(char_index, toindex, haveitem_index);
   } else {
   }
 }
 
-void ITEM_useParamChange(int char_index, int toindex, int haveitemindex) {
+void ITEM_useParamChange(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useParamChange_Battle(char_index, toindex, haveitemindex);
+    ITEM_useParamChange_Battle(char_index, toindex, haveitem_index);
   }
 }
 
-void ITEM_useFieldChange(int char_index, int toindex, int haveitemindex) {
+void ITEM_useFieldChange(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useFieldChange_Battle(char_index, toindex, haveitemindex);
+    ITEM_useFieldChange_Battle(char_index, toindex, haveitem_index);
   }
 }
 
-void ITEM_useAttReverse(int char_index, int toindex, int haveitemindex) {
+void ITEM_useAttReverse(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useAttReverse_Battle(char_index, toindex, haveitemindex);
+    ITEM_useAttReverse_Battle(char_index, toindex, haveitem_index);
   } else {
   }
 }
 
-void ITEM_useMic(int char_index, int toindex, int haveitemindex) {
+void ITEM_useMic(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
@@ -1221,11 +1223,11 @@ void ITEM_useMic(int char_index, int toindex, int haveitemindex) {
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
   } else {
-    ITEM_useMic_Field(char_index, toindex, haveitemindex);
+    ITEM_useMic_Field(char_index, toindex, haveitem_index);
   }
 }
 
-void ITEM_useCaptureUp(int char_index, int toindex, int haveitemindex) {
+void ITEM_useCaptureUp(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return; // ����
@@ -1233,7 +1235,7 @@ void ITEM_useCaptureUp(int char_index, int toindex, int haveitemindex) {
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
-    ITEM_useCaptureUp_Battle(char_index, toindex, haveitemindex);
+    ITEM_useCaptureUp_Battle(char_index, toindex, haveitem_index);
   } else {
   }
 }
@@ -1249,14 +1251,14 @@ static void ITEM_usePetSkillCanned_PrintWindow(int char_index, int flg) {
     return;
 
   sprintf(message, "%d", flg);
-  lssproto_WN_send(fd, WINDOWS_MESSAGETYPE_PETSKILLSHOW, WINDOW_BUTTONTYPE_NONE,
+  GmsvServer_WN_send(fd, WINDOWS_MESSAGETYPE_PETSKILLSHOW, WINDOW_BUTTONTYPE_NONE,
                    ITEM_WINDOWTYPE_SELECTPETSKILL_SELECT, -1,
                    makeEscapeString(message, buf, sizeof(buf)));
 }
 
 void ITEM_usePetSkillCanned_WindowResult(int char_index, int seqno, int select,
                                          char *data) {
-  int itemindex = -1, itemNo, petindex = -1, petNo;
+  int item_index = -1, itemNo, petindex = -1, petNo;
   int SkillNo, SkillID;
   char buf1[256];
   char *skillarg = NULL;
@@ -1264,8 +1266,8 @@ void ITEM_usePetSkillCanned_WindowResult(int char_index, int seqno, int select,
   petNo = CHAR_getWorkInt(char_index, CHAR_WORKRENAMEITEMNUM);
   itemNo = CHAR_getWorkInt(char_index, CHAR_WORKRENAMEITEMINDEX);
 
-  itemindex = CHAR_getItemIndex(char_index, itemNo);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, itemNo);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   petindex = CHAR_getCharPet(char_index, petNo);
   if (!CHAR_CHECKINDEX(petindex))
@@ -1274,12 +1276,12 @@ void ITEM_usePetSkillCanned_WindowResult(int char_index, int seqno, int select,
   if (SkillNo < 0 || SkillNo >= CHAR_MAXPETSKILLHAVE)
     return;
 
-  if (strcmp(ITEM_getChar(itemindex, ITEM_USEFUNC), "ITEM_useSkillCanned")) {
+  if (strcmp(ITEM_getChar(item_index, ITEM_USEFUNC), "ITEM_useSkillCanned")) {
     CHAR_talkToCli(char_index, -1, "��ֹ�Ƿ�ѧϰ���＼�ܣ�", CHAR_COLORRED);
     return;
   }
 
-  skillarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  skillarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
 
 #ifdef _PETSKILL_NEW_PASSIVE
   if (strstr(skillarg, "RAND") != NULL) {
@@ -1346,13 +1348,13 @@ void ITEM_usePetSkillCanned_WindowResult(int char_index, int seqno, int select,
     int skillarray = PETSKILL_getPetskillArray(SkillID);
     sprintf(buf1, "����%sѧϰ%s������ %s��ʧ�ˡ�", CHAR_getUseName(petindex),
             PETSKILL_getChar(skillarray, PETSKILL_NAME),
-            ITEM_getChar(itemindex, ITEM_NAME));
+            ITEM_getChar(item_index, ITEM_NAME));
   }
 
   CHAR_talkToCli(char_index, -1, buf1, CHAR_COLORYELLOW);
   CHAR_setItemIndex(char_index, itemNo, -1);
   CHAR_sendItemDataOne(char_index, itemNo);
-  ITEM_endExistItemsOne(itemindex);
+  ITEM_endExistItemsOne(item_index);
 }
 
 #endif
@@ -1382,22 +1384,22 @@ static void ITEM_useRenameItem_PrintWindow(int char_index, int page) {
            page + 1);
 
   for (i = page * 5; i < page * 5 + 5; i++) {
-    int itemindex = CHAR_getItemIndex(char_index, i);
+    int item_index = CHAR_getItemIndex(char_index, i);
     BOOL flg = FALSE;
     while (1) {
       char *cdkey;
-      if (!ITEM_CHECKINDEX(itemindex))
+      if (!ITEM_CHECKINDEX(item_index))
         break;
-      cdkey = ITEM_getChar(itemindex, ITEM_CDKEY);
+      cdkey = ITEM_getChar(item_index, ITEM_CDKEY);
       if (!cdkey) {
         print("%s:%d err\n", __FILE__, __LINE__);
         break;
       }
-      if (ITEM_getInt(itemindex, ITEM_MERGEFLG) != 1)
+      if (ITEM_getInt(item_index, ITEM_MERGEFLG) != 1)
         break;
-      if (ITEM_getInt(itemindex, ITEM_TYPE) == ITEM_DISH)
+      if (ITEM_getInt(item_index, ITEM_TYPE) == ITEM_DISH)
         break;
-      if (ITEM_getInt(itemindex, ITEM_CRUSHLEVEL) != 0)
+      if (ITEM_getInt(item_index, ITEM_CRUSHLEVEL) != 0)
         break;
       if (strlen(cdkey) != 0) {
         if (strcmp(cdkey, CHAR_getChar(char_index, CHAR_CDKEY)) != 0) {
@@ -1408,7 +1410,7 @@ static void ITEM_useRenameItem_PrintWindow(int char_index, int page) {
       break;
     }
     if (flg) {
-      char *nm = ITEM_getChar(itemindex, ITEM_SECRETNAME);
+      char *nm = ITEM_getChar(item_index, ITEM_SECRETNAME);
       char wk[256];
       if (pos + strlen(nm) + 1 > sizeof(msgwk)) {
         print("buffer over error %s:%d\n", __FILE__, __LINE__);
@@ -1439,42 +1441,42 @@ static void ITEM_useRenameItem_PrintWindow(int char_index, int page) {
     btntype |= WINDOW_BUTTONTYPE_PREV | WINDOW_BUTTONTYPE_NEXT;
     break;
   }
-  lssproto_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, btntype,
+  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, btntype,
                    CHAR_WINDOWTYPE_SELECTRENAMEITEM_PAGE1 + page, -1,
                    makeEscapeString(message, buf, sizeof(buf)));
 }
 
-void ITEM_useRenameItem(int char_index, int toindex, int haveitemindex) {
+void ITEM_useRenameItem(int char_index, int toindex, int haveitem_index) {
 
   ITEM_useRenameItem_PrintWindow(char_index, 0);
 
   CHAR_setWorkInt(char_index, CHAR_WORKRENAMEITEMNUM, -1);
-  CHAR_setWorkInt(char_index, CHAR_WORKRENAMEITEMINDEX, haveitemindex);
+  CHAR_setWorkInt(char_index, CHAR_WORKRENAMEITEMINDEX, haveitem_index);
   /*
     char buf[256];
-    int itemindex = CHAR_getItemIndex( char_index, haveitemindex);
-    if( !ITEM_CHECKINDEX( itemindex) ) return;
-    sprintf( buf, "%s�����ѱ�ȡ����", ITEM_getChar( itemindex, ITEM_NAME));
+    int item_index = CHAR_getItemIndex( char_index, haveitem_index);
+    if( !ITEM_CHECKINDEX( item_index) ) return;
+    sprintf( buf, "%s�����ѱ�ȡ����", ITEM_getChar( item_index, ITEM_NAME));
     CHAR_talkToCli( char_index, -1, "�����ѱ�ȡ����", CHAR_COLORRED );
 
     {
       LogItem(
         CHAR_getChar( char_index, CHAR_NAME ),
         CHAR_getChar( char_index, CHAR_CDKEY ),
-        itemindex,
+        item_index,
         "ħ����DEL",
         CHAR_getInt( char_index, CHAR_FLOOR),
         CHAR_getInt( char_index, CHAR_X ),
              CHAR_getInt( char_index, CHAR_Y ),
-            ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-        ITEM_getChar( itemindex, ITEM_NAME),
-        ITEM_getInt( itemindex, ITEM_ID)
+            ITEM_getChar( item_index, ITEM_UNIQUECODE),
+        ITEM_getChar( item_index, ITEM_NAME),
+        ITEM_getInt( item_index, ITEM_ID)
       );
     }
 
-    CHAR_setItemIndex( char_index, haveitemindex, -1);
-    CHAR_sendItemDataOne( char_index, haveitemindex);
-    ITEM_endExistItemsOne( itemindex );
+    CHAR_setItemIndex( char_index, haveitem_index, -1);
+    CHAR_sendItemDataOne( char_index, haveitem_index);
+    ITEM_endExistItemsOne( item_index );
   */
 }
 
@@ -1504,22 +1506,22 @@ void ITEM_useRenameItem_WindowResult(int char_index, int seqno, int select,
     } else {
       char message[1024];
       char buf[2048];
-      char haveitemindex = CHAR_getWorkInt(char_index, CHAR_WORKRENAMEITEMNUM);
-      int itemindex;
-      if (haveitemindex == -1) {
-        haveitemindex = (seqno - CHAR_WINDOWTYPE_SELECTRENAMEITEM_PAGE1) * 5 +
+      char haveitem_index = CHAR_getWorkInt(char_index, CHAR_WORKRENAMEITEMNUM);
+      int item_index;
+      if (haveitem_index == -1) {
+        haveitem_index = (seqno - CHAR_WINDOWTYPE_SELECTRENAMEITEM_PAGE1) * 5 +
                         (atoi(data) - 1);
-        CHAR_setWorkInt(char_index, CHAR_WORKRENAMEITEMNUM, haveitemindex);
+        CHAR_setWorkInt(char_index, CHAR_WORKRENAMEITEMNUM, haveitem_index);
       }
-      itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+      item_index = CHAR_getItemIndex(char_index, haveitem_index);
 
       snprintf(message, sizeof(message),
                "%s ����Ҫ����\n"
                "����������\n"
                "ȫ��13����, ����26����",
-               ITEM_getChar(itemindex, ITEM_NAME));
+               ITEM_getChar(item_index, ITEM_NAME));
 
-      lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
                        WINDOW_BUTTONTYPE_OKCANCEL,
                        CHAR_WINDOWTYPE_SELECTRENAMEITEM_RENAME, -1,
                        makeEscapeString(message, buf, sizeof(buf)));
@@ -1564,51 +1566,51 @@ void ITEM_useRenameItem_WindowResult(int char_index, int seqno, int select,
     }
 
     if (!flg) {
-      lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK,
+      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK,
                        CHAR_WINDOWTYPE_SELECTRENAMEITEM_RENAME_ATTENTION, -1,
                        makeEscapeString(message, buf, sizeof(buf)));
     } else {
-      char haveitemindex = CHAR_getWorkInt(char_index, CHAR_WORKRENAMEITEMNUM);
-      int itemindex;
-      int renameitemindex;
+      char haveitem_index = CHAR_getWorkInt(char_index, CHAR_WORKRENAMEITEMNUM);
+      int item_index;
+      int renameitem_index;
       int renameitemhaveindex;
       int remain;
       char msgbuf[128];
 
-      itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-      if (!ITEM_CHECKINDEX(itemindex)) {
+      item_index = CHAR_getItemIndex(char_index, haveitem_index);
+      if (!ITEM_CHECKINDEX(item_index)) {
         print("%s %d err\n", __FILE__, __LINE__);
         return;
       }
-      ITEM_setChar(itemindex, ITEM_SECRETNAME, data);
+      ITEM_setChar(item_index, ITEM_SECRETNAME, data);
 #ifndef _PET_AND_ITEM_UP
-      ITEM_setChar(itemindex, ITEM_CDKEY, CHAR_getChar(char_index, CHAR_CDKEY));
+      ITEM_setChar(item_index, ITEM_CDKEY, CHAR_getChar(char_index, CHAR_CDKEY));
 #endif
-      CHAR_sendItemDataOne(char_index, haveitemindex);
+      CHAR_sendItemDataOne(char_index, haveitem_index);
       snprintf(msgbuf, sizeof(msgbuf), "�� %s ������ %s ",
-               ITEM_getChar(itemindex, ITEM_NAME), data);
+               ITEM_getChar(item_index, ITEM_NAME), data);
       CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORYELLOW);
       renameitemhaveindex =
           CHAR_getWorkInt(char_index, CHAR_WORKRENAMEITEMINDEX);
-      renameitemindex = CHAR_getItemIndex(char_index, renameitemhaveindex);
-      if (!ITEM_CHECKINDEX(renameitemindex)) {
+      renameitem_index = CHAR_getItemIndex(char_index, renameitemhaveindex);
+      if (!ITEM_CHECKINDEX(renameitem_index)) {
         print("%s %d err\n", __FILE__, __LINE__);
         return;
       }
-      remain = atoi(ITEM_getChar(renameitemindex, ITEM_ARGUMENT));
+      remain = atoi(ITEM_getChar(renameitem_index, ITEM_ARGUMENT));
       if (remain != 0) {
         remain--;
         if (remain <= 0) {
           snprintf(msgbuf, sizeof(msgbuf), "%s ��ʧ��",
-                   ITEM_getChar(renameitemindex, ITEM_NAME));
+                   ITEM_getChar(renameitem_index, ITEM_NAME));
           CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORYELLOW);
           CHAR_setItemIndex(char_index, renameitemhaveindex, -1);
           CHAR_sendItemDataOne(char_index, renameitemhaveindex);
-          ITEM_endExistItemsOne(renameitemindex);
+          ITEM_endExistItemsOne(renameitem_index);
         } else {
           char buf[32];
           snprintf(buf, sizeof(buf), "%d", remain);
-          ITEM_setChar(renameitemindex, ITEM_ARGUMENT, buf);
+          ITEM_setChar(renameitem_index, ITEM_ARGUMENT, buf);
         }
       }
     }
@@ -1619,18 +1621,18 @@ void ITEM_useRenameItem_WindowResult(int char_index, int seqno, int select,
 //  ���г�Ƿë  ���������ѣ�
 //    �������ݱ�ݷ¼�ĸة���  ��ë��̫��  ���  �  įë  �����£�
 //-------------------------------------------------------------------------
-void ITEM_dropDice(int char_index, int itemindex) {
+void ITEM_dropDice(int char_index, int item_index) {
   char *dicename[] = {"һ", "��", "��", "��", "��", "��"};
   int diceimagenumber[] = {24298, 24299, 24300, 24301, 24302, 24303};
   int r = RAND(0, 5);
 
   //   �  įë��
-  ITEM_setInt(itemindex, ITEM_VAR1,
-              ITEM_getInt(itemindex, ITEM_BASEIMAGENUMBER));
+  ITEM_setInt(item_index, ITEM_VAR1,
+              ITEM_getInt(item_index, ITEM_BASEIMAGENUMBER));
   //   �  į��ޥ
-  ITEM_setInt(itemindex, ITEM_BASEIMAGENUMBER, diceimagenumber[r]);
+  ITEM_setInt(item_index, ITEM_BASEIMAGENUMBER, diceimagenumber[r]);
   //   ��ޥ
-  ITEM_setChar(itemindex, ITEM_SECRETNAME, dicename[r]);
+  ITEM_setChar(item_index, ITEM_SECRETNAME, dicename[r]);
 
   // ���������ͷ���ʧ�����߼�˪����������ƥ�浤��ƥ�ݳ��ƥ��֧��ئ�У�
 }
@@ -1638,12 +1640,12 @@ void ITEM_dropDice(int char_index, int itemindex) {
 //  ���г�Ƿë  ���������ѣ�
 //  �������ݱ��  ���  �  įë���  �ʣ�
 //-------------------------------------------------------------------------
-void ITEM_pickupDice(int char_index, int itemindex) {
+void ITEM_pickupDice(int char_index, int item_index) {
   //   �  įë���  �ʣ�
-  ITEM_setInt(itemindex, ITEM_BASEIMAGENUMBER,
-              ITEM_getInt(itemindex, ITEM_VAR1));
+  ITEM_setInt(item_index, ITEM_BASEIMAGENUMBER,
+              ITEM_getInt(item_index, ITEM_VAR1));
   //   ������  ��
-  ITEM_setChar(itemindex, ITEM_SECRETNAME, ITEM_getChar(itemindex, ITEM_NAME));
+  ITEM_setChar(item_index, ITEM_SECRETNAME, ITEM_getChar(item_index, ITEM_NAME));
 }
 enum {
   ITEM_LOTTERY_1ST, // 1�
@@ -1776,28 +1778,28 @@ BOOL ITEM_initLottery(ITEM_Item *itm) {
 //  ������������پ���ʧ��  ة��
 //  �����£�
 //-------------------------------------------------------------------------
-void ITEM_useLottery(int char_index, int toindex, int haveitemindex) {
+void ITEM_useLottery(int char_index, int toindex, int haveitem_index) {
   int i, j;
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  int count = ITEM_getInt(itemindex, ITEM_VAR2);
-  int hit = ITEM_getInt(itemindex, ITEM_VAR1);
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  int count = ITEM_getInt(item_index, ITEM_VAR2);
+  int hit = ITEM_getInt(item_index, ITEM_VAR1);
   char buff[1024];
   char num[6][3] = {{"A"}, {"B"}, {"C"}, {"D"}, {"E"}, {"F"}};
   char numbuff[128];
   char *n;
   int result;
   BOOL flg;
-  if (!ITEM_CHECKINDEX(itemindex))
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   if (count == 0) {
-    ITEM_setChar(itemindex, ITEM_EFFECTSTRING, "");
+    ITEM_setChar(item_index, ITEM_EFFECTSTRING, "");
   } else if (count == 6) {
-    CHAR_setItemIndex(char_index, haveitemindex, -1);
-    CHAR_sendItemDataOne(char_index, haveitemindex);
-    ITEM_endExistItemsOne(itemindex);
+    CHAR_setItemIndex(char_index, haveitem_index, -1);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
+    ITEM_endExistItemsOne(item_index);
     return;
   }
-  n = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  n = ITEM_getChar(item_index, ITEM_ARGUMENT);
   result = (int)n[count] - 1;
 
   flg = FALSE;
@@ -1810,33 +1812,33 @@ void ITEM_useLottery(int char_index, int toindex, int haveitemindex) {
       }
     }
   }
-  memcpy(numbuff, ITEM_getChar(itemindex, ITEM_EFFECTSTRING), (count)*2);
+  memcpy(numbuff, ITEM_getChar(item_index, ITEM_EFFECTSTRING), (count)*2);
   snprintf(buff, sizeof(buff), "%s%s", numbuff, num[result]);
   count++;
-  ITEM_setInt(itemindex, ITEM_VAR2, count);
+  ITEM_setInt(item_index, ITEM_VAR2, count);
   if (count >= 6) {
     if (hit != ITEM_LOTTERY_NONE) {
-      int newitemindex;
+      int newitem_index;
       char strbuff[1024];
       char msgbuff[1024];
-      CHAR_setItemIndex(char_index, haveitemindex, -1);
-      ITEM_endExistItemsOne(itemindex);
-      newitemindex = ITEM_makeItemAndRegist(2729 + hit);
-      CHAR_setItemIndex(char_index, haveitemindex, newitemindex);
+      CHAR_setItemIndex(char_index, haveitem_index, -1);
+      ITEM_endExistItemsOne(item_index);
+      newitem_index = ITEM_makeItemAndRegist(2729 + hit);
+      CHAR_setItemIndex(char_index, haveitem_index, newitem_index);
       snprintf(strbuff, sizeof(strbuff), "%s                %s", buff,
-               ITEM_getChar(newitemindex, ITEM_EFFECTSTRING));
-      ITEM_setChar(newitemindex, ITEM_EFFECTSTRING, strbuff);
-      CHAR_sendItemDataOne(char_index, haveitemindex);
+               ITEM_getChar(newitem_index, ITEM_EFFECTSTRING));
+      ITEM_setChar(newitem_index, ITEM_EFFECTSTRING, strbuff);
+      CHAR_sendItemDataOne(char_index, haveitem_index);
       snprintf(msgbuff, sizeof(msgbuff), "���˵�%d��", hit + 1);
       CHAR_talkToCli(char_index, -1, msgbuff, CHAR_COLORYELLOW);
     } else {
-      //            CHAR_setItemIndex( char_index , haveitemindex, -1 );
+      //            CHAR_setItemIndex( char_index , haveitem_index, -1 );
       char strbuff[1024];
       snprintf(strbuff, sizeof(strbuff), "%s                       û��,�´�����",
                buff);
-      ITEM_setChar(itemindex, ITEM_EFFECTSTRING, strbuff);
-      CHAR_sendItemDataOne(char_index, haveitemindex);
-      //            ITEM_endExistItemsOne( itemindex );
+      ITEM_setChar(item_index, ITEM_EFFECTSTRING, strbuff);
+      CHAR_sendItemDataOne(char_index, haveitem_index);
+      //            ITEM_endExistItemsOne( item_index );
       //            CHAR_talkToCli( char_index, -1,
       //                            "����ľ��",
       //                            CHAR_COLORWHITE );
@@ -1851,20 +1853,20 @@ void ITEM_useLottery(int char_index, int toindex, int haveitemindex) {
     } else {
       strcpy(strbuff, buff);
     }
-    ITEM_setChar(itemindex, ITEM_EFFECTSTRING, strbuff);
-    CHAR_sendItemDataOne(char_index, haveitemindex);
+    ITEM_setChar(item_index, ITEM_EFFECTSTRING, strbuff);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
   }
 }
 
 void ITEM_WarpDelErrorItem(int char_index) {
   int j;
   for (j = 0; j < CheckCharMaxItem(char_index); j++) {
-    int itemindex = CHAR_getItemIndex(char_index, j);
-    if (ITEM_CHECKINDEX(itemindex)) {
-      int id = ITEM_getInt(itemindex, ITEM_ID);
+    int item_index = CHAR_getItemIndex(char_index, j);
+    if (ITEM_CHECKINDEX(item_index)) {
+      int id = ITEM_getInt(item_index, ITEM_ID);
       if (id == 2609 || id == 2704) {
         CHAR_setItemIndex(char_index, j, -1);
-        ITEM_endExistItemsOne(itemindex);
+        ITEM_endExistItemsOne(item_index);
         CHAR_sendItemDataOne(char_index, j);
       }
     }
@@ -1921,11 +1923,11 @@ BOOL ITEM_WarpForAny(int char_index, int ff, int fx, int fy, int flg) {
 // andy_end
 
 // Robin 0523
-void ITEM_useWarp(int char_index, int toindex, int haveitemindex) {
+void ITEM_useWarp(int char_index, int toindex, int haveitem_index) {
   char *arg;
-  int itemindex, warp_t, warp_fl, warp_x, warp_y;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index, warp_t, warp_fl, warp_x, warp_y;
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
 #ifdef _ITEM_CHECKWARES
@@ -1935,7 +1937,7 @@ void ITEM_useWarp(int char_index, int toindex, int haveitemindex) {
     return;
   }
 #endif
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return;
   if (sscanf(arg, "%d %d %d %d", &warp_t, &warp_fl, &warp_x, &warp_y) != 4)
@@ -1943,14 +1945,14 @@ void ITEM_useWarp(int char_index, int toindex, int haveitemindex) {
   if (ITEM_WarpForAny(char_index, warp_fl, warp_x, warp_y, warp_t) == FALSE)
     return;
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
   CHAR_sendStatusString(char_index, "P");
 }
 
 #ifdef _USEWARP_FORNUM
-void ITEM_useWarpForNum(int char_index, int toindex, int haveitemindex) {
+void ITEM_useWarpForNum(int char_index, int toindex, int haveitem_index) {
   char *arg;
-  int flg, ff, fx, fy, itemindex, usenum = 0, i;
+  int flg, ff, fx, fy, item_index, usenum = 0, i;
   int Mf, Mx, My;
   int MapPoint[12] = {100, 200, 300, 400, 700, 701,
                       702, 703, 704, 705, 707, 708};
@@ -1967,10 +1969,10 @@ void ITEM_useWarpForNum(int char_index, int toindex, int haveitemindex) {
                              "�����½����",
                              "����������"};
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return;
 
@@ -1980,7 +1982,7 @@ void ITEM_useWarpForNum(int char_index, int toindex, int haveitemindex) {
   Mx = CHAR_getInt(char_index, CHAR_X);
   My = CHAR_getInt(char_index, CHAR_Y);
 
-  usenum = ITEM_getInt(itemindex, ITEM_DAMAGEBREAK);
+  usenum = ITEM_getInt(item_index, ITEM_DAMAGEBREAK);
   for (i = 0; i < 12; i++) {
     if (Mf == MapPoint[i]) {
       break;
@@ -1994,7 +1996,7 @@ void ITEM_useWarpForNum(int char_index, int toindex, int haveitemindex) {
   }
 #endif
   if (--usenum <= 0) {
-    CHAR_DelItem(char_index, haveitemindex);
+    CHAR_DelItem(char_index, haveitem_index);
     CHAR_sendStatusString(char_index, "P");
   } else {
     char buf[256];
@@ -2005,12 +2007,12 @@ void ITEM_useWarpForNum(int char_index, int toindex, int haveitemindex) {
       return;
     }
     sprintf(buf, "%d %d %d %d", flg, Mf, Mx, My);
-    ITEM_setChar(itemindex, ITEM_ARGUMENT, buf);
-    ITEM_setInt(itemindex, ITEM_DAMAGEBREAK, usenum);
+    ITEM_setChar(item_index, ITEM_ARGUMENT, buf);
+    ITEM_setInt(item_index, ITEM_DAMAGEBREAK, usenum);
     sprintf(buf, "���м�¼��(%s,%d,%d)", MapString[i], Mx, My);
-    ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf);
+    ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf);
     CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
-    CHAR_sendItemDataOne(char_index, haveitemindex);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
   }
 
   // WON ADD
@@ -2020,9 +2022,9 @@ void ITEM_useWarpForNum(int char_index, int toindex, int haveitemindex) {
 #endif
 
 // Robin 0707 petFollow
-void ITEM_petFollow(int char_index, int toindex, int haveitemindex) {
+void ITEM_petFollow(int char_index, int toindex, int haveitem_index) {
   char *arg;
-  int itemindex, followLv, haveindex, i;
+  int item_index, followLv, haveindex, i;
   if (CHAR_getWorkInt(char_index, CHAR_WORKPETFOLLOW) != -1) {
     if (CHAR_CHECKINDEX(CHAR_getWorkInt(char_index, CHAR_WORKPETFOLLOW))) {
       CHAR_talkToCli(char_index, -1, "�����ջطų��ĳ��",
@@ -2041,10 +2043,10 @@ void ITEM_petFollow(int char_index, int toindex, int haveitemindex) {
 
   if (CHAR_CHECKINDEX(toindex) == FALSE)
     return;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return;
 
@@ -2071,9 +2073,9 @@ void ITEM_petFollow(int char_index, int toindex, int haveitemindex) {
 }
 
 #ifdef _PETFOLLOW_NEW_
-void ITEM_petFollowNew(int char_index, int toindex, int haveitemindex) {
+void ITEM_petFollowNew(int char_index, int toindex, int haveitem_index) {
   char *arg;
-  int itemindex, followLv, haveindex, i;
+  int item_index, followLv, haveindex, i;
   int petnum;
   petnum = 0;
   int c = 0;
@@ -2104,10 +2106,10 @@ void ITEM_petFollowNew(int char_index, int toindex, int haveitemindex) {
 
   if (CHAR_CHECKINDEX(toindex) == FALSE)
     return;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return;
 
@@ -2134,10 +2136,10 @@ void ITEM_petFollowNew(int char_index, int toindex, int haveitemindex) {
 }
 #endif
 // Nuke start 0624: Hero's bless
-void ITEM_useSkup(int char_index, int toindex, int haveitemindex) {
-  int itemindex;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_useSkup(int char_index, int toindex, int haveitem_index) {
+  int item_index;
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 #ifdef _SUPER
   if (CHAR_getInt(char_index, CHAR_SUPER) >= 1) {
@@ -2151,33 +2153,33 @@ void ITEM_useSkup(int char_index, int toindex, int haveitemindex) {
   CHAR_Skillupsend(char_index);
   CHAR_talkToCli(char_index, -1, "����ܵ��Լ��������������ˡ�", CHAR_COLORWHITE);
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 // Nuke end
 extern void setNoenemy();
 // Nuke start 0626: Dragon's bless
-void ITEM_useNoenemy(int char_index, int toindex, int haveitemindex) {
-  int itemindex, fd;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_useNoenemy(int char_index, int toindex, int haveitem_index) {
+  int item_index, fd;
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   fd = CHAR_getWorkInt(char_index, CHAR_WORKFD);
   setNoenemy(fd);
   CHAR_talkToCli(char_index, -1, "����ܵ��ܱߵ�ɱ����ʧ�ˡ�", CHAR_COLORWHITE);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 // Nuke end
 
 // Arminius 7.2: Ra's amulet
-void ITEM_equipNoenemy(int char_index, int itemindex) {
+void ITEM_equipNoenemy(int char_index, int item_index) {
   char buf[4096];
   int evadelevel;
   int fl, fd;
 
-  if (ITEM_CHECKINDEX(itemindex) == FALSE)
+  if (ITEM_CHECKINDEX(item_index) == FALSE)
     return;
 
-  if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "noen", buf,
+  if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "noen", buf,
                        sizeof(buf)) == FALSE) {
     return;
   }
@@ -2217,15 +2219,15 @@ void ITEM_equipNoenemy(int char_index, int itemindex) {
 }
 
 #ifdef _Item_MoonAct
-void ITEM_randEnemyEquipOne(int char_index, int toindex, int haveitemindex) {
-  int itemindex, RandNum = 0;
+void ITEM_randEnemyEquipOne(int char_index, int toindex, int haveitem_index) {
+  int item_index, RandNum = 0;
   char buf[256];
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "rand", buf,
+  if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "rand", buf,
                        sizeof(buf)) == FALSE) {
     return;
   }
@@ -2234,21 +2236,21 @@ void ITEM_randEnemyEquipOne(int char_index, int toindex, int haveitemindex) {
     int fd = CHAR_getWorkInt(char_index, CHAR_WORKFD);
     setEqRandenemy(fd, RandNum);
     CHAR_talkToCli(char_index, -1, "�����ʽ����ˡ�", CHAR_COLORWHITE);
-    sprintf(buf, "���� %s��ʧ�ˡ�", ITEM_getChar(itemindex, ITEM_NAME));
+    sprintf(buf, "���� %s��ʧ�ˡ�", ITEM_getChar(item_index, ITEM_NAME));
     CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
-    CHAR_DelItem(char_index, haveitemindex);
+    CHAR_DelItem(char_index, haveitem_index);
     return;
   }
 }
 
-void ITEM_randEnemyEquip(int char_index, int itemindex) {
+void ITEM_randEnemyEquip(int char_index, int item_index) {
   char buf[4096];
   int RandNum = 0;
   int fd;
 
-  if (ITEM_CHECKINDEX(itemindex) == FALSE)
+  if (ITEM_CHECKINDEX(item_index) == FALSE)
     return;
-  if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "rand", buf,
+  if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "rand", buf,
                        sizeof(buf)) == FALSE) {
     return;
   }
@@ -2261,11 +2263,11 @@ void ITEM_randEnemyEquip(int char_index, int itemindex) {
     return;
   }
 }
-void ITEM_RerandEnemyEquip(int char_index, int itemindex) {
+void ITEM_RerandEnemyEquip(int char_index, int item_index) {
   int RandNum = 0;
   int fd;
 
-  if (ITEM_CHECKINDEX(itemindex) == FALSE)
+  if (ITEM_CHECKINDEX(item_index) == FALSE)
     return;
 
   fd = CHAR_getWorkInt(char_index, CHAR_WORKFD);
@@ -2280,19 +2282,19 @@ void ITEM_RerandEnemyEquip(int char_index, int itemindex) {
 #endif
 
 #ifdef _ITEM_WATERWORDSTATUS
-void ITEM_WaterWordStatus(int char_index, int toindex, int haveitemindex) {
-  int itemindex;
+void ITEM_WaterWordStatus(int char_index, int toindex, int haveitem_index) {
+  int item_index;
   char itemarg[256];
 
   if (!CHAR_CHECKINDEX(char_index)) {
     return;
   }
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex)) {
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index)) {
     return;
   }
 
-  if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "time", itemarg,
+  if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "time", itemarg,
                        sizeof(itemarg)) != FALSE) {
     char token[256];
     int nums = CHAR_getWorkInt(char_index, CHAR_WORKSTATUSWATER);
@@ -2303,9 +2305,9 @@ void ITEM_WaterWordStatus(int char_index, int toindex, int haveitemindex) {
       return;
     }
     CHAR_setWorkInt(char_index, CHAR_WORKSTATUSWATER, nums + atoi(itemarg));
-    CHAR_setItemIndex(char_index, haveitemindex, -1);
-    CHAR_sendItemDataOne(char_index, haveitemindex);
-    ITEM_endExistItemsOne(itemindex);
+    CHAR_setItemIndex(char_index, haveitem_index, -1);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
+    ITEM_endExistItemsOne(item_index);
 
     sprintf(token, "ˮ�к���ʱ������%d�֣��ܼ�%d�֡�", atoi(itemarg),
             CHAR_getWorkInt(char_index, CHAR_WORKSTATUSWATER));
@@ -2317,14 +2319,14 @@ void ITEM_WaterWordStatus(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _CHIKULA_STONE
-void ITEM_ChikulaStone(int char_index, int toindex, int haveitemindex) {
-  int itemindex, fd;
+void ITEM_ChikulaStone(int char_index, int toindex, int haveitem_index) {
+  int item_index, fd;
   char itemarg[256];
 
   if (!CHAR_CHECKINDEX(char_index))
     return;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
   fd = CHAR_getWorkInt(char_index, CHAR_WORKFD);
@@ -2332,11 +2334,11 @@ void ITEM_ChikulaStone(int char_index, int toindex, int haveitemindex) {
   CHAR_setWorkInt(char_index, CHAR_WORKCHIKULAMP, 0);
   setChiStone(fd, 0); // 1hp 2mp
 
-  if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "hp", itemarg,
+  if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "hp", itemarg,
                        sizeof(itemarg)) != FALSE) {
     setChiStone(fd, 1);
     CHAR_setWorkInt(char_index, CHAR_WORKCHIKULAHP, atoi(itemarg));
-  } else if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "mp",
+  } else if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "mp",
                               itemarg, sizeof(itemarg)) != FALSE) {
     setChiStone(fd, 2);
     CHAR_setWorkInt(char_index, CHAR_WORKCHIKULAMP, atoi(itemarg));
@@ -2344,31 +2346,31 @@ void ITEM_ChikulaStone(int char_index, int toindex, int haveitemindex) {
   }
 
   CHAR_talkToCli(char_index, -1, "�����������ף����", CHAR_COLORWHITE);
-  CHAR_setItemIndex(char_index, haveitemindex, -1);
-  CHAR_sendItemDataOne(char_index, haveitemindex);
-  ITEM_endExistItemsOne(itemindex);
+  CHAR_setItemIndex(char_index, haveitem_index, -1);
+  CHAR_sendItemDataOne(char_index, haveitem_index);
+  ITEM_endExistItemsOne(item_index);
 }
 #endif
 
 #ifdef _ITEM_ORNAMENTS
-void ITEM_PutOrnaments(int char_index, int itemindex) {
+void ITEM_PutOrnaments(int char_index, int item_index) {
   char *arg = NULL;
   char itemname[256];
   int bbnums = 0;
   if (!CHAR_CHECKINDEX(char_index))
     return;
-  if (!ITEM_CHECKINDEX(itemindex))
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return; // ITEM_BASEIMAGENUMBER
   bbnums = atoi(arg);
-  ITEM_setInt(itemindex, ITEM_BASEIMAGENUMBER, bbnums);
-  ITEM_setWorkInt(itemindex, ITEM_CANPICKUP, 1);
+  ITEM_setInt(item_index, ITEM_BASEIMAGENUMBER, bbnums);
+  ITEM_setWorkInt(item_index, ITEM_CANPICKUP, 1);
 
   sprintf(itemname, "%s%s%s", CHAR_getChar(char_index, CHAR_NAME), "��",
-          ITEM_getChar(itemindex, ITEM_SECRETNAME));
-  ITEM_setChar(itemindex, ITEM_SECRETNAME, itemname);
+          ITEM_getChar(item_index, ITEM_SECRETNAME));
+  ITEM_setChar(item_index, ITEM_SECRETNAME, itemname);
 }
 #endif
 
@@ -2390,7 +2392,7 @@ void ITEM_PutOrnaments(int char_index, int itemindex) {
 #endif//_SUIT_TWFWENDUM
 */
 void ITEM_CheckSuitEquip(int char_index) {
-  int i, j, itemindex, defCode = -1, same = 0;
+  int i, j, item_index, defCode = -1, same = 0;
   int nItem[CHAR_STARTITEMARRAY];
   int maxitem;
   struct tagIntSuit {
@@ -2450,10 +2452,10 @@ void ITEM_CheckSuitEquip(int char_index) {
   j = 0;
   for (i = 0; i < CHAR_STARTITEMARRAY; i++) {
     nItem[i] = -1;
-    itemindex = CHAR_getItemIndex(char_index, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = CHAR_getItemIndex(char_index, i);
+    if (!ITEM_CHECKINDEX(item_index))
       continue;
-    nItem[j++] = ITEM_getInt(itemindex, ITEM_SUITCODE);
+    nItem[j++] = ITEM_getInt(item_index, ITEM_SUITCODE);
   }
   for (i = 0; i < j && defCode == -1; i++) {
     int k;
@@ -2472,12 +2474,12 @@ void ITEM_CheckSuitEquip(int char_index) {
   CHAR_setWorkInt(char_index, CHAR_WORKSUITITEM, defCode);
   for (i = 0; i < CHAR_STARTITEMARRAY; i++) {
     char *buf, buf1[256];
-    itemindex = CHAR_getItemIndex(char_index, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = CHAR_getItemIndex(char_index, i);
+    if (!ITEM_CHECKINDEX(item_index))
       continue;
-    if (ITEM_getInt(itemindex, ITEM_SUITCODE) == defCode) {
+    if (ITEM_getInt(item_index, ITEM_SUITCODE) == defCode) {
       for (j = 0; j < maxitem /*MAX_SUITTYPE*/; j++) {
-        buf = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+        buf = ITEM_getChar(item_index, ITEM_ARGUMENT);
         if (strstr(buf, ListSuit[j].fun) == NULL)
           continue;
         if (NPC_Util_GetStrFromStrWithDelim(buf, ListSuit[j].fun, buf1,
@@ -2490,21 +2492,21 @@ void ITEM_CheckSuitEquip(int char_index) {
   CHAR_complianceParameter(char_index);
 }
 
-void ITEM_suitEquip(int char_index, int itemindex) {
+void ITEM_suitEquip(int char_index, int item_index) {
   ITEM_CheckSuitEquip(char_index);
 }
 
-void ITEM_ResuitEquip(int char_index, int itemindex) {
+void ITEM_ResuitEquip(int char_index, int item_index) {
   ITEM_CheckSuitEquip(char_index);
 }
 #endif //_SUIT_ITEM
 
-void ITEM_remNoenemy(int char_index, int itemindex) {
+void ITEM_remNoenemy(int char_index, int item_index) {
   int fd = CHAR_getWorkInt(char_index, CHAR_WORKFD);
   int el = getEqNoenemy(fd);
   int fl = CHAR_getInt(char_index, CHAR_FLOOR);
 
-  if (ITEM_CHECKINDEX(itemindex) == FALSE)
+  if (ITEM_CHECKINDEX(item_index) == FALSE)
     return;
 
   clearEqNoenemy(CHAR_getWorkInt(char_index, CHAR_WORKFD));
@@ -2532,10 +2534,10 @@ void ITEM_remNoenemy(int char_index, int itemindex) {
 }
 
 extern void setStayEncount(int fd);
-void ITEM_useEncounter(int char_index, int toindex, int haveitemindex) {
-  int itemindex, fd;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_useEncounter(int char_index, int toindex, int haveitem_index) {
+  int item_index, fd;
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
   fd = CHAR_getWorkInt(char_index, CHAR_WORKFD);
@@ -2554,12 +2556,12 @@ void ITEM_useEncounter(int char_index, int toindex, int haveitemindex) {
   }
 #endif
   CHAR_talkToCli(char_index, -1, "����ܵ��ܱ�ͻȻ����ɱ����", CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 
 #ifdef _Item_DeathAct
-void ITEM_UseDeathCounter(int char_index, int toindex, int haveitemindex) {
-  int itemindex, fd;
+void ITEM_UseDeathCounter(int char_index, int toindex, int haveitem_index) {
+  int item_index, fd;
   int itemmaxuse = -1;
   char buf1[256];
   char *itemarg;
@@ -2568,12 +2570,12 @@ void ITEM_UseDeathCounter(int char_index, int toindex, int haveitemindex) {
   BOOL Useflag = FALSE;
   int i = 1;
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
 #ifdef _ITEM_STONE
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   while (1) {
     if (getStringFromIndexWithDelim(itemarg, "|", i, itemnumstr,
                                     sizeof(itemnumstr)) == FALSE)
@@ -2586,22 +2588,22 @@ void ITEM_UseDeathCounter(int char_index, int toindex, int haveitemindex) {
     i++;
   }
   if (okfloor != 0) { // ��ֵ�ʯͷ
-    itemmaxuse = ITEM_getInt(itemindex, ITEM_DAMAGEBREAK);
+    itemmaxuse = ITEM_getInt(item_index, ITEM_DAMAGEBREAK);
     if (itemmaxuse != -1) {
       itemmaxuse--;
-      ITEM_setInt(itemindex, ITEM_DAMAGEBREAK, itemmaxuse);
+      ITEM_setInt(item_index, ITEM_DAMAGEBREAK, itemmaxuse);
       if (itemmaxuse < 1) {
-        sprintf(buf1, "%s��ʧ�ˡ�", ITEM_getChar(itemindex, ITEM_NAME));
+        sprintf(buf1, "%s��ʧ�ˡ�", ITEM_getChar(item_index, ITEM_NAME));
         CHAR_talkToCli(char_index, -1, buf1, CHAR_COLORYELLOW);
-        CHAR_DelItem(char_index, haveitemindex);
+        CHAR_DelItem(char_index, haveitem_index);
         if (Useflag == FALSE) {
           CHAR_talkToCli(char_index, -1, "û�з����κ����飡", CHAR_COLORYELLOW);
           return;
         }
       } else {
         sprintf(buf1, "ԭ�����У���ʹ�ô���ʣ��%d�Ρ�", itemmaxuse);
-        ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf1);
-        CHAR_sendItemDataOne(char_index, haveitemindex);
+        ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf1);
+        CHAR_sendItemDataOne(char_index, haveitem_index);
         if (Useflag == FALSE) {
           CHAR_talkToCli(char_index, -1, "û�з����κ����飡", CHAR_COLORYELLOW);
           return;
@@ -2611,9 +2613,9 @@ void ITEM_UseDeathCounter(int char_index, int toindex, int haveitemindex) {
       setStayEncount(fd);
       CHAR_talkToCli(char_index, -1, "����������������Ϣ��", CHAR_COLORYELLOW);
     } else {
-      sprintf(buf1, "%s��ʧ�ˡ�", ITEM_getChar(itemindex, ITEM_NAME));
+      sprintf(buf1, "%s��ʧ�ˡ�", ITEM_getChar(item_index, ITEM_NAME));
       CHAR_talkToCli(char_index, -1, buf1, CHAR_COLORYELLOW);
-      CHAR_DelItem(char_index, haveitemindex);
+      CHAR_DelItem(char_index, haveitem_index);
       if (Useflag == FALSE) {
         CHAR_talkToCli(char_index, -1, "û�з����κ����飡", CHAR_COLORYELLOW);
         return;
@@ -2625,32 +2627,32 @@ void ITEM_UseDeathCounter(int char_index, int toindex, int haveitemindex) {
   } else { // ��ħ��ʯ
 #endif
 #ifdef _ITEM_MAXUSERNUM
-    itemmaxuse = ITEM_getInt(itemindex, ITEM_DAMAGEBREAK);
+    itemmaxuse = ITEM_getInt(item_index, ITEM_DAMAGEBREAK);
     if (itemmaxuse != -1) {
       itemmaxuse--;
-      ITEM_setInt(itemindex, ITEM_DAMAGEBREAK, itemmaxuse);
+      ITEM_setInt(item_index, ITEM_DAMAGEBREAK, itemmaxuse);
       if (itemmaxuse < 1) {
-        sprintf(buf1, "���� %s��ʧ�ˡ�", ITEM_getChar(itemindex, ITEM_NAME));
+        sprintf(buf1, "���� %s��ʧ�ˡ�", ITEM_getChar(item_index, ITEM_NAME));
         CHAR_talkToCli(char_index, -1, buf1, CHAR_COLORYELLOW);
-        CHAR_DelItem(char_index, haveitemindex);
+        CHAR_DelItem(char_index, haveitem_index);
       } else {
         sprintf(buf1, "ԭ�����У���ʹ�ô���ʣ��%d�Ρ�", itemmaxuse);
-        ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf1);
-        CHAR_sendItemDataOne(char_index, haveitemindex);
+        ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf1);
+        CHAR_sendItemDataOne(char_index, haveitem_index);
       }
       fd = CHAR_getWorkInt(char_index, CHAR_WORKFD);
       setStayEncount(fd);
       CHAR_talkToCli(char_index, -1, "����ܵ��ܱ�ͻȻ����ɱ����", CHAR_COLORYELLOW);
     } else {
-      CHAR_DelItem(char_index, haveitemindex);
+      CHAR_DelItem(char_index, haveitem_index);
       return;
     }
 #else
   fd = CHAR_getWorkInt(char_index, CHAR_WORKFD);
   setStayEncount(fd);
-  sprintf(buf1, "���� %s��ʧ�ˡ�", ITEM_getChar(itemindex, ITEM_NAME));
+  sprintf(buf1, "���� %s��ʧ�ˡ�", ITEM_getChar(item_index, ITEM_NAME));
   CHAR_talkToCli(char_index, -1, buf1, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 #endif
 #ifdef _ITEM_STONE
   }
@@ -2672,19 +2674,19 @@ void ITEM_UseDeathCounter(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _CHRISTMAS_REDSOCKS
-void ITEM_useMaxRedSocks(int char_index, int toindex, int haveitemindex) {
-  int itemtimes = -1, itemindex;
+void ITEM_useMaxRedSocks(int char_index, int toindex, int haveitem_index) {
+  int itemtimes = -1, item_index;
   char *itemarg = NULL;
   int present[13] = {13061, 13062, 13063, 13064, 13088,
                      13089, 13090, 13091, // 1.
                      14756, 17256, 13092, 19692, 20594};
   int nowtimes = time(NULL);
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0") {
     CHAR_talkToCli(char_index, -1, "������Ч!", CHAR_COLORYELLOW);
     return;
@@ -2695,10 +2697,10 @@ void ITEM_useMaxRedSocks(int char_index, int toindex, int haveitemindex) {
     int si = 0, ret;
     char token[256];
     // ɾ��
-    CHAR_setItemIndex(char_index, haveitemindex, -1);
-    CHAR_sendItemDataOne(char_index, haveitemindex);
-    ITEM_endExistItemsOne(itemindex);
-    itemindex = -1;
+    CHAR_setItemIndex(char_index, haveitem_index, -1);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
+    ITEM_endExistItemsOne(item_index);
+    item_index = -1;
     // ����
     si = rand() % 100;
     if (si > 70) {
@@ -2708,18 +2710,18 @@ void ITEM_useMaxRedSocks(int char_index, int toindex, int haveitemindex) {
     } else {
       si = rand() % 8;
     }
-    itemindex = ITEM_makeItemAndRegist(present[si]);
-    if (!ITEM_CHECKINDEX(itemindex)) {
+    item_index = ITEM_makeItemAndRegist(present[si]);
+    if (!ITEM_CHECKINDEX(item_index)) {
       CHAR_talkToCli(char_index, -1, "������Ч!", CHAR_COLORYELLOW);
       return;
     }
-    ret = CHAR_addItemSpecificItemIndex(char_index, itemindex);
+    ret = CHAR_addItemSpecificItemIndex(char_index, item_index);
     if (ret < 0 || ret >= CheckCharMaxItem(char_index)) {
-      ITEM_endExistItemsOne(itemindex);
+      ITEM_endExistItemsOne(item_index);
       CHAR_talkToCli(char_index, -1, "�����÷���λ����!", CHAR_COLORYELLOW);
       return;
     }
-    sprintf(token, "�õ�%s", ITEM_getChar(itemindex, ITEM_NAME));
+    sprintf(token, "�õ�%s", ITEM_getChar(item_index, ITEM_NAME));
     CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
     CHAR_sendItemDataOne(char_index, ret);
   } else {
@@ -2736,10 +2738,10 @@ void ITEM_useMaxRedSocks(int char_index, int toindex, int haveitemindex) {
       defTimes = defTimes - (minute * 60);
       second = defTimes;
       sprintf(token, "%s����%d��%dСʱ%d��%d��ſ�ʹ��!",
-              ITEM_getChar(itemindex, ITEM_NAME), days, hours, minute, second);
+              ITEM_getChar(item_index, ITEM_NAME), days, hours, minute, second);
       CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
     } else if (nowtimes > itemtimes + (60 * 60 * 24)) {
-      sprintf(token, "%sʹ�������ѹ�!", ITEM_getChar(itemindex, ITEM_NAME));
+      sprintf(token, "%sʹ�������ѹ�!", ITEM_getChar(item_index, ITEM_NAME));
       CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
     }
   }
@@ -2747,8 +2749,8 @@ void ITEM_useMaxRedSocks(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _CHRISTMAS_REDSOCKS_NEW
-void ITEM_useMaxRedSocksNew(int char_index, int toindex, int haveitemindex) {
-  int itemindex;
+void ITEM_useMaxRedSocksNew(int char_index, int toindex, int haveitem_index) {
+  int item_index;
   char *itemarg = NULL;
   char itemnumstr[32];
   int itemnum = 0;
@@ -2756,11 +2758,11 @@ void ITEM_useMaxRedSocksNew(int char_index, int toindex, int haveitemindex) {
   int si = 0, ret, i;
   char token[256];
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0") {
     CHAR_talkToCli(char_index, -1, "���Ǹ�����ʥ����!", CHAR_COLORYELLOW);
     return;
@@ -2780,25 +2782,25 @@ void ITEM_useMaxRedSocksNew(int char_index, int toindex, int haveitemindex) {
   }
 
   // ɾ��
-  CHAR_setItemIndex(char_index, haveitemindex, -1);
-  CHAR_sendItemDataOne(char_index, haveitemindex);
-  ITEM_endExistItemsOne(itemindex);
-  itemindex = -1;
+  CHAR_setItemIndex(char_index, haveitem_index, -1);
+  CHAR_sendItemDataOne(char_index, haveitem_index);
+  ITEM_endExistItemsOne(item_index);
+  item_index = -1;
   // ����
   si = rand() % itemnum;
 
-  itemindex = ITEM_makeItemAndRegist(present[si]);
-  if (!ITEM_CHECKINDEX(itemindex)) {
+  item_index = ITEM_makeItemAndRegist(present[si]);
+  if (!ITEM_CHECKINDEX(item_index)) {
     CHAR_talkToCli(char_index, -1, "������Ч!", CHAR_COLORYELLOW);
     return;
   }
-  ret = CHAR_addItemSpecificItemIndex(char_index, itemindex);
+  ret = CHAR_addItemSpecificItemIndex(char_index, item_index);
   if (ret < 0 || ret >= CheckCharMaxItem(char_index)) {
-    ITEM_endExistItemsOne(itemindex);
+    ITEM_endExistItemsOne(item_index);
     CHAR_talkToCli(char_index, -1, "�����÷���λ����!", CHAR_COLORYELLOW);
     return;
   }
-  sprintf(token, "�õ�%s", ITEM_getChar(itemindex, ITEM_NAME));
+  sprintf(token, "�õ�%s", ITEM_getChar(item_index, ITEM_NAME));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
   CHAR_sendItemDataOne(char_index, ret);
 }
@@ -2806,10 +2808,10 @@ void ITEM_useMaxRedSocksNew(int char_index, int toindex, int haveitemindex) {
 
 #ifdef _PETSKILL_CANNEDFOOD
 void ITEM_useSkillCanned(int char_index, int toindex, int itemNo) {
-  int itemindex;
+  int item_index;
   char buf1[256];
-  itemindex = CHAR_getItemIndex(char_index, itemNo);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, itemNo);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   if (!CHAR_CHECKINDEX(toindex))
     return;
@@ -2831,7 +2833,7 @@ void ITEM_useSkillCanned(int char_index, int toindex, int itemNo) {
     CHAR_setWorkInt(char_index, CHAR_WORKRENAMEITEMINDEX, itemNo);
   } else {
     sprintf(buf1, "���� %s���޳���ʹ�á�",
-            ITEM_getChar(itemindex, ITEM_NAME));
+            ITEM_getChar(item_index, ITEM_NAME));
     CHAR_talkToCli(char_index, -1, buf1, CHAR_COLORYELLOW);
     return;
   }
@@ -2839,10 +2841,10 @@ void ITEM_useSkillCanned(int char_index, int toindex, int itemNo) {
 #endif
 
 #ifdef _ITEM_METAMO
-void ITEM_metamo(int char_index, int toindex, int haveitemindex) {
+void ITEM_metamo(int char_index, int toindex, int haveitem_index) {
 
   char *arg, msg[128];
-  int itemindex, metamoTime, haveindex, battlemode, i;
+  int item_index, metamoTime, haveindex, battlemode, i;
 
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
@@ -2928,11 +2930,11 @@ void ITEM_metamo(int char_index, int toindex, int haveitemindex) {
     return;
   }
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return;
   if (sscanf(arg, "%d", &metamoTime) != 1)
@@ -2954,11 +2956,11 @@ void ITEM_metamo(int char_index, int toindex, int haveitemindex) {
   CHAR_sendCToArroundCharacter(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
   CHAR_send_P_StatusString(char_index, CHAR_P_STRING_BASEBASEIMAGENUMBER);
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 #ifdef _ITEM_CRACKER
-void ITEM_Cracker(int char_index, int toindex, int haveitemindex) {
+void ITEM_Cracker(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   // �������Ƿ���Ч
   if (CHAR_CHECKINDEX(char_index) == FALSE)
@@ -2966,27 +2968,27 @@ void ITEM_Cracker(int char_index, int toindex, int haveitemindex) {
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   // ս����ʹ����Ч
   if (!battlemode)
-    ITEM_useCracker_Effect(char_index, toindex, haveitemindex);
+    ITEM_useCracker_Effect(char_index, toindex, haveitem_index);
   else
     CHAR_talkToCli(char_index, -1, "ʲ��Ҳû������", CHAR_COLORWHITE);
 }
 #endif
 
-void ITEM_AddPRSkillPercent(int char_index, int toindex, int haveitemindex) {
+void ITEM_AddPRSkillPercent(int char_index, int toindex, int haveitem_index) {
 #ifdef _PROFESSION_SKILL // WON ADD ����ְҵ����
   int level;
   char token[64];
-  int MySKPercent = 0, itemindex = -1, i;
+  int MySKPercent = 0, item_index = -1, i;
 
   if (!CHAR_CHECKINDEX(char_index))
     return;
   if (CHAR_getInt(char_index, PROFESSION_CLASS) == 0)
     return;
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  level = atoi(ITEM_getChar(itemindex, ITEM_ARGUMENT));
+  level = atoi(ITEM_getChar(item_index, ITEM_ARGUMENT));
 
   for (i = 0; i < PROFESSION_MAX_LEVEL; i++) {
     if (CHAR_getIntPSkill(char_index, i, SKILL_IDENTITY) == -1) {
@@ -2998,9 +3000,9 @@ void ITEM_AddPRSkillPercent(int char_index, int toindex, int haveitemindex) {
     CHAR_setIntPSkill(char_index, i, SKILL_LEVEL, MySKPercent);
   }
 
-  CHAR_setItemIndex(char_index, haveitemindex, -1);
-  CHAR_sendItemDataOne(char_index, haveitemindex);
-  ITEM_endExistItemsOne(itemindex);
+  CHAR_setItemIndex(char_index, haveitem_index, -1);
+  CHAR_sendItemDataOne(char_index, haveitem_index);
+  ITEM_endExistItemsOne(item_index);
   CHAR_sendStatusString(char_index, "S");
   CHAR_sendCToArroundCharacter(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
   sprintf(token, "����ְҵ��������������%d����", level);
@@ -3008,27 +3010,27 @@ void ITEM_AddPRSkillPercent(int char_index, int toindex, int haveitemindex) {
 #endif
 }
 
-void ITEM_AddPRSkillPoint(int char_index, int toindex, int haveitemindex) {
+void ITEM_AddPRSkillPoint(int char_index, int toindex, int haveitem_index) {
 #ifdef _PROFESSION_SKILL // WON ADD ����ְҵ����
   int point;
   char token[64];
-  int MyPRpoint = 0, itemindex = -1;
+  int MyPRpoint = 0, item_index = -1;
   if (!CHAR_CHECKINDEX(char_index))
     return;
   if (CHAR_getInt(char_index, PROFESSION_CLASS) == 0)
     return;
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  point = atoi(ITEM_getChar(itemindex, ITEM_ARGUMENT));
+  point = atoi(ITEM_getChar(item_index, ITEM_ARGUMENT));
 
   MyPRpoint = CHAR_getInt(char_index, PROFESSION_SKILL_POINT);
   CHAR_setInt(char_index, PROFESSION_SKILL_POINT, MyPRpoint + point);
 
-  CHAR_setItemIndex(char_index, haveitemindex, -1);
-  CHAR_sendItemDataOne(char_index, haveitemindex);
-  ITEM_endExistItemsOne(itemindex);
+  CHAR_setItemIndex(char_index, haveitem_index, -1);
+  CHAR_sendItemDataOne(char_index, haveitem_index);
+  ITEM_endExistItemsOne(item_index);
 
   CHAR_sendCToArroundCharacter(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
 
@@ -3039,7 +3041,7 @@ void ITEM_AddPRSkillPoint(int char_index, int toindex, int haveitemindex) {
 }
 
 #ifdef _ITEM_ADDEXP // vincent ��������
-void ITEM_Addexp(int char_index, int toindex, int haveitemindex) {
+void ITEM_Addexp(int char_index, int toindex, int haveitem_index) {
   // �������Ƿ���Ч
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return; // ʧ��
@@ -3058,10 +3060,10 @@ void ITEM_Addexp(int char_index, int toindex, int haveitemindex) {
     }
   }
 #if 1
-  ITEM_useAddexp_Effect(char_index, toindex, haveitemindex);
+  ITEM_useAddexp_Effect(char_index, toindex, haveitem_index);
 #else
   if (!CHAR_getWorkInt(char_index, CHAR_WORKITEM_ADDEXP)) {
-    ITEM_useAddexp_Effect(char_index, toindex, haveitemindex);
+    ITEM_useAddexp_Effect(char_index, toindex, haveitem_index);
   } else {
     CHAR_talkToCli(char_index, -1, "��ǰʹ��֮ҩЧ��Ȼ����", CHAR_COLORYELLOW);
   }
@@ -3070,34 +3072,34 @@ void ITEM_Addexp(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _ITEM_REFRESH // vincent ����쳣״̬����
-void ITEM_Refresh(int char_index, int toindex, int haveitemindex) {
-  int battlemode, itemindex;
+void ITEM_Refresh(int char_index, int toindex, int haveitem_index) {
+  int battlemode, item_index;
   print("\nvincent--ITEM_Refresh");
   // �������Ƿ���Ч
   if (CHAR_CHECKINDEX(char_index) == FALSE) {
     print("\nvincent--(char_index) == FALSE");
     return; // ʧ��
   }
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
 
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode) {
     print("\nvincent--enter ITEM_useAddexp_Effect");
     print("\nvincent-->char_index:%d,toindex:%d", char_index, toindex);
-    ITEM_useRefresh_Effect(char_index, toindex, haveitemindex);
+    ITEM_useRefresh_Effect(char_index, toindex, haveitem_index);
   } else
     CHAR_talkToCli(char_index, -1, "ʲ��Ҳû������", CHAR_COLORWHITE);
 
   /* ƽ�ҷ�����������    �����������ջ� */
-  CHAR_setItemIndex(char_index, haveitemindex, -1);
-  CHAR_sendItemDataOne(char_index, haveitemindex); /* ʧ��  ة��ޥ */
+  CHAR_setItemIndex(char_index, haveitem_index, -1);
+  CHAR_sendItemDataOne(char_index, haveitem_index); /* ʧ��  ة��ޥ */
   /* ���� */
-  ITEM_endExistItemsOne(itemindex);
+  ITEM_endExistItemsOne(item_index);
 }
 #endif
 // Terry 2001/12/21
 #ifdef _ITEM_FIRECRACKER
-void ITEM_firecracker(int char_index, int toindex, int haveitemindex) {
+void ITEM_firecracker(int char_index, int toindex, int haveitem_index) {
   int battlemode;
 
   // �������Ƿ���Ч
@@ -3111,27 +3113,27 @@ void ITEM_firecracker(int char_index, int toindex, int haveitemindex) {
       && CHAR_getInt(char_index, CHAR_BECOMEPIG) == -1
 #endif
   )
-    ITEM_useFirecracker_Battle(char_index, toindex, haveitemindex);
+    ITEM_useFirecracker_Battle(char_index, toindex, haveitem_index);
   else
     CHAR_talkToCli(char_index, -1, "ʲ��Ҳû������", CHAR_COLORWHITE);
 }
 #endif
 // Terry end
 
-void ITEM_WearEquip(int char_index, int itemindex) {
+void ITEM_WearEquip(int char_index, int item_index) {
   // WON ADD
-  //  if( ITEM_getInt(itemindex,ITEM_ID) == 20130 ){
+  //  if( ITEM_getInt(item_index,ITEM_ID) == 20130 ){
   CHAR_setWorkInt(char_index, CHAR_PickAllPet, TRUE);
   ///  }
   return;
 }
-void ITEM_ReWearEquip(int char_index, int itemindex) {
+void ITEM_ReWearEquip(int char_index, int item_index) {
   CHAR_setWorkInt(char_index, CHAR_PickAllPet, FALSE);
   return;
 }
 
 #ifdef _Item_ReLifeAct
-void ITEM_DIErelife(int char_index, int itemindex, int eqw) {
+void ITEM_DIErelife(int char_index, int item_index, int eqw) {
   int ReceveEffect = -1;
   int toNo;
   int battleindex = -1;
@@ -3147,7 +3149,7 @@ void ITEM_DIErelife(int char_index, int itemindex, int eqw) {
 
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
-  if (ITEM_CHECKINDEX(itemindex) == FALSE)
+  if (ITEM_CHECKINDEX(item_index) == FALSE)
     return;
 #ifdef _DUMMYDIE
   if (CHAR_getFlg(char_index, CHAR_ISDUMMYDIE) == FALSE)
@@ -3159,7 +3161,7 @@ void ITEM_DIErelife(int char_index, int itemindex, int eqw) {
     return;
   }
 
-  if (ITEM_getArgument(ITEM_getChar(itemindex, ITEM_ARGUMENT), "HP", buf,
+  if (ITEM_getArgument(ITEM_getChar(item_index, ITEM_ARGUMENT), "HP", buf,
                        sizeof(buf)) == FALSE) {
     WORK_HP = 1;
   } else {
@@ -3176,20 +3178,20 @@ void ITEM_DIErelife(int char_index, int itemindex, int eqw) {
 
   BATTLE_MultiReLife(battleindex, attackNo, toNo, WORK_HP, ReceveEffect);
   CHAR_setItemIndex(char_index, eqw, -1);
-  ITEM_endExistItemsOne(itemindex);
+  ITEM_endExistItemsOne(item_index);
   CHAR_sendItemDataOne(char_index, eqw);
   return;
 }
 #endif
 
 #ifdef _EQUIT_DEFMAGIC
-void ITEM_MagicEquitWear(int char_index, int itemindex) {
+void ITEM_MagicEquitWear(int char_index, int item_index) {
   char buf[256];
   char *itemarg;
   char Free[][128] = {"EA", "WA", "FI", "WI", "QU"};
   int index = 0;
   int dMagic = 0;
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   while (index < arraysizeof(Free)) {
@@ -3211,14 +3213,14 @@ void ITEM_MagicEquitWear(int char_index, int itemindex) {
   return;
 }
 
-void ITEM_MagicEquitReWear(int char_index, int itemindex) {
+void ITEM_MagicEquitReWear(int char_index, int item_index) {
   char buf[256];
   char *itemarg;
   char Free[][128] = {"EA", "WA", "FI", "WI", "QU"};
   int index = 0;
   int dMagic = 0;
 
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   while (index < arraysizeof(Free)) {
@@ -3242,9 +3244,9 @@ void ITEM_MagicEquitReWear(int char_index, int itemindex) {
 #endif
 
 #ifdef _EQUIT_RESIST
-void ITEM_MagicResist(int char_index, int itemindex) {
+void ITEM_MagicResist(int char_index, int item_index) {
   char *itemarg, *p = NULL;
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   if (strstr(itemarg, "����")) {
@@ -3271,9 +3273,9 @@ void ITEM_MagicResist(int char_index, int itemindex) {
   }
 }
 
-void ITEM_MagicReResist(int char_index, int itemindex) {
+void ITEM_MagicReResist(int char_index, int item_index) {
   char *itemarg, *p = NULL;
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   if (strstr(itemarg, "����")) {
@@ -3302,14 +3304,14 @@ void ITEM_MagicReResist(int char_index, int itemindex) {
 #endif
 
 #ifdef _MAGIC_RESIST_EQUIT // WON ADD ְҵ����װ��
-void ITEM_P_MagicEquitWear(int char_index, int itemindex) {
+void ITEM_P_MagicEquitWear(int char_index, int item_index) {
   char buf[256] = {0};
   char *itemarg;
   char Free[][128] = {"FR", "IR", "TR"};
   int dMagic = 0;
   int i;
 
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
 
@@ -3334,14 +3336,14 @@ void ITEM_P_MagicEquitWear(int char_index, int itemindex) {
   return;
 }
 
-void ITEM_P_MagicEquitReWear(int char_index, int itemindex) {
+void ITEM_P_MagicEquitReWear(int char_index, int item_index) {
   char buf[256] = {0};
   char *itemarg;
   char Free[][128] = {"FR", "IR", "TR"};
   int dMagic = 0;
   int i;
 
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
 
@@ -3399,23 +3401,23 @@ void ITEM_TimeLimit(int char_index) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
   for (i = 0; i < CheckCharMaxItem(char_index); i++) {
-    int itemindex = CHAR_getItemIndex(char_index, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    int item_index = CHAR_getItemIndex(char_index, i);
+    if (!ITEM_CHECKINDEX(item_index))
       continue;
-    lTime = ITEM_getWorkInt(itemindex, ITEM_WORKTIMELIMIT);
-    if (ITEM_getInt(itemindex, ITEM_ID) == 20173 // ȼ�ջ��
-        || ITEM_getInt(itemindex, ITEM_ID) == 20704) {
+    lTime = ITEM_getWorkInt(item_index, ITEM_WORKTIMELIMIT);
+    if (ITEM_getInt(item_index, ITEM_ID) == 20173 // ȼ�ջ��
+        || ITEM_getInt(item_index, ITEM_ID) == 20704) {
       if (lTime > 0 && NowTime.tv_sec > lTime) {
-        iid = ITEM_getInt(itemindex, ITEM_ID) + 1;
+        iid = ITEM_getInt(item_index, ITEM_ID) + 1;
         snprintf(buff, sizeof(buff), "%s��Ч������ʧ..",
-                 ITEM_getChar(itemindex, ITEM_NAME));
+                 ITEM_getChar(item_index, ITEM_NAME));
         CHAR_talkToCli(char_index, -1, buff, CHAR_COLORGREEN);
         CHAR_DelItemMess(char_index, i, 0);
-        itemindex = ITEM_makeItemAndRegist(iid);
-        if (itemindex != -1) {
-          CHAR_setItemIndex(char_index, i, itemindex);
-          ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
-          ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, char_index);
+        item_index = ITEM_makeItemAndRegist(iid);
+        if (item_index != -1) {
+          CHAR_setItemIndex(char_index, i, item_index);
+          ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
+          ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, char_index);
           CHAR_sendItemDataOne(char_index, i);
         }
       }
@@ -3425,21 +3427,21 @@ void ITEM_TimeLimit(int char_index) {
 #endif
 
 #ifdef _ITEM_CONSTITUTION
-void ITEM_Constitution(int char_index, int toindex, int haveitemindex) {
+void ITEM_Constitution(int char_index, int toindex, int haveitem_index) {
   char buf[256];
   char *itemarg;
   char Free[][128] = {"VI", "ST", "TG", "DE"};
-  int index = 0, FixPoint = 0, itemindex;
+  int index = 0, FixPoint = 0, item_index;
   BOOL FIXs = FALSE;
   int AllPoint = 0;
 
   if (CHAR_getInt(char_index, CHAR_WHICHTYPE) != CHAR_TYPEPLAYER)
     return;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
 
@@ -3486,13 +3488,13 @@ void ITEM_Constitution(int char_index, int toindex, int haveitemindex) {
     sprintf(buf, "%s", "��Ʒ��Ч��");
   }
   CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _NEW_RIDEPETS
 void ITEM_useLearnRideCode(int char_index, int toindex,
-                           int haveitemindex) { // CHAR_LOWRIDEPETS
+                           int haveitem_index) { // CHAR_LOWRIDEPETS
 #ifdef _RIDEMODE_20
   if (getRideMode() == 2 || getRideMode() == 4) {
     CHAR_talkToCli(
@@ -3503,7 +3505,7 @@ void ITEM_useLearnRideCode(int char_index, int toindex,
     return;
   }
 #endif
-  int itemindex, i;
+  int item_index, i;
   char buf1[256];
   char *itemarg = NULL;
   int ridetrans;
@@ -3567,10 +3569,10 @@ void ITEM_useLearnRideCode(int char_index, int toindex,
 #endif
   };
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
 
@@ -3629,7 +3631,7 @@ void ITEM_useLearnRideCode(int char_index, int toindex,
 
         sprintf(token, "ѧϰ���µ���� (%s)��", buf1);
         CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-        CHAR_DelItem(char_index, haveitemindex);
+        CHAR_DelItem(char_index, haveitem_index);
         CHAR_sendStatusString(char_index, "x");
       }
       break;
@@ -3640,8 +3642,8 @@ void ITEM_useLearnRideCode(int char_index, int toindex,
 #endif
 
 #ifdef _ITEM_EDITBASES
-void ITEM_useFusionEditBase(int char_index, int toindex, int haveitemindex) {
-  int itemindex;
+void ITEM_useFusionEditBase(int char_index, int toindex, int haveitem_index) {
+  int item_index;
   int work[4] = {0, 0, 0, 0};
   int anhour = PETFEEDTIME; // ����  ʳʱ��(��λ����)
 
@@ -3654,8 +3656,8 @@ void ITEM_useFusionEditBase(int char_index, int toindex, int haveitemindex) {
                    CHAR_COLORYELLOW);
     return;
   }
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
   if (CHAR_getInt(toindex, CHAR_FUSIONBEIT) >= 1 &&
       CHAR_getInt(toindex, CHAR_FUSIONRAISE) > 0) { // ����Ƿ�Ϊ�ںϳ�
@@ -3668,13 +3670,13 @@ void ITEM_useFusionEditBase(int char_index, int toindex, int haveitemindex) {
       char *arg = NULL;
       char deltime[8];
       char msg[1024];
-      arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+      arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
       if (arg != "\0" && !strncmp(arg, "��", 2)) {
         //        sscanf( arg, "�� %d", &deltime);
         getStringFromIndexWithDelim(arg, "|", 2, deltime, sizeof(deltime));
         time_l -= (atoi(deltime) * 60);
         CHAR_setInt(toindex, CHAR_FUSIONTIMELIMIT, time_l);
-        CHAR_DelItem(char_index, haveitemindex);
+        CHAR_DelItem(char_index, haveitem_index);
         sprintf(msg, "�ӿ���ﵰ�������ٶ� %s ���ӡ�", deltime);
         CHAR_talkToCli(char_index, -1, msg, CHAR_COLORYELLOW);
         if ((time_l + anhour) <= nowTime) {
@@ -3705,7 +3707,7 @@ void ITEM_useFusionEditBase(int char_index, int toindex, int haveitemindex) {
     work[0] = CHAR_getInt(toindex, CHAR_EVOLUTIONBASESTR);
     work[1] = CHAR_getInt(toindex, CHAR_EVOLUTIONBASETGH);
     work[2] = CHAR_getInt(toindex, CHAR_EVOLUTIONBASEDEX);
-    PET_showEditBaseMsg(char_index, toindex, itemindex, work);
+    PET_showEditBaseMsg(char_index, toindex, item_index, work);
     CHAR_setInt(toindex, CHAR_EVOLUTIONBASEVTL, work[3]);
     CHAR_setInt(toindex, CHAR_EVOLUTIONBASESTR, work[0]);
     CHAR_setInt(toindex, CHAR_EVOLUTIONBASETGH, work[1]);
@@ -3723,7 +3725,7 @@ void ITEM_useFusionEditBase(int char_index, int toindex, int haveitemindex) {
                CHAR_getChar(char_index, CHAR_CDKEY),
                CHAR_getChar(toindex, CHAR_NAME), toindex,
                CHAR_getInt(toindex, CHAR_LV),
-               ITEM_getChar(itemindex, CHAR_NAME), // Key
+               ITEM_getChar(item_index, CHAR_NAME), // Key
                CHAR_getInt(char_index, CHAR_FLOOR),
                CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
                CHAR_getChar(toindex, CHAR_UNIQUECODE));
@@ -3764,7 +3766,7 @@ void ITEM_useFusionEditBase(int char_index, int toindex, int haveitemindex) {
   } else {
     CHAR_talkToCli(char_index, -1, "������", CHAR_COLORYELLOW);
   }
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
   return;
 }
 #endif
@@ -3785,14 +3787,14 @@ int items4[18] = {14516, 14513, 14216, 14213, 14816, 14813,
                   20276, 20270, 20288, 20290, 20291, 20289};
 int items5[5] = {20280, 20283, 20277, 20271, 20274};
 int items6[5] = {20284, 20272, 20275, 20281, 20278};
-void ITEM_ThrowItemBox(int char_index, int toindex, int haveitemindex) {
-  int i, ret, Iindex, item_id = -1, itemindex;
+void ITEM_ThrowItemBox(int char_index, int toindex, int haveitem_index) {
+  int i, ret, Iindex, item_id = -1, item_index;
   char token[256];
 
   if (!CHAR_CHECKINDEX(char_index))
     return;
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
   if (Niceitem > 10)
@@ -3802,23 +3804,23 @@ void ITEM_ThrowItemBox(int char_index, int toindex, int haveitemindex) {
 
   for (i = CHAR_STARTITEMARRAY; i < CheckCharMaxItem(char_index); i++) {
     Iindex = CHAR_getItemIndex(char_index, i);
-    if (!ITEM_CHECKINDEX(itemindex))
+    if (!ITEM_CHECKINDEX(item_index))
       continue;
-    if (itemindex == Iindex) {
+    if (item_index == Iindex) {
       CHAR_DelItem(char_index, i);
 
       LogItem(CHAR_getChar(char_index, CHAR_NAME),
               CHAR_getChar(char_index, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-              itemindex,
+              item_index,
 #else
-               ITEM_getInt(itemindex, ITEM_ID),
+               ITEM_getInt(item_index, ITEM_ID),
 #endif
               "WarpManDelItem", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
-              ITEM_getChar(itemindex, ITEM_UNIQUECODE),
-              ITEM_getChar(itemindex, ITEM_NAME),
-              ITEM_getInt(itemindex, ITEM_ID));
+              ITEM_getChar(item_index, ITEM_UNIQUECODE),
+              ITEM_getChar(item_index, ITEM_NAME),
+              ITEM_getInt(item_index, ITEM_ID));
       break;
     }
   }
@@ -3866,8 +3868,8 @@ void ITEM_ThrowItemBox(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _ITEM_LOVERPARTY
-void ITEM_LoverSelectUser(int char_index, int toindex, int haveitemindex) {
-  int itemindex, i;
+void ITEM_LoverSelectUser(int char_index, int toindex, int haveitem_index) {
+  int item_index, i;
   int playernum = CHAR_getPlayerMaxNum();
 
   if (!CHAR_CHECKINDEX(char_index))
@@ -3878,32 +3880,32 @@ void ITEM_LoverSelectUser(int char_index, int toindex, int haveitemindex) {
     CHAR_talkToCli(char_index, -1, "��Ʒ��������ʹ�á�", CHAR_COLORYELLOW);
     return;
   }
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  if (ITEM_getInt(itemindex, ITEM_TYPE) != 16) {
-    ITEM_setInt(itemindex, ITEM_TYPE, 16);
+  if (ITEM_getInt(item_index, ITEM_TYPE) != 16) {
+    ITEM_setInt(item_index, ITEM_TYPE, 16);
     return;
   }
-  if (!strcmp(ITEM_getChar(itemindex, ITEM_FORUSERNAME), "") ||
-      !strcmp(ITEM_getChar(itemindex, ITEM_FORUSERCDKEY), "")) { // Ѱ���趨����
+  if (!strcmp(ITEM_getChar(item_index, ITEM_FORUSERNAME), "") ||
+      !strcmp(ITEM_getChar(item_index, ITEM_FORUSERCDKEY), "")) { // Ѱ���趨����
     if (char_index == toindex) {
       CHAR_talkToCli(char_index, -1, "����ѡ���Լ�ʹ�á�", CHAR_COLORYELLOW);
       return;
     }
-    ITEM_setChar(itemindex, ITEM_FORUSERNAME, CHAR_getChar(toindex, CHAR_NAME));
-    ITEM_setChar(itemindex, ITEM_FORUSERCDKEY,
+    ITEM_setChar(item_index, ITEM_FORUSERNAME, CHAR_getChar(toindex, CHAR_NAME));
+    ITEM_setChar(item_index, ITEM_FORUSERCDKEY,
                  CHAR_getChar(toindex, CHAR_CDKEY));
-    ITEM_setInt(itemindex, ITEM_TARGET, 0);
+    ITEM_setInt(item_index, ITEM_TARGET, 0);
     {
       char token[256];
-      sprintf(token, "%s(%s)", ITEM_getChar(itemindex, ITEM_SECRETNAME),
+      sprintf(token, "%s(%s)", ITEM_getChar(item_index, ITEM_SECRETNAME),
               CHAR_getChar(toindex, CHAR_NAME));
-      ITEM_setChar(itemindex, ITEM_SECRETNAME, token);
+      ITEM_setChar(item_index, ITEM_SECRETNAME, token);
       sprintf(token, "���Ͷ����趨Ϊ%s��", CHAR_getChar(toindex, CHAR_NAME));
       CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
     }
-    CHAR_sendItemDataOne(char_index, haveitemindex);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
   } else {
     char buf1[256];
     // if( CHAR_getInt( char_index, CHAR_FLOOR) == 117 || CHAR_getInt(
@@ -3925,9 +3927,9 @@ void ITEM_LoverSelectUser(int char_index, int toindex, int haveitemindex) {
       int itemmaxuse = 0;
       if (!CHAR_CHECKINDEX(i))
         continue;
-      if (!strcmp(ITEM_getChar(itemindex, ITEM_FORUSERNAME),
+      if (!strcmp(ITEM_getChar(item_index, ITEM_FORUSERNAME),
                   CHAR_getChar(i, CHAR_NAME)) &&
-          !strcmp(ITEM_getChar(itemindex, ITEM_FORUSERCDKEY),
+          !strcmp(ITEM_getChar(item_index, ITEM_FORUSERCDKEY),
                   CHAR_getChar(i, CHAR_CDKEY))) {
         int floor, x, y;
         char token[256];
@@ -3954,32 +3956,32 @@ void ITEM_LoverSelectUser(int char_index, int toindex, int haveitemindex) {
         CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
         CHAR_DischargePartyNoMsg(char_index); // ��ɢ�Ŷ�
 #ifdef _ITEM_MAXUSERNUM
-        itemmaxuse = ITEM_getInt(itemindex, ITEM_DAMAGEBREAK);
+        itemmaxuse = ITEM_getInt(item_index, ITEM_DAMAGEBREAK);
 #endif
         if (itemmaxuse != -1) {
           itemmaxuse--;
 #ifdef _ITEM_MAXUSERNUM
-          ITEM_setInt(itemindex, ITEM_DAMAGEBREAK, itemmaxuse);
+          ITEM_setInt(item_index, ITEM_DAMAGEBREAK, itemmaxuse);
 #endif
           if (itemmaxuse < 1) {
-            sprintf(buf1, "���� %s��ʧ�ˡ�", ITEM_getChar(itemindex, ITEM_NAME));
+            sprintf(buf1, "���� %s��ʧ�ˡ�", ITEM_getChar(item_index, ITEM_NAME));
             CHAR_talkToCli(char_index, -1, buf1, CHAR_COLORYELLOW);
-            CHAR_DelItem(char_index, haveitemindex);
+            CHAR_DelItem(char_index, haveitem_index);
             return;
           } else {
             sprintf(buf1, "������Ŀ���������λ�ã���ʹ�ô���ʣ��%d�Ρ�", itemmaxuse);
-            ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf1);
+            ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf1);
           }
         } else {
           itemmaxuse = 10;
-          ITEM_setInt(itemindex, ITEM_DAMAGEBREAK, itemmaxuse);
+          ITEM_setInt(item_index, ITEM_DAMAGEBREAK, itemmaxuse);
           sprintf(buf1, "������Ŀ���������λ�ã���ʹ�ô���ʣ��%d�Ρ�", itemmaxuse);
-          ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf1);
+          ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf1);
         }
 
         CHAR_DischargePartyNoMsg(char_index);
         CHAR_complianceParameter(char_index);
-        CHAR_sendItemDataOne(char_index, haveitemindex);
+        CHAR_sendItemDataOne(char_index, haveitem_index);
         return;
       }
     }
@@ -3989,51 +3991,51 @@ void ITEM_LoverSelectUser(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _ANGEL_SUMMON
-void ITEM_AngelToken(int char_index, int toindex, int haveitemindex) {
+void ITEM_AngelToken(int char_index, int toindex, int haveitem_index) {
 
-  Use_AngelToken(char_index, toindex, haveitemindex);
+  Use_AngelToken(char_index, toindex, haveitem_index);
 }
 
-void ITEM_HeroToken(int char_index, int toindex, int haveitemindex) {
+void ITEM_HeroToken(int char_index, int toindex, int haveitem_index) {
 
-  Use_HeroToken(char_index, toindex, haveitemindex);
+  Use_HeroToken(char_index, toindex, haveitem_index);
 }
 #endif
 
 #ifdef _HALLOWEEN_EFFECT
-void ITEM_MapEffect(int char_index, int toindex, int haveitemindex) {
-  int itemindex, floor;
+void ITEM_MapEffect(int char_index, int toindex, int haveitem_index) {
+  int item_index, floor;
   char *pActionNumber, szMsg[128];
 
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
   // �ҳ�������ڵĵ�ͼ���
   floor = CHAR_getInt(char_index, CHAR_FLOOR);
   // �ҳ�����Ҫ�ŵ���Ч�ı��
-  pActionNumber = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  pActionNumber = ITEM_getChar(item_index, ITEM_ARGUMENT);
   sprintf(szMsg, "%d 8 %s", floor, pActionNumber);
   // ִ��
   CHAR_CHAT_DEBUG_effect(char_index, szMsg);
-  CHAR_DelItemMess(char_index, haveitemindex, 0);
+  CHAR_DelItemMess(char_index, haveitem_index, 0);
 }
 #endif
 
-void ITEM_changePetOwner(int char_index, int toindex, int haveitemindex) {
-  int itemindex, i;
+void ITEM_changePetOwner(int char_index, int toindex, int haveitem_index) {
+  int item_index, i;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
   if (CHAR_CHECKINDEX(toindex) == FALSE)
     return;
 
-  // ITEM_useRecovery_Field(  char_index, toindex, haveitemindex );
+  // ITEM_useRecovery_Field(  char_index, toindex, haveitem_index );
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
   if (CHAR_getInt(toindex, CHAR_WHICHTYPE) != CHAR_TYPEPET) {
@@ -4061,7 +4063,7 @@ void ITEM_changePetOwner(int char_index, int toindex, int haveitemindex) {
                  "�",
                  CHAR_COLORYELLOW);
 
-  CHAR_DelItemMess(char_index, haveitemindex, 0);
+  CHAR_DelItemMess(char_index, haveitem_index, 0);
 }
 
 #ifdef _DEL_DROP_GOLD
@@ -4117,15 +4119,15 @@ void GOLD_DeleteTimeCheckOne(int objindex) {
 #endif
 
 #ifdef _TIME_TICKET
-void ITEM_timeticketEx(int char_index, int toindex, int haveitemindex,
+void ITEM_timeticketEx(int char_index, int toindex, int haveitem_index,
                        int flag);
-void ITEM_timeticket(int char_index, int toindex, int haveitemindex) {
-  ITEM_timeticketEx(char_index, toindex, haveitemindex, 0);
+void ITEM_timeticket(int char_index, int toindex, int haveitem_index) {
+  ITEM_timeticketEx(char_index, toindex, haveitem_index, 0);
 }
 
-void ITEM_timeticketEx(int char_index, int toindex, int haveitemindex,
+void ITEM_timeticketEx(int char_index, int toindex, int haveitem_index,
                        int flag) {
-  int itemindex;
+  int item_index;
   int addtime;
   int nowtime = time(NULL);
   int tickettime;
@@ -4141,8 +4143,8 @@ void ITEM_timeticketEx(int char_index, int toindex, int haveitemindex,
     return;
   }
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
   tickettime = CHAR_getWorkInt(char_index, CHAR_WORKTICKETTIME);
@@ -4165,7 +4167,7 @@ void ITEM_timeticketEx(int char_index, int toindex, int haveitemindex,
   //  CHAR_talkToCli( char_index, -1, msg, CHAR_COLORYELLOW);
   //}
 
-  addtime = atoi(ITEM_getChar(itemindex, ITEM_ARGUMENT));
+  addtime = atoi(ITEM_getChar(item_index, ITEM_ARGUMENT));
   tickettime += addtime;
   CHAR_setWorkInt(char_index, CHAR_WORKTICKETTIME, tickettime);
   lefttime = tickettime - nowtime;
@@ -4176,12 +4178,12 @@ void ITEM_timeticketEx(int char_index, int toindex, int haveitemindex,
     sprintf(msg, "ʱ������%d�룬������%d��%d�롣", addtime, (-lefttime) / 60,
             (-lefttime) % 60);
   CHAR_talkToCli(char_index, -1, msg, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 #ifdef _ITEM_SETLOVER
-void ITEM_SetLoverUser(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_SetLoverUser(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   int playernum = CHAR_getPlayerMaxNum();
   char token[256], szMsg[128];
   int floor = CHAR_getInt(char_index, CHAR_FLOOR);
@@ -4212,15 +4214,15 @@ void ITEM_SetLoverUser(int char_index, int toindex, int haveitemindex) {
     CHAR_talkToCli(char_index, -1, "ͬ����ô����أ�", CHAR_COLORYELLOW);
     return;
   }
-  if (!ITEM_CHECKINDEX(itemindex))
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  int id = ITEM_getInt(itemindex, ITEM_ID);
-  itemindex = ITEM_makeItemAndRegist(id);
+  int id = ITEM_getInt(item_index, ITEM_ID);
+  item_index = ITEM_makeItemAndRegist(id);
 
   if (strcmp(CHAR_getChar(char_index, CHAR_LOVE), "YES") &&
       strcmp(CHAR_getChar(toindex, CHAR_LOVE), "YES")) // �ڶ����ж�˫���Ƿ��Ѿ����
   {
-    if (itemindex != -1) {
+    if (item_index != -1) {
       CHAR_setChar(char_index, CHAR_LOVERID, CHAR_getChar(toindex, CHAR_CDKEY));
       CHAR_setChar(char_index, CHAR_LOVERNAME,
                    CHAR_getChar(toindex, CHAR_NAME));
@@ -4245,7 +4247,7 @@ void ITEM_SetLoverUser(int char_index, int toindex, int haveitemindex) {
                      CHAR_getChar(char_index, CHAR_NAME));
         sprintf(szMsg, "%d 8 101883", floor);
         CHAR_CHAT_DEBUG_effect(char_index, szMsg);
-        CHAR_DelItem(char_index, haveitemindex);
+        CHAR_DelItem(char_index, haveitem_index);
         for (i = 0; i < playernum; i++) {
           if (CHAR_CHECKINDEX(i) == FALSE)
             continue;
@@ -4256,9 +4258,9 @@ void ITEM_SetLoverUser(int char_index, int toindex, int haveitemindex) {
         }
         return;
       } else {
-        int emptyitemindexinchara = CHAR_findEmptyItemBox(toindex);
+        int emptyitem_indexinchara = CHAR_findEmptyItemBox(toindex);
 
-        if (emptyitemindexinchara < 0) {
+        if (emptyitem_indexinchara < 0) {
           sprintf(token, "%s��Ʒ�����������ʧ��",
                   CHAR_getChar(toindex, CHAR_NAME));
           CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
@@ -4266,22 +4268,22 @@ void ITEM_SetLoverUser(int char_index, int toindex, int haveitemindex) {
                   CHAR_getChar(char_index, CHAR_NAME));
           CHAR_talkToCli(toindex, -1, token, CHAR_COLORYELLOW);
         } else {
-          CHAR_setItemIndex(toindex, emptyitemindexinchara, itemindex);
+          CHAR_setItemIndex(toindex, emptyitem_indexinchara, item_index);
           sprintf(token, "%s��%s���Ľ�ָ!ͬ�������ʹ��!",
                   CHAR_getChar(char_index, CHAR_NAME),
                   CHAR_getChar(toindex, CHAR_NAME));
-          ITEM_setChar(itemindex, ITEM_EFFECTSTRING, token);
-          CHAR_sendItemDataOne(toindex, emptyitemindexinchara);
-          ITEM_endExistItemsOne(itemindex);
+          ITEM_setChar(item_index, ITEM_EFFECTSTRING, token);
+          CHAR_sendItemDataOne(toindex, emptyitem_indexinchara);
+          ITEM_endExistItemsOne(item_index);
         }
 
         sprintf(token, "%s������飬��öԷ���%s",
                 CHAR_getChar(char_index, CHAR_NAME),
-                ITEM_getChar(itemindex, ITEM_NAME));
+                ITEM_getChar(item_index, ITEM_NAME));
         CHAR_talkToCli(toindex, -1, token, CHAR_COLORYELLOW);
         sprintf(token, "�Ѿ���%s�������", CHAR_getChar(toindex, CHAR_NAME));
         CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-        CHAR_DelItem(char_index, haveitemindex);
+        CHAR_DelItem(char_index, haveitem_index);
       }
       CHAR_talkToCli(char_index, -1, "�����ĵȴ��Է���Ӧ��", CHAR_COLORYELLOW);
     } else {
@@ -4292,8 +4294,8 @@ void ITEM_SetLoverUser(int char_index, int toindex, int haveitemindex) {
   }
 }
 
-void ITEM_LoverWarp(int char_index, int toindex, int haveitemindex) {
-  int itemindex, i;
+void ITEM_LoverWarp(int char_index, int toindex, int haveitem_index) {
+  int item_index, i;
   int playernum = CHAR_getPlayerMaxNum();
   // ����Ƿ���
   if (!strcmp(CHAR_getChar(char_index, CHAR_LOVE), "YES")) {
@@ -4318,8 +4320,8 @@ void ITEM_LoverWarp(int char_index, int toindex, int haveitemindex) {
     if (!CHAR_CHECKINDEX(i))
       return;
 
-    itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-    if (!ITEM_CHECKINDEX(itemindex))
+    item_index = CHAR_getItemIndex(char_index, haveitem_index);
+    if (!ITEM_CHECKINDEX(item_index))
       return;
 
     if (checkUnlawWarpFloor(CHAR_getInt(char_index, CHAR_FLOOR))) {
@@ -4360,8 +4362,8 @@ void ITEM_LoverWarp(int char_index, int toindex, int haveitemindex) {
     CHAR_talkToCli(char_index, -1, "��û�н��Ŷ~", CHAR_COLORYELLOW);
 }
 
-void ITEM_LoverUnmarry(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_LoverUnmarry(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   int i;
   char token[256];
   int playernum = CHAR_getPlayerMaxNum();
@@ -4387,39 +4389,39 @@ void ITEM_LoverUnmarry(int char_index, int toindex, int haveitemindex) {
       return;
     if (!CHAR_CHECKINDEX(i))
       return;
-    if (!ITEM_CHECKINDEX(itemindex))
+    if (!ITEM_CHECKINDEX(item_index))
       return;
 
-    if (strcmp(ITEM_getChar(itemindex, ITEM_SECRETNAME), "ͬ������ָ")) {
-      int id = ITEM_getInt(itemindex, ITEM_ID);
-      itemindex = ITEM_makeItemAndRegist(id);
+    if (strcmp(ITEM_getChar(item_index, ITEM_SECRETNAME), "ͬ������ָ")) {
+      int id = ITEM_getInt(item_index, ITEM_ID);
+      item_index = ITEM_makeItemAndRegist(id);
 
-      if (itemindex != -1) {
+      if (item_index != -1) {
 
-        int emptyitemindexinchara = CHAR_findEmptyItemBox(i);
+        int emptyitem_indexinchara = CHAR_findEmptyItemBox(i);
 
-        if (emptyitemindexinchara < 0) {
+        if (emptyitem_indexinchara < 0) {
           sprintf(token, "%s��Ʒ�����������ʧ��", CHAR_getChar(i, CHAR_NAME));
           CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
           sprintf(token, "%s����������飬��������Ʒ��������",
                   CHAR_getChar(char_index, CHAR_NAME));
           CHAR_talkToCli(i, -1, token, CHAR_COLORYELLOW);
         } else {
-          CHAR_setItemIndex(i, emptyitemindexinchara, itemindex);
-          ITEM_setChar(itemindex, ITEM_NAME, "ͬ������ָ");
-          ITEM_setChar(itemindex, ITEM_SECRETNAME, "ͬ������ָ");
+          CHAR_setItemIndex(i, emptyitem_indexinchara, item_index);
+          ITEM_setChar(item_index, ITEM_NAME, "ͬ������ָ");
+          ITEM_setChar(item_index, ITEM_SECRETNAME, "ͬ������ָ");
           sprintf(token, "%s����������飬���ͬ����ʹ�øý�ָ!",
                   CHAR_getChar(char_index, CHAR_NAME));
-          ITEM_setChar(itemindex, ITEM_EFFECTSTRING, token);
-          CHAR_sendItemDataOne(i, emptyitemindexinchara);
-          ITEM_endExistItemsOne(itemindex);
+          ITEM_setChar(item_index, ITEM_EFFECTSTRING, token);
+          CHAR_sendItemDataOne(i, emptyitem_indexinchara);
+          ITEM_endExistItemsOne(item_index);
           sprintf(token, " %s���������鲢�� %s ���㣡",
                   CHAR_getChar(char_index, CHAR_NAME),
-                  ITEM_getChar(itemindex, ITEM_NAME));
+                  ITEM_getChar(item_index, ITEM_NAME));
           CHAR_talkToCli(i, -1, token, CHAR_COLORYELLOW);
           sprintf(token, "�Ѿ���%s�������", CHAR_getChar(i, CHAR_NAME));
           CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-          CHAR_DelItem(char_index, haveitemindex);
+          CHAR_DelItem(char_index, haveitem_index);
           return;
         }
       }
@@ -4433,7 +4435,7 @@ void ITEM_LoverUnmarry(int char_index, int toindex, int haveitemindex) {
       CHAR_talkToCli(i, -1, "˫�����ɹ���", CHAR_COLORYELLOW);
       CHAR_talkToCli(char_index, -1, "˫�����ɹ���", CHAR_COLORYELLOW);
     }
-    CHAR_DelItem(char_index, haveitemindex);
+    CHAR_DelItem(char_index, haveitem_index);
   } else
     CHAR_talkToCli(char_index, -1, "��û�н��Ŷ~", CHAR_COLORYELLOW);
 }
@@ -4441,7 +4443,7 @@ void ITEM_LoverUnmarry(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _ITEM_METAMO
-void ITEM_ColorMetamo(int char_index, int toindex, int haveitemindex) {
+void ITEM_ColorMetamo(int char_index, int toindex, int haveitem_index) {
   if (CHAR_getInt(char_index, CHAR_RIDEPET) != 1) {
     CHAR_talkToCli(char_index, -1, "������޷�ʹ�øõ���~",
                    CHAR_COLORYELLOW);
@@ -4463,10 +4465,10 @@ void ITEM_ColorMetamo(int char_index, int toindex, int haveitemindex) {
       {100220, 100230, 100225, 100220, 100235, 100810, 100815}, // ����
       {100240, 0, 0, 0, 0, 100820, 0},                          //
   };
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char *itemarg = "\0";
   int OldMetamoId, NewMetamoId, i;
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   OldMetamoId = CHAR_getInt(char_index, CHAR_BASEBASEIMAGENUMBER);
@@ -4570,10 +4572,10 @@ void ITEM_ColorMetamo(int char_index, int toindex, int haveitemindex) {
   CHAR_complianceParameter(char_index);
   CHAR_sendCToArroundCharacter(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
   CHAR_send_P_StatusString(char_index, CHAR_P_STRING_BASEBASEIMAGENUMBER);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 
-void ITEM_CharaMetamo(int char_index, int toindex, int haveitemindex) {
+void ITEM_CharaMetamo(int char_index, int toindex, int haveitem_index) {
   if (CHAR_getInt(char_index, CHAR_RIDEPET) != 1) {
     CHAR_talkToCli(char_index, -1, "������޷�ʹ�øõ���~",
                    CHAR_COLORYELLOW);
@@ -4596,10 +4598,10 @@ void ITEM_CharaMetamo(int char_index, int toindex, int haveitemindex) {
       {100220, 100230, 100225, 100220, 100235, 100810, 100815}, // ����
   };
   int OldMetamoId = 0, NewMetamoId = 0;
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char *itemarg = "\0";
   srand(time(0));
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   OldMetamoId = CHAR_getInt(char_index, CHAR_BASEBASEIMAGENUMBER);
@@ -4772,10 +4774,10 @@ void ITEM_CharaMetamo(int char_index, int toindex, int haveitemindex) {
   CHAR_complianceParameter(char_index);
   CHAR_sendCToArroundCharacter(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
   CHAR_send_P_StatusString(char_index, CHAR_P_STRING_BASEBASEIMAGENUMBER);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 
-void ITEM_SexMetamo(int char_index, int toindex, int haveitemindex) {
+void ITEM_SexMetamo(int char_index, int toindex, int haveitem_index) {
   int OldMetamoId, NewMetamoId;
   OldMetamoId = CHAR_getInt(char_index, CHAR_BASEBASEIMAGENUMBER);
   if (OldMetamoId >= 100000 && OldMetamoId < 100020) { // ������
@@ -4865,18 +4867,18 @@ void ITEM_SexMetamo(int char_index, int toindex, int haveitemindex) {
   CHAR_complianceParameter(char_index);
   CHAR_sendCToArroundCharacter(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
   CHAR_send_P_StatusString(char_index, CHAR_P_STRING_BASEBASEIMAGENUMBER);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _GM_ITEM
-void ITEM_GMFUNCTION(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_GMFUNCTION(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char *itemarg = "\0";
   char gmtime[16];
   char gmfunction[16];
   char token[64];
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
 
@@ -4889,17 +4891,17 @@ void ITEM_GMFUNCTION(int char_index, int toindex, int haveitemindex) {
   sprintf(token, "���ʹ����鿴[help %s]����GM����!",
           CHAR_getChar(char_index, CHAR_GMFUNCTION));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _VIP_SERVER
-void ITEM_AddMemberPoint(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_AddMemberPoint(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char *itemarg = "\0";
   char token[64];
   int point = CHAR_getInt(char_index, CHAR_AMPOINT);
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   CHAR_setInt(char_index, CHAR_AMPOINT, point + atoi(itemarg));
@@ -4917,17 +4919,17 @@ void ITEM_AddMemberPoint(int char_index, int toindex, int haveitemindex) {
   sprintf(token, "��û��ֵ���%d,Ŀǰ��ӵ�л��ֵ���Ϊ%d!", atoi(itemarg),
           point + atoi(itemarg));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _NEW_NAME // �Զ���ƺ�
-void ITEM_NewName(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_NewName(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char *itemarg = "\0";
   char token[64];
   // char MyNewName=CHAR_getChar( char_index , CHAR_NEWNAME);
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   CHAR_setChar(char_index, CHAR_NEWNAME, itemarg);
@@ -4941,14 +4943,14 @@ void ITEM_NewName(int char_index, int toindex, int haveitemindex) {
     sprintf(NameMsg, "��ϲ��� %s ��á�%s�۳ƺ�!", MyName, itemarg);
     CHAR_talkToCli(i, -1, NameMsg, CHAR_COLORBLUE2);
   }
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _VIP_RIDE
-void ITEM_VipRide(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  char *itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+void ITEM_VipRide(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  char *itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   char token[256];
   int viplevel, viptime;
   getStringFromIndexWithDelim(itemarg, "|", 1, token, sizeof(token));
@@ -4992,17 +4994,17 @@ void ITEM_VipRide(int char_index, int toindex, int haveitemindex) {
             CHAR_getInt(char_index, CHAR_VIPRIDE));
     CHAR_talkToCli(i, -1, token, CHAR_COLORBLUE2);
   }
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _FM_ITEM
-void ITEM_AddFame(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_AddFame(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char *itemarg = "\0";
   char token[64];
   int fame = CHAR_getInt(char_index, CHAR_FAME);
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   CHAR_setInt(char_index, CHAR_FAME,
@@ -5011,18 +5013,18 @@ void ITEM_AddFame(int char_index, int toindex, int haveitemindex) {
           fame / 100 + atoi(itemarg));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _LUCK_ITEM
-void ITEM_Luck(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_Luck(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   int i;
   char *itemarg = "\0";
   char token[64];
   char luck[][5] = {"��", "һ��", "С��", "�м�", "��"};
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   for (i = 0; i < 5; i++)
     if (strstr(itemarg, luck[i]))
       break;
@@ -5031,14 +5033,14 @@ void ITEM_Luck(int char_index, int toindex, int haveitemindex) {
   CHAR_setInt(char_index, CHAR_LUCK, i + 1);
   sprintf(token, "�����ڵ�����Ϊ%s", luck[i]);
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _ITEM_METAMO_TIME
-void ITEM_MetamoTime(int char_index, int toindex, int haveitemindex) {
+void ITEM_MetamoTime(int char_index, int toindex, int haveitem_index) {
   char *itemarg = "\0", msg[128], buff[32];
-  int itemindex, metamoTime = 0, battlemode, metamoNo = 0;
+  int item_index, metamoTime = 0, battlemode, metamoNo = 0;
 
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
@@ -5099,10 +5101,10 @@ void ITEM_MetamoTime(int char_index, int toindex, int haveitemindex) {
   if (battlemode == BATTLE_CHARMODE_INIT) {
     return;
   }
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
   if (getStringFromIndexWithDelim(itemarg, "|", 1, buff, sizeof(buff)))
@@ -5127,12 +5129,12 @@ void ITEM_MetamoTime(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _ITEM_GOLD
-void ITEM_Gold(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_Gold(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char itemarg[10];
   char token[64];
   int gold = CHAR_getInt(char_index, CHAR_GOLD);
-  strcpy(itemarg, ITEM_getChar(itemindex, ITEM_ARGUMENT));
+  strcpy(itemarg, ITEM_getChar(item_index, ITEM_ARGUMENT));
   gold += atoi(itemarg);
   if (gold > CHAR_getMaxHaveGold(char_index))
     gold = CHAR_getMaxHaveGold(char_index);
@@ -5141,13 +5143,13 @@ void ITEM_Gold(int char_index, int toindex, int haveitemindex) {
   CHAR_send_P_StatusString(char_index, CHAR_P_STRING_GOLD);
   sprintf(token, "���ʯ������%dS", atoi(itemarg));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _MYSTERIOUS_GIFT
-void ITEM_MysteriousGift(int char_index, int toindex, int haveitemindex) {
-  int itemindex;
+void ITEM_MysteriousGift(int char_index, int toindex, int haveitem_index) {
+  int item_index;
   char *itemarg = NULL;
   char petnumstr[32];
   int petnum = 0;
@@ -5155,11 +5157,11 @@ void ITEM_MysteriousGift(int char_index, int toindex, int haveitemindex) {
   int si = 0, ret, i;
   char token[256];
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "") {
     CHAR_talkToCli(char_index, -1, "���Ǹ���������!", CHAR_COLORYELLOW);
     return;
@@ -5219,12 +5221,12 @@ void ITEM_MysteriousGift(int char_index, int toindex, int haveitemindex) {
   CHAR_sendStatusString(char_index, token);
   snprintf(token, sizeof(token), "W%d", i);
   CHAR_sendStatusString(char_index, token);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _BATTLE_PK
-void ITEM_BattlePK(int char_index, int toindex, int haveitemindex) {
+void ITEM_BattlePK(int char_index, int toindex, int haveitem_index) {
   char token[256];
   if (!CHAR_CHECKINDEX(char_index))
     return;
@@ -5247,20 +5249,20 @@ void ITEM_BattlePK(int char_index, int toindex, int haveitemindex) {
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
   sprintf(token, "�Է�%s��ʽ������ս!", CHAR_getChar(char_index, CHAR_NAME));
   CHAR_talkToCli(toindex, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _SILENTZERO
-void ITEM_SetSilentZero(int char_index, int toindex, int haveitemindex) {
+void ITEM_SetSilentZero(int char_index, int toindex, int haveitem_index) {
   CHAR_setInt(char_index, CHAR_SILENT, 0);
   CHAR_setWorkInt(char_index, CHAR_WORKLOGINTIME, (int)NowTime.tv_sec);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _PET_LEVEL_ITEM
-void ITEM_PetLevelItem(int char_index, int toindex, int haveitemindex) {
+void ITEM_PetLevelItem(int char_index, int toindex, int haveitem_index) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
   if (!CHAR_CHECKINDEX(toindex))
@@ -5274,10 +5276,10 @@ void ITEM_PetLevelItem(int char_index, int toindex, int haveitemindex) {
     CHAR_talkToCli(char_index, -1, "����Ʒ���ܸ�MMʹ�ã�", CHAR_COLORYELLOW);
     return;
   }
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   char low[12], hight[12];
   getStringFromIndexWithDelim(itemarg, "|", 1, low, sizeof(low));
   getStringFromIndexWithDelim(itemarg, "|", 2, hight, sizeof(hight));
@@ -5303,17 +5305,17 @@ void ITEM_PetLevelItem(int char_index, int toindex, int haveitemindex) {
   sprintf(token, "����%s�ȼ���ͻ��%d����", CHAR_getChar(toindex, CHAR_NAME),
           atoi(hight));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _ITEM_EFMETAMO
-void ITEM_efMetamo(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_efMetamo(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  char *itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "") {
     CHAR_talkToCli(char_index, -1, "���Ǹ����ñ�����ָ!", CHAR_COLORYELLOW);
     return;
@@ -5324,12 +5326,12 @@ void ITEM_efMetamo(int char_index, int toindex, int haveitemindex) {
   CHAR_complianceParameter(char_index);
   CHAR_sendCToArroundCharacter(CHAR_getWorkInt(char_index, CHAR_WORKOBJINDEX));
   CHAR_send_P_StatusString(char_index, CHAR_P_STRING_BASEBASEIMAGENUMBER);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _PET_BEATITUDE
-void PET_BEATITUDE(int char_index, int toindex, int haveitemindex) {
+void PET_BEATITUDE(int char_index, int toindex, int haveitem_index) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
   if (!CHAR_CHECKINDEX(toindex))
@@ -5343,10 +5345,10 @@ void PET_BEATITUDE(int char_index, int toindex, int haveitemindex) {
     CHAR_talkToCli(char_index, -1, "����Ʒ���ܸ�MMʹ�ã�", CHAR_COLORYELLOW);
     return;
   }
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   char beatitude[12], mun[12];
   getStringFromIndexWithDelim(itemarg, "|", 1, beatitude, sizeof(beatitude));
   getStringFromIndexWithDelim(itemarg, "|", 2, mun, sizeof(mun));
@@ -5426,13 +5428,13 @@ void PET_BEATITUDE(int char_index, int toindex, int haveitemindex) {
   CHAR_sendStatusString(char_index, token);
 
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _GET_MULTI_ITEM
-void ITEM_GetMultiItem(int char_index, int toindex, int haveitemindex) {
-  int itemindex;
+void ITEM_GetMultiItem(int char_index, int toindex, int haveitem_index) {
+  int item_index;
   char *itemarg = NULL;
   char buf[32];
   int itemnum = 0;
@@ -5441,11 +5443,11 @@ void ITEM_GetMultiItem(int char_index, int toindex, int haveitemindex) {
   int i;
   char token[256];
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "") {
     CHAR_talkToCli(char_index, -1, "���Ǹ��պ���!", CHAR_COLORYELLOW);
     return;
@@ -5463,7 +5465,7 @@ void ITEM_GetMultiItem(int char_index, int toindex, int haveitemindex) {
     return;
   }
   if ((itemnum - 1) <= CHAR_findSurplusItemBox(char_index)) {
-    CHAR_DelItem(char_index, haveitemindex);
+    CHAR_DelItem(char_index, haveitem_index);
   } else {
     sprintf(token, "��������%d����Ʒ�������Ʒ��λ���㡣", itemnum);
     CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
@@ -5477,14 +5479,14 @@ void ITEM_GetMultiItem(int char_index, int toindex, int haveitemindex) {
       return;
     }
     item_id = atoi(buf);
-    itemindex = ITEM_makeItemAndRegist(item_id);
-    if (itemindex != -1) {
+    item_index = ITEM_makeItemAndRegist(item_id);
+    if (item_index != -1) {
       int emptyteimbox = CHAR_findEmptyItemBox(char_index);
-      CHAR_setItemIndex(char_index, emptyteimbox, itemindex);
-      ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
-      ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, char_index);
+      CHAR_setItemIndex(char_index, emptyteimbox, item_index);
+      ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
+      ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, char_index);
       CHAR_sendItemDataOne(char_index, emptyteimbox);
-      strcat(itemname, ITEM_getChar(itemindex, ITEM_NAME));
+      strcat(itemname, ITEM_getChar(item_index, ITEM_NAME));
       strcat(itemname, "|");
     }
   }
@@ -5494,7 +5496,7 @@ void ITEM_GetMultiItem(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _SUPER_FLOOR_MIC
-void ITEM_useSuperMic(int char_index, int toindex, int haveitemindex) {
+void ITEM_useSuperMic(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return;
@@ -5518,7 +5520,7 @@ void ITEM_useSuperMic(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _ITEM_PET_LOCKED
-void ITEM_ItemPetLocked(int char_index, int toindex, int haveitemindex) {
+void ITEM_ItemPetLocked(int char_index, int toindex, int haveitem_index) {
   if (CHAR_getInt(char_index, CHAR_LOCKED) == 0) {
     CHAR_setInt(char_index, CHAR_LOCKED, -1);
     CHAR_talkToCli(char_index, -1, "��ȫ���Ѿ����ý�����", CHAR_COLORYELLOW);
@@ -5530,7 +5532,7 @@ void ITEM_ItemPetLocked(int char_index, int toindex, int haveitemindex) {
     char buf[256];
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
 
-    lssproto_WN_send(
+    GmsvServer_WN_send(
         getfdFromCharaIndex(char_index), WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
         WINDOW_BUTTONTYPE_OKCANCEL, CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
         makeEscapeString(message, buf, sizeof(buf)));
@@ -5539,22 +5541,22 @@ void ITEM_ItemPetLocked(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _ONLINE_COST
-void ITEM_OnlineCost(int char_index, int toindex, int haveitemindex) {
+void ITEM_OnlineCost(int char_index, int toindex, int haveitem_index) {
   char buf[256];
   int fd = getfdFromCharaIndex(char_index);
   if (fd == -1)
     return;
 
-  lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
                    WINDOW_BUTTONTYPE_OKCANCEL, CHAR_WINDOWTYPE_ONLINE_COST, -1,
                    makeEscapeString("��������ĳ�ֵ�����봮��\n", buf, sizeof(buf)));
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _VIPPOINT_OLD_TO_NEW
-void ITEM_OldToNew(int char_index, int toindex, int haveitemindex) {
+void ITEM_OldToNew(int char_index, int toindex, int haveitem_index) {
   if (CHAR_getInt(char_index, CHAR_AMPOINT) > 0) {
 
 #ifdef _OTHER_SAAC_LINK
@@ -5563,12 +5565,12 @@ void ITEM_OldToNew(int char_index, int toindex, int haveitemindex) {
       CHAR_talkToCli(char_index, -1, "���������δ��������!", CHAR_COLORRED);
       return;
     } else {
-      saacproto_OldToNew_send(osfd, getfdFromCharaIndex(char_index),
+      SaacClient_OldToNew_send(osfd, getfdFromCharaIndex(char_index),
                               CHAR_getChar(char_index, CHAR_CDKEY),
                               CHAR_getInt(char_index, CHAR_AMPOINT));
     }
 #else
-    saacproto_OldToNew_send(acfd, getfdFromCharaIndex(char_index),
+    SaacClient_OldToNew_send(acfd, getfdFromCharaIndex(char_index),
                             CHAR_getChar(char_index, CHAR_CDKEY),
                             CHAR_getInt(char_index, CHAR_AMPOINT));
 #endif
@@ -5587,17 +5589,17 @@ void ITEM_OldToNew(int char_index, int toindex, int haveitemindex) {
     CHAR_talkToCli(char_index, -1, "�����϶�û���ֵ㣬����ת��", CHAR_COLORYELLOW);
   }
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _BOUND_TIME
-void ITEM_BoundTime(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_BoundTime(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  char *itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
 
   int myboundtime = CHAR_getInt(char_index, CHAR_BOUNDTIME);
 
@@ -5619,32 +5621,32 @@ void ITEM_BoundTime(int char_index, int toindex, int haveitemindex) {
           tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour,
           tm1.tm_min, tm1.tm_sec);
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _TALK_SIZE_ITEM
-void ITEM_TalkSize(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_TalkSize(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  char *itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   char token[256];
 
   CHAR_setWorkInt(char_index, CHAR_WORKFONTSIZE, atoi(itemarg));
   sprintf(token, "�����ֺ���Ϊ%d��", atoi(itemarg));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _FORMULATE_AUTO_PK
-void ITEM_PointToSQLPkPoint(int char_index, int toindex, int haveitemindex) {
+void ITEM_PointToSQLPkPoint(int char_index, int toindex, int haveitem_index) {
   if (CHAR_getInt(char_index, CHAR_AMPOINT) > 0) {
     CHAR_talkToCli(char_index, -1, "����ת�������Ժ�", CHAR_COLORYELLOW);
-    saacproto_FormulateAutoPk_send(getfdFromCharaIndex(char_index),
+    SaacClient_FormulateAutoPk_send(getfdFromCharaIndex(char_index),
                                    CHAR_getChar(char_index, CHAR_CDKEY),
                                    CHAR_getInt(char_index, CHAR_AMPOINT));
 #ifdef _SQL_VIPPOINT_LOG
@@ -5660,17 +5662,17 @@ void ITEM_PointToSQLPkPoint(int char_index, int toindex, int haveitemindex) {
   } else {
     CHAR_talkToCli(char_index, -1, "�����϶�û���ֵ㣬����ת��", CHAR_COLORYELLOW);
   }
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _SUPER_MAN_ITEM
-void ITEM_SuperManItem(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_SuperManItem(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
-  char *itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   char token[256];
   float table[] = {437, 490, 521, 550, 578, 620, 700}; // ��ת��ߵ���(��10)
   int trans, lv, point;
@@ -5708,16 +5710,16 @@ void ITEM_SuperManItem(int char_index, int toindex, int haveitemindex) {
 
   sprintf(token, "��ϲ�㣡�µļ�Ʒ�˵�����~�㽫���%d���ţ�ˣ�", point);
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _COST_ITEM
-void ITEM_CostItem(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_CostItem(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char *itemarg = "\0";
   char token[64];
-  itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (itemarg == "\0")
     return;
 #ifdef _SQL_VIPPOINT_LOG
@@ -5732,33 +5734,33 @@ void ITEM_CostItem(int char_index, int toindex, int haveitemindex) {
     CHAR_talkToCli(char_index, -1, "���������δ��������!", CHAR_COLORRED);
     return;
   } else {
-    saacproto_CostItem_send(osfd, getfdFromCharaIndex(char_index),
+    SaacClient_CostItem_send(osfd, getfdFromCharaIndex(char_index),
                             CHAR_getChar(char_index, CHAR_CDKEY),
                             atoi(itemarg));
   }
 #else
-  saacproto_CostItem_send(acfd, getfdFromCharaIndex(char_index),
+  SaacClient_CostItem_send(acfd, getfdFromCharaIndex(char_index),
                           CHAR_getChar(char_index, CHAR_CDKEY), atoi(itemarg));
 #endif
   sprintf(token, "����ػر���%d������ȡ����ǰ�ػر�����...", atoi(itemarg));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _ITEM_EXP
-void ITEM_EXP(int char_index, int toindex, int haveitemindex) {
+void ITEM_EXP(int char_index, int toindex, int haveitem_index) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
   if (!CHAR_CHECKINDEX(toindex))
     return;
   char token[256];
 
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *exp = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *exp = ITEM_getChar(item_index, ITEM_ARGUMENT);
 
   CHAR_setMaxExp(toindex, CHAR_getInt(toindex, CHAR_EXP) + atoi(exp));
 
@@ -5774,21 +5776,21 @@ void ITEM_EXP(int char_index, int toindex, int haveitemindex) {
           atoi(exp));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _NULL_CHECK_ITEM
-void ITEM_NullCheck(int char_index, int toindex, int haveitemindex) {
+void ITEM_NullCheck(int char_index, int toindex, int haveitem_index) {
 
   if (!CHAR_CHECKINDEX(char_index))
     return;
 
   char token[256];
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *itemarg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *itemarg = ITEM_getChar(item_index, ITEM_ARGUMENT);
 
   if (strlen(itemarg) > 0) {
     CHAR_setInt(char_index, CHAR_AMPOINT,
@@ -5807,14 +5809,14 @@ void ITEM_NullCheck(int char_index, int toindex, int haveitemindex) {
             CHAR_getInt(char_index, CHAR_AMPOINT));
     CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
 
-    CHAR_DelItem(char_index, haveitemindex);
+    CHAR_DelItem(char_index, haveitem_index);
   } else {
     char buf[256];
     int fd = getfdFromCharaIndex(char_index);
 
-    CHAR_setWorkInt(char_index, CHAR_WORKITEMINDEX, itemindex);
+    CHAR_setWorkInt(char_index, CHAR_WORKITEMINDEX, item_index);
 
-    lssproto_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
                      WINDOW_BUTTONTYPE_OKCANCEL, CHAR_WINDOWTYPE_NULL_CHECK, -1,
                      makeEscapeString("��������Ҫ��д�Ļ���֧Ʊ��("
                                       "���������֣���ֹ�����ַ���)\n",
@@ -5824,16 +5826,16 @@ void ITEM_NullCheck(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _MEMORY_ITEM
-void ITEM_WarpItem(int char_index, int toindex, int haveitemindex) {
+void ITEM_WarpItem(int char_index, int toindex, int haveitem_index) {
   char *arg;
-  int flg = 0, ff = 0, fx = 0, fy = 0, itemindex = 0, usenum = 0;
+  int flg = 0, ff = 0, fx = 0, fy = 0, item_index = 0, usenum = 0;
   int Mf, Mx, My;
   char buf[256];
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return;
 
@@ -5855,19 +5857,19 @@ void ITEM_WarpItem(int char_index, int toindex, int haveitemindex) {
                                 sizeof(escapeshowstring));
 
     if (sscanf(arg, "%d %d", &usenum, &flg) != 2) {
-      ITEM_setInt(itemindex, ITEM_DAMAGEBREAK, usenum);
+      ITEM_setInt(item_index, ITEM_DAMAGEBREAK, usenum);
     } else {
-      ITEM_setInt(itemindex, ITEM_DAMAGEBREAK, atoi(arg));
+      ITEM_setInt(item_index, ITEM_DAMAGEBREAK, atoi(arg));
     }
     sprintf(buf, "%d %d %d %d", flg, Mf, Mx, My);
-    ITEM_setChar(itemindex, ITEM_ARGUMENT, buf);
+    ITEM_setChar(item_index, ITEM_ARGUMENT, buf);
 
     sprintf(buf, "�����¼��λ��(%s,%d,%d)", escapeshowstring, Mx, My);
-    ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf);
+    ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf);
     CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
-    CHAR_sendItemDataOne(char_index, haveitemindex);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
   } else {
-    usenum = ITEM_getInt(itemindex, ITEM_DAMAGEBREAK);
+    usenum = ITEM_getInt(item_index, ITEM_DAMAGEBREAK);
 
 #ifdef _ITEM_CHECKWARES
     if (CHAR_CheckInItemForWares(char_index, 0) == FALSE) {
@@ -5880,12 +5882,12 @@ void ITEM_WarpItem(int char_index, int toindex, int haveitemindex) {
     if (--usenum <= 0) {
       CHAR_talkToCli(char_index, -1, "�õ����Ѿ�û��ʹ�ô����ˣ�������ʧ��",
                      CHAR_COLORYELLOW);
-      CHAR_DelItem(char_index, haveitemindex);
+      CHAR_DelItem(char_index, haveitem_index);
     } else {
       sprintf(buf, "�õ���ʹ�ô���ʣ��%d��", usenum);
       CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
     }
-    ITEM_setInt(itemindex, ITEM_DAMAGEBREAK, usenum);
+    ITEM_setInt(item_index, ITEM_DAMAGEBREAK, usenum);
     if (ITEM_WarpForAny(char_index, ff, fx, fy, flg) == FALSE)
       return;
   }
@@ -5893,9 +5895,9 @@ void ITEM_WarpItem(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _SPECIAL_SUIT
-void ITEM_SpecialCheckSuitEquip(int char_index, int itemindex) {
+void ITEM_SpecialCheckSuitEquip(int char_index, int item_index) {
   int i, num = 0;
-  int defCode = ITEM_getInt(itemindex, ITEM_SUITCODE);
+  int defCode = ITEM_getInt(item_index, ITEM_SUITCODE);
 
   for (i = 0; i < CHAR_STARTITEMARRAY; i++) {
     int item_idx = CHAR_getItemIndex(char_index, i);
@@ -5927,10 +5929,10 @@ void ITEM_SpecialCheckSuitEquip(int char_index, int itemindex) {
   }
 }
 
-void ITEM_SpecialSuitEquip(int char_index, int itemindex) {
+void ITEM_SpecialSuitEquip(int char_index, int item_index) {
   int ff = 0, fx = 0, fy = 0;
   char buf[256];
-  char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
 
   if (sscanf(arg, "%d %d %d", &ff, &fx, &fy) != 3) {
     ff = CHAR_getInt(char_index, CHAR_FLOOR);
@@ -5944,7 +5946,7 @@ void ITEM_SpecialSuitEquip(int char_index, int itemindex) {
     }
 
     sprintf(buf, "%d %d %d", ff, fx, fy);
-    ITEM_setChar(itemindex, ITEM_ARGUMENT, buf);
+    ITEM_setChar(item_index, ITEM_ARGUMENT, buf);
   }
   char escapeshowstring[64];
   char *showstr = MAP_getfloorShowstring(ff);
@@ -5958,27 +5960,27 @@ void ITEM_SpecialSuitEquip(int char_index, int itemindex) {
   sprintf(buf, "��װ�������¼��λ��(%s,%d,%d)", escapeshowstring, fx, fy);
   CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
 
-  ITEM_SpecialCheckSuitEquip(char_index, itemindex);
+  ITEM_SpecialCheckSuitEquip(char_index, item_index);
 }
 
-void ITEM_SpecialResuitEquip(int char_index, int itemindex) {
-  ITEM_SpecialCheckSuitEquip(char_index, itemindex);
+void ITEM_SpecialResuitEquip(int char_index, int item_index) {
+  ITEM_SpecialCheckSuitEquip(char_index, item_index);
 }
 #endif
 
 #ifdef _MANOR_EQUIP
-void ITEM_CheckManorEquip(int char_index, int itemindex) {
+void ITEM_CheckManorEquip(int char_index, int item_index) {
   int floor = CHAR_getWorkInt(char_index, CHAR_WORKFMFLOOR);
 
-  if (floor == ITEM_getInt(itemindex, ITEM_SUITCODE)) {
-    char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
-    ITEM_setInt(itemindex, ITEM_MAGICID, atoi(arg));
+  if (floor == ITEM_getInt(item_index, ITEM_SUITCODE)) {
+    char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
+    ITEM_setInt(item_index, ITEM_MAGICID, atoi(arg));
   } else {
-    ITEM_setInt(itemindex, ITEM_MAGICID, -1);
+    ITEM_setInt(item_index, ITEM_MAGICID, -1);
   }
   int i;
   for (i = 0; i < CHAR_EQUIPPLACENUM; i++) {
-    if (CHAR_getItemIndex(char_index, i) == itemindex) {
+    if (CHAR_getItemIndex(char_index, i) == item_index) {
       char buf[64];
       snprintf(buf, sizeof(buf), "J%d", i);
       CHAR_sendStatusString(char_index, buf);
@@ -5987,28 +5989,28 @@ void ITEM_CheckManorEquip(int char_index, int itemindex) {
   }
 }
 
-void ITEM_ManorEquip(int char_index, int itemindex) {
-  ITEM_CheckManorEquip(char_index, itemindex);
+void ITEM_ManorEquip(int char_index, int item_index) {
+  ITEM_CheckManorEquip(char_index, item_index);
 }
 
-void ITEM_ReManorEquip(int char_index, int itemindex) {
-  ITEM_CheckManorEquip(char_index, itemindex);
+void ITEM_ReManorEquip(int char_index, int item_index) {
+  ITEM_CheckManorEquip(char_index, item_index);
 }
 #endif
 
 #ifdef _FIND_TREASURES
 #define FINDTREASURESMAX 64
 int findtreasures[FINDTREASURESMAX];
-void ITEM_FindTreasures(int char_index, int toindex, int haveitemindex) {
+void ITEM_FindTreasures(int char_index, int toindex, int haveitem_index) {
   char *arg;
-  int ff = 0, fx = 0, fy = 0, itemindex = 0;
+  int ff = 0, fx = 0, fy = 0, item_index = 0;
 
   char buf[256];
 
-  itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (arg == "\0")
     return;
 
@@ -6028,12 +6030,12 @@ void ITEM_FindTreasures(int char_index, int toindex, int haveitemindex) {
                                 sizeof(escapeshowstring));
 
     sprintf(buf, "%d %d %d", Mf, Mx, My);
-    ITEM_setChar(itemindex, ITEM_ARGUMENT, buf);
+    ITEM_setChar(item_index, ITEM_ARGUMENT, buf);
 
     sprintf(buf, "Ѱ������λ��(%s,%d,%d)", escapeshowstring, Mx, My);
-    ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf);
+    ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf);
     CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
-    CHAR_sendItemDataOne(char_index, haveitemindex);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
   } else {
     if (CHAR_getInt(char_index, CHAR_FLOOR) != ff ||
         CHAR_getInt(char_index, CHAR_X) != fx ||
@@ -6063,18 +6065,18 @@ void ITEM_FindTreasures(int char_index, int toindex, int haveitemindex) {
     }
 
     if (findtreasures[rate] > -1) {
-      int itemindex = ITEM_makeItemAndRegist(findtreasures[rate]);
-      if (ITEM_CHECKINDEX(itemindex)) {
-        int emptyitemindexinchara = CHAR_findEmptyItemBox(char_index);
-        if (emptyitemindexinchara >= 0) {
-          if (itemindex != -1) {
-            CHAR_setItemIndex(char_index, emptyitemindexinchara, itemindex);
-            ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
-            ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, char_index);
-            CHAR_sendItemDataOne(char_index, emptyitemindexinchara);
+      int item_index = ITEM_makeItemAndRegist(findtreasures[rate]);
+      if (ITEM_CHECKINDEX(item_index)) {
+        int emptyitem_indexinchara = CHAR_findEmptyItemBox(char_index);
+        if (emptyitem_indexinchara >= 0) {
+          if (item_index != -1) {
+            CHAR_setItemIndex(char_index, emptyitem_indexinchara, item_index);
+            ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
+            ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, char_index);
+            CHAR_sendItemDataOne(char_index, emptyitem_indexinchara);
 
             sprintf(buf, "��ϲ�㣬Ѱ�ҵ�����Ʒ�� %s",
-                    ITEM_getChar(itemindex, ITEM_NAME));
+                    ITEM_getChar(item_index, ITEM_NAME));
             CHAR_talkToCli(char_index, -1, buf, CHAR_COLORGREEN);
           }
         } else {
@@ -6084,7 +6086,7 @@ void ITEM_FindTreasures(int char_index, int toindex, int haveitemindex) {
         }
       }
     }
-    CHAR_DelItem(char_index, haveitemindex);
+    CHAR_DelItem(char_index, haveitem_index);
     return;
   }
 }
@@ -6128,9 +6130,9 @@ BOOL FindTreasures_init() {
 
 #ifdef _ITEM_POOLITEM
 extern int poolitemhanlde;
-void ITEM_PoolItem(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+void ITEM_PoolItem(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (CHAR_getInt(char_index, CHAR_AMPOINT) < atoi(arg)) {
     CHAR_talkToCli(char_index, -1, "�ܱ�Ǹ�����������ϲ����ػر�ʹ�ø���Ʒ��",
                    CHAR_COLORRED);
@@ -6154,9 +6156,9 @@ void ITEM_PoolItem(int char_index, int toindex, int haveitemindex) {
 
 #ifdef _ITEM_POOLPET
 extern int petshophanlde;
-void ITEM_PoolPet(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+void ITEM_PoolPet(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   if (CHAR_getInt(char_index, CHAR_AMPOINT) < atoi(arg)) {
     CHAR_talkToCli(char_index, -1, "�ܱ�Ǹ�����������ϲ����ػر�ʹ�ø���Ʒ��",
                    CHAR_COLORRED);
@@ -6179,11 +6181,11 @@ void ITEM_PoolPet(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _NEW_GM_ITEM
-void ITEM_NewGMItem(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+void ITEM_NewGMItem(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
 
   char token[256];
   char magicname[256];
@@ -6202,15 +6204,15 @@ void ITEM_NewGMItem(int char_index, int toindex, int haveitemindex) {
           arg, CHAR_getInt(char_index, CHAR_FLOOR),
           CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y));
     func(char_index, arg + strlen(magicname) + 1);
-    sprintf(token, "ʹ���ѳɹ�!���� %s\n", ITEM_getChar(itemindex, ITEM_NAME));
+    sprintf(token, "ʹ���ѳɹ�!���� %s\n", ITEM_getChar(item_index, ITEM_NAME));
     CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-    CHAR_DelItem(char_index, haveitemindex);
+    CHAR_DelItem(char_index, haveitem_index);
   }
 }
 #endif
 
 #ifdef _SHOW_PET_ABL
-void ITEM_ShowPetAbl(int char_index, int toindex, int haveitemindex) {
+void ITEM_ShowPetAbl(int char_index, int toindex, int haveitem_index) {
   if (!CHAR_CHECKINDEX(toindex))
     return;
   if (CHAR_getInt(toindex, CHAR_WHICHTYPE) != CHAR_TYPEPET) {
@@ -6238,19 +6240,19 @@ void ITEM_ShowPetAbl(int char_index, int toindex, int haveitemindex) {
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
   sprintf(token, "%s %d", buf[3], work[3]);
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _NEWEVENT_ITEM
-void ITEM_NeweventItem(int char_index, int toindex, int haveitemindex) {
+void ITEM_NeweventItem(int char_index, int toindex, int haveitem_index) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
 
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   char token[128];
   int i = 0;
   while (getStringFromIndexWithDelim(arg, "|", i, token, sizeof(token))) {
@@ -6262,22 +6264,22 @@ void ITEM_NeweventItem(int char_index, int toindex, int haveitemindex) {
   }
   sprintf(token, "��ϲ�������� %s", arg);
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORGREEN);
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _NEW_PET_BEATITUDE
-void ITEM_NewPetBeatitude(int char_index, int toindex, int haveitemindex) {
+void ITEM_NewPetBeatitude(int char_index, int toindex, int haveitem_index) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
   if (CHAR_getInt(toindex, CHAR_WHICHTYPE) != CHAR_TYPEPET) {
     CHAR_talkToCli(char_index, -1, "��ѡ����ĳ����!", CHAR_COLORRED);
     return;
   }
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
   char token[128];
   int abi[4];
   int flg;
@@ -6359,27 +6361,27 @@ void ITEM_NewPetBeatitude(int char_index, int toindex, int haveitemindex) {
 
   NPC_EventSetFlg(toindex, flg);
 
-  CHAR_DelItem(char_index, haveitemindex);
+  CHAR_DelItem(char_index, haveitem_index);
 }
 #endif
 
 #ifdef _OLYMPIC_TORCH
-void ITEM_OlympicTorck(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
+void ITEM_OlympicTorck(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
   char token[128];
   int i;
   int findindex;
-  if (!ITEM_CHECKINDEX(itemindex))
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  if (strlen(ITEM_getChar(itemindex, ITEM_FORUSERNAME)) == 0 ||
-      strlen(ITEM_getChar(itemindex, ITEM_FORUSERCDKEY)) == 0) {
+  if (strlen(ITEM_getChar(item_index, ITEM_FORUSERNAME)) == 0 ||
+      strlen(ITEM_getChar(item_index, ITEM_FORUSERCDKEY)) == 0) {
     for (i = 0; i < 3; i++) {
       findindex = rand() % CHAR_getPlayerMaxNum();
       if (CHAR_CHECKINDEX(findindex) == TRUE) {
         if (findindex != char_index) {
-          ITEM_setChar(itemindex, ITEM_FORUSERNAME,
+          ITEM_setChar(item_index, ITEM_FORUSERNAME,
                        CHAR_getChar(findindex, CHAR_NAME));
-          ITEM_setChar(itemindex, ITEM_FORUSERCDKEY,
+          ITEM_setChar(item_index, ITEM_FORUSERCDKEY,
                        CHAR_getChar(findindex, CHAR_CDKEY));
 
           sprintf(token, "Ѱ�ҵ����ʵĽӰ��� %s,��ǰ���ڵ�ͼ��:%d ����X:%d ����Y:%d",
@@ -6398,7 +6400,7 @@ void ITEM_OlympicTorck(int char_index, int toindex, int haveitemindex) {
     for (findindex = 0; findindex < playernum; findindex++) {
       if (CHAR_CHECKINDEX(findindex) == TRUE) {
         if (strcmp(CHAR_getChar(findindex, CHAR_CDKEY),
-                   ITEM_getChar(itemindex, ITEM_FORUSERCDKEY)) == 0) {
+                   ITEM_getChar(item_index, ITEM_FORUSERCDKEY)) == 0) {
           sprintf(token, "�Ӱ��� %s,��λ�ڵ�ͼ��:%d ����X:%d ����Y:%d",
                   CHAR_getChar(findindex, CHAR_NAME),
                   CHAR_getInt(findindex, CHAR_FLOOR),
@@ -6414,14 +6416,14 @@ void ITEM_OlympicTorck(int char_index, int toindex, int haveitemindex) {
 #endif
 
 #ifdef _PLAYER_DIY_MAP
-void ITEM_PlayerDiyMapObj(int char_index, int toindex, int haveitemindex) {
+void ITEM_PlayerDiyMapObj(int char_index, int toindex, int haveitem_index) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
 
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
 
   int dir, ff, fx, fy;
   int tile, obj;
@@ -6442,14 +6444,14 @@ void ITEM_PlayerDiyMapObj(int char_index, int toindex, int haveitemindex) {
 
     sprintf(buf, "%d", obj);
 
-    ITEM_setChar(itemindex, ITEM_ARGUMENT, buf);
+    ITEM_setChar(item_index, ITEM_ARGUMENT, buf);
 
-    ITEM_setInt(itemindex, ITEM_BASEIMAGENUMBER, obj);
+    ITEM_setInt(item_index, ITEM_BASEIMAGENUMBER, obj);
     sprintf(buf, "��װ��ͼƬ��Ϊ %d ������ͼ�׾�",
             obj);
-    ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf);
+    ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf);
 
-    CHAR_sendItemDataOne(char_index, haveitemindex);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
 
     CHAR_talkToCli(char_index, -1, buf, CHAR_COLORGREEN);
   } else {
@@ -6461,19 +6463,19 @@ void ITEM_PlayerDiyMapObj(int char_index, int toindex, int haveitemindex) {
       MAP_sendArroundChar(char_index);
 
       CHAR_talkToCli(char_index, -1, buf, CHAR_COLORGREEN);
-      CHAR_DelItem(char_index, haveitemindex);
+      CHAR_DelItem(char_index, haveitem_index);
     }
   }
 }
 
-void ITEM_PlayerDiyMapTile(int char_index, int toindex, int haveitemindex) {
+void ITEM_PlayerDiyMapTile(int char_index, int toindex, int haveitem_index) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
 
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  if (!ITEM_CHECKINDEX(itemindex))
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  if (!ITEM_CHECKINDEX(item_index))
     return;
-  char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+  char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
 
   int dir, ff, fx, fy;
   int tile, obj;
@@ -6494,14 +6496,14 @@ void ITEM_PlayerDiyMapTile(int char_index, int toindex, int haveitemindex) {
 
     sprintf(buf, "%d", tile);
 
-    ITEM_setChar(itemindex, ITEM_ARGUMENT, buf);
+    ITEM_setChar(item_index, ITEM_ARGUMENT, buf);
 
-    ITEM_setInt(itemindex, ITEM_BASEIMAGENUMBER, tile);
+    ITEM_setInt(item_index, ITEM_BASEIMAGENUMBER, tile);
     sprintf(buf, "��װ��ͼƬ��Ϊ %d ������ͼ�׾�",
             tile);
-    ITEM_setChar(itemindex, ITEM_EFFECTSTRING, buf);
+    ITEM_setChar(item_index, ITEM_EFFECTSTRING, buf);
 
-    CHAR_sendItemDataOne(char_index, haveitemindex);
+    CHAR_sendItemDataOne(char_index, haveitem_index);
 
     CHAR_talkToCli(char_index, -1, buf, CHAR_COLORGREEN);
   } else {
@@ -6513,14 +6515,14 @@ void ITEM_PlayerDiyMapTile(int char_index, int toindex, int haveitemindex) {
       MAP_sendArroundChar(char_index);
 
       CHAR_talkToCli(char_index, -1, buf, CHAR_COLORGREEN);
-      CHAR_DelItem(char_index, haveitemindex);
+      CHAR_DelItem(char_index, haveitem_index);
     }
   }
 }
 #endif
 
 #ifdef _SHOW_ITEM
-void ITEM_ShowItem(int char_index, int toindex, int haveitemindex) {
+void ITEM_ShowItem(int char_index, int toindex, int haveitem_index) {
 
   int x, y;
   OBJECT object;
@@ -6548,25 +6550,25 @@ void ITEM_ShowItem(int char_index, int toindex, int haveitemindex) {
     if (CHAR_getInt(showtoindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
       int i;
       char token[512] = "";
-      int itemindex = -1;
+      int item_index = -1;
 
-      char *arg = ITEM_getChar(itemindex, ITEM_ARGUMENT);
+      char *arg = ITEM_getChar(item_index, ITEM_ARGUMENT);
       if (atoi(arg) == 0) {
         char show[CHAR_EQUIPPLACENUM][32] = {"ͷ��",  "����", "����",
                                              "����", "����", "����",
                                              "����", "Ь��",  "����"};
         for (i = 0; i < CHAR_EQUIPPLACENUM; i++) {
-          itemindex = CHAR_getItemIndex(showtoindex, i);
-          if (!ITEM_CHECKINDEX(itemindex))
+          item_index = CHAR_getItemIndex(showtoindex, i);
+          if (!ITEM_CHECKINDEX(item_index))
             continue;
 
           sprintf(token, "%s:%s:%s", show[i],
-                  ITEM_getChar(itemindex, ITEM_NAME),
-                  ITEM_getChar(itemindex, ITEM_EFFECTSTRING));
+                  ITEM_getChar(item_index, ITEM_NAME),
+                  ITEM_getChar(item_index, ITEM_EFFECTSTRING));
           CHAR_talkToCli(char_index, -1, token, CHAR_COLORGREEN);
         }
 
-        CHAR_DelItem(char_index, haveitemindex);
+        CHAR_DelItem(char_index, haveitem_index);
         return;
       }
 #ifdef _PET_ITEM
@@ -6575,17 +6577,17 @@ void ITEM_ShowItem(int char_index, int toindex, int haveitemindex) {
                                              "��", "��", "��"};
         int showtopetindex = CHAR_getCharPet(showtoindex, atoi(arg));
         for (i = 0; i < CHAR_PETITEMNUM; i++) {
-          itemindex = CHAR_getItemIndex(showtopetindex, i);
-          if (!ITEM_CHECKINDEX(itemindex))
+          item_index = CHAR_getItemIndex(showtopetindex, i);
+          if (!ITEM_CHECKINDEX(item_index))
             continue;
 
           sprintf(token, "%s:%s:%s", show[i],
-                  ITEM_getChar(itemindex, ITEM_NAME),
-                  ITEM_getChar(itemindex, ITEM_EFFECTSTRING));
+                  ITEM_getChar(item_index, ITEM_NAME),
+                  ITEM_getChar(item_index, ITEM_EFFECTSTRING));
           CHAR_talkToCli(char_index, -1, token, CHAR_COLORGREEN);
         }
 
-        CHAR_DelItem(char_index, haveitemindex);
+        CHAR_DelItem(char_index, haveitem_index);
         return;
       }
 #endif
@@ -6610,10 +6612,10 @@ typedef enum {
 #endif
 } LUAITEM_FUNC;
 
-void ITEM_Lua(int char_index, int toindex, int haveitemindex) {
-  int itemindex = CHAR_getItemIndex(char_index, haveitemindex);
-  ITEM_Item *TM_Item = ITEM_getItemPointer(itemindex);
-  char *voidname = ITEM_getChar(itemindex, ITEM_USEFUNC);
+void ITEM_Lua(int char_index, int toindex, int haveitem_index) {
+  int item_index = CHAR_getItemIndex(char_index, haveitem_index);
+  ITEM_Item *TM_Item = ITEM_getItemPointer(item_index);
+  char *voidname = ITEM_getChar(item_index, ITEM_USEFUNC);
   char itemname1[64];
   char itemname2[64];
   if (getStringFromIndexWithDelim(voidname, "(", 2, itemname1,
@@ -6641,6 +6643,6 @@ void ITEM_Lua(int char_index, int toindex, int haveitemindex) {
              FUNCNAME_ITEMUSECALLBACK);
   }
 
-  NPC_Lua_ItemUseCallBack(char_index, toindex, haveitemindex);
+  NPC_Lua_ItemUseCallBack(char_index, toindex, haveitem_index);
 }
 #endif

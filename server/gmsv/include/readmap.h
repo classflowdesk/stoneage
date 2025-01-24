@@ -146,7 +146,7 @@ typedef struct tagPLAYER_DIY_MAP
   int exp;
 }Player_Diy_Map;
 
-int MAP_savePlayerMap( int charaindex, int ff ,int fx, int fy, int tile, int obj);
+int MAP_savePlayerMap( int char_index, int ff ,int fx, int fy, int tile, int obj);
 int MAP_intPlayerMap( void );
 #endif
 

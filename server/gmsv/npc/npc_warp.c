@@ -14,15 +14,15 @@
 
 BOOL NPC_TimeWarpCheck(int meindex,char *buf,int mode);
 
-static void NPC_WarpsetNeverMake( int charaindex )
+static void NPC_WarpsetNeverMake( int char_index )
 {
     int cindex;
-    cindex = CHAR_getInt(charaindex,CHAR_NPCCREATEINDEX);
+    cindex = CHAR_getInt(char_index,CHAR_NPCCREATEINDEX);
     if( NPC_CHECKCREATEINDEX(cindex) )
         NPC_create[cindex].workdata[NPC_CREATEWORKNEVERMAKE] = 1;
 }
 
-BOOL NPC_WarpInit( int charaindex )
+BOOL NPC_WarpInit( int char_index )
 {
 	char arg[NPC_UTIL_GETARGSTR_BUFSIZE];
     int ret;
@@ -34,12 +34,12 @@ BOOL NPC_WarpInit( int charaindex )
 	char evtime[256];
 	char argfile[256];
 
-	if( NPC_Util_CheckAssignArgFile( charaindex, argfile) == NULL )
+	if( NPC_Util_CheckAssignArgFile( char_index, argfile) == NULL )
 		sprintf( argfile, "NULL");
 #endif
 
-	CHAR_setInt( charaindex, CHAR_WHICHTYPE , CHAR_TYPEWARP );
-    if( NPC_Util_GetArgStr( charaindex, arg, sizeof( arg)) == NULL )	{
+	CHAR_setInt( char_index, CHAR_WHICHTYPE , CHAR_TYPEWARP );
+    if( NPC_Util_GetArgStr( char_index, arg, sizeof( arg)) == NULL )	{
 		print("\n GetArgStr ERR!!");
 		return FALSE;
 	}
@@ -49,7 +49,7 @@ BOOL NPC_WarpInit( int charaindex )
 		sprintf( evtype, "FREE");
 		sprintf( evtime, "NULL");
 #endif
-		CHAR_setWorkInt( charaindex, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP);
+		CHAR_setWorkInt( char_index, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP);
 	}else	{
 #endif
 #ifdef __MAP_WARP_POINT
@@ -65,53 +65,53 @@ BOOL NPC_WarpInit( int charaindex )
 		ret=getStringFromIndexWithDelim(arg,"|", 3,token,sizeof(token));
 		if( ret ) y = atoi( token );
 		if( MAP_IsValidCoordinate( floor,x,y )== FALSE ){
-			NPC_WarpsetNeverMake( charaindex );
+			NPC_WarpsetNeverMake( char_index );
 			//print( "Warp NPC:Invalid arg:%s\n", arg );
 			print( "Warp Npc Err:%d:%d:%d->(%s)\n",
-        		CHAR_getInt( charaindex, CHAR_FLOOR ),
-        		CHAR_getInt( charaindex, CHAR_X ),
-        		CHAR_getInt( charaindex, CHAR_Y ),
+        		CHAR_getInt( char_index, CHAR_FLOOR ),
+        		CHAR_getInt( char_index, CHAR_X ),
+        		CHAR_getInt( char_index, CHAR_Y ),
         		arg );
 			return FALSE;
 		}
 		ret=getStringFromIndexWithDelim(arg,"|",4,token,sizeof(token));
 		if(ret==TRUE){
 			int day;
-			day=NPC_TimeWarpCheck(charaindex,token,0);
+			day=NPC_TimeWarpCheck(char_index,token,0);
 				if(day==0){
 #ifdef _RECORD_NPCMAN_ //纪录
 					sprintf( evtime, "N");
 #endif
-					CHAR_setWorkInt( charaindex, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP_NIGHT);
+					CHAR_setWorkInt( char_index, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP_NIGHT);
 				}else if(day==1){
 #ifdef _RECORD_NPCMAN_ //纪录
 					sprintf( evtime, "M");
 #endif
-					CHAR_setWorkInt( charaindex, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP_MORNING);
+					CHAR_setWorkInt( char_index, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP_MORNING);
 				}else if(day==2){
 #ifdef _RECORD_NPCMAN_ //纪录
 					sprintf( evtime, "A");
 #endif
-					CHAR_setWorkInt( charaindex, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP_NOON);
+					CHAR_setWorkInt( char_index, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP_NOON);
 				}else{
 #ifdef _RECORD_NPCMAN_ //纪录
 					sprintf( evtime, "NULL");
 #endif
-					CHAR_setWorkInt( charaindex, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP);
+					CHAR_setWorkInt( char_index, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP);
 				}
 		}else{
 #ifdef _RECORD_NPCMAN_ //纪录
 					sprintf( evtime, "NULL");
 #endif
-			CHAR_setWorkInt( charaindex, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP);
+			CHAR_setWorkInt( char_index, CHAR_WORKEVENTTYPE, CHAR_EVENT_WARP);
 		}
 #ifdef _NEW_WARPPOINT
 	}
 #endif
-    CHAR_setFlg( charaindex,CHAR_ISVISIBLE, 0 );
-    CHAR_setFlg( charaindex,CHAR_ISOVERED,1 );
-    CHAR_setFlg( charaindex,CHAR_ISATTACKED,0 );
-    CHAR_setFlg( charaindex,CHAR_ISATTACK,0 );
+    CHAR_setFlg( char_index,CHAR_ISVISIBLE, 0 );
+    CHAR_setFlg( char_index,CHAR_ISOVERED,1 );
+    CHAR_setFlg( char_index,CHAR_ISATTACKED,0 );
+    CHAR_setFlg( char_index,CHAR_ISATTACK,0 );
 
 #ifdef _RECORD_NPCMAN_ //纪录
 	{
@@ -121,9 +121,9 @@ BOOL NPC_WarpInit( int charaindex )
 		if( (fp = fopen( filename, "a+")) != NULL ) {
 			fprintf( fp, "%s:%s:%d,%d,%d:%d,%d,%d:%s\n",
 				evtype, evtime,
-				CHAR_getInt( charaindex, CHAR_FLOOR),
-				CHAR_getInt( charaindex, CHAR_X),
-				CHAR_getInt( charaindex, CHAR_Y),
+				CHAR_getInt( char_index, CHAR_FLOOR),
+				CHAR_getInt( char_index, CHAR_X),
+				CHAR_getInt( char_index, CHAR_Y),
 				floor, x, y, argfile );
 			fclose( fp);
 		}else {
@@ -133,7 +133,7 @@ BOOL NPC_WarpInit( int charaindex )
     return TRUE;
 }
 
-void NPC_WarpWarpCharacter( int warpnpcindex, int charaindex )
+void NPC_WarpWarpCharacter( int warpnpcindex, int char_index )
 {
 	char	arg[NPC_UTIL_GETARGSTR_BUFSIZE];
 	int i=0;
@@ -150,7 +150,7 @@ void NPC_WarpWarpCharacter( int warpnpcindex, int charaindex )
 	};
 	int iRand=0;
 #endif
-    if( CHAR_getInt( charaindex,CHAR_WHICHTYPE ) != CHAR_TYPEPLAYER ){
+    if( CHAR_getInt( char_index,CHAR_WHICHTYPE ) != CHAR_TYPEPLAYER ){
         return;
     }
 
@@ -171,7 +171,7 @@ void NPC_WarpWarpCharacter( int warpnpcindex, int charaindex )
 			i++;
 			if( NPC_Util_GetStrFromStrWithDelim( buf1, "FREE", buf2, sizeof( buf2)) == NULL )
 				continue;
-			if( NPC_ActionPassCheck( warpnpcindex, charaindex, buf2) == FALSE )	{
+			if( NPC_ActionPassCheck( warpnpcindex, char_index, buf2) == FALSE )	{
 				continue;
 			}else	{
 				iRand=0;
@@ -211,8 +211,8 @@ void NPC_WarpWarpCharacter( int warpnpcindex, int charaindex )
 			y = Wpoint[pw].m_y;
 			if( NPC_Util_GetStrFromStrWithDelim( arg, "CHECKPARTY", buf1, sizeof( buf1)) != NULL ) {
 				if( strstr( buf1, "TRUE") != NULL ){
-					if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE ) == CHAR_PARTY_LEADER )	{
-						CHAR_DischargeParty( charaindex, 0); // 拆队
+					if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE ) == CHAR_PARTY_LEADER )	{
+						CHAR_DischargeParty( char_index, 0); // 拆队
 					}
 				}
 			}
@@ -241,41 +241,41 @@ void NPC_WarpWarpCharacter( int warpnpcindex, int charaindex )
 		{
 		  int ff=floor;
 
-		  int of=CHAR_getInt(charaindex, CHAR_FLOOR);
-		  int fd=CHAR_getWorkInt( charaindex, CHAR_WORKFD);
+		  int of=CHAR_getInt(char_index, CHAR_FLOOR);
+		  int fd=CHAR_getWorkInt( char_index, CHAR_WORKFD);
 		  int eqen=getEqNoenemy(fd);
 	  		if (eqen<200) {
 			  if (eqen>=120) {
 				if ((ff==100)||(ff==200)||(ff==300)||(ff==400)||(ff==500)) {
 				  if ((of!=100)&&(of!=200)&&(of!=300)&&(of!=400)&&(of!=500)) {
-					CHAR_talkToCli(charaindex, -1,
+					CHAR_talkToCli(char_index, -1,
 					  "太阳神的首饰发出一道奇异的光芒，隐藏了你的行踪。", CHAR_COLORWHITE);
 				  }
 				} else {
 				  if ((of==100)||(of==200)||(of==300)||(of==400)||(of==500)) {
-					CHAR_talkToCli(charaindex, -1, "环绕着你的光芒消失了。", CHAR_COLORWHITE);
+					CHAR_talkToCli(char_index, -1, "环绕着你的光芒消失了。", CHAR_COLORWHITE);
 				  }
 				}
 			  } else if (eqen>=80) {
 				if ((ff==100)||(ff==200)||(ff==300)||(ff==400)) {
 				  if ((of!=100)&&(of!=200)&&(of!=300)&&(of!=400)) {
-					CHAR_talkToCli(charaindex, -1,
+					CHAR_talkToCli(char_index, -1,
 					  "太阳神的首饰发出一道奇异的光芒，隐藏了你的行踪。", CHAR_COLORWHITE);
 				  }
 				} else {
 				  if ((of==100)||(of==200)||(of==300)||(of==400)) {
-					CHAR_talkToCli(charaindex, -1, "环绕着你的光芒消失了。", CHAR_COLORWHITE);
+					CHAR_talkToCli(char_index, -1, "环绕着你的光芒消失了。", CHAR_COLORWHITE);
 				  }
 				}
 			  } else if (eqen>=40) {
 				if ((ff==100)||(ff==200)) {
 				  if ((of!=100)&&(of!=200)) {
-					CHAR_talkToCli(charaindex, -1,
+					CHAR_talkToCli(char_index, -1,
 					  "太阳神的首饰发出一道奇异的光芒，隐藏了你的行踪。", CHAR_COLORWHITE);
 				  }
 				} else {
 				  if ((of==100)||(of==200)) {
-					CHAR_talkToCli(charaindex, -1, "环绕着你的光芒消失了。", CHAR_COLORWHITE);
+					CHAR_talkToCli(char_index, -1, "环绕着你的光芒消失了。", CHAR_COLORWHITE);
 				  }
 				}
 			  }
@@ -286,17 +286,17 @@ void NPC_WarpWarpCharacter( int warpnpcindex, int charaindex )
 		{
 			i = 0;
 			for (i = 0; i < MAXSTAKENUM; i++){
-				if (CHAR_getWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + i) > 0){
+				if (CHAR_getWorkInt(char_index, CHAR_WORKSTAKETYPE1 + i) > 0){
 					char tmpbuf[256];
 					snprintf(tmpbuf, sizeof(tmpbuf), "由於你离开了房间，所以将无法取回彩券！");
-					CHAR_setWorkInt(charaindex, CHAR_WORKSTAKETYPE1 + i, 0);
-					CHAR_talkToCli(charaindex, -1, tmpbuf, CHAR_COLORYELLOW);
+					CHAR_setWorkInt(char_index, CHAR_WORKSTAKETYPE1 + i, 0);
+					CHAR_talkToCli(char_index, -1, tmpbuf, CHAR_COLORYELLOW);
 				}
 			}
-			CHAR_setWorkInt(charaindex, CHAR_WORKSTAKEFLAG, 0);
+			CHAR_setWorkInt(char_index, CHAR_WORKSTAKEFLAG, 0);
 #ifdef _FIX_GAMBLENUM		
-			if(CHAR_getInt(charaindex, CHAR_GAMBLENUM) < 0)
-				CHAR_setInt(charaindex, CHAR_GAMBLENUM, 0);			
+			if(CHAR_getInt(char_index, CHAR_GAMBLENUM) < 0)
+				CHAR_setInt(char_index, CHAR_GAMBLENUM, 0);			
 #endif
 		}
 #endif
@@ -308,7 +308,7 @@ void NPC_WarpWarpCharacter( int warpnpcindex, int charaindex )
 				return;
 			}
 
-			CHAR_warpToSpecificPoint(charaindex, floor, x, y);
+			CHAR_warpToSpecificPoint(char_index, floor, x, y);
 		}
     }
 }
@@ -333,9 +333,9 @@ void NPC_WarpWatch( int meobjindex, int objindex, CHAR_ACTION act,
 	}
 }
 
-void NPC_WarpPostOver( int meindex, int charaindex )
+void NPC_WarpPostOver( int meindex, int char_index )
 {
-    NPC_WarpWarpCharacter( meindex, charaindex );
+    NPC_WarpWarpCharacter( meindex, char_index );
 }
 
 int NPC_WarpSearchByPosition( int fl , int x, int y)

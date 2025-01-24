@@ -1,4 +1,4 @@
-#define __UTIL_C__
+#define __COMMON_UTILS_UTIL_STRING_C__
 
 #include "util_string.h"
 
@@ -30,7 +30,8 @@ int getHash(const char *s) {
 }
 
 #define ISSPACETAB(c) ((c) == ' ' || (c) == '\t')
-void easyGetTokenFromString(char *src, int count, char *output, int len) {
+void easyGetTokenFromString(const char *src, const int count, char *output,
+                            const int len) {
   int i;
   int counter = 0;
   if (len <= 0)
@@ -61,14 +62,14 @@ void easyGetTokenFromString(char *src, int count, char *output, int len) {
 }
 
 int CreateDir(const char *dirname, int mode) {
-    // ret == 0 目录创建成功
-    // ret == -1 且不是目录已存在, 则返回错误.
-    int ret = mkdir(dirname, mode);
-    if (ret < 0 && errno != EEXIST) {
-      printf("mkdir error:%d %s: %s\n", ret, strerror(errno), dirname);
-      return -1;
-    }
-    return 0;
+  // ret == 0 目录创建成功
+  // ret == -1 且不是目录已存在, 则返回错误.
+  int ret = mkdir(dirname, mode);
+  if (ret < 0 && errno != EEXIST) {
+    printf("mkdir error:%d %s: %s\n", ret, strerror(errno), dirname);
+    return -1;
+  }
+  return 0;
 }
 
 void PrepareDirectories(const char *base_dirname) {
@@ -303,3 +304,26 @@ unsigned time_diff_us(struct timeval t1, struct timeval t2) {
   return (t1.tv_sec - t2.tv_sec) * 1000000 + (t1.tv_usec - t2.tv_usec);
 }
 
+BOOL GeneralSplitImpl(const char *src, const char *delim, const int index,
+                      char *buf, const int buflen, const char *file,
+                      const int line) {
+  int i, length = 0, addlen = 0;
+  const int delim_len = strlen(delim);
+  for (i = 0; i < index; i++) {
+    char *last;
+    src += addlen;
+    if (delim_len == 0) {
+      last = strstr_onebyte(src, delim[0]);
+    } else {
+      last = strstr(src, delim);
+    }
+    if (last == NULL) {
+      util_strncpysafe2(buf, buflen, src);
+      return i == index - 1 ? TRUE : FALSE;
+    }
+    length = last - src;
+    addlen = length + delim_len;
+  }
+  util_strncpysafe1(buf, buflen, src, length);
+  return TRUE;
+}

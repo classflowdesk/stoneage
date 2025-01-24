@@ -6,8 +6,6 @@
 #include "char_base.h"
 #include "config_file.h"
 #include <mysql/mysql.h>
-#include <stdio.h>
-#include <string.h>
 MYSQL mysql;
 MYSQL_RES *mysql_result;
 MYSQL_ROW mysql_row;
@@ -135,10 +133,10 @@ BOOL sasql_ckeckStrint( char *str )
   return TRUE;
 }
 
-int sasql_getVipPoint( int charaindex )
+int sasql_getVipPoint( int char_index )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"select VipPoint from `%s` where %s=BINARY'%s'", sqlconfig.sql_Table, sqlconfig.sql_NAME, id);
 
   if(!sasql_mysql_query(sqlstr)){
@@ -163,10 +161,10 @@ int sasql_getVipPoint( int charaindex )
   return -1;
 }
 
-int sasql_setVipPoint( int charaindex, int point )
+int sasql_setVipPoint( int char_index, int point )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"update %s set VipPoint=%d where %s=BINARY'%s'", sqlconfig.sql_Table, point, sqlconfig.sql_NAME, id);  
   
   if(!sasql_mysql_query(sqlstr)){
@@ -227,10 +225,10 @@ int sasql_setVipPointForCdkey( char *id, int point )
 }
 
 
-int sasql_getPayPoint( int charaindex )
+int sasql_getPayPoint( int char_index )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"select PayPoint from `%s` where %s=BINARY'%s'", sqlconfig.sql_Table, sqlconfig.sql_NAME, id);
 
   if(!sasql_mysql_query(sqlstr)){
@@ -256,10 +254,10 @@ int sasql_getPayPoint( int charaindex )
   return -1;
 }
 
-int sasql_setPayPoint( int charaindex, int point )
+int sasql_setPayPoint( int char_index, int point )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"update %s set PayPoint=%d where %s=BINARY'%s'", sqlconfig.sql_Table, point, sqlconfig.sql_NAME, id);
 
   if(!sasql_mysql_query(sqlstr)){
@@ -270,10 +268,10 @@ int sasql_setPayPoint( int charaindex, int point )
 }
 
 #ifdef _GAMBLE_POINT
-int sasql_getGamblePoint( int charaindex )
+int sasql_getGamblePoint( int char_index )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"select GamblePoint from `%s` where %s=BINARY'%s'", sqlconfig.sql_Table, sqlconfig.sql_NAME, id);
 
   if(!sasql_mysql_query(sqlstr)){
@@ -299,10 +297,10 @@ int sasql_getGamblePoint( int charaindex )
   return -1;
 }
 
-int sasql_setGamblePoint( int charaindex, int point )
+int sasql_setGamblePoint( int char_index, int point )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"update %s set GamblePoint=%d where %s=BINARY'%s'", sqlconfig.sql_Table, point, sqlconfig.sql_NAME, id);
   
   if(!sasql_mysql_query(sqlstr)){
@@ -314,10 +312,10 @@ int sasql_setGamblePoint( int charaindex, int point )
 #endif
 
 #ifdef _TRIAL_POINT
-int sasql_getTrialPoint( int charaindex )
+int sasql_getTrialPoint( int char_index )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"select TrialPoint from `%s` where %s=BINARY'%s'", sqlconfig.sql_Table, sqlconfig.sql_NAME, id);
 
   if(!sasql_mysql_query(sqlstr)){
@@ -343,10 +341,10 @@ int sasql_getTrialPoint( int charaindex )
   return -1;
 }
 
-int sasql_setTrialPoint( int charaindex, int point )
+int sasql_setTrialPoint( int char_index, int point )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"update %s set TrialPoint=%d where %s=BINARY'%s'", sqlconfig.sql_Table, point, sqlconfig.sql_NAME, id);
 
   if(!sasql_mysql_query(sqlstr)){
@@ -358,10 +356,10 @@ int sasql_setTrialPoint( int charaindex, int point )
 #endif
 
 #ifdef _GLORY_POINT
-int sasql_getGloryPoint( int charaindex )
+int sasql_getGloryPoint( int char_index )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"select GloryPoint from `%s` where %s=BINARY'%s'", sqlconfig.sql_Table, sqlconfig.sql_NAME, id);
 
   if(!sasql_mysql_query(sqlstr)){
@@ -387,10 +385,10 @@ int sasql_getGloryPoint( int charaindex )
   return -1;
 }
 
-int sasql_setGloryPoint( int charaindex, int point )
+int sasql_setGloryPoint( int char_index, int point )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"update %s set GloryPoint=%d where %s=BINARY'%s'", sqlconfig.sql_Table, point, sqlconfig.sql_NAME, id);
 
   if(!sasql_mysql_query(sqlstr)){
@@ -723,10 +721,10 @@ struct youx{
   int rowAt;
 }retlua;
 
-void sasql_LUASQLAdv(char* sqlstr,char* filepath,char* function,int npcindex ,int charaindex,char* msg,int flg)
+void sasql_LUASQLAdv(char* sqlstr,char* filepath,char* function,int npcindex ,int char_index,char* msg,int flg)
 {
   char* data = sasql_LuaAdv_QueryR(sqlstr,flg);
-  NPC_Lua_SQLPushAdvCallBack(retlua.result,retlua.flg,retlua.errnono,retlua.errstr,retlua.fieldCount ,retlua.rowCount ,retlua.rowAt, data,filepath,function,npcindex,charaindex,msg );
+  NPC_Lua_SQLPushAdvCallBack(retlua.result,retlua.flg,retlua.errnono,retlua.errstr,retlua.fieldCount ,retlua.rowCount ,retlua.rowAt, data,filepath,function,npcindex,char_index,msg );
 }
 char* sasql_LuaAdv_QueryR(char *sqlstr,int flg)
 {
@@ -845,13 +843,13 @@ char* sasql_LuaAdv_QueryR(char *sqlstr,int flg)
   retlua.errstr = mysql_error(&mysql);
   return "";
 }
-void sasql_LUASQL(char* sqlstr,int row,char* filepath,char* function,int npcindex ,int charaindex,char* msg)
+void sasql_LUASQL(char* sqlstr,int row,char* filepath,char* function,int npcindex ,int char_index,char* msg)
 {
   if(row == -1 )
   {
     mysql_query(&mysql,sqlstr);
   }else{
-    NPC_Lua_SQLPushCallBack(sasql_Lua_QueryR(row,sqlstr),filepath,function,npcindex, charaindex,msg);
+    NPC_Lua_SQLPushCallBack(sasql_Lua_QueryR(row,sqlstr),filepath,function,npcindex, char_index,msg);
   }
 }
 char* sasql_Lua_QueryR(int row,char *sqlstr)
@@ -983,10 +981,10 @@ BOOL sasql_CheckPasswd( char *id, char *passwd )
 }
 #endif
 #ifdef _NEW_SQL_MONEY
-int sasql_setSQLPoint( int charaindex, int point )
+int sasql_setSQLPoint( int char_index, int point )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"update %s set SQLPoint=%d where %s=BINARY'%s'", sqlconfig.sql_Table, point, sqlconfig.sql_NAME, id);
 
   if(!mysql_query(&mysql,sqlstr)){
@@ -995,10 +993,10 @@ int sasql_setSQLPoint( int charaindex, int point )
   return -1;
 }
 
-int sasql_getSQLPoint( int charaindex )
+int sasql_getSQLPoint( int char_index )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"select SQLPoint from `%s` where %s=BINARY'%s'", sqlconfig.sql_Table, sqlconfig.sql_NAME, id);
 
   if(!mysql_query(&mysql,sqlstr)){
@@ -1021,10 +1019,10 @@ int sasql_getSQLPoint( int charaindex )
   return -1;
 }
 
-int sasql_setGoldPoint( int charaindex, int point )
+int sasql_setGoldPoint( int char_index, int point )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"update %s set GoldPoint=%d where %s=BINARY'%s'", sqlconfig.sql_Table, point, sqlconfig.sql_NAME, id);
 
   if(!mysql_query(&mysql,sqlstr)){
@@ -1033,10 +1031,10 @@ int sasql_setGoldPoint( int charaindex, int point )
   return -1;
 }
 
-int sasql_getGoldPoint( int charaindex )
+int sasql_getGoldPoint( int char_index )
 {
   char sqlstr[256];
-  char *id = CHAR_getChar(charaindex, CHAR_CDKEY);
+  char *id = CHAR_getChar(char_index, CHAR_CDKEY);
   sprintf(sqlstr,"select GoldPoint from `%s` where %s=BINARY'%s'", sqlconfig.sql_Table, sqlconfig.sql_NAME, id);
 
   if(!mysql_query(&mysql,sqlstr)){

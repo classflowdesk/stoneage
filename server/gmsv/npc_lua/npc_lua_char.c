@@ -123,7 +123,7 @@ int NPC_Lua_Char_SetData(lua_State *_NLL)
 #ifdef _JZ_BILLING_SYSTEM
 			if(TM_Flg == CHAR_VIPPOINT)
 			{
-				saacproto_IncreaseMPoint_send(acfd, -1, CHAR_getChar( TM_Index, CHAR_CDKEY ), "增加金币", TM_IntVal - CHAR_getInt(TM_Index, TM_Flg));
+				SaacClient_IncreaseMPoint_send(acfd, -1, CHAR_getChar( TM_Index, CHAR_CDKEY ), "增加金币", TM_IntVal - CHAR_getInt(TM_Index, TM_Flg));
 			}
 #endif
 			int TM_RetInt = CHAR_setInt(TM_Index, TM_Flg, TM_IntVal);
@@ -1414,7 +1414,7 @@ int NPC_Lua_Char_RandMsg(lua_State *_NLL)
 		CHAR_setWorkChar(TM_TalkIndex, CHAR_WORKRANDMSG, buf);
 		int fd = getfdFromCharaIndex( TM_TalkIndex );
 		sprintf(buf,"%s\n%s\n%s\n%s\n%s\n%s\n输入正确答案括号内的5位数字或者点选答案",randquestion,tempret[0],tempret[1],tempret[2],tempret[3],tempret[4]);
-		lssproto_WN_send( fd, windowtype, 
+		GmsvServer_WN_send( fd, windowtype, 
 			WINDOW_BUTTONTYPE_OK,
 			CHAR_WINDOWTYPE_LUANPC_RANDMSG,
 			-1,
@@ -2095,8 +2095,8 @@ int NPC_Lua_Char_GetPetOwner(lua_State *_NLL)
 	if( CHAR_getInt( TM_Index, CHAR_WHICHTYPE ) != CHAR_TYPEPET ){
 		LRetErrInt(_NLL, -2, "传入的对象并不是宠物！");
 	}
-	int charaindex = CHAR_getWorkInt(TM_Index, CHAR_WORKPLAYERINDEX);
-	LRetInt(_NLL, charaindex);
+	int char_index = CHAR_getWorkInt(TM_Index, CHAR_WORKPLAYERINDEX);
+	LRetInt(_NLL, char_index);
 }
 
 int NPC_Lua_Char_GetEnemyBaseIdFromEnemyId(lua_State *_NLL)
@@ -2308,11 +2308,11 @@ BOOL NPC_Lua_Char_JoinParty(lua_State *_NLL)
 {
 	CheckEx(_NLL, 2);
 	CheckIndexNull(_NLL, 2);
-	int charaindex = (int)lua_tointeger(_NLL, 1);
+	int char_index = (int)lua_tointeger(_NLL, 1);
 	int toindex = (int)lua_tointeger(_NLL, 2);
-	if (CHAR_CHECKINDEX(charaindex)&&CHAR_CHECKINDEX(toindex))
+	if (CHAR_CHECKINDEX(char_index)&&CHAR_CHECKINDEX(toindex))
 	{
-		CHAR_JoinParty_Main( charaindex, toindex);
+		CHAR_JoinParty_Main( char_index, toindex);
 		LRetBool(_NLL, TRUE);
 	}
 	LRetBool(_NLL, FALSE);
@@ -2322,32 +2322,32 @@ int NPC_Lua_Char_getFamilyPlayIndex(lua_State *_NLL)
 {
 	CheckEx(_NLL, 3);
 	CheckIndexNull(_NLL, 3);
-	int charaindex = (int)lua_tointeger(_NLL, 1);
-	if(!CHAR_CHECKINDEX(charaindex))
+	int char_index = (int)lua_tointeger(_NLL, 1);
+	if(!CHAR_CHECKINDEX(char_index))
 	{
 		LRetErrInt(_NLL, -1, "传入的索引是无效的。");
 	}
 	int familyindex = (int)lua_tointeger(_NLL, 1);
 	int familymode = (int)lua_tointeger(_NLL, 2);
-	int familycharaindex = (int)lua_tointeger(_NLL, 3);
+	int familychar_index = (int)lua_tointeger(_NLL, 3);
 	if(familyindex > FAMILY_MAXNUM){
 		LRetErrInt(_NLL, -1, "传入的家族索引是无效的。");
 	}else if (familymode > FAMILY_MAXCHANNEL)
 	{
 		LRetErrInt(_NLL, -1, "传入的家族频道是无效的。");
-	}else if (familycharaindex > FAMILY_MAXMEMBER)
+	}else if (familychar_index > FAMILY_MAXMEMBER)
 	{
 		LRetErrInt(_NLL, -1, "传入的家族人物索引无效。");
 	}
-	int playindex =  channelMember[familyindex][familymode][familycharaindex];
+	int playindex =  channelMember[familyindex][familymode][familychar_index];
 	LRetInt(_NLL,playindex);
 }
 
 int NPC_Lua_Char_logout(lua_State *_NLL){
 	CheckEx(_NLL, 1);
 	CheckIndexNull(_NLL, 1);
-	int charaindex = (int)lua_tointeger(_NLL, 1);
-	CHAR_logout(charaindex, TRUE);
+	int char_index = (int)lua_tointeger(_NLL, 1);
+	CHAR_logout(char_index, TRUE);
 	LRetBool(_NLL, TRUE);
 }
 
@@ -2449,8 +2449,8 @@ int NPC_Lua_Char_GetfdFromCharaIndex(lua_State *_NLL)
 {
 	CheckEx(_NLL, 1);
 	CheckIndexNull(_NLL, 1);
-	int charaindex = (int)lua_tointeger(_NLL, 1);
-	LRetInt(_NLL, getfdFromCharaIndex(charaindex));
+	int char_index = (int)lua_tointeger(_NLL, 1);
+	LRetInt(_NLL, getfdFromCharaIndex(char_index));
 }
 
 int NPC_Lua_Char_CharRidNo(lua_State *_NLL)

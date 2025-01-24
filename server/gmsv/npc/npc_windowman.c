@@ -5,7 +5,7 @@
 #include "char_base.h"
 #include "npcutil.h"
 #include "config_file.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_windowman.h"
 #include "autil.h"
 #ifdef _NEW_ITEM_
@@ -108,7 +108,7 @@ void NPC_WindowmanLooked( int meindex , int lookedindex)
 	
 	fd = getfdFromCharaIndex( toindex);
 	if( fd != -1 ) {
-		lssproto_WN_send( fd, w.windowtype, 
+		GmsvServer_WN_send( fd, w.windowtype, 
 						w.buttontype,
 						w.windowno+100,
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -156,9 +156,9 @@ void NPC_WindowmanWindowTalked( int meindex, int talkerindex,
 #else
 			for( i = 0; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
-				int itemindex = CHAR_getItemIndex( talkerindex, i);
-				if( ITEM_CHECKINDEX( itemindex)) {
-					if( ITEM_getInt( itemindex, ITEM_ID)
+				int item_index = CHAR_getItemIndex( talkerindex, i);
+				if( ITEM_CHECKINDEX( item_index)) {
+					if( ITEM_getInt( item_index, ITEM_ID)
 						== buttonproc[button].checkhaveitem ) 
 					{
 						break;
@@ -182,9 +182,9 @@ void NPC_WindowmanWindowTalked( int meindex, int talkerindex,
 #else
 			for( i = 0; i < CHAR_MAXITEMHAVE; i ++ ) {
 #endif
-				int itemindex = CHAR_getItemIndex( talkerindex, i);
-				if( ITEM_CHECKINDEX( itemindex)) {
-					if( ITEM_getInt( itemindex, ITEM_ID)
+				int item_index = CHAR_getItemIndex( talkerindex, i);
+				if( ITEM_CHECKINDEX( item_index)) {
+					if( ITEM_getInt( item_index, ITEM_ID)
 						== buttonproc[button].checkdonthaveitem ) 
 					{
 						break;
@@ -210,7 +210,7 @@ void NPC_WindowmanWindowTalked( int meindex, int talkerindex,
 		}
 		fd = getfdFromCharaIndex( talkerindex);
 		if( fd != -1 ) {
-			lssproto_WN_send( fd, w.windowtype, 
+			GmsvServer_WN_send( fd, w.windowtype, 
 							w.buttontype,
 							w.windowno+100,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

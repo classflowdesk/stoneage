@@ -93,7 +93,7 @@ int SKILL_getInt( Skill* skill, int element);
 int SKILL_setInt( Skill* skill, int element, int new);
 
 #ifdef _CHAR_PROFESSION			// WON ADD 人物职业
-char* SKILL_makeSkillStatusString( Skill* skill, int charaindex, int skill_num );
+char* SKILL_makeSkillStatusString( Skill* skill, int char_index, int skill_num );
 #else
 char* SKILL_makeSkillStatusString( Skill* skill );
 #endif
@@ -103,12 +103,12 @@ char* SKILL_makeSkillFalseString( void );
 BOOL SKILL_makeSkillData( Skill* sk ,int skid, int lev );
 
 int SKILL_levelup( Skill* sk );
-int SKILL_getLevelFromSkillID( int charaindex, SKILL_ID id );
-BOOL SKILL_getUpableSkillID( int charaindex,char* buf, int buflen );
-void SKILL_skillEffect( int charaindex );
+int SKILL_getLevelFromSkillID( int char_index, SKILL_ID id );
+BOOL SKILL_getUpableSkillID( int char_index,char* buf, int buflen );
+void SKILL_skillEffect( int char_index );
 
 #ifdef _PROFESSION_SKILL			// WON ADD 人物职业技能
-int PROFESSION_MAGIC_COST_MP( int charaindex, int skill_num );
+int PROFESSION_MAGIC_COST_MP( int char_index, int skill_num );
 INLINE int PROFESSION_CHANGE_SKILL_LEVEL_M( int skill_level );
 INLINE int PROFESSION_CHANGE_SKILL_LEVEL_A( int skill_level );
 INLINE int SKILL_getRealInt( Skill* skill, int element);

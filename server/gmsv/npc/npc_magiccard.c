@@ -5,7 +5,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "handletime.h"
 #include "readmap.h"
 #include "log.h"
@@ -320,7 +320,7 @@ void NPC_Magiccard_selectWindow(int meindex,int toindex,int num,int select)
 		break;
 	}
 
-	lssproto_WN_send( fd, windowtype, buttontype, windowno, 
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno, 
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
 }
 
@@ -508,7 +508,7 @@ int NPC_magiccard_checkplace( int meindex , int toindex , char *token )
 		Positiontable[banker[i].playertotal].humanY + offsety );
 	//移动该挑战者的视角	
 	movescreenXY = ((Positiontable[banker[i].playertotal].humanX + offsetx) << 16) | ( Positiontable[banker[i].playertotal].humanY + offsety)	;
-	lssproto_MoveScreen_send(getfdFromCharaIndex(toindex), TRUE, movescreenXY);	
+	GmsvServer_MoveScreen_send(getfdFromCharaIndex(toindex), TRUE, movescreenXY);	
 	banker[i].playertotal += 1;		//加入一个挑战者
 
 	//雷尔变身
@@ -621,7 +621,7 @@ void NPC_magiccard_gameinit( int meindex , int bkid )
 
 		//移动该挑战者的视角	
 		movescreenXY = ((14+offsetx) << 16) | (13+offsety)	;
-		lssproto_MoveScreen_send(getfdFromCharaIndex(charindex), TRUE, movescreenXY);	
+		GmsvServer_MoveScreen_send(getfdFromCharaIndex(charindex), TRUE, movescreenXY);	
 
 	}			
 	banker[bkid].hp[BANKERID] = banker[bkid].starttotal * MAXHP ;
@@ -656,7 +656,7 @@ void NPC_magiccard_selectcard( int meindex , int bkid )
 				strcat( token, "\n");
 			}
 		}	
-		lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT ,
+		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT ,
 			WINDOW_BUTTONTYPE_NONE , 
 			CHAR_WINDOWTYPE_MAGIC_SELECT , 
 			CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
@@ -692,7 +692,7 @@ void NPC_magiccard_checkselect( int meindex , int toindex ,int choise )
 				}else{
 					buttontype = WINDOW_BUTTONTYPE_OK|WINDOW_BUTTONTYPE_CANCEL;
 				}
-				lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT ,
+				GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT ,
 					buttontype, 
 					CHAR_WINDOWTYPE_MAGIC_SELECT , 
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
@@ -730,7 +730,7 @@ void NPC_magiccard_selectback( int meindex , int toindex )
 		}
 	}	
 	
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_SELECT ,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_SELECT ,
 		WINDOW_BUTTONTYPE_NONE , 
 		CHAR_WINDOWTYPE_MAGIC_SELECT , 
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token);
@@ -754,7 +754,7 @@ void NPC_magiccard_waitselect( int meindex , int bkid )
 			CHAR_setWorkInt( charindex , NPC_WORK_SELECT , -1 );
 			CHAR_setWorkInt( charindex , NPC_WORK_ACTION , 0 );
 			//取消选择			
-			lssproto_MagiccardDamage_send(getfdFromCharaIndex(charindex), 10 , 0 ,0 ,0 );
+			GmsvServer_MagiccardDamage_send(getfdFromCharaIndex(charindex), 10 , 0 ,0 ,0 );
 			sprintf(buf,"出牌时间到，%d号挑战者放弃出牌",i+1);	
 			showString( meindex, buf , 0);
 			select++;  //不等了不让你选了 
@@ -1479,8 +1479,8 @@ void NPC_magiccard_action2(int meindex , int charindex , int user , int card , i
 					sprintf( data,"%d|%d|%d|%d|%d|%d|%d|%d|",CHAR_getWorkInt( charindex, CHAR_WORKOBJINDEX)
 					//sprintf( data,"%d|%d|%d|%d|%d|%d|",CHAR_getWorkInt( npccharindex, CHAR_WORKOBJINDEX)
 						,user,card,dir,animno,action,offsetx,offsety);
-					lssproto_MagiccardAction_send(getfdFromCharaIndex(othercharindex), data );
-					//lssproto_Firework_send(getfdFromCharaIndex(othercharindex), CHAR_getWorkInt( charindex, CHAR_WORKOBJINDEX), 0, 101888);
+					GmsvServer_MagiccardAction_send(getfdFromCharaIndex(othercharindex), data );
+					//GmsvServer_Firework_send(getfdFromCharaIndex(othercharindex), CHAR_getWorkInt( charindex, CHAR_WORKOBJINDEX), 0, 101888);
 				}
 			}
 		}
@@ -1523,7 +1523,7 @@ void NPC_magiccard_showdamage(int meindex , int charindex , int position , int d
 				if (OBJECT_getType(objindex) == OBJTYPE_CHARA &&
 						CHAR_getInt(othercharindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER &&
 						CHAR_getWorkInt(othercharindex, CHAR_WORKBATTLEMODE ) == BATTLE_CHARMODE_NONE){
-					lssproto_MagiccardDamage_send(getfdFromCharaIndex(othercharindex), position,damage,offsetx,offsety);			
+					GmsvServer_MagiccardDamage_send(getfdFromCharaIndex(othercharindex), position,damage,offsetx,offsety);			
 					//sprintf( buf,"name: %s  fd%d posi %d damage %d ox %d oy %d",CHAR_getChar(othercharindex, CHAR_NAME),
 					//	getfdFromCharaIndex(othercharindex),position,damage,offsetx,offsety		
 					//	);
@@ -1589,7 +1589,7 @@ void NPC_magiccard_out( int meindex , int bkid , int player )
 		
 	CHAR_setWorkInt( charindex , CHAR_WORK_TEMP_FLOOR, 0);
 	// 荧幕归位
-	lssproto_MoveScreen_send(getfdFromCharaIndex(charindex), FALSE, 0);
+	GmsvServer_MoveScreen_send(getfdFromCharaIndex(charindex), FALSE, 0);
 
 	CHAR_warpToSpecificPoint( charindex , CHAR_getInt( meindex, CHAR_FLOOR) 
 				,Positiontable[7].humanX + offsetx , Positiontable[7].humanY + offsety);	

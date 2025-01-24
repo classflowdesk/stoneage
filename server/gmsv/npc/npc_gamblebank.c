@@ -5,7 +5,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "enemy.h"
 #include "log.h"
 #include "battle.h"
@@ -80,7 +80,7 @@ BOOL NPC_GambleBankInit( int meindex )
 
     return TRUE;
 }
-//CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_GOLD);
+//CHAR_send_P_StatusString( char_index, CHAR_P_STRING_GOLD);
 void NPC_GambleBankLoop( int meindex)
 {
 #ifdef _GAMBLEBANK_U_NOLOCK
@@ -258,7 +258,7 @@ static void NPC_GambleBank_selectWindow( int meindex, int toindex, int num, int 
 	break;
 	}
 
-	lssproto_WN_send( fd, windowtype, 
+	GmsvServer_WN_send( fd, windowtype, 
 					buttontype, 
 					windowno,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -457,7 +457,7 @@ int NPC_GambleBank_DoGold( int meindex, int toindex, int Gold, int flg)
 
 BOOL NPC_GambleBank_AddItem( int meindex, int toindex, int itemId, int count)
 {
-	int i=-1,itemindex=-1;
+	int i=-1,item_index=-1;
 	int ret=-1;
 	char token[256];
  	strcpy( token,"\0");
@@ -470,8 +470,8 @@ BOOL NPC_GambleBank_AddItem( int meindex, int toindex, int itemId, int count)
 		return FALSE;
 	}
 	for( i = 0 ; i <  CheckCharMaxItem(toindex)  ; i++ ){
-		itemindex=CHAR_getItemIndex( toindex , i );
-		if( itemindex == -1 )	{
+		item_index=CHAR_getItemIndex( toindex , i );
+		if( item_index == -1 )	{
 			break;
 		}
 	}
@@ -480,32 +480,32 @@ BOOL NPC_GambleBank_AddItem( int meindex, int toindex, int itemId, int count)
 		CHAR_talkToCli( toindex, -1, token,  CHAR_COLORWHITE);
 		return FALSE;
 	}
-	itemindex = ITEM_makeItemAndRegist( itemId);
-	if(itemindex == -1)
+	item_index = ITEM_makeItemAndRegist( itemId);
+	if(item_index == -1)
 		return FALSE;
 
-	ret = CHAR_addItemSpecificItemIndex( toindex, itemindex);
+	ret = CHAR_addItemSpecificItemIndex( toindex, item_index);
 	if( ret < 0 || ret >= CheckCharMaxItem(toindex) ) {
-		ITEM_endExistItemsOne( itemindex);
+		ITEM_endExistItemsOne( item_index);
 		return FALSE;
 	}
 		LogItem(
 				CHAR_getChar( toindex, CHAR_NAME ),
 				CHAR_getChar( toindex, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-				itemindex,
+				item_index,
 #else
-				ITEM_getInt( itemindex, ITEM_ID ),
+				ITEM_getInt( item_index, ITEM_ID ),
 #endif
 				"G_BANK(游乐场积分兑换道具)",
 				CHAR_getInt( toindex,CHAR_FLOOR),
 				CHAR_getInt( toindex,CHAR_X ),
 				CHAR_getInt( toindex,CHAR_Y ),
-				ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-				ITEM_getChar( itemindex, ITEM_NAME),
-				ITEM_getInt( itemindex, ITEM_ID)
+				ITEM_getChar( item_index, ITEM_UNIQUECODE),
+				ITEM_getChar( item_index, ITEM_NAME),
+				ITEM_getInt( item_index, ITEM_ID)
 		);
-	sprintf( token,"拿到%s",ITEM_getChar( itemindex, ITEM_NAME));
+	sprintf( token,"拿到%s",ITEM_getChar( item_index, ITEM_NAME));
 	CHAR_talkToCli( toindex, -1,token,CHAR_COLORWHITE);
 	CHAR_sendItemDataOne( toindex, ret);
 	CHAR_setInt( toindex, CHAR_GAMBLENUM, CHAR_getInt( toindex, CHAR_GAMBLENUM) - count);

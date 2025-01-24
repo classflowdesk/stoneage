@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_airplane.h"
 #include "handletime.h"
 
@@ -61,9 +61,9 @@ NPC_AIR_MSG		airmsg[] = {
 
 static int npc_ShipSetPoint( int meindex, char *argstr);
 static void npc_ShipSetDestPoint( int meindex, char *argstr);
-static BOOL npc_ShipCheckDeniedItem( int meindex, int charaindex, char *argstr);
-static BOOL npc_ShipCheckLevel( int meindex, int charaindex, char *argstr);
-static int npc_ShipCheckStone( int meindex, int charaindex, char *argstr);
+static BOOL npc_ShipCheckDeniedItem( int meindex, int char_index, char *argstr);
+static BOOL npc_ShipCheckLevel( int meindex, int char_index, char *argstr);
+static int npc_ShipCheckStone( int meindex, int char_index, char *argstr);
 static void npc_ShipSendMsg( int meindex, int talkerindex, int tablenum);
 static int npc_ShipGetRoutePointNum( int meindex, char *argstr );
 static void npc_Ship_walk( int meindex);
@@ -509,7 +509,7 @@ static void npc_ShipSetDestPoint( int meindex, char *argstr)
  * 隙烂今木凶失奶  丞毛  匀化中月井民尼永弁允月
  *   匀化中凶日分户
  **************************************/
-static BOOL npc_ShipCheckDeniedItem( int meindex, int charaindex, char *argstr)
+static BOOL npc_ShipCheckDeniedItem( int meindex, int char_index, char *argstr)
 {
 	char	buf[1024];
 	BOOL	found = TRUE;
@@ -528,12 +528,12 @@ static BOOL npc_ShipCheckDeniedItem( int meindex, int charaindex, char *argstr)
 			itemid = atoi( buf2);
 
 #ifdef _NEW_ITEM_
-			int itemMax = CheckCharMaxItem(charaindex);
+			int itemMax = CheckCharMaxItem(char_index);
 			for( j = 0; j < itemMax; j ++) {
 #endif
-				int itemindex = CHAR_getItemIndex( charaindex, j);
-				if( ITEM_CHECKINDEX( itemindex)) {
-					if( ITEM_getInt( itemindex, ITEM_ID) == itemid) {
+				int item_index = CHAR_getItemIndex( char_index, j);
+				if( ITEM_CHECKINDEX( item_index)) {
+					if( ITEM_getInt( item_index, ITEM_ID) == itemid) {
 						found = FALSE;
 						break;
 					}
@@ -547,7 +547,7 @@ static BOOL npc_ShipCheckDeniedItem( int meindex, int charaindex, char *argstr)
  * 隙烂今木凶失奶  丞毛  匀化中月井民尼永弁允月
  *   匀化中卅中午分户
  **************************************/
-BOOL npc_ShipCheckAllowItem( int meindex, int charaindex, BOOL pickupmode)
+BOOL npc_ShipCheckAllowItem( int meindex, int char_index, BOOL pickupmode)
 {
 	char	buf[1024];
 	BOOL	found = TRUE;
@@ -577,15 +577,15 @@ BOOL npc_ShipCheckAllowItem( int meindex, int charaindex, BOOL pickupmode)
 			getflg = FALSE;
 
 #ifdef _NEW_ITEM_
-			int itemMax = CheckCharMaxItem(charaindex);
+			int itemMax = CheckCharMaxItem(char_index);
 			for( j = 0; j < itemMax; j ++) {
 #endif
-				int itemindex = CHAR_getItemIndex( charaindex, j);
-				if( ITEM_CHECKINDEX( itemindex)) {
-					if( ITEM_getInt( itemindex, ITEM_ID) == itemid) {
+				int item_index = CHAR_getItemIndex( char_index, j);
+				if( ITEM_CHECKINDEX( item_index)) {
+					if( ITEM_getInt( item_index, ITEM_ID) == itemid) {
 						/* 椭瘀互缭匀化中月井日］公及失奶  丞毛潸月 */
 						if( pickupmode && pickup && !getflg) {
-							CHAR_DelItem( charaindex, j);
+							CHAR_DelItem( char_index, j);
 							getflg = TRUE;
 						}
 						break;
@@ -606,7 +606,7 @@ BOOL npc_ShipCheckAllowItem( int meindex, int charaindex, BOOL pickupmode)
 /**************************************
  * 隙烂今木凶伊矛伙动晓井民尼永弁允月
  **************************************/
-static BOOL npc_ShipCheckLevel( int meindex, int charaindex, char *argstr)
+static BOOL npc_ShipCheckLevel( int meindex, int char_index, char *argstr)
 {
 	int		level;
 	
@@ -615,7 +615,7 @@ static BOOL npc_ShipCheckLevel( int meindex, int charaindex, char *argstr)
 	if( level == -1 ) {
 		return TRUE;
 	}
-	if( CHAR_getInt( charaindex, CHAR_LV) >= level ) return TRUE;
+	if( CHAR_getInt( char_index, CHAR_LV) >= level ) return TRUE;
 	
 	return FALSE;
 }
@@ -624,7 +624,7 @@ static BOOL npc_ShipCheckLevel( int meindex, int charaindex, char *argstr)
  * 豢嗯毛民尼永弁允月
  * -1 蛲   0动晓”    ］井勾  邰Stone
  **************************************/
-static int npc_ShipCheckStone( int meindex, int charaindex, char *argstr)
+static int npc_ShipCheckStone( int meindex, int char_index, char *argstr)
 {
 	int		gold;
 	
@@ -633,7 +633,7 @@ static int npc_ShipCheckStone( int meindex, int charaindex, char *argstr)
 	if( gold == -1 ) {
 		return 0;
 	}
-	if( CHAR_getInt( charaindex, CHAR_GOLD) >= gold ) return gold;
+	if( CHAR_getInt( char_index, CHAR_GOLD) >= gold ) return gold;
 	
 	return -1;
 }
@@ -686,7 +686,7 @@ static int npc_ShipGetRoutePointNum( int meindex, char *argstr )
 	}
 	return( i -1);
 }
-BOOL npc_ShipCheckJoinParty( int meindex, int charaindex, BOOL msgflg)
+BOOL npc_ShipCheckJoinParty( int meindex, int char_index, BOOL msgflg)
 {
     //int		fd;
 	char	argstr[NPC_UTIL_GETARGSTR_BUFSIZE];
@@ -694,74 +694,74 @@ BOOL npc_ShipCheckJoinParty( int meindex, int charaindex, BOOL msgflg)
 	NPC_Util_GetArgStr( meindex, argstr, sizeof( argstr));
 	
 	/* ㄠ弘伉永玉动  及心 */
-	if( !NPC_Util_charIsInFrontOfChar( charaindex, meindex, 1 )) return FALSE; 
+	if( !NPC_Util_charIsInFrontOfChar( char_index, meindex, 1 )) return FALSE; 
 	/*     昙乐反蛐  允月 */
 	if( CHAR_getWorkInt( meindex, NPC_WORK_MODE) != 0 ) {
-		if( msgflg) npc_ShipSendMsg( meindex, charaindex, NPC_AIR_MSG_GETTINGON);
+		if( msgflg) npc_ShipSendMsg( meindex, char_index, NPC_AIR_MSG_GETTINGON);
 		return FALSE;
 	}
 	/* 天□化不分匀凶日分户 */
-	if( CHAR_getWorkInt( charaindex, CHAR_WORKPARTYMODE ) != CHAR_PARTY_NONE) {
-		if( msgflg) npc_ShipSendMsg( meindex, charaindex, NPC_AIR_MSG_NOTPARTY);
+	if( CHAR_getWorkInt( char_index, CHAR_WORKPARTYMODE ) != CHAR_PARTY_NONE) {
+		if( msgflg) npc_ShipSendMsg( meindex, char_index, NPC_AIR_MSG_NOTPARTY);
 		return FALSE;
 	}
 	/* 由□  奴及谛醒毛民尼永弁允月 */
 	if( CHAR_getEmptyPartyArray( meindex) == -1 ) {
-		if( msgflg) npc_ShipSendMsg( meindex, charaindex, NPC_AIR_MSG_OVERPARTY);
+		if( msgflg) npc_ShipSendMsg( meindex, char_index, NPC_AIR_MSG_OVERPARTY);
 		return FALSE;
 	}
 	/* 失奶  丞及民尼永弁毛允月(嗟鞅失奶  丞) */
-	if( !npc_ShipCheckDeniedItem( meindex, charaindex, argstr)) {
-		if( msgflg) npc_ShipSendMsg( meindex, charaindex, NPC_AIR_MSG_DENIEDITEM);
+	if( !npc_ShipCheckDeniedItem( meindex, char_index, argstr)) {
+		if( msgflg) npc_ShipSendMsg( meindex, char_index, NPC_AIR_MSG_DENIEDITEM);
 		return FALSE;
 	}
 #ifdef _ITEM_CHECKWARES
-	if( CHAR_CheckInItemForWares( charaindex, 0) == FALSE )	{
-		CHAR_talkToCli( charaindex, -1, "无法携带货物上机。", CHAR_COLORYELLOW);
+	if( CHAR_CheckInItemForWares( char_index, 0) == FALSE )	{
+		CHAR_talkToCli( char_index, -1, "无法携带货物上机。", CHAR_COLORYELLOW);
 		return FALSE;
 	}
 #endif
 
 	/* 失奶  丞及民尼永弁毛允月(  邰失奶  丞) */
-	if( !npc_ShipCheckAllowItem( meindex, charaindex, FALSE)) {
-		if( msgflg) npc_ShipSendMsg( meindex, charaindex, NPC_AIR_MSG_ALLOWITEM);
+	if( !npc_ShipCheckAllowItem( meindex, char_index, FALSE)) {
+		if( msgflg) npc_ShipSendMsg( meindex, char_index, NPC_AIR_MSG_ALLOWITEM);
 		return FALSE;
 	}
 	/* 伊矛伙及民尼永弁毛允月 */
-	if( !npc_ShipCheckLevel( meindex, charaindex, argstr)) {
-		if( msgflg) npc_ShipSendMsg( meindex, charaindex, NPC_AIR_MSG_LEVEL);
+	if( !npc_ShipCheckLevel( meindex, char_index, argstr)) {
+		if( msgflg) npc_ShipSendMsg( meindex, char_index, NPC_AIR_MSG_LEVEL);
 		return FALSE;
 	}
 	/* 奶矛件玄  井民尼永弁允月 */
-//	if( CHAR_getInt( charaindex, CHAR_NOWEVENT) != 0 ||
-//		CHAR_getInt( charaindex, CHAR_NOWEVENT2) != 0 ||
-//		CHAR_getInt( charaindex, CHAR_NOWEVENT3) != 0 )
+//	if( CHAR_getInt( char_index, CHAR_NOWEVENT) != 0 ||
+//		CHAR_getInt( char_index, CHAR_NOWEVENT2) != 0 ||
+//		CHAR_getInt( char_index, CHAR_NOWEVENT3) != 0 )
 //	{
-//		if( msgflg) npc_ShipSendMsg( meindex, charaindex, NPC_AIR_MSG_EVENT);
+//		if( msgflg) npc_ShipSendMsg( meindex, char_index, NPC_AIR_MSG_EVENT);
 //		return FALSE;
 //	}
 	/* 豢嗯及民尼永弁毛允月  云嗯毛潸月及匹］  蔽民尼永弁卞允月仇午″   */
-	ret = npc_ShipCheckStone( meindex, charaindex, argstr);
+	ret = npc_ShipCheckStone( meindex, char_index, argstr);
 	if( ret == -1 ) {
-		if( msgflg) npc_ShipSendMsg( meindex, charaindex, NPC_AIR_MSG_GOLD);
+		if( msgflg) npc_ShipSendMsg( meindex, char_index, NPC_AIR_MSG_GOLD);
 		return FALSE;
 	}
 	if( ret != 0 ) {
 		char msgbuf[128];
 		/* 豢嗯毛午月 */
-		CHAR_setInt( charaindex, CHAR_GOLD, 
-					CHAR_getInt( charaindex, CHAR_GOLD) - ret);
+		CHAR_setInt( char_index, CHAR_GOLD, 
+					CHAR_getInt( char_index, CHAR_GOLD) - ret);
 		/* 霜耨 */
-		CHAR_send_P_StatusString( charaindex, CHAR_P_STRING_GOLD);
+		CHAR_send_P_StatusString( char_index, CHAR_P_STRING_GOLD);
 		snprintf( msgbuf, sizeof( msgbuf), "支付了%d Stone！", ret);
-		CHAR_talkToCli( charaindex, -1, msgbuf, CHAR_COLORYELLOW);
+		CHAR_talkToCli( char_index, -1, msgbuf, CHAR_COLORYELLOW);
 	}
 	/* 由□  奴卞  月 */
-	//CHAR_JoinParty_Main( charaindex, meindex);
+	//CHAR_JoinParty_Main( char_index, meindex);
 	
-	//fd = getfdFromCharaIndex( charaindex );
+	//fd = getfdFromCharaIndex( char_index );
 	
-	//lssproto_PR_send( fd, 1, 1);
+	//GmsvServer_PR_send( fd, 1, 1);
 	
 	return TRUE;
 }

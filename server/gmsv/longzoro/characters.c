@@ -1,7 +1,7 @@
 #include "version.h"
 #include "longzoro/characters.h"
 #include "readmap.h"
-#include "saacproto_cli.h"
+#include "saac_client.h"
 #include "char_base.h"
 #ifdef _NEW_ITEM_
 extern int CheckCharMaxItem(int charindex);
@@ -671,7 +671,7 @@ void CHAR_CharadataSaveSQL(Char* ch)
 	CHAR_make_list_title_String(ch, charadata.CHAR_list_title_String);
 	CHAR_make_list_mail_String(ch, charadata.CHAR_list_mail_String);
 
-	saacproto_CharadataSaveSQL_send(acfd, ch->string[CHAR_CDKEY].string, charadata, ch->data[CHAR_SAVEINDEXNUMBER], 0);
+	SaacClient_CharadataSaveSQL_send(acfd, ch->string[CHAR_CDKEY].string, charadata, ch->data[CHAR_SAVEINDEXNUMBER], 0);
 }
 
 /*
@@ -917,9 +917,6 @@ MAKESTRINGERR:
 	return "\0";
 }
 */
-
-
-
 
 #endif
 

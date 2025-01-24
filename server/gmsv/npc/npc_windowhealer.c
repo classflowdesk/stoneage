@@ -4,7 +4,7 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 #include "npc_windowhealer.h"
 
 
@@ -343,7 +343,7 @@ static void NPC_WindowHealer_selectWindow( int meindex, int toindex, int num)
 
 	makeEscapeString( token, escapedname, sizeof(escapedname));
 	/*-仇仇匹霜耨允月--*/
-	lssproto_WN_send( fd, windowtype, 
+	GmsvServer_WN_send( fd, windowtype, 
 					buttontype, 
 					windowno,
 					CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),

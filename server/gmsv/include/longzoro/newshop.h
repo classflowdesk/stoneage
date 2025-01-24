@@ -31,8 +31,8 @@ typedef enum
 }CHAR_ONLINESHOP;
 
 BOOL OnlineShop_init();
-void OnlineShop_ShowList(int fd, int charaindex, int type, int page);
-void OnlineShop_Buy(int fd, int charaindex, int type, int page, int id, int num);
+void OnlineShop_ShowList(int fd, int char_index, int type, int page);
+void OnlineShop_Buy(int fd, int char_index, int type, int page, int id, int num);
 
 #endif
 

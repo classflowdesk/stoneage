@@ -1,4 +1,4 @@
-INCFLAGS=-I../../include -I.. -I../lua -I../../../common
+INCFLAGS=-I../include -I../../lua -I../../common
 CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
 
 TARGET=libbattle.a
@@ -21,6 +21,7 @@ $(TARGET): $(OBJ)
 	$(RM) $(TARGET)
 	$(AR) $(TARGET) $(OBJ)
 	$(RANLIB) $(TARGET)
+	$(RM) $(OBJ)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

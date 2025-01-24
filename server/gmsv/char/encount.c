@@ -434,7 +434,7 @@ int ENCOUNT_getEncountAreaArray( int floor, int x, int y)
  *  恳橘      ㄟ动晓及割  
  *  潸  撩    -1
  ------------------------------------------------------------*/
-int ENCOUNT_getEncountPercentMin( int charaindex, int floor , int x, int y )
+int ENCOUNT_getEncountPercentMin( int char_index, int floor , int x, int y )
 {
     int ret;
     
@@ -442,9 +442,9 @@ int ENCOUNT_getEncountPercentMin( int charaindex, int floor , int x, int y )
     if( ret != -1 ) {
         ret = ENCOUNT_table[ret].encountprob_min;
 		/* 玄目夫旦躲绊毛勾仃月 */
-		if( CHAR_getWorkInt( charaindex, CHAR_WORK_TOHELOS_COUNT) > 0 ) {
+		if( CHAR_getWorkInt( char_index, CHAR_WORK_TOHELOS_COUNT) > 0 ) {
 			ret = ceil( ret * 
-				((100 + CHAR_getWorkInt( charaindex, CHAR_WORK_TOHELOS_CUTRATE)) 
+				((100 + CHAR_getWorkInt( char_index, CHAR_WORK_TOHELOS_CUTRATE)) 
 					/ 100.0));
 		}
 		if( ret < 0 ) ret = 0;
@@ -462,7 +462,7 @@ int ENCOUNT_getEncountPercentMin( int charaindex, int floor , int x, int y )
  *  恳橘      ㄟ动晓及割  
  *  潸  撩    -1
  ------------------------------------------------------------*/
-int ENCOUNT_getEncountPercentMax( int charaindex, int floor , int x, int y )
+int ENCOUNT_getEncountPercentMax( int char_index, int floor , int x, int y )
 {
     int ret;
     
@@ -470,9 +470,9 @@ int ENCOUNT_getEncountPercentMax( int charaindex, int floor , int x, int y )
     if( ret != -1 ) {
         ret = ENCOUNT_table[ret].encountprob_max;
 		/* 玄目夫旦躲绊毛勾仃月 */
-		if( CHAR_getWorkInt( charaindex, CHAR_WORK_TOHELOS_COUNT) > 0 ) {
+		if( CHAR_getWorkInt( char_index, CHAR_WORK_TOHELOS_COUNT) > 0 ) {
 			ret = ceil( ret * 
-				((100 + CHAR_getWorkInt( charaindex, CHAR_WORK_TOHELOS_CUTRATE)) 
+				((100 + CHAR_getWorkInt( char_index, CHAR_WORK_TOHELOS_CUTRATE)) 
 					/ 100.0));
 		}
 		if( ret < 0 ) ret = 0;

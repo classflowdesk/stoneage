@@ -10,12 +10,12 @@
 #ifdef _PLAYER_QUESTION_ONLIEN
 PlayerQuestion_t PlayerQuestion;
 
-BOOL PlayQuestionOnline(int charaindex, char *messageeraseescape)
+BOOL PlayQuestionOnline(int char_index, char *messageeraseescape)
 {
 	if(messageeraseescape[0] == '/' && messageeraseescape[1] == 'h' && messageeraseescape[2] == 'd'){
 		
 		if(strlen(PlayerQuestion.question)==0 || strlen(PlayerQuestion.result)==0){
-			CHAR_talkToCli(charaindex,-1,"GM还未在线发问题!",CHAR_COLORRED);
+			CHAR_talkToCli(char_index,-1,"GM还未在线发问题!",CHAR_COLORRED);
 			return FALSE;
 		}
 		
@@ -26,25 +26,25 @@ BOOL PlayQuestionOnline(int charaindex, char *messageeraseescape)
 			switch(PlayerQuestion.type){
 				case 0:
 					// 加钱
-				  CHAR_setInt(charaindex,CHAR_GOLD, CHAR_getInt(charaindex,CHAR_GOLD) + PlayerQuestion.value);
-					CHAR_send_P_StatusString(charaindex,CHAR_P_STRING_GOLD);
+				  CHAR_setInt(char_index,CHAR_GOLD, CHAR_getInt(char_index,CHAR_GOLD) + PlayerQuestion.value);
+					CHAR_send_P_StatusString(char_index,CHAR_P_STRING_GOLD);
 					
 					break;
 				case 1:
 					{
-					  int itemindex=-1;
+					  int item_index=-1;
 					  char token[256];
 					  int ret;
 
-					  itemindex = CHAR_findEmptyItemBox( charaindex );
-						if( itemindex < 0 )	{
-							CHAR_talkToCli( charaindex, -1, "很抱歉,你的物品栏已满!",  CHAR_COLORYELLOW);
+					  item_index = CHAR_findEmptyItemBox( char_index );
+						if( item_index < 0 )	{
+							CHAR_talkToCli( char_index, -1, "很抱歉,你的物品栏已满!",  CHAR_COLORYELLOW);
 							break;
 						}
 	
-						itemindex = ITEM_makeItemAndRegist( PlayerQuestion.value );
-					  if( itemindex != -1 ){
-							ret = CHAR_addItemSpecificItemIndex( charaindex, itemindex);
+						item_index = ITEM_makeItemAndRegist( PlayerQuestion.value );
+					  if( item_index != -1 ){
+							ret = CHAR_addItemSpecificItemIndex( char_index, item_index);
 #ifdef _NEW_ITEM_
 
 extern int CheckCharMaxItem(int charindex);
@@ -52,20 +52,20 @@ extern int CheckCharMaxItem(int charindex);
 							if( ret < 0 ||
 #ifdef _NEW_ITEM_
 
-								ret >= CheckCharMaxItem(charaindex)
+								ret >= CheckCharMaxItem(char_index)
 #else
 								ret >= CHAR_MAXITEMHAVE
 #endif
 								) {
-								ITEM_endExistItemsOne( itemindex);
-								CHAR_talkToCli( charaindex, -1, "很抱歉,无法赠送你物品给你!",  CHAR_COLORYELLOW);
+								ITEM_endExistItemsOne( item_index);
+								CHAR_talkToCli( char_index, -1, "很抱歉,无法赠送你物品给你!",  CHAR_COLORYELLOW);
 							break;
 							}
 					
-							sprintf( token,"恭喜你获得:%s",ITEM_getChar( itemindex, ITEM_NAME));
-							CHAR_talkToCli( charaindex, -1, token, CHAR_COLORYELLOW );
+							sprintf( token,"恭喜你获得:%s",ITEM_getChar( item_index, ITEM_NAME));
+							CHAR_talkToCli( char_index, -1, token, CHAR_COLORYELLOW );
 	
-							CHAR_sendItemDataOne( charaindex, ret);
+							CHAR_sendItemDataOne( char_index, ret);
 					  }
 					}
 					break;
@@ -77,12 +77,12 @@ extern int CheckCharMaxItem(int charindex);
 						int petindex;
 					
 						for( i = 0 ;i < CHAR_MAXPETHAVE ; i++) {
-							if( CHAR_getCharPet( charaindex, i) == -1  )
+							if( CHAR_getCharPet( char_index, i) == -1  )
 								break;
 						}
 					
 					  if( i == CHAR_MAXPETHAVE ){
-							CHAR_talkToCli( charaindex, -1, "很抱歉,你身上宠物已满!",  CHAR_COLORYELLOW);
+							CHAR_talkToCli( char_index, -1, "很抱歉,你身上宠物已满!",  CHAR_COLORYELLOW);
 							break;
 						}
 					
@@ -94,60 +94,60 @@ extern int CheckCharMaxItem(int charindex);
 						}
 					
 						if( i == enemynum ){
-							CHAR_talkToCli( charaindex, -1, "很抱歉,该宠物不存在",  CHAR_COLORYELLOW);
+							CHAR_talkToCli( char_index, -1, "很抱歉,该宠物不存在",  CHAR_COLORYELLOW);
 							break;
 						}
 					
-						petindex = ENEMY_createPetFromEnemyIndex( charaindex, i);
+						petindex = ENEMY_createPetFromEnemyIndex( char_index, i);
 						for( i = 0; i < CHAR_MAXPETHAVE; i ++ )	{
-							if( CHAR_getCharPet( charaindex, i ) == petindex )
+							if( CHAR_getCharPet( char_index, i ) == petindex )
 								break;
 						}
 		
 						if( !CHAR_CHECKINDEX( petindex) ){
-							CHAR_talkToCli( charaindex, -1, "很抱歉,该宠物不存在",  CHAR_COLORYELLOW);
+							CHAR_talkToCli( char_index, -1, "很抱歉,该宠物不存在",  CHAR_COLORYELLOW);
 						}
 						snprintf( msgbuf,sizeof( msgbuf), "恭喜你获得宠物:%s。", CHAR_getChar(petindex,CHAR_NAME));
-						CHAR_talkToCli( charaindex, -1, msgbuf,  CHAR_COLORYELLOW);
+						CHAR_talkToCli( char_index, -1, msgbuf,  CHAR_COLORYELLOW);
 						CHAR_setInt(petindex,CHAR_VARIABLEAI,10000);
 						for(j = 0; j < CHAR_MAXPETHAVE; j++){
-							petindex = CHAR_getCharPet(charaindex, j);
+							petindex = CHAR_getCharPet(char_index, j);
 							if( !CHAR_CHECKINDEX( petindex) )
 								continue;
 							CHAR_complianceParameter( petindex );
 							snprintf( msgbuf, sizeof( msgbuf ), "K%d", j );
-							CHAR_sendStatusString( charaindex, msgbuf );
+							CHAR_sendStatusString( char_index, msgbuf );
 							snprintf( msgbuf, sizeof( msgbuf ), "W%d", j );
-							CHAR_sendStatusString( charaindex, msgbuf );
+							CHAR_sendStatusString( char_index, msgbuf );
 						}
 					}
 					break;
 				case 3:
-					CHAR_setInt(charaindex,CHAR_FAME,CHAR_getInt(charaindex,CHAR_FAME) + PlayerQuestion.value * 100);
+					CHAR_setInt(char_index,CHAR_FAME,CHAR_getInt(char_index,CHAR_FAME) + PlayerQuestion.value * 100);
 /*
 					char buf[64];
-					sprintf(buf,"%d", CHAR_getInt(charaindex,CHAR_FAME));
-					saacproto_ACFixFMData_send(acfd,
-							CHAR_getChar(charaindex,CHAR_FMNAME),CHAR_getInt(charaindex,CHAR_FMINDEX),CHAR_getWorkInt(charaindex,CHAR_WORKFMINDEXI),
-							FM_FIX_FMFEED,buf,"",CHAR_getWorkInt(charaindex,CHAR_WORKFMCHARINDEX),CONNECT_getFdid(getfdFromCharaIndex(charaindex)));
+					sprintf(buf,"%d", CHAR_getInt(char_index,CHAR_FAME));
+					SaacClient_ACFixFMData_send(acfd,
+							CHAR_getChar(char_index,CHAR_FMNAME),CHAR_getInt(char_index,CHAR_FMINDEX),CHAR_getWorkInt(char_index,CHAR_WORKFMINDEXI),
+							FM_FIX_FMFEED,buf,"",CHAR_getWorkInt(char_index,CHAR_WORKFMCHARINDEX),CONNECT_getFdid(getfdFromCharaIndex(char_index)));
 */
 					sprintf( token, "恭喜你获得个人声望：%d", PlayerQuestion.value);
-					CHAR_talkToCli(charaindex,-1,token,CHAR_COLORRED);
+					CHAR_talkToCli(char_index,-1,token,CHAR_COLORRED);
 					break;
 				case 4:
-					CHAR_setInt(charaindex,CHAR_AMPOINT,CHAR_getInt(charaindex,CHAR_AMPOINT) + PlayerQuestion.value);
+					CHAR_setInt(char_index,CHAR_AMPOINT,CHAR_getInt(char_index,CHAR_AMPOINT) + PlayerQuestion.value);
 #ifdef _AMPOINT_LOG
-					LogAmPoint(CHAR_getChar( charaindex, CHAR_NAME ),
-									         	CHAR_getChar( charaindex, CHAR_CDKEY ),
+					LogAmPoint(CHAR_getChar( char_index, CHAR_NAME ),
+									         	CHAR_getChar( char_index, CHAR_CDKEY ),
 									          PlayerQuestion.value,
-									   				CHAR_getInt( charaindex, CHAR_AMPOINT ),
+									   				CHAR_getInt( char_index, CHAR_AMPOINT ),
 									         	"(在线问题)",
-									         	CHAR_getInt( charaindex,CHAR_FLOOR),
-									         	CHAR_getInt( charaindex,CHAR_X ),
-									         	CHAR_getInt( charaindex,CHAR_Y ));
+									         	CHAR_getInt( char_index,CHAR_FLOOR),
+									         	CHAR_getInt( char_index,CHAR_X ),
+									         	CHAR_getInt( char_index,CHAR_Y ));
 #endif
 					sprintf( token, "恭喜你获得个人积分：%d", PlayerQuestion.value);
-					CHAR_talkToCli(charaindex,-1,token,CHAR_COLORRED);
+					CHAR_talkToCli(char_index,-1,token,CHAR_COLORRED);
 					break;
 			}
 			{
@@ -157,7 +157,7 @@ extern int CheckCharMaxItem(int charindex);
 				int playernum = CHAR_getPlayerMaxNum();
 			  char token1[128];
 			  char token2[128];
-			  sprintf(token1, "恭喜玩家 %s 回答正确,答案是:%s", CHAR_getChar(charaindex, CHAR_NAME), PlayerQuestion.result);
+			  sprintf(token1, "恭喜玩家 %s 回答正确,答案是:%s", CHAR_getChar(char_index, CHAR_NAME), PlayerQuestion.result);
 				sprintf(token2, "让我们恭喜他获得%s %d", type[PlayerQuestion.type], PlayerQuestion.value);
 
 				for( i = 0 ; i < playernum ; i++) {
@@ -170,7 +170,7 @@ extern int CheckCharMaxItem(int charindex);
 			strcpy(PlayerQuestion.question,"");
 			strcpy(PlayerQuestion.result,"");
 		}else{
-			CHAR_talkToCli(charaindex,-1,"很抱歉,你回答不正确!",CHAR_COLORRED);
+			CHAR_talkToCli(char_index,-1,"很抱歉,你回答不正确!",CHAR_COLORRED);
 			return FALSE;
 		}
 	}

@@ -1,5 +1,7 @@
 #include "version.h"
-#include "linux_platform.h"
+//
+#include "server_util.h"
+//
 #include "init.h"
 #include "net.h"
 #ifdef _EPOLL_ET_MODE
@@ -46,6 +48,10 @@ void AngelReadyProc();
 #endif
 
 void warplog_proc();
+
+
+WorkSpace gSaacWorkSpace;
+WorkSpace gGmsvWorkSpace;
 
 int main(int argc, char **argv, char **env) {
   setNewTime();

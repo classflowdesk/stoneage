@@ -4,8 +4,8 @@
 #include "object.h"
 #include "char_base.h"
 #include "npcutil.h"
-#include "lssproto_serv.h"
-#include "saacproto_cli.h"
+#include "gmsv_server.h"
+#include "saac_client.h"
 #include "npc_warpman.h"
 #include "map_deal.h"
 #include "readmap.h"
@@ -30,7 +30,7 @@ BOOL NPC_BigSmallLastCheck(int point1,int mypoint,int flg);
 int NPC_FloorUse(int talker,int floor);
 BOOL NPC_WarpMsg(int meindex,int talker,char *buf);
 BOOL NPC_NpcWarpMsg(int meindex,int talker,char *arg);
-int NPC_FloorUseOtherFloor(int charaindex, char *buf);
+int NPC_FloorUseOtherFloor(int char_index, char *buf);
 
 
 #ifdef  _NPC_ADDLEVELUP
@@ -297,7 +297,7 @@ static void NPC_WarpMan_selectWindow( int meindex, int toindex, int num,int sele
 				NPC_Util_GetStrFromStrWithDelim( npcarg, "MONEY", tmp, sizeof( tmp));
 				if( strstr( tmp,"-" ) != NULL){
 					money=10000001;
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_OK,
 								CHAR_WINDOWTYPE_WINDOWWARPMAN_MAIN, 
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -309,7 +309,7 @@ static void NPC_WarpMan_selectWindow( int meindex, int toindex, int num,int sele
 				NPC_Util_GetStrFromStrWithDelim( npcarg, "MONEY", tmp, sizeof( tmp));
 				if( strstr( tmp,"-" ) != NULL){
 					money=10000001;
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_OK,
 								CHAR_WINDOWTYPE_WINDOWWARPMAN_MAIN, 
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -334,14 +334,14 @@ static void NPC_WarpMan_selectWindow( int meindex, int toindex, int num,int sele
 		}else if(NPC_Util_GetStrFromStrWithDelim( npcarg, "NomalMsg", token,sizeof(token)) !=NULL){
 			CHAR_setWorkInt( toindex , CHAR_WORKSHOPRELEVANTTRD , -2 );
 			CHAR_setWorkInt( toindex, CHAR_WORKSHOPRELEVANT, -1);
-			lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+			GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 								WINDOW_BUTTONTYPE_OK,
 								CHAR_WINDOWTYPE_WINDOWWARPMAN_MAIN, 
 								CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
 								token);
 		}
 	}
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_YESNO,
 						CHAR_WINDOWTYPE_WINDOWWARPMAN_MAIN, 
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -537,7 +537,7 @@ BOOL NPC_GetDuelPointCheck(int meindex,int talker)
 	if( fdid == -1 ) return FALSE;
 
 	CHAR_makeDBKey( talker, dbkey, sizeof( dbkey));
-	saacproto_DBGetEntryRank_send( acfd, DB_DUELPOINT, dbkey, fdid,
+	SaacClient_DBGetEntryRank_send( acfd, DB_DUELPOINT, dbkey, fdid,
 							CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX));
 	
 	return TRUE;
@@ -594,7 +594,7 @@ void NPC_ERR_DiSP(int meindex,int talker,int errNO)
 				otherindex=CHAR_getWorkInt(talker,CHAR_WORKPARTYINDEX1+i);
 				if(otherindex != -1){
 					fd = getfdFromCharaIndex( otherindex);
-					lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+					GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 						WINDOW_BUTTONTYPE_OK,
 						CHAR_WINDOWTYPE_WINDOWWARPMAN_ERR, 
 						CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
@@ -609,14 +609,14 @@ void NPC_ERR_DiSP(int meindex,int talker,int errNO)
 				"\n\n　请存好钱後，再过来。");
 		}
 	}
-	lssproto_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
 		WINDOW_BUTTONTYPE_OK,
 		CHAR_WINDOWTYPE_WINDOWWARPMAN_ERR, 
 		CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX),
 		token);
 }
 
-int NPC_FloorUse(int charaindex,int floor)
+int NPC_FloorUse(int char_index,int floor)
 {
 	int		i;
 	int		players=0;
@@ -811,7 +811,7 @@ static void NPC_NewWarpMan_selectWindow( int meindex, int toindex, int num,int s
 	}
 
 	//送讯息给 CLI
-	lssproto_WN_send( fd, windowtype, buttontype, windowno,
+	GmsvServer_WN_send( fd, windowtype, buttontype, windowno,
 			CHAR_getWorkInt( meindex, CHAR_WORKOBJINDEX), token	);																				
 }
 
@@ -995,7 +995,7 @@ BOOL NPC_TreasureRandItemGet(int meidex,int talker,int rand_j,char *buf)
 	char buff2[64];
 	int randitem;
 	int ret;
-	int itemindex;
+	int item_index;
 	char token[128];
 
 	if(rand_j == 0) {
@@ -1008,36 +1008,36 @@ BOOL NPC_TreasureRandItemGet(int meidex,int talker,int rand_j,char *buf)
 
 	getStringFromIndexWithDelim(buf , "," , randitem, buff2, sizeof(buff2)) ;
 
-	itemindex = ITEM_makeItemAndRegist( atoi( buff2));
-	if(itemindex == -1) return FALSE;
+	item_index = ITEM_makeItemAndRegist( atoi( buff2));
+	if(item_index == -1) return FALSE;
 	/*失奶  丞及馨笛(  涛失奶  丞  卞中木化仄引丹  */
-	ret = CHAR_addItemSpecificItemIndex( talker, itemindex);
+	ret = CHAR_addItemSpecificItemIndex( talker, item_index);
 	if( !CHAR_CHECKITEMINDEX( talker, ret) ){
-		print( "npc_exchangeman.c: additem error itemindex[%d]\n", itemindex);
-		ITEM_endExistItemsOne( itemindex);
+		print( "npc_exchangeman.c: additem error item_index[%d]\n", item_index);
+		ITEM_endExistItemsOne( item_index);
 		return FALSE;
 	}
 
-	if(itemindex != -1) {
+	if(item_index != -1) {
 		LogItem(
 			CHAR_getChar( talker, CHAR_NAME ), /* 平乓仿   */
 			CHAR_getChar( talker, CHAR_CDKEY ),
 #ifdef _add_item_log_name  // WON ADD 在item的log中增加item名称
-			itemindex,
+			item_index,
 #else
-			ITEM_getInt( itemindex, ITEM_ID),  /* 失奶  丞  寞 */
+			ITEM_getInt( item_index, ITEM_ID),  /* 失奶  丞  寞 */
 #endif
 			"EventAddItem(任务需求所得到的道具)",
 			CHAR_getInt( talker,CHAR_FLOOR),
 			CHAR_getInt( talker,CHAR_X ),
  			CHAR_getInt( talker,CHAR_Y ),
-            ITEM_getChar( itemindex, ITEM_UNIQUECODE),
-			ITEM_getChar( itemindex, ITEM_NAME),
-			ITEM_getInt( itemindex, ITEM_ID)
+            ITEM_getChar( item_index, ITEM_UNIQUECODE),
+			ITEM_getChar( item_index, ITEM_NAME),
+			ITEM_getInt( item_index, ITEM_ID)
 		);
 	}
 					
-	sprintf(token,"收下了%s",ITEM_getChar( itemindex, ITEM_NAME));
+	sprintf(token,"收下了%s",ITEM_getChar( item_index, ITEM_NAME));
 	CHAR_talkToCli( talker, -1, token, CHAR_COLORWHITE);
 
 	CHAR_sendItemDataOne( talker, ret);
@@ -1052,7 +1052,7 @@ void NPC_LevelAndTransUp( int meindex, int charindex, int level, int skillpoint,
 	char szBuffer[256]="";
 	if( !CHAR_CHECKINDEX( charindex) )
 		return;
-//int CHAR_LevelUpCheck( int charaindex , int toindex)
+//int CHAR_LevelUpCheck( int char_index , int toindex)
 	if( exp > 0 ){
 		int LevelUp=0;
 		int myexp = CHAR_getInt( charindex, CHAR_EXP);

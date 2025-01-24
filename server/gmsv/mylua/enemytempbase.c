@@ -9,7 +9,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lssproto_serv.h"
+#include "gmsv_server.h"
 
 #ifdef _ALLBLUES_LUA   
 #ifdef _ALLBLUES_LUA_1_4

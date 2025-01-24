@@ -1,4 +1,7 @@
 #include "version.h"
+//
+#include "util.h"
+//
 #include "anim_tbl.h"
 #include "autil.h"
 #include "battle.h"
@@ -12,8 +15,6 @@
 #include "pet.h"
 #include "pet_skillinfo.h"
 #include "petmail.h"
-#include "util.h"
-#include "utils/file.h"
 #ifdef _NEW_ITEM_
 extern int CheckCharMaxItem(int charindex);
 #endif
@@ -274,10 +275,10 @@ BOOL ENEMYTEMP_reinitEnemy(void) {
   return (ENEMYTEMP_initEnemy(getEnemyBasefile()));
 }
 
-int ENEMYTEMP_getEnemyTempArray(int enemyindex) {
-  if (!ENEMY_CHECKINDEX(enemyindex))
+int ENEMYTEMP_getEnemyTempArray(int enemy_index) {
+  if (!ENEMY_CHECKINDEX(enemy_index))
     return -1;
-  return ENEMY_enemy[enemyindex].enemytemparray;
+  return ENEMY_enemy[enemy_index].enemytemparray;
 }
 
 int ENEMYTEMP_getEnemyTempArrayFromTempNo(int EnemyTempNo) {
@@ -784,7 +785,7 @@ static int gymbody[] = {
 /*------------------------------------------------------------------------
  * ENEMY｛卞仿件母丞卅    毛芨尹月
  *-----------------------------------------------------------------------*/
-int ENEMY_RandomChange(int enemyindex, int tempno) {
+int ENEMY_RandomChange(int enemy_index, int tempno) {
   int work, work2, iRet = 0;
 
   // 仿件母丞平乓仿井升丹井民尼永弁
@@ -813,36 +814,36 @@ int ENEMY_RandomChange(int enemyindex, int tempno) {
     //
     //********************************************
     // 铣手仿件母丞
-    CHAR_setInt(enemyindex, CHAR_BASEBASEIMAGENUMBER,
+    CHAR_setInt(enemy_index, CHAR_BASEBASEIMAGENUMBER,
                 gymbody[RAND(0, arraysizeof(gymbody) - 1)]);
-    CHAR_setInt(enemyindex, CHAR_BASEIMAGENUMBER,
-                CHAR_getInt(enemyindex, CHAR_BASEBASEIMAGENUMBER));
+    CHAR_setInt(enemy_index, CHAR_BASEIMAGENUMBER,
+                CHAR_getInt(enemy_index, CHAR_BASEBASEIMAGENUMBER));
     // 箪岭反赝癫
     work = (RAND(0, 20) - 10) * 10;
     work2 = 100 - ABS(work);
-    CHAR_setInt(enemyindex, CHAR_EARTHAT, work);
-    CHAR_setInt(enemyindex, CHAR_FIREAT, -work);
+    CHAR_setInt(enemy_index, CHAR_EARTHAT, work);
+    CHAR_setInt(enemy_index, CHAR_FIREAT, -work);
     if (RAND(0, 1)) {
       work2 *= -1;
     }
-    CHAR_setInt(enemyindex, CHAR_WATERAT, work2);
-    CHAR_setInt(enemyindex, CHAR_WINDAT, -work2);
+    CHAR_setInt(enemy_index, CHAR_WATERAT, work2);
+    CHAR_setInt(enemy_index, CHAR_WINDAT, -work2);
 
     // 仿件母丞卅  湛毛  凶六月
-    if (DoujyouRandomWeponSet(enemyindex)) {
-      CHAR_setPetSkill(enemyindex, 0, PETSKILL_NORMALATTACK);
-      CHAR_setPetSkill(enemyindex, 1, PETSKILL_NORMALATTACK);
+    if (DoujyouRandomWeponSet(enemy_index)) {
+      CHAR_setPetSkill(enemy_index, 0, PETSKILL_NORMALATTACK);
+      CHAR_setPetSkill(enemy_index, 1, PETSKILL_NORMALATTACK);
     } else {
-      CHAR_setPetSkill(enemyindex, 0,
+      CHAR_setPetSkill(enemy_index, 0,
                        EnemyGymSkill[RAND(0, arraysizeof(EnemyGymSkill) - 1)]);
-      CHAR_setPetSkill(enemyindex, 1,
+      CHAR_setPetSkill(enemy_index, 1,
                        EnemyGymSkill[RAND(0, arraysizeof(EnemyGymSkill) - 1)]);
     }
 
   } else if (iRet == 2) {
-    CHAR_setPetSkill(enemyindex, 0,
+    CHAR_setPetSkill(enemy_index, 0,
                      EnemyGymSkill[RAND(0, arraysizeof(EnemyGymSkill) - 1)]);
-    CHAR_setPetSkill(enemyindex, 1,
+    CHAR_setPetSkill(enemy_index, 1,
                      EnemyGymSkill[RAND(0, arraysizeof(EnemyGymSkill) - 1)]);
   }
 
@@ -855,7 +856,7 @@ int ENEMY_createEnemy(int array, int base_level) {
   int *p;
   int gp_gear[E_T_DATAINTNUM];
   int tarray, i;
-  int itemindex, iloop;
+  int item_index, iloop;
   int level;
   int enemyrank;
 
@@ -977,10 +978,10 @@ int ENEMY_createEnemy(int array, int base_level) {
 #else
       if (RAND(0, 99) < *(p + ENEMY_ITEMPROB1 + iloop)) {
 #endif
-        itemindex = ITEM_makeItemAndRegist(*(p + ENEMY_ITEM1 + iloop));
-        CHAR_setItemIndex(new_index, CHAR_STARTITEMARRAY + iloop, itemindex);
-        ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, new_index);
-        ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
+        item_index = ITEM_makeItemAndRegist(*(p + ENEMY_ITEM1 + iloop));
+        CHAR_setItemIndex(new_index, CHAR_STARTITEMARRAY + iloop, item_index);
+        ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, new_index);
+        ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
       }
     }
   }
@@ -1014,10 +1015,10 @@ int ENEMY_createEnemy(int array, int base_level) {
       break;
     }
     if (wepon >= 0) {
-      itemindex = ITEM_makeItemAndRegist(wepon);
-      CHAR_setItemIndex(new_index, CHAR_ARM, itemindex);
-      ITEM_setWorkInt(itemindex, ITEM_WORKCHARAINDEX, new_index);
-      ITEM_setWorkInt(itemindex, ITEM_WORKOBJINDEX, -1);
+      item_index = ITEM_makeItemAndRegist(wepon);
+      CHAR_setItemIndex(new_index, CHAR_ARM, item_index);
+      ITEM_setWorkInt(item_index, ITEM_WORKCHARAINDEX, new_index);
+      ITEM_setWorkInt(item_index, ITEM_WORKOBJINDEX, -1);
     }
   }
 
@@ -1156,7 +1157,7 @@ int ENEMY_RandomEnemyArray(int e_array, int *pNew) {
   }
 }
 
-int *ENEMY_getEnemy(int charaindex, int x, int y) {
+int *ENEMY_getEnemy(int char_index, int x, int y) {
   int i;
   int array;
   int g_array;
@@ -1172,7 +1173,7 @@ int *ENEMY_getEnemy(int charaindex, int x, int y) {
   int bigcnt;
   int loopcounter;
   array =
-      ENCOUNT_getEncountAreaArray(CHAR_getInt(charaindex, CHAR_FLOOR), x, y);
+      ENCOUNT_getEncountAreaArray(CHAR_getInt(char_index, CHAR_FLOOR), x, y);
   if (array == -1)
     return NULL;
   enemyentrymax = ENCOUNT_getCreateEnemyMaxNumFromArray(array);
@@ -1194,29 +1195,29 @@ int *ENEMY_getEnemy(int charaindex, int x, int y) {
       itemid = GROUP_getInt(g_array, GROUP_APPEARBYITEMID);
       if (itemid != -1) {
         int j;
-        for (j = 0; j < CheckCharMaxItem(charaindex); j++) {
-          int itemindex = CHAR_getItemIndex(charaindex, j);
-          if (ITEM_CHECKINDEX(itemindex)) {
-            if (ITEM_getInt(itemindex, ITEM_ID) == itemid) {
+        for (j = 0; j < CheckCharMaxItem(char_index); j++) {
+          int item_index = CHAR_getItemIndex(char_index, j);
+          if (ITEM_CHECKINDEX(item_index)) {
+            if (ITEM_getInt(item_index, ITEM_ID) == itemid) {
               break;
             }
           }
         }
-        if (j == CheckCharMaxItem(charaindex))
+        if (j == CheckCharMaxItem(char_index))
           continue;
       }
       itemid = GROUP_getInt(g_array, GROUP_NOTAPPEARBYITEMID);
       if (itemid != -1) {
         int j;
-        for (j = 0; j < CheckCharMaxItem(charaindex); j++) {
-          int itemindex = CHAR_getItemIndex(charaindex, j);
-          if (ITEM_CHECKINDEX(itemindex)) {
-            if (ITEM_getInt(itemindex, ITEM_ID) == itemid) {
+        for (j = 0; j < CheckCharMaxItem(char_index); j++) {
+          int item_index = CHAR_getItemIndex(char_index, j);
+          if (ITEM_CHECKINDEX(item_index)) {
+            if (ITEM_getInt(item_index, ITEM_ID) == itemid) {
               break;
             }
           }
         }
-        if (j != CheckCharMaxItem(charaindex))
+        if (j != CheckCharMaxItem(char_index))
           continue;
       }
 
@@ -1264,8 +1265,8 @@ int *ENEMY_getEnemy(int charaindex, int x, int y) {
         char_event_end = ENCOUNT_table[array].event_end;
       }
       if ((char_event_now > 0) || (char_event_end > 0)) {
-        if ((NPC_NowEventCheckFlg(charaindex, char_event_now) == TRUE) ||
-            (NPC_EventCheckFlg(charaindex, char_event_end) == TRUE)) {
+        if ((NPC_NowEventCheckFlg(char_index, char_event_now) == TRUE) ||
+            (NPC_EventCheckFlg(char_index, char_event_end) == TRUE)) {
 
           e_array = ENEMY_getEnemyArrayFromIndex(
               GROUP_getGroupArray(ENCOUNT_table[array].enemy_group),
@@ -1375,7 +1376,7 @@ int *ENEMY_getEnemy(int charaindex, int x, int y) {
   }
   return found > 0 ? ENEMY_indextable : NULL;
 }
-int ENEMY_createPetFromEnemyIndex(int charaindex, int array) {
+int ENEMY_createPetFromEnemyIndex(int char_index, int array) {
   Char CharNew;
   int new_index;
   int *p;
@@ -1386,7 +1387,7 @@ int ENEMY_createPetFromEnemyIndex(int charaindex, int array) {
   int enemyrank;
   if (!ENEMY_CHECKINDEX(array))
     return -1;
-  havepetelement = CHAR_getCharPetElement(charaindex);
+  havepetelement = CHAR_getCharPetElement(char_index);
   if (havepetelement < 0)
     return -1;
 
@@ -1506,11 +1507,11 @@ int ENEMY_createPetFromEnemyIndex(int charaindex, int array) {
               CHAR_getWorkInt(new_index, CHAR_WORKFIXDEX));
   CHAR_setInt(new_index, CHAR_YLV, CHAR_getInt(new_index, CHAR_LV));
 #endif
-  CHAR_setWorkInt(new_index, CHAR_WORKPLAYERINDEX, charaindex);
-  CHAR_setCharPet(charaindex, havepetelement, new_index);
-  CHAR_setChar(new_index, CHAR_OWNERCDKEY, CHAR_getChar(charaindex, CHAR_CDKEY));
+  CHAR_setWorkInt(new_index, CHAR_WORKPLAYERINDEX, char_index);
+  CHAR_setCharPet(char_index, havepetelement, new_index);
+  CHAR_setChar(new_index, CHAR_OWNERCDKEY, CHAR_getChar(char_index, CHAR_CDKEY));
   CHAR_setChar(new_index, CHAR_OWNERCHARANAME,
-               CHAR_getChar(charaindex, CHAR_NAME));
+               CHAR_getChar(char_index, CHAR_NAME));
 #ifdef _PETSKILL_NEW_PASSIVE
   if (getAutoGetSkill() > 0) {
     if (isFusionPet(CHAR_getInt(new_index, CHAR_PETID)) == 0) {
@@ -1674,7 +1675,7 @@ int ENEMY_TEST_createPetIndex(int array) {
   if (!ENEMY_CHECKINDEX(array))
     return -1;
 
-  // havepetelement = CHAR_getCharPetElement( charaindex);
+  // havepetelement = CHAR_getCharPetElement( char_index);
   // if( havepetelement < 0 ) return -1;
   p = ENEMY_enemy[array].intdata;
   tarray = ENEMYTEMP_getEnemyTempArray(array);
@@ -1785,12 +1786,12 @@ int ENEMY_TEST_createPetIndex(int array) {
               CHAR_getWorkInt(new_index, CHAR_WORKFIXDEX));
   CHAR_setInt(new_index, CHAR_YLV, CHAR_getInt(new_index, CHAR_LV));
 #endif
-  //  CHAR_setWorkInt( new_index, CHAR_WORKPLAYERINDEX, charaindex);
-  //  CHAR_setCharPet( charaindex, havepetelement, new_index);
+  //  CHAR_setWorkInt( new_index, CHAR_WORKPLAYERINDEX, char_index);
+  //  CHAR_setCharPet( char_index, havepetelement, new_index);
   //  CHAR_setChar( new_index, CHAR_OWNERCDKEY,
-  //  CHAR_getChar( charaindex, CHAR_CDKEY));
+  //  CHAR_getChar( char_index, CHAR_CDKEY));
   //  CHAR_setChar( new_index, CHAR_OWNERCHARANAME,
-  //  CHAR_getChar( charaindex, CHAR_NAME));
+  //  CHAR_getChar( char_index, CHAR_NAME));
   return new_index;
 }
 #endif
@@ -1854,23 +1855,23 @@ int NPC_getPetArrayForNo(int PetCode) {
   }
   return i;
 }
-int NPC_getFusionTableForBase(int charaindex, int petindex1, int petindex2) {
+int NPC_getFusionTableForBase(int char_index, int petindex1, int petindex2) {
   int base1, base2; // 属性,PETCODE
   if (!CHAR_CHECKINDEX(petindex1))
     return -1;
   if (!CHAR_CHECKINDEX(petindex2))
     return -1;
 #ifdef _PET_EVOLUTION
-  if ((base2 = EVOLUTION_getPetTable(charaindex, petindex1, petindex2)) < 0) {
+  if ((base2 = EVOLUTION_getPetTable(char_index, petindex1, petindex2)) < 0) {
     print("ANDY err base2=%d\n", base2);
     return -1;
   }
-  if ((base1 = EVOLUTION_getPropertyTable(charaindex, petindex1, petindex2)) <
+  if ((base1 = EVOLUTION_getPropertyTable(char_index, petindex1, petindex2)) <
       0) {
     print("ANDY err base1=%d\n", base1);
     return -1;
   }
-  return EVOLUTION_getFusionTable(charaindex, base2, base1); // get new pet IDNO
+  return EVOLUTION_getFusionTable(char_index, base2, base1); // get new pet IDNO
 #else
   return -1;
 #endif
@@ -1941,7 +1942,7 @@ BOOL PET_getEvolutionAns(int petindex, int *base) {
   return TRUE;
 }
 
-int EVOLUTION_createPetFromEnemyIndex(int charaindex, int baseindex, int flg) {
+int EVOLUTION_createPetFromEnemyIndex(int char_index, int baseindex, int flg) {
   Char CharNew;
   int new_index;
   int *p;
@@ -1991,7 +1992,7 @@ int EVOLUTION_createPetFromEnemyIndex(int charaindex, int baseindex, int flg) {
   level = RAND((*(p + ENEMY_LV_MIN)), (*(p + ENEMY_LV_MAX)));
   //------------------------------------------------------
   {
-    if (PET_getBaseAndSkill(charaindex, baseindex, base, petskill, 1) ==
+    if (PET_getBaseAndSkill(char_index, baseindex, base, petskill, 1) ==
         FALSE) {
       print("ANDY err PET_getBaseAndSkill(%d) == FALSE \n", baseindex);
       return -1;
@@ -2017,12 +2018,12 @@ int EVOLUTION_createPetFromEnemyIndex(int charaindex, int baseindex, int flg) {
 #endif
     }
     if (flg == 1) {
-      if (CHAR_DelPetForIndex(charaindex, baseindex) == FALSE)
+      if (CHAR_DelPetForIndex(char_index, baseindex) == FALSE)
         return FALSE;
     }
   }
   if (flg == 1) {
-    havepetelement = CHAR_getCharPetElement(charaindex); // 找出宠物空位
+    havepetelement = CHAR_getCharPetElement(char_index); // 找出宠物空位
     if (havepetelement < 0)
       return -1;
   }
@@ -2115,35 +2116,35 @@ int EVOLUTION_createPetFromEnemyIndex(int charaindex, int baseindex, int flg) {
   CHAR_setInt(new_index, CHAR_FUSIONBEIT, 1);
   CHAR_setInt(new_index, CHAR_FUSIONRAISE, 0);
   if (flg == 1) {
-    CHAR_setWorkInt(new_index, CHAR_WORKPLAYERINDEX, charaindex);
-    CHAR_setCharPet(charaindex, havepetelement, new_index);
+    CHAR_setWorkInt(new_index, CHAR_WORKPLAYERINDEX, char_index);
+    CHAR_setCharPet(char_index, havepetelement, new_index);
     CHAR_setChar(new_index, CHAR_OWNERCDKEY,
-                 CHAR_getChar(charaindex, CHAR_CDKEY));
+                 CHAR_getChar(char_index, CHAR_CDKEY));
     CHAR_setChar(new_index, CHAR_OWNERCHARANAME,
-                 CHAR_getChar(charaindex, CHAR_NAME));
+                 CHAR_getChar(char_index, CHAR_NAME));
     {
       char msgbuf[256];
       snprintf(msgbuf, sizeof(msgbuf), "K%d", havepetelement);
-      CHAR_sendStatusString(charaindex, msgbuf);
+      CHAR_sendStatusString(char_index, msgbuf);
       snprintf(msgbuf, sizeof(msgbuf), "W%d", havepetelement);
-      CHAR_sendStatusString(charaindex, msgbuf);
+      CHAR_sendStatusString(char_index, msgbuf);
     }
   }
   return new_index;
 }
 
-int PET_CheckIncubate(int charaindex) {
+int PET_CheckIncubate(int char_index) {
 #ifndef _USER_CHARLOOPS
   int i;
   static time_t checkeage;
   int anhour = PETFEEDTIME;
   checkeage = (int)time(NULL);
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return 0;
 
   for (i = 0; i < CHAR_MAXPETHAVE; i++) {
     int time_l = 0;
-    int petindex = CHAR_getCharPet(charaindex, i);
+    int petindex = CHAR_getCharPet(char_index, i);
     if (!CHAR_CHECKINDEX(petindex))
       continue;
     if (CHAR_getInt(petindex, CHAR_FUSIONBEIT) != 1 ||
@@ -2185,23 +2186,23 @@ int PET_CheckIncubate(int charaindex) {
       levelup = (vital << 24) + (str << 16) + (tgh << 8) + (dex << 0);
       CHAR_setInt(petindex, CHAR_ALLOCPOINT, levelup);
       sprintf(buf, "蛋〈%s〉的品质变差了。", CHAR_getUseName(petindex));
-      CHAR_talkToCli(charaindex, -1, buf, CHAR_COLORYELLOW);
+      CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
 
-      LogPetFeed(CHAR_getChar(charaindex, CHAR_NAME),
-                 CHAR_getChar(charaindex, CHAR_CDKEY),
+      LogPetFeed(CHAR_getChar(char_index, CHAR_NAME),
+                 CHAR_getChar(char_index, CHAR_CDKEY),
                  CHAR_getChar(petindex, CHAR_NAME), petindex,
                  CHAR_getInt(petindex, CHAR_LV),
                  "品质变差", // Key
-                 CHAR_getInt(charaindex, CHAR_FLOOR),
-                 CHAR_getInt(charaindex, CHAR_X),
-                 CHAR_getInt(charaindex, CHAR_Y),
+                 CHAR_getInt(char_index, CHAR_FLOOR),
+                 CHAR_getInt(char_index, CHAR_X),
+                 CHAR_getInt(char_index, CHAR_Y),
                  CHAR_getChar(petindex, CHAR_UNIQUECODE));
 
     } else if ((int)checkeage > (time_l + anhour)) {
 
       char buf[256];
       sprintf(buf, "蛋〈%s〉呈现可喂食状态。", CHAR_getUseName(petindex));
-      CHAR_talkToCli(charaindex, -1, buf, CHAR_COLORYELLOW);
+      CHAR_talkToCli(char_index, -1, buf, CHAR_COLORYELLOW);
     }
   }
   return 1;
@@ -2210,18 +2211,18 @@ int PET_CheckIncubate(int charaindex) {
   static time_t checkeage;
   int anhour = PETFEEDTIME, i;
 
-  if (!CHAR_CHECKINDEX(charaindex))
+  if (!CHAR_CHECKINDEX(char_index))
     return 0;
-  masterindex = CHAR_getWorkInt(charaindex, CHAR_WORKPLAYERINDEX);
+  masterindex = CHAR_getWorkInt(char_index, CHAR_WORKPLAYERINDEX);
   if (!CHAR_CHECKINDEX(masterindex))
     return 0;
 
-  if (CHAR_getInt(charaindex, CHAR_FUSIONBEIT) != 1 ||
-      CHAR_getInt(charaindex, CHAR_FUSIONRAISE) <= 0)
+  if (CHAR_getInt(char_index, CHAR_FUSIONBEIT) != 1 ||
+      CHAR_getInt(char_index, CHAR_FUSIONRAISE) <= 0)
     return 0; // 检查是否为融合宠
 
   for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-    if (charaindex != CHAR_getCharPet(masterindex, i))
+    if (char_index != CHAR_getCharPet(masterindex, i))
       continue;
     break;
   }
@@ -2229,23 +2230,23 @@ int PET_CheckIncubate(int charaindex) {
     return 0;
   checkeage = (int)time(NULL);
 
-  time_l = CHAR_getInt(charaindex, CHAR_FUSIONTIMELIMIT);
+  time_l = CHAR_getInt(char_index, CHAR_FUSIONTIMELIMIT);
   if (time_l < 0 || time_l > checkeage) {
-    CHAR_setInt(charaindex, CHAR_FUSIONTIMELIMIT, checkeage);
+    CHAR_setInt(char_index, CHAR_FUSIONTIMELIMIT, checkeage);
     return 0;
   }
   if ((int)checkeage > (time_l + (anhour * 2.5))) {
     char buf[256];
     int levelup, vital, str, tgh, dex;
-    int raise = CHAR_getInt(charaindex, CHAR_FUSIONRAISE);
+    int raise = CHAR_getInt(char_index, CHAR_FUSIONRAISE);
     raise++;
-    CHAR_setInt(charaindex, CHAR_FUSIONTIMELIMIT, (int)time(NULL) + anhour - 1);
+    CHAR_setInt(char_index, CHAR_FUSIONTIMELIMIT, (int)time(NULL) + anhour - 1);
     if (raise < 0)
       raise = 0;
     if (raise >= 40)
       raise = 30;
-    CHAR_setInt(charaindex, CHAR_FUSIONRAISE, raise);
-    levelup = CHAR_getInt(charaindex, CHAR_ALLOCPOINT);
+    CHAR_setInt(char_index, CHAR_FUSIONRAISE, raise);
+    levelup = CHAR_getInt(char_index, CHAR_ALLOCPOINT);
     vital = ((levelup >> 24) & 0xFF) - 6;
     str = ((levelup >> 16) & 0xFF) - 6;
     tgh = ((levelup >> 8) & 0xFF) - 6;
@@ -2260,23 +2261,23 @@ int PET_CheckIncubate(int charaindex) {
       dex = 0;
     // 扣属性
     levelup = (vital << 24) + (str << 16) + (tgh << 8) + (dex << 0);
-    CHAR_setInt(charaindex, CHAR_ALLOCPOINT, levelup);
-    sprintf(buf, "蛋〈%s〉的品质变差了。", CHAR_getUseName(charaindex));
+    CHAR_setInt(char_index, CHAR_ALLOCPOINT, levelup);
+    sprintf(buf, "蛋〈%s〉的品质变差了。", CHAR_getUseName(char_index));
     CHAR_talkToCli(masterindex, -1, buf, CHAR_COLORYELLOW);
 
     LogPetFeed(CHAR_getChar(masterindex, CHAR_NAME),
                CHAR_getChar(masterindex, CHAR_CDKEY),
-               CHAR_getChar(charaindex, CHAR_NAME), charaindex,
-               CHAR_getInt(charaindex, CHAR_LV),
+               CHAR_getChar(char_index, CHAR_NAME), char_index,
+               CHAR_getInt(char_index, CHAR_LV),
                "品质变差", // Key
                CHAR_getInt(masterindex, CHAR_FLOOR),
                CHAR_getInt(masterindex, CHAR_X),
                CHAR_getInt(masterindex, CHAR_Y),
-               CHAR_getChar(charaindex, CHAR_UNIQUECODE));
+               CHAR_getChar(char_index, CHAR_UNIQUECODE));
 
   } else if ((int)checkeage > (time_l + anhour)) {
     char buf[256];
-    sprintf(buf, "蛋〈%s〉呈现可喂食状态。", CHAR_getUseName(charaindex));
+    sprintf(buf, "蛋〈%s〉呈现可喂食状态。", CHAR_getUseName(char_index));
     CHAR_talkToCli(masterindex, -1, buf, CHAR_COLORYELLOW);
   }
   return 1;

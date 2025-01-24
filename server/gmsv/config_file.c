@@ -1,9 +1,10 @@
 #define __CONFIGFILE_C__
 #include "version.h"
+//
+#include "gmsv_server.h"
 #include "util.h"
 // ttom start.
 #include "config_file.h"
-#include "lssproto_util.h"
 #include "net.h"
 // ttom end
 #include "npcutil.h"
@@ -12,33 +13,28 @@
 #include "char_data.h"
 // CoolFish: add
 #include "autil.h"
-#include "lssproto_serv.h"
 
 #ifdef _ANGEL_SUMMON
 extern struct MissionInfo missionlist[MAXMISSION];
 extern struct MissionTable missiontable[MAXMISSIONTABLE];
 #endif
 
-extern char *CHAR_setintdata[CHAR_DATAINTNUM];
-extern char *CHAR_setchardata[CHAR_DATACHARNUM];
-
 /* General Config of server. */
-typedef struct tagConfig {
-  char progname[8];            /* program name. */
-  char configfilename[32];     /* usually as setup.cf */
-  unsigned char debuglevel;    /* usually as 3 */
-  unsigned int usememoryunit; /*��ƹ������������������ */
-  unsigned int usememoryunitnum; /*��ƹ�������������� */
-  char asname[32];           /*ʧ���������ӡ��Ｐ  �*/
-  unsigned short acservport;   /* Account Server Port*/
-  char acpasswd[32];           /* Account Server Password */
-  char gsnamefromas[32];       /* Game Server Name*/
+typedef struct tagServerConfig {
+  char program_name[8];      /* program name. */
+  char config_filename[32];  /* usually as setup.cf */
+  unsigned char debug_level; /* usually as 3 */
+  unsigned int memory_unit unsigned int memory_unit_num;
+  char as_name[32];                   /* */
+  unsigned short account_server_port; /* Account Server Port*/
+  char acpasswd[32];                  /* Account Server Password */
+  char game_server_name[32];          /* Game Server Name*/
   // Arminius 7.24 manor pk
-  char gsid[32];               // game server chinese id
+  char game_server_id[32];     // game server chinese id
   unsigned short allowmanorpk; // is this server allow manor pk
   unsigned short port; /* �ӡ��Ｐ���а���̡��� */
   int servernumber;    /* �ء�ة�ӡ��Ｐ  į */
-  int reuseaddr;       /* Address already used... */
+  int reuse_addr;      /* Address already used... */
   int do_nodelay;      /* TCP_NODELAY �����¾������� */
   int log_write_time;  /* */
   int log_io_time;     /* I/O */
@@ -46,8 +42,8 @@ typedef struct tagConfig {
   int log_netloop_faster;    /* netloop_faster ����� */
   int saacwritenum;          /* */
   int saacreadnum;           /* */
-  unsigned short fdnum;      /* fd num: <65536?, unsigned short is enough. */
-  unsigned short charnum;    /* char num: <65536? */
+  unsigned short fdnum;      /* fd num: < 65536, unsigned short is enough. */
+  unsigned short charnum;    /* char num: < 65536? */
   unsigned int othercharnum; /* */
   unsigned int objnum;       /* obj num in Game. */
   unsigned int petcharnum;   /* pet num in Game. */
@@ -66,10 +62,10 @@ typedef struct tagConfig {
   char titlenamefile[64];   /* ��į�����̻�   */
   char titleconfigfile[64]; /* ��įɬ�ð����̻�   */
   char encountfile[64];
-  char enemybasefile[64];  /* pet base config file */
-  char enemyfile[64];      /* pet base info file */
-  char groupfile[64];      /* enemy group config file */
-  char magicfile[64];      /* */
+  char enemybasefile[64]; /* pet base config file */
+  char enemyfile[64];     /* pet base info file */
+  char groupfile[64];     /* enemy group config file */
+  char magicfile[64];     /* */
 #ifdef _ATTACK_MAGIC
   char attmagicfile[64]; // ����������
 #endif
@@ -77,27 +73,27 @@ typedef struct tagConfig {
   char itematomfile[64]; /* ʧ��  ة����    �����̻� */
   char effectfile[64];   /* ����ɬ�ð����̻�  */
   char quizfile[64];     /* ������ɬ�ð����̻�  */
-  char lsgenlog[64];     /*�ӡ��Ｐlsgen ʧ���������������̻�  */
-  char storedir[64];     /*����ʧ��ū��������    */
-  char npcdir[64];       /*NPC��ɬ�ð����̻�ë  �ʷ�ū��������   */
+  char lsgenlog[64]; /*�ӡ��Ｐlsgen ʧ���������������̻�  */
+  char storedir[64]; /*����ʧ��ū��������    */
+  char npcdir[64]; /*NPC��ɬ�ð����̻�ë  �ʷ�ū��������   */
   char logdir[64];
   char logconfname[64];
   char chatmagicpasswd[64]; /**/
 #ifdef _STORECHAR
   char storechar[64];
 #endif
-  unsigned int chatmagiccdkeycheck; /* */
-  unsigned int filesearchnum;       /* */
-  unsigned int npctemplatenum;      /* */
-  unsigned int npccreatenum;        /* */
-  unsigned int walksendinterval;    /* */
-  unsigned int CAsendinterval_ms;   /* What's CA? */
-  unsigned int CDsendinterval_ms;   /* What's CD? */
-  unsigned int Onelooptime_ms;      /* */
-  unsigned int Petdeletetime;       /* */
-  unsigned int Itemdeletetime;      /* */
-  unsigned int CharSavesendinterval;/* */
-  unsigned int addressbookoffmsgnum;/* */
+  unsigned int chatmagiccdkeycheck;  /* */
+  unsigned int filesearchnum;        /* */
+  unsigned int npctemplatenum;       /* */
+  unsigned int npccreatenum;         /* */
+  unsigned int walksendinterval;     /* */
+  unsigned int CAsendinterval_ms;    /* What's CA? */
+  unsigned int CDsendinterval_ms;    /* What's CD? */
+  unsigned int Onelooptime_ms;       /* */
+  unsigned int Petdeletetime;        /* */
+  unsigned int Itemdeletetime;       /* */
+  unsigned int CharSavesendinterval; /* */
+  unsigned int addressbookoffmsgnum; /* */
   unsigned int protocolreadfrequency;
   unsigned int allowerrornum;
   unsigned int loghour;
@@ -152,27 +148,27 @@ typedef struct tagConfig {
   char unregname[5][16];
 #endif
 #ifdef _TRANS_LEVEL_CF
-  int chartrans;
-  int pettrans;
-  int yblevel;
-  int maxlevel;
+  int char_trans;
+  int pet_trans;
+  int yb_level;
+  int max_level;
 #endif
 #ifdef _POINT
   int point;
-  int transpoint[8];
+  int trans_point[8];
 #endif
 #ifdef _VIP_SERVER
-  int vippoint;
+  int vip_point;
 #endif
 #ifdef _PET_AND_ITEM_UP
-  int petup;
-  int itemup;
+  int pet_up;
+  int item_up;
 #endif
 #ifdef _LOOP_ANNOUNCE
-  char loopannouncepath[32];
-  int loopannouncetime;
-  char loopannounce[10][1024];
-  int loopannouncemax;
+  char loop_announce_path[32];
+  int loop_announce_time;
+  char loop_announce[10][1024];
+  int loop_announce_max;
 #endif
 #ifdef _SKILLUPPOINT_CF
   int skup;
@@ -472,585 +468,629 @@ typedef struct tagConfig {
 #ifdef _UP_BBPETPROB
   int upbbprob;
 #endif
-} Config;
+} ServerConfig;
 
-Config config;
+ServerConfig gServerConfig;
 
 #ifdef _USER_EXP_CF
 int NeedLevelUpTbls[200];
 #endif
 
-/*
- *  �����ū������̻�ë  ���ݱ�������հ
- *  xxxx=yyyy ������ئ��ë  ��
- */
-
 typedef struct tagReadConf {
-  char name[32]; /*xxxx��ؤ���°�*/
-  /*�ݼ�2����NULLë  ľ����������  ��ئ��*/
-  char *charvalue; /*yyyyë��������ҽ  �����ݼ�ҽ  ��*/
-  size_t charsize; /*charvalue��������*/
-  /*
-   *     ��  ���ƻ�=��  �� "ON"�������� intvalue �巴1ëҽ  ����
-   * ��ľ��½�� atoi ������
-   */
-  void *value; /*yyyyë  ������ҽ  �����ݼ�ҽ  ��*/
-  CTYPE valuetype;
+  char name[32];
+  char *char_value;
+  size_t char_size;
+  void *value;
+  CTYPE value_type;
 } ReadConf;
 
-ReadConf readconf[] = {
-    {"debuglevel", NULL, 0, (void *)&config.debuglevel, CHAR},
-    {"usememoryunit", NULL, 0, (void *)&config.usememoryunit, INT},
-    {"usememoryunitnum", NULL, 0, (void *)&config.usememoryunitnum, INT},
-    {"acserv", config.asname, sizeof(config.asname), NULL, 0},
-    {"acservport", NULL, 0, (void *)&config.acservport, SHORT},
-    {"acpasswd", config.acpasswd, sizeof(config.acpasswd), NULL, 0},
-    {"gameservname", config.gsnamefromas, sizeof(config.gsnamefromas), NULL, 0},
-    // Arminius 7.24 manor pk
-    {"gameservid", config.gsid, sizeof(config.gsid), NULL, 0},
-    {"allowmanorpk", NULL, 0, (void *)&config.allowmanorpk, SHORT},
-    {"port", NULL, 0, (void *)&config.port, SHORT},
-    {"servernumber", NULL, 0, (void *)&config.servernumber, INT},
-    {"reuseaddr", NULL, 0, (void *)&config.reuseaddr, INT},
-    {"nodelay", NULL, 0, (void *)&config.do_nodelay, INT},
-    {"log_write_time", NULL, 0, (void *)&config.log_write_time, INT},
-    {"log_io_time", NULL, 0, (void *)&config.log_io_time, INT},
-    {"log_game_time", NULL, 0, (void *)&config.log_game_time, INT},
-    {"log_netloop_faster", NULL, 0, (void *)&config.log_netloop_faster, INT},
-    {"saacwritenum", NULL, 0, (void *)&config.saacwritenum, INT},
-    {"saacreadnum", NULL, 0, (void *)&config.saacreadnum, INT},
-    {"fdnum", NULL, 0, (void *)&config.fdnum, SHORT},
-    {"charnum", NULL, 0, (void *)&config.charnum, SHORT},
-    {"petnum", NULL, 0, (void *)&config.petcharnum, INT},
-    {"othercharnum", NULL, 0, (void *)&config.othercharnum, INT},
-    {"objnum", NULL, 0, (void *)&config.objnum, INT},
-    {"itemnum", NULL, 0, (void *)&config.itemnum, INT},
-    {"battlenum", NULL, 0, (void *)&config.battlenum, INT},
-#ifdef _GET_BATTLE_EXP
-    {"battleexp", NULL, 0, (void *)&config.battleexp, INT},
-#endif
-    {"topdir", config.topdir, sizeof(config.topdir), NULL, 0},
-    {"mapdir", config.mapdir, sizeof(config.mapdir), NULL, 0},
-    {"maptilefile", config.maptilefile, sizeof(config.maptilefile), NULL, 0},
-    {"battlemapfile", config.battlemapfile, sizeof(config.battlemapfile), NULL,
+ReadConf gReadConf[] = {
+    {"debug_level", NULL, 0, (void *)&gServerConfig.debug_level, CHAR},
+    {"memory_unit", NULL, 0, (void *)&gServerConfig.memory_unit, INT},
+    {"memory_unitnum", NULL, 0, (void *)&gServerConfig.memory_unitnum, INT},
+    {"acserv", gServerConfig.account_server_name,
+     sizeof(gServerConfig.account_server_name), NULL, 0},
+    {"account_server_port", NULL, 0, (void *)&gServerConfig.account_server_port,
+     SHORT},
+    {"acpasswd", gServerConfig.acpasswd, sizeof(gServerConfig.acpasswd), NULL,
      0},
+    {"gameservname", gServerConfig.game_server_name,
+     sizeof(gServerConfig.game_server_name), NULL, 0},
+    // Arminius 7.24 manor pk
+    {"gameservid", gServerConfig.game_server_id,
+     sizeof(gServerConfig.game_server_id), NULL, 0},
+    {"allowmanorpk", NULL, 0, (void *)&gServerConfig.allowmanorpk, SHORT},
+    {"port", NULL, 0, (void *)&gServerConfig.port, SHORT},
+    {"servernumber", NULL, 0, (void *)&gServerConfig.servernumber, INT},
+    {"reuse_addr", NULL, 0, (void *)&gServerConfig.reuse_addr, INT},
+    {"nodelay", NULL, 0, (void *)&gServerConfig.do_nodelay, INT},
+    {"log_write_time", NULL, 0, (void *)&gServerConfig.log_write_time, INT},
+    {"log_io_time", NULL, 0, (void *)&gServerConfig.log_io_time, INT},
+    {"log_game_time", NULL, 0, (void *)&gServerConfig.log_game_time, INT},
+    {"log_netloop_faster", NULL, 0, (void *)&gServerConfig.log_netloop_faster,
+     INT},
+    {"saacwritenum", NULL, 0, (void *)&gServerConfig.saacwritenum, INT},
+    {"saacreadnum", NULL, 0, (void *)&gServerConfig.saacreadnum, INT},
+    {"fdnum", NULL, 0, (void *)&gServerConfig.fdnum, SHORT},
+    {"charnum", NULL, 0, (void *)&gServerConfig.charnum, SHORT},
+    {"petnum", NULL, 0, (void *)&gServerConfig.petcharnum, INT},
+    {"othercharnum", NULL, 0, (void *)&gServerConfig.othercharnum, INT},
+    {"objnum", NULL, 0, (void *)&gServerConfig.objnum, INT},
+    {"itemnum", NULL, 0, (void *)&gServerConfig.itemnum, INT},
+    {"battlenum", NULL, 0, (void *)&gServerConfig.battlenum, INT},
+#ifdef _GET_BATTLE_EXP
+    {"battleexp", NULL, 0, (void *)&gServerConfig.battleexp, INT},
+#endif
+    {"topdir", gServerConfig.topdir, sizeof(gServerConfig.topdir), NULL, 0},
+    {"mapdir", gServerConfig.mapdir, sizeof(gServerConfig.mapdir), NULL, 0},
+    {"maptilefile", gServerConfig.maptilefile,
+     sizeof(gServerConfig.maptilefile), NULL, 0},
+    {"battlemapfile", gServerConfig.battlemapfile,
+     sizeof(gServerConfig.battlemapfile), NULL, 0},
 #ifdef _ITEMSET6_TXT
-    {"itemset6file", config.itemfile, sizeof(config.invfile), NULL, 0},
+    {"itemset6file", gServerConfig.itemfile, sizeof(gServerConfig.invfile),
+     NULL, 0},
 #else
 #ifdef _ITEMSET5_TXT
-    {"itemset5file", config.itemfile, sizeof(config.invfile), NULL, 0},
+    {"itemset5file", gServerConfig.itemfile, sizeof(gServerConfig.invfile),
+     NULL, 0},
 #else
 #ifdef _ITEMSET4_TXT
-    {"itemset4file", config.itemfile, sizeof(config.invfile), NULL, 0},
+    {"itemset4file", gServerConfig.itemfile, sizeof(gServerConfig.invfile),
+     NULL, 0},
 #else
 #ifdef _ITEMSET3_ITEM
-    {"itemset3file", config.itemfile, sizeof(config.invfile), NULL, 0},
-#endif
-#endif
-#endif
-#endif
-    {"invinciblefile", config.invfile, sizeof(config.invfile), NULL, 0},
-    {"appearpositionfile", config.appearfile, sizeof(config.appearfile), NULL,
-     0},
-    {"titlenamefile", config.titlenamefile, sizeof(config.titlenamefile), NULL,
-     0},
-    {"titleconfigfile", config.titleconfigfile, sizeof(config.titleconfigfile),
+    {"itemset3file", gServerConfig.itemfile, sizeof(gServerConfig.invfile),
      NULL, 0},
-    {"encountfile", config.encountfile, sizeof(config.encountfile), NULL, 0},
-    {"enemyfile", config.enemyfile, sizeof(config.enemyfile), NULL, 0},
-    {"enemybasefile", config.enemybasefile, sizeof(config.enemybasefile), NULL,
-     0},
-    {"groupfile", config.groupfile, sizeof(config.groupfile), NULL, 0},
-    {"magicfile", config.magicfile, sizeof(config.magicfile), NULL, 0},
+#endif
+#endif
+#endif
+#endif
+    {"invinciblefile", gServerConfig.invfile, sizeof(gServerConfig.invfile),
+     NULL, 0},
+    {"appearpositionfile", gServerConfig.appearfile,
+     sizeof(gServerConfig.appearfile), NULL, 0},
+    {"titlenamefile", gServerConfig.titlenamefile,
+     sizeof(gServerConfig.titlenamefile), NULL, 0},
+    {"titlegServerConfigfile", gServerConfig.titlegServerConfigfile,
+     sizeof(gServerConfig.titlegServerConfigfile), NULL, 0},
+    {"encountfile", gServerConfig.encountfile,
+     sizeof(gServerConfig.encountfile), NULL, 0},
+    {"enemyfile", gServerConfig.enemyfile, sizeof(gServerConfig.enemyfile),
+     NULL, 0},
+    {"enemybasefile", gServerConfig.enemybasefile,
+     sizeof(gServerConfig.enemybasefile), NULL, 0},
+    {"groupfile", gServerConfig.groupfile, sizeof(gServerConfig.groupfile),
+     NULL, 0},
+    {"magicfile", gServerConfig.magicfile, sizeof(gServerConfig.magicfile),
+     NULL, 0},
 #ifdef _ATTACK_MAGIC
-    {"attmagicfile", config.attmagicfile, sizeof(config.attmagicfile), NULL, 0},
+    {"attmagicfile", gServerConfig.attmagicfile,
+     sizeof(gServerConfig.attmagicfile), NULL, 0},
 #endif
 #ifdef _PETSKILL2_TXT
-    {"petskillfile2", config.petskillfile, sizeof(config.petskillfile), NULL,
-     0},
+    {"petskillfile2", gServerConfig.petskillfile,
+     sizeof(gServerConfig.petskillfile), NULL, 0},
 #else
-    {"petskillfile1", config.petskillfile, sizeof(config.petskillfile), NULL,
-     0},
+    {"petskillfile1", gServerConfig.petskillfile,
+     sizeof(gServerConfig.petskillfile), NULL, 0},
 #endif
-    {"itematomfile", config.itematomfile, sizeof(config.itematomfile), NULL, 0},
-    {"effectfile", config.effectfile, sizeof(config.effectfile), NULL, 0},
-    {"quizfile", config.quizfile, sizeof(config.quizfile), NULL, 0},
-    {"lsgenlogfilename", config.lsgenlog, sizeof(config.lsgenlog), NULL, 0},
-#ifdef _GMRELOAD
-    {"gmsetfile", config.gmsetfile, sizeof(config.gmsetfile), NULL, 0},
-#endif
-    {"storedir", config.storedir, sizeof(config.storedir), NULL, 0},
-    {"npcdir", config.npcdir, sizeof(config.npcdir), NULL, 0},
-    {"logdir", config.logdir, sizeof(config.logdir), NULL, 0},
-    {"logconfname", config.logconfname, sizeof(config.logconfname), NULL, 0},
-    {"chatmagicpasswd", config.chatmagicpasswd, sizeof(config.chatmagicpasswd),
+    {"itematomfile", gServerConfig.itematomfile,
+     sizeof(gServerConfig.itematomfile), NULL, 0},
+    {"effectfile", gServerConfig.effectfile, sizeof(gServerConfig.effectfile),
      NULL, 0},
-#ifdef _STORECHAR
-    {"storechar", config.storechar, sizeof(config.storechar), NULL, 0},
+    {"quizfile", gServerConfig.quizfile, sizeof(gServerConfig.quizfile), NULL,
+     0},
+    {"lsgenlogfilename", gServerConfig.lsgenlog, sizeof(gServerConfig.lsgenlog),
+     NULL, 0},
+#ifdef _GMRELOAD
+    {"gmsetfile", gServerConfig.gmsetfile, sizeof(gServerConfig.gmsetfile),
+     NULL, 0},
 #endif
-    {"chatmagiccdkeycheck", NULL, 0, &config.chatmagiccdkeycheck, INT},
-    {"filesearchnum", NULL, 0, &config.filesearchnum, INT},
-    {"npctemplatenum", NULL, 0, &config.npctemplatenum, INT},
-    {"npccreatenum", NULL, 0, &config.npccreatenum, INT},
-    {"walkinterval", NULL, 0, (void *)&config.walksendinterval, INT},
-    {"CAinterval", NULL, 0, (void *)&config.CAsendinterval_ms, INT},
-    {"CDinterval", NULL, 0, (void *)&config.CDsendinterval_ms, INT},
-    {"CharSaveinterval", NULL, 0, (void *)&config.CharSavesendinterval, INT},
-    {"Onelooptime", NULL, 0, (void *)&config.Onelooptime_ms, INT},
-    {"Petdeletetime", NULL, 0, (void *)&config.Petdeletetime, INT},
-    {"Itemdeletetime", NULL, 0, (void *)&config.Itemdeletetime, INT},
-    {"addressbookoffmesgnum", NULL, 0, (void *)&config.addressbookoffmsgnum,
+    {"storedir", gServerConfig.storedir, sizeof(gServerConfig.storedir), NULL,
+     0},
+    {"npcdir", gServerConfig.npcdir, sizeof(gServerConfig.npcdir), NULL, 0},
+    {"logdir", gServerConfig.logdir, sizeof(gServerConfig.logdir), NULL, 0},
+    {"logconfname", gServerConfig.logconfname,
+     sizeof(gServerConfig.logconfname), NULL, 0},
+    {"chatmagicpasswd", gServerConfig.chatmagicpasswd,
+     sizeof(gServerConfig.chatmagicpasswd), NULL, 0},
+#ifdef _STORECHAR
+    {"storechar", gServerConfig.storechar, sizeof(gServerConfig.storechar),
+     NULL, 0},
+#endif
+    {"chatmagiccdkeycheck", NULL, 0, &gServerConfig.chatmagiccdkeycheck, INT},
+    {"filesearchnum", NULL, 0, &gServerConfig.filesearchnum, INT},
+    {"npctemplatenum", NULL, 0, &gServerConfig.npctemplatenum, INT},
+    {"npccreatenum", NULL, 0, &gServerConfig.npccreatenum, INT},
+    {"walkinterval", NULL, 0, (void *)&gServerConfig.walksendinterval, INT},
+    {"CAinterval", NULL, 0, (void *)&gServerConfig.CAsendinterval_ms, INT},
+    {"CDinterval", NULL, 0, (void *)&gServerConfig.CDsendinterval_ms, INT},
+    {"CharSaveinterval", NULL, 0, (void *)&gServerConfig.CharSavesendinterval,
      INT},
-    {"protocolreadfrequency", NULL, 0, (void *)&config.protocolreadfrequency,
-     INT},
-    {"allowerrornum", NULL, 0, (void *)&config.allowerrornum, INT},
-    {"loghour", NULL, 0, (void *)&config.loghour, INT},
-    {"battledebugmsg", NULL, 0, (void *)&config.battledebugmsg, INT},
+    {"Onelooptime", NULL, 0, (void *)&gServerConfig.Onelooptime_ms, INT},
+    {"Petdeletetime", NULL, 0, (void *)&gServerConfig.Petdeletetime, INT},
+    {"Itemdeletetime", NULL, 0, (void *)&gServerConfig.Itemdeletetime, INT},
+    {"addressbookoffmesgnum", NULL, 0,
+     (void *)&gServerConfig.addressbookoffmsgnum, INT},
+    {"protocolreadfrequency", NULL, 0,
+     (void *)&gServerConfig.protocolreadfrequency, INT},
+    {"allowerrornum", NULL, 0, (void *)&gServerConfig.allowerrornum, INT},
+    {"loghour", NULL, 0, (void *)&gServerConfig.loghour, INT},
+    {"battledebugmsg", NULL, 0, (void *)&gServerConfig.battledebugmsg, INT},
     // ttom add because the second had
-    {"encodekey", NULL, 0, (void *)&config.encodekey, INT},
-    {"acwritesize", NULL, 0, (void *)&config.acwritesize, INT},
-    {"acwbsize", NULL, 0, (void *)&config.acwbsize, INT},
-    {"erruser_down", NULL, 0, (void *)&config.ErrUserDownFlg, INT},
+    {"encodekey", NULL, 0, (void *)&gServerConfig.encodekey, INT},
+    {"acwritesize", NULL, 0, (void *)&gServerConfig.acwritesize, INT},
+    {"acwbsize", NULL, 0, (void *)&gServerConfig.acwbsize, INT},
+    {"erruser_down", NULL, 0, (void *)&gServerConfig.ErrUserDownFlg, INT},
 
-#ifdef _PROFESSION_SKILL // WON ADD ����ְҵ����
-    {"profession", config.profession, sizeof(config.profession), NULL, 0},
+#ifdef _PROFESSION_SKILL // WON ADD
+    {"profession", gServerConfig.profession, sizeof(gServerConfig.profession),
+     NULL, 0},
 #endif
 
 #ifdef _ITEM_QUITPARTY
-    {"itemquitparty", config.itemquitparty, sizeof(config.itemquitparty), NULL,
-     0},
+    {"itemquitparty", gServerConfig.itemquitparty,
+     sizeof(gServerConfig.itemquitparty), NULL, 0},
 #endif
 
 #ifdef _DEL_DROP_GOLD
-    {"Golddeletetime", NULL, 0, (void *)&config.Golddeletetime, INT},
+    {"Golddeletetime", NULL, 0, (void *)&gServerConfig.Golddeletetime, INT},
 #endif
 
 #ifdef _NEW_PLAYER_CF
-    {"TRANS", NULL, 0, (void *)&config.newplayertrans, INT},
-    {"LV", NULL, 0, (void *)&config.newplayerlv, INT},
-    {"PET1", NULL, 0, (void *)&config.newplayergivepet[1], INT},
-    {"PET2", NULL, 0, (void *)&config.newplayergivepet[2], INT},
-    {"PET3", NULL, 0, (void *)&config.newplayergivepet[3], INT},
-    {"PET4", NULL, 0, (void *)&config.newplayergivepet[4], INT},
-    {"ITEM1", NULL, 0, (void *)&config.newplayergiveitem[0], INT},
-    {"ITEM2", NULL, 0, (void *)&config.newplayergiveitem[1], INT},
-    {"ITEM3", NULL, 0, (void *)&config.newplayergiveitem[2], INT},
-    {"ITEM4", NULL, 0, (void *)&config.newplayergiveitem[3], INT},
-    {"ITEM5", NULL, 0, (void *)&config.newplayergiveitem[4], INT},
-    {"ITEM6", NULL, 0, (void *)&config.newplayergiveitem[5], INT},
-    {"ITEM7", NULL, 0, (void *)&config.newplayergiveitem[6], INT},
-    {"ITEM8", NULL, 0, (void *)&config.newplayergiveitem[7], INT},
-    {"ITEM9", NULL, 0, (void *)&config.newplayergiveitem[8], INT},
-    {"ITEM10", NULL, 0, (void *)&config.newplayergiveitem[9], INT},
-    {"ITEM11", NULL, 0, (void *)&config.newplayergiveitem[10], INT},
-    {"ITEM12", NULL, 0, (void *)&config.newplayergiveitem[11], INT},
-    {"ITEM13", NULL, 0, (void *)&config.newplayergiveitem[12], INT},
-    {"ITEM14", NULL, 0, (void *)&config.newplayergiveitem[13], INT},
-    {"ITEM15", NULL, 0, (void *)&config.newplayergiveitem[14], INT},
-    {"PETLV", NULL, 0, (void *)&config.newplayerpetlv, INT},
-    {"GOLD", NULL, 0, (void *)&config.newplayergivegold, INT},
-    {"RIDEPETLEVEL", NULL, 0, (void *)&config.ridepetlevel, INT},
+    {"TRANS", NULL, 0, (void *)&gServerConfig.newplayertrans, INT},
+    {"LV", NULL, 0, (void *)&gServerConfig.newplayerlv, INT},
+    {"PET1", NULL, 0, (void *)&gServerConfig.newplayergivepet[1], INT},
+    {"PET2", NULL, 0, (void *)&gServerConfig.newplayergivepet[2], INT},
+    {"PET3", NULL, 0, (void *)&gServerConfig.newplayergivepet[3], INT},
+    {"PET4", NULL, 0, (void *)&gServerConfig.newplayergivepet[4], INT},
+    {"ITEM1", NULL, 0, (void *)&gServerConfig.newplayergiveitem[0], INT},
+    {"ITEM2", NULL, 0, (void *)&gServerConfig.newplayergiveitem[1], INT},
+    {"ITEM3", NULL, 0, (void *)&gServerConfig.newplayergiveitem[2], INT},
+    {"ITEM4", NULL, 0, (void *)&gServerConfig.newplayergiveitem[3], INT},
+    {"ITEM5", NULL, 0, (void *)&gServerConfig.newplayergiveitem[4], INT},
+    {"ITEM6", NULL, 0, (void *)&gServerConfig.newplayergiveitem[5], INT},
+    {"ITEM7", NULL, 0, (void *)&gServerConfig.newplayergiveitem[6], INT},
+    {"ITEM8", NULL, 0, (void *)&gServerConfig.newplayergiveitem[7], INT},
+    {"ITEM9", NULL, 0, (void *)&gServerConfig.newplayergiveitem[8], INT},
+    {"ITEM10", NULL, 0, (void *)&gServerConfig.newplayergiveitem[9], INT},
+    {"ITEM11", NULL, 0, (void *)&gServerConfig.newplayergiveitem[10], INT},
+    {"ITEM12", NULL, 0, (void *)&gServerConfig.newplayergiveitem[11], INT},
+    {"ITEM13", NULL, 0, (void *)&gServerConfig.newplayergiveitem[12], INT},
+    {"ITEM14", NULL, 0, (void *)&gServerConfig.newplayergiveitem[13], INT},
+    {"ITEM15", NULL, 0, (void *)&gServerConfig.newplayergiveitem[14], INT},
+    {"PETLV", NULL, 0, (void *)&gServerConfig.newplayerpetlv, INT},
+    {"GOLD", NULL, 0, (void *)&gServerConfig.newplayergivegold, INT},
+    {"RIDEPETLEVEL", NULL, 0, (void *)&gServerConfig.ridepetlevel, INT},
 #ifdef _VIP_SERVER
-    {"GIVEVIPPOINT", NULL, 0, (void *)&config.newplayerpetvip, INT},
+    {"GIVEVIPPOINT", NULL, 0, (void *)&gServerConfig.newplayerpetvip, INT},
 #endif
 #endif
 
 #ifdef _USER_EXP_CF
-    {"USEREXP", config.expfile, sizeof(config.expfile), NULL, 0},
+    {"USEREXP", gServerConfig.expfile, sizeof(gServerConfig.expfile), NULL, 0},
 #endif
 
 #ifdef _UNLAW_WARP_FLOOR
-    {"UNLAWWARPFLOOR", config.unlawwarpfloor, sizeof(config.unlawwarpfloor),
-     NULL, 0},
+    {"UNLAWWARPFLOOR", gServerConfig.unlawwarpfloor,
+     sizeof(gServerConfig.unlawwarpfloor), NULL, 0},
 #endif
 
 #ifdef _NO_JOIN_FLOOR
-    {"NOJOINFLOOR", config.nojoinfloor, sizeof(config.nojoinfloor), NULL, 0},
+    {"NOJOINFLOOR", gServerConfig.nojoinfloor,
+     sizeof(gServerConfig.nojoinfloor), NULL, 0},
 #endif
 
 #ifdef _WATCH_FLOOR
-    {"WATCHFLOOR", NULL, 0, (void *)&config.watchfloor[0], INT},
-    {"WATCHFLOOR1", NULL, 0, (void *)&config.watchfloor[1], INT},
-    {"WATCHFLOOR2", NULL, 0, (void *)&config.watchfloor[2], INT},
-    {"WATCHFLOOR3", NULL, 0, (void *)&config.watchfloor[3], INT},
-    {"WATCHFLOOR4", NULL, 0, (void *)&config.watchfloor[4], INT},
-    {"WATCHFLOOR5", NULL, 0, (void *)&config.watchfloor[5], INT},
+    {"WATCHFLOOR", NULL, 0, (void *)&gServerConfig.watchfloor[0], INT},
+    {"WATCHFLOOR1", NULL, 0, (void *)&gServerConfig.watchfloor[1], INT},
+    {"WATCHFLOOR2", NULL, 0, (void *)&gServerConfig.watchfloor[2], INT},
+    {"WATCHFLOOR3", NULL, 0, (void *)&gServerConfig.watchfloor[3], INT},
+    {"WATCHFLOOR4", NULL, 0, (void *)&gServerConfig.watchfloor[4], INT},
+    {"WATCHFLOOR5", NULL, 0, (void *)&gServerConfig.watchfloor[5], INT},
 #endif
 
 #ifdef _BATTLE_FLOOR
-    {"BATTLEFLOOR", NULL, 0, (void *)&config.battlefloor, INT},
-    {"BATTLEFLOORCF", config.battlefloorcf, sizeof(config.battlefloorcf), NULL,
-     0},
+    {"BATTLEFLOOR", NULL, 0, (void *)&gServerConfig.battlefloor, INT},
+    {"BATTLEFLOORCF", gServerConfig.battlefloorcf,
+     sizeof(gServerConfig.battlefloorcf), NULL, 0},
 #endif
 
 #ifdef _UNREG_NEMA
-    {"NAME1", config.unregname[0], sizeof(config.unregname[0]), NULL, 0},
-    {"NAME2", config.unregname[1], sizeof(config.unregname[1]), NULL, 0},
-    {"NAME3", config.unregname[2], sizeof(config.unregname[2]), NULL, 0},
-    {"NAME4", config.unregname[3], sizeof(config.unregname[3]), NULL, 0},
-    {"NAME5", config.unregname[4], sizeof(config.unregname[4]), NULL, 0},
+    {"NAME1", gServerConfig.unregname[0], sizeof(gServerConfig.unregname[0]),
+     NULL, 0},
+    {"NAME2", gServerConfig.unregname[1], sizeof(gServerConfig.unregname[1]),
+     NULL, 0},
+    {"NAME3", gServerConfig.unregname[2], sizeof(gServerConfig.unregname[2]),
+     NULL, 0},
+    {"NAME4", gServerConfig.unregname[3], sizeof(gServerConfig.unregname[3]),
+     NULL, 0},
+    {"NAME5", gServerConfig.unregname[4], sizeof(gServerConfig.unregname[4]),
+     NULL, 0},
 #endif
 #ifdef _TRANS_LEVEL_CF
-    {"CHARTRANS", NULL, 0, (void *)&config.chartrans, INT},
-    {"PETTRANS", NULL, 0, (void *)&config.pettrans, INT},
-    {"LEVEL", NULL, 0, (void *)&config.yblevel, INT},
-    {"MAXLEVEL", NULL, 0, (void *)&config.maxlevel, INT},
+    {"CHARTRANS", NULL, 0, (void *)&gServerConfig.chartrans, INT},
+    {"PETTRANS", NULL, 0, (void *)&gServerConfig.pettrans, INT},
+    {"LEVEL", NULL, 0, (void *)&gServerConfig.yblevel, INT},
+    {"MAXLEVEL", NULL, 0, (void *)&gServerConfig.maxlevel, INT},
 #endif
 #ifdef _POINT
-    {"POINT", NULL, 0, (void *)&config.point, INT},
-    {"TRANS0", NULL, 0, (void *)&config.transpoint[0], INT},
-    {"TRANS1", NULL, 0, (void *)&config.transpoint[1], INT},
-    {"TRANS2", NULL, 0, (void *)&config.transpoint[2], INT},
-    {"TRANS3", NULL, 0, (void *)&config.transpoint[3], INT},
-    {"TRANS4", NULL, 0, (void *)&config.transpoint[4], INT},
-    {"TRANS5", NULL, 0, (void *)&config.transpoint[5], INT},
-    {"TRANS6", NULL, 0, (void *)&config.transpoint[6], INT},
-    {"TRANS7", NULL, 0, (void *)&config.transpoint[7], INT},
+    {"POINT", NULL, 0, (void *)&gServerConfig.point, INT},
+    {"TRANS0", NULL, 0, (void *)&gServerConfig.transpoint[0], INT},
+    {"TRANS1", NULL, 0, (void *)&gServerConfig.transpoint[1], INT},
+    {"TRANS2", NULL, 0, (void *)&gServerConfig.transpoint[2], INT},
+    {"TRANS3", NULL, 0, (void *)&gServerConfig.transpoint[3], INT},
+    {"TRANS4", NULL, 0, (void *)&gServerConfig.transpoint[4], INT},
+    {"TRANS5", NULL, 0, (void *)&gServerConfig.transpoint[5], INT},
+    {"TRANS6", NULL, 0, (void *)&gServerConfig.transpoint[6], INT},
+    {"TRANS7", NULL, 0, (void *)&gServerConfig.transpoint[7], INT},
 #endif
 
 #ifdef _PET_AND_ITEM_UP
-    {"PETUP", NULL, 0, (void *)&config.petup, INT},
-    {"ITEMUP", NULL, 0, (void *)&config.itemup, INT},
+    {"PETUP", NULL, 0, (void *)&gServerConfig.petup, INT},
+    {"ITEMUP", NULL, 0, (void *)&gServerConfig.itemup, INT},
 #endif
 #ifdef _LOOP_ANNOUNCE
-    {"ANNOUNCEPATH", config.loopannouncepath, sizeof(config.loopannouncepath),
-     NULL, 0},
-    {"ANNOUNCETIME", NULL, 0, (void *)&config.loopannouncetime, INT},
+    {"ANNOUNCEPATH", gServerConfig.loopannouncepath,
+     sizeof(gServerConfig.loopannouncepath), NULL, 0},
+    {"ANNOUNCETIME", NULL, 0, (void *)&gServerConfig.loopannouncetime, INT},
 #endif
 #ifdef _SKILLUPPOINT_CF
-    {"SKILLUPPOINT", NULL, 0, (void *)&config.skup, INT},
+    {"SKILLUPPOINT", NULL, 0, (void *)&gServerConfig.skup, INT},
 #endif
 #ifdef _RIDELEVEL
-    {"RIDELEVEL", NULL, 0, (void *)&config.ridelevel, INT},
-    {"RIDETRANS", NULL, 0, (void *)&config.ridetrans, INT},
+    {"RIDELEVEL", NULL, 0, (void *)&gServerConfig.ridelevel, INT},
+    {"RIDETRANS", NULL, 0, (void *)&gServerConfig.ridetrans, INT},
 #endif
 
 #ifdef _REVLEVEL
-    {"REVLEVEL", NULL, 0, (void *)&config.revlevel, INT},
+    {"REVLEVEL", NULL, 0, (void *)&gServerConfig.revlevel, INT},
 #endif
 #ifdef _NEW_PLAYER_RIDE
-    {"NPRIDE", NULL, 0, (void *)&config.npride, INT},
+    {"NPRIDE", NULL, 0, (void *)&gServerConfig.npride, INT},
 #endif
 #ifdef _FIX_CHARLOOPS
-    {"CHARLOOPS", NULL, 0, (void *)&config.charloops, INT},
+    {"CHARLOOPS", NULL, 0, (void *)&gServerConfig.charloops, INT},
 #endif
 #ifdef _PLAYER_ANNOUNCE
-    {"PANNOUNCE", NULL, 0, (void *)&config.pannounce, INT},
+    {"PANNOUNCE", NULL, 0, (void *)&gServerConfig.pannounce, INT},
 #endif
 #ifdef _PLAYER_MOVE
-    {"PMOVE", NULL, 0, (void *)&config.pmove, INT},
+    {"PMOVE", NULL, 0, (void *)&gServerConfig.pmove, INT},
 #endif
 
-    {"recvbuffer", NULL, 0, (void *)&config.recvbuffer, INT},
-    {"sendbuffer", NULL, 0, (void *)&config.sendbuffer, INT},
-    {"recvlowatbuffer", NULL, 0, (void *)&config.recvlowatbuffer, INT},
-    {"runlevel", NULL, 0, (void *)&config.runlevel, INT},
+    {"recvbuffer", NULL, 0, (void *)&gServerConfig.recvbuffer, INT},
+    {"sendbuffer", NULL, 0, (void *)&gServerConfig.sendbuffer, INT},
+    {"recvlowatbuffer", NULL, 0, (void *)&gServerConfig.recvlowatbuffer, INT},
+    {"runlevel", NULL, 0, (void *)&gServerConfig.runlevel, INT},
 
 #ifdef _SHOW_VIP_CF
-    {"SHOWVIP", NULL, 0, (void *)&config.showvip, INT},
+    {"SHOWVIP", NULL, 0, (void *)&gServerConfig.showvip, INT},
 #endif
 
 #ifdef _PLAYER_NUM
-    {"PLAYERNUM", NULL, 0, (void *)&config.playernum, INT},
+    {"PLAYERNUM", NULL, 0, (void *)&gServerConfig.playernum, INT},
 #endif
 
 #ifdef _BATTLE_GOLD
-    {"BATTLEGOLD", NULL, 0, (void *)&config.battlegold, INT},
+    {"BATTLEGOLD", NULL, 0, (void *)&gServerConfig.battlegold, INT},
 #endif
 #ifdef _ANGEL_TIME
-    {"ANGELPLAYERTIME", NULL, 0, (void *)&config.angelplayertime, INT},
-    {"ANGELPLAYERMUN", NULL, 0, (void *)&config.angelplayermun, INT},
+    {"ANGELPLAYERTIME", NULL, 0, (void *)&gServerConfig.angelplayertime, INT},
+    {"ANGELPLAYERMUN", NULL, 0, (void *)&gServerConfig.angelplayermun, INT},
 #endif
 #ifdef _RIDEMODE_20
-    {"RIDEMODE", NULL, 0, (void *)&config.ridemode, INT},
+    {"RIDEMODE", NULL, 0, (void *)&gServerConfig.ridemode, INT},
 #endif
 #ifdef _FM_POINT_PK
-    {"FMPOINTPK", NULL, 0, (void *)&config.fmpointpk, INT},
+    {"FMPOINTPK", NULL, 0, (void *)&gServerConfig.fmpointpk, INT},
 #endif
 #ifdef _ENEMY_ACTION
-    {"ENEMYACTION", NULL, 0, (void *)&config.enemyact, INT},
+    {"ENEMYACTION", NULL, 0, (void *)&gServerConfig.enemyact, INT},
 #endif
 #ifdef _FUSIONBEIT_TRANS
-    {"FUSIONBEIT", NULL, 0, (void *)&config.fusionbeittrans, INT},
+    {"FUSIONBEIT", NULL, 0, (void *)&gServerConfig.fusionbeittrans, INT},
 #endif
 #ifdef _CHECK_PEPEAT
-    {"CHECKPEPEAT", NULL, 0, (void *)&config.CheckRepeat, INT},
+    {"CHECKPEPEAT", NULL, 0, (void *)&gServerConfig.CheckRepeat, INT},
 #endif
-    {"CPUUSE", NULL, 0, (void *)&config.cpuuse, INT},
+    {"CPUUSE", NULL, 0, (void *)&gServerConfig.cpuuse, INT},
 #ifdef _FM_JOINLIMIT
-    {"JOINFAMILYTIME", NULL, 0, (void *)&config.joinfamilytime, INT},
+    {"JOINFAMILYTIME", NULL, 0, (void *)&gServerConfig.joinfamilytime, INT},
 #endif
 #ifdef _MAP_HEALERALLHEAL
-    {"MAPHEAL", config.mapheal, sizeof(config.mapheal), NULL, 0},
+    {"MAPHEAL", gServerConfig.mapheal, sizeof(gServerConfig.mapheal), NULL, 0},
 #endif
 
 #ifdef _THE_WORLD_SEND
-    {"THEWORLDTRANS", NULL, 0, (void *)&config.thewordtrans, INT},
-    {"THEWORLDLEVEL", NULL, 0, (void *)&config.thewordlevel, INT},
-    {"THEWORLDSNED", NULL, 0, (void *)&config.thewordsend, INT},
+    {"THEWORLDTRANS", NULL, 0, (void *)&gServerConfig.thewordtrans, INT},
+    {"THEWORLDLEVEL", NULL, 0, (void *)&gServerConfig.thewordlevel, INT},
+    {"THEWORLDSNED", NULL, 0, (void *)&gServerConfig.thewordsend, INT},
 #endif
 #ifdef _LOGIN_DISPLAY
-    {"LOGINDISPLAY", NULL, 0, (void *)&config.logindisplay, INT},
+    {"LOGINDISPLAY", NULL, 0, (void *)&gServerConfig.logindisplay, INT},
 #endif
 #ifdef _VIP_POINT_PK
-    {"PKMAP", config.vippointpk, sizeof(config.vippointpk), NULL, 0},
-    {"PKMAPCOST", NULL, 0, (void *)&config.vippointpkcost, INT},
+    {"PKMAP", gServerConfig.vippointpk, sizeof(gServerConfig.vippointpk), NULL,
+     0},
+    {"PKMAPCOST", NULL, 0, (void *)&gServerConfig.vippointpkcost, INT},
 #endif
 #ifdef _SPECIAL_MAP
-    {"SPECIALMAP", config.specialmap, sizeof(config.specialmap), NULL, 0},
+    {"SPECIALMAP", gServerConfig.specialmap, sizeof(gServerConfig.specialmap),
+     NULL, 0},
 #endif
 #ifdef _NEW_AUTO_PK
-    {"AUTOPK", NULL, 0, (void *)&config.autopk, INT},
-    {"AUTOPKTRANS", NULL, 0, (void *)&config.autopktrans, INT},
-    {"AUTOPKLV", NULL, 0, (void *)&config.autopklv, INT},
+    {"AUTOPK", NULL, 0, (void *)&gServerConfig.autopk, INT},
+    {"AUTOPKTRANS", NULL, 0, (void *)&gServerConfig.autopktrans, INT},
+    {"AUTOPKLV", NULL, 0, (void *)&gServerConfig.autopklv, INT},
 #ifdef _FORMULATE_AUTO_PK
-    {"AUTOPKPOINT", NULL, 0, (void *)&config.autopkpoint, INT},
-    {"KILLPOINT", NULL, 0, (void *)&config.killpoint, INT},
+    {"AUTOPKPOINT", NULL, 0, (void *)&gServerConfig.autopkpoint, INT},
+    {"KILLPOINT", NULL, 0, (void *)&gServerConfig.killpoint, INT},
 #endif
 #endif
 #ifdef _AUTO_DEL_PET
-    {"AUTODELPET", config.autodelpet, sizeof(config.autodelpet), NULL, 0},
+    {"AUTODELPET", gServerConfig.autodelpet, sizeof(gServerConfig.autodelpet),
+     NULL, 0},
 #endif
 #ifdef _AUTO_DEL_ITEM
-    {"AUTODELITEM", config.autodelitem, sizeof(config.autodelitem), NULL, 0},
+    {"AUTODELITEM", gServerConfig.autodelitem,
+     sizeof(gServerConfig.autodelitem), NULL, 0},
 #endif
 #ifdef _BT_PET
-    {"BTPET", NULL, 0, (void *)&config.btpet, INT},
+    {"BTPET", NULL, 0, (void *)&gServerConfig.btpet, INT},
 #endif
 #ifdef _BT_ITEM
-    {"BTITEM", NULL, 0, (void *)&config.btitem, INT},
+    {"BTITEM", NULL, 0, (void *)&gServerConfig.btitem, INT},
 #endif
 #ifdef _LUCK_STAR
-    {"LUCKSTARTIME", NULL, 0, (void *)&config.luckstartime, INT},
-    {"LUCKSTARCHANCES", NULL, 0, (void *)&config.luckstarchances, INT},
+    {"LUCKSTARTIME", NULL, 0, (void *)&gServerConfig.luckstartime, INT},
+    {"LUCKSTARCHANCES", NULL, 0, (void *)&gServerConfig.luckstarchances, INT},
 #endif
 #ifdef _BATTLE_GETITEM_RATE
-    {"BATTLEGETITEMRATE", config.battlegetitemrate,
-     sizeof(config.battlegetitemrate), NULL, 0},
-    {"BATTLEGETITEMRATEMAP", NULL, 0, (void *)&config.battlegetitemratemap,
-     INT},
+    {"BATTLEGETITEMRATE", gServerConfig.battlegetitemrate,
+     sizeof(gServerConfig.battlegetitemrate), NULL, 0},
+    {"BATTLEGETITEMRATEMAP", NULL, 0,
+     (void *)&gServerConfig.battlegetitemratemap, INT},
 #endif
 #ifdef _UNLAW_THIS_LOGOUT
-    {"UNLAWTHISLOGOUT", config.unlawthislogout, sizeof(config.unlawthislogout),
-     NULL, 0},
+    {"UNLAWTHISLOGOUT", gServerConfig.unlawthislogout,
+     sizeof(gServerConfig.unlawthislogout), NULL, 0},
 #endif
 #ifdef _TRANS_POINT_UP
-    {"TRANSPOINTUP", config.transpointup, sizeof(config.transpointup), NULL, 0},
+    {"TRANSPOINTUP", gServerConfig.transpointup,
+     sizeof(gServerConfig.transpointup), NULL, 0},
 #endif
 #ifdef _OPEN_STW_SEND
-    {"STWSENDTYPE", NULL, 0, (void *)&config.stwsendtype, INT},
-    {"STWSENDPOINT", NULL, 0, (void *)&config.stwsendpoint, INT},
+    {"STWSENDTYPE", NULL, 0, (void *)&gServerConfig.stwsendtype, INT},
+    {"STWSENDPOINT", NULL, 0, (void *)&gServerConfig.stwsendpoint, INT},
 #endif
 #ifdef _POOL_ITEM_BUG
-    {"POOLITEMBUG", NULL, 0, (void *)&config.poolitembug, INT},
-    {"POOLITEM", config.poolitem, sizeof(config.poolitem), NULL, 0},
+    {"POOLITEMBUG", NULL, 0, (void *)&gServerConfig.poolitembug, INT},
+    {"POOLITEM", gServerConfig.poolitem, sizeof(gServerConfig.poolitem), NULL,
+     0},
 #endif
 #ifdef _NO_STW_ENEMY
-    {"NOSTWENEMY", NULL, 0, (void *)&config.nostwenemy, INT},
-    {"NOSTWENEMYGOLD", NULL, 0, (void *)&config.nostwenemypoint, INT},
+    {"NOSTWENEMY", NULL, 0, (void *)&gServerConfig.nostwenemy, INT},
+    {"NOSTWENEMYGOLD", NULL, 0, (void *)&gServerConfig.nostwenemypoint, INT},
 #endif
 #ifdef _NEW_STREET_VENDOR
-    {"STREETVENDORPOINT", config.streetvendorpoint,
-     sizeof(config.streetvendorpoint), NULL, 0},
+    {"STREETVENDORPOINT", gServerConfig.streetvendorpoint,
+     sizeof(gServerConfig.streetvendorpoint), NULL, 0},
 #endif
 #ifdef _ITEM_PET_LOCKED
-    {"ITEMPETLOCKED", NULL, 0, (void *)&config.itampetlocked, INT},
+    {"ITEMPETLOCKED", NULL, 0, (void *)&gServerConfig.itampetlocked, INT},
 #endif
 #ifdef _TALK_SAVE
-    {"SAVEFAME", NULL, 0, (void *)&config.savefame, INT},
+    {"SAVEFAME", NULL, 0, (void *)&gServerConfig.savefame, INT},
 #endif
 #ifdef _TALK_CHECK
-    {"TALKCHECKMAX", NULL, 0, (void *)&config.talkcheckmax, INT},
-    {"TALKCHECKMIN", NULL, 0, (void *)&config.talkcheckmin, INT},
+    {"TALKCHECKMAX", NULL, 0, (void *)&gServerConfig.talkcheckmax, INT},
+    {"TALKCHECKMIN", NULL, 0, (void *)&gServerConfig.talkcheckmin, INT},
 #endif
 #ifdef _DISABLE_PROFESSION_SKILL
-    {"DISABLEPROFESSION", config.disableprofessionskill,
-     sizeof(config.disableprofessionskill), NULL, 0},
+    {"DISABLEPROFESSION", gServerConfig.disableprofessionskill,
+     sizeof(gServerConfig.disableprofessionskill), NULL, 0},
 #endif
 #ifdef _ALL_SERV_SEND
-    {"ALLSERVTRANS", NULL, 0, (void *)&config.allservtrans, INT},
-    {"ALLSERVLEVEL", NULL, 0, (void *)&config.allservlevel, INT},
-    {"ALLSERVSNED", NULL, 0, (void *)&config.allservsend, INT},
+    {"ALLSERVTRANS", NULL, 0, (void *)&gServerConfig.allservtrans, INT},
+    {"ALLSERVLEVEL", NULL, 0, (void *)&gServerConfig.allservlevel, INT},
+    {"ALLSERVSNED", NULL, 0, (void *)&gServerConfig.allservsend, INT},
 #endif
 #ifdef _PET_TRANS_ABILITY
-    {"PETTRANSABILITY", NULL, 0, (void *)&config.pettransability, INT},
-    {"PETTRANSABILITY1", NULL, 0, (void *)&config.pettransability1, INT},
-    {"PETTRANSABILITY2", NULL, 0, (void *)&config.pettransability2, INT},
+    {"PETTRANSABILITY", NULL, 0, (void *)&gServerConfig.pettransability, INT},
+    {"PETTRANSABILITY1", NULL, 0, (void *)&gServerConfig.pettransability1, INT},
+    {"PETTRANSABILITY2", NULL, 0, (void *)&gServerConfig.pettransability2, INT},
 #endif
 #ifdef _NEED_ITEM_ENEMY
-    {"DELNEEDITEM", NULL, 0, (void *)&config.delneeditem, INT},
+    {"DELNEEDITEM", NULL, 0, (void *)&gServerConfig.delneeditem, INT},
 #endif
 #ifdef _NOT_ESCAPE
-    {"NOTESCAPE", config.notescape, sizeof(config.notescape), NULL, 0},
-#endif
-#ifdef _PLAYER_OVERLAP_PK
-    {"PLAYEROVERLAPPK", config.playeroverlappk, sizeof(config.playeroverlappk),
+    {"NOTESCAPE", gServerConfig.notescape, sizeof(gServerConfig.notescape),
      NULL, 0},
 #endif
+#ifdef _PLAYER_OVERLAP_PK
+    {"PLAYEROVERLAPPK", gServerConfig.playeroverlappk,
+     sizeof(gServerConfig.playeroverlappk), NULL, 0},
+#endif
 #ifdef _FIMALY_PK_TIME
-    {"FIMALYPKTIME", NULL, 0, (void *)&config.fimalypktime, INT},
+    {"FIMALYPKTIME", NULL, 0, (void *)&gServerConfig.fimalypktime, INT},
 #endif
 #ifdef _PETSKILL_SHOP_LUA
-    {"PETSKILLSHOPPATH", config.freepetskillshoppath,
-     sizeof(config.freepetskillshoppath), NULL, 0},
+    {"PETSKILLSHOPPATH", gServerConfig.freepetskillshoppath,
+     sizeof(gServerConfig.freepetskillshoppath), NULL, 0},
 #endif
 #ifdef _CANCEL_ANGLE_TRANS
-    {"CANCELANGLETRANS", NULL, 0, (void *)&config.cancelanlgetrans, INT},
+    {"CANCELANGLETRANS", NULL, 0, (void *)&gServerConfig.cancelanlgetrans, INT},
 #endif
 #ifdef _VIP_BATTLE_EXP
-    {"vipbattleexp", NULL, 0, (void *)&config.vipbattleexp, INT},
+    {"vipbattleexp", NULL, 0, (void *)&gServerConfig.vipbattleexp, INT},
 #endif
 #ifdef _NO_HELP_MAP
-    {"nohelpmap", config.nohelpmap, sizeof(config.nohelpmap), NULL, 0},
+    {"nohelpmap", gServerConfig.nohelpmap, sizeof(gServerConfig.nohelpmap),
+     NULL, 0},
 #endif
 #ifdef _BATTLE_TIME
-    {"battletime", NULL, 0, (void *)&config.battletime, INT},
+    {"battletime", NULL, 0, (void *)&gServerConfig.battletime, INT},
 #endif
 #ifdef _SAME_IP_ONLINE_NUM
-    {"sameiponlinenum", NULL, 0, (void *)&config.sameiponlinenum, INT},
+    {"sameiponlinenum", NULL, 0, (void *)&gServerConfig.sameiponlinenum, INT},
 #endif
 #ifdef _STREET_VENDOR_TRANS
-    {"streetvendortrans", NULL, 0, (void *)&config.streetvendortrans, INT},
+    {"streetvendortrans", NULL, 0, (void *)&gServerConfig.streetvendortrans,
+     INT},
 #endif
 #ifdef _CHECK_SEVER_IP
-    {"serverip", config.serverip, sizeof(config.serverip), NULL, 0},
+    {"serverip", gServerConfig.serverip, sizeof(gServerConfig.serverip), NULL,
+     0},
 #endif
 #ifdef _DAMMAGE_CALC
-    {"dammagecalc", NULL, 0, (void *)&config.dammagecalc, INT},
+    {"dammagecalc", NULL, 0, (void *)&gServerConfig.dammagecalc, INT},
 #endif
 #ifdef _PET_ENEMY_DEVELOP_UP
-    {"PetEnemyDevelopUp", NULL, 0, (void *)&config.PetEnemyDevelopUp, INT},
+    {"PetEnemyDevelopUp", NULL, 0, (void *)&gServerConfig.PetEnemyDevelopUp,
+     INT},
 #endif
 #ifdef _FIRST_LOCK_ITEM
-    {"FirstLockItem", config.FirstLockItem, sizeof(config.FirstLockItem), NULL,
-     0},
+    {"FirstLockItem", gServerConfig.FirstLockItem,
+     sizeof(gServerConfig.FirstLockItem), NULL, 0},
 #endif
-    {"Connectnum", NULL, 0, (void *)&config.Connectnum, INT},
+    {"Connectnum", NULL, 0, (void *)&gServerConfig.Connectnum, INT},
 #ifdef _PETSKILL_NEW_PASSIVE
-    {"AUTUGETSKILL", NULL, 0, (void *)&config.autogetskill, INT},
-    {"GETSKILLPOS", NULL, 0, (void *)&config.getskillpos, INT},
-    {"SKILLINFOLV1", config.skillinfolv[0], sizeof(config.skillinfolv[0]), NULL,
-     0},
-    {"SKILLINFOLV2", config.skillinfolv[1], sizeof(config.skillinfolv[1]), NULL,
-     0},
-    {"SKILLINFOLV3", config.skillinfolv[2], sizeof(config.skillinfolv[2]), NULL,
-     0},
-    {"SKILLINFOLV4", config.skillinfolv[3], sizeof(config.skillinfolv[3]), NULL,
-     0},
-    {"SKILLINFOLV5", config.skillinfolv[4], sizeof(config.skillinfolv[4]), NULL,
-     0},
-    {"FUSIONRANGE", config.fusionrange, sizeof(config.fusionrange), NULL, 0},
-    {"SKILLFUSION", NULL, 0, (void *)&config.skillfusion, INT},
-    {"SKILLCOUNT", NULL, 0, (void *)&config.skillcount, INT},
+    {"AUTUGETSKILL", NULL, 0, (void *)&gServerConfig.autogetskill, INT},
+    {"GETSKILLPOS", NULL, 0, (void *)&gServerConfig.getskillpos, INT},
+    {"SKILLINFOLV1", gServerConfig.skillinfolv[0],
+     sizeof(gServerConfig.skillinfolv[0]), NULL, 0},
+    {"SKILLINFOLV2", gServerConfig.skillinfolv[1],
+     sizeof(gServerConfig.skillinfolv[1]), NULL, 0},
+    {"SKILLINFOLV3", gServerConfig.skillinfolv[2],
+     sizeof(gServerConfig.skillinfolv[2]), NULL, 0},
+    {"SKILLINFOLV4", gServerConfig.skillinfolv[3],
+     sizeof(gServerConfig.skillinfolv[3]), NULL, 0},
+    {"SKILLINFOLV5", gServerConfig.skillinfolv[4],
+     sizeof(gServerConfig.skillinfolv[4]), NULL, 0},
+    {"FUSIONRANGE", gServerConfig.fusionrange,
+     sizeof(gServerConfig.fusionrange), NULL, 0},
+    {"SKILLFUSION", NULL, 0, (void *)&gServerConfig.skillfusion, INT},
+    {"SKILLCOUNT", NULL, 0, (void *)&gServerConfig.skillcount, INT},
 #endif
 #ifdef _SHARE_EXP
-    {"EXPSHARE", NULL, 0, (void *)&config.expshare, INT},
+    {"EXPSHARE", NULL, 0, (void *)&gServerConfig.expshare, INT},
 #endif
 #ifdef _DEFEND_BIGBAO
-    {"BIGBAO", NULL, 0, (void *)&config.bigbao, INT},
-    {"BIGBAO2", NULL, 0, (void *)&config.bigbao2, INT},
+    {"BIGBAO", NULL, 0, (void *)&gServerConfig.bigbao, INT},
+    {"BIGBAO2", NULL, 0, (void *)&gServerConfig.bigbao2, INT},
 #endif
 #ifdef _MO_SHOW_DEBUG
-    {"ISDEBUG", NULL, 0, (void *)&config.isdebug, INT},
+    {"ISDEBUG", NULL, 0, (void *)&gServerConfig.isdebug, INT},
 #endif
 #ifdef _CHAR_LOOP_TIME
-    {"charlooptime", NULL, 0, (void *)&config.charlooptime, INT},
+    {"charlooptime", NULL, 0, (void *)&gServerConfig.charlooptime, INT},
 #endif
 #ifdef _MO_RELOAD_NPC
-    {"RELOADNPCTIME", NULL, 0, (void *)&config.reloadnpctime, INT},
-    {"RELOADNPCTYPE", NULL, 0, (void *)&config.reloadnpctype, INT},
+    {"RELOADNPCTIME", NULL, 0, (void *)&gServerConfig.reloadnpctime, INT},
+    {"RELOADNPCTYPE", NULL, 0, (void *)&gServerConfig.reloadnpctype, INT},
 #endif
 #ifdef _JZ_NEWSCRIPT_LUA
-    {"LUAFILE", config.luafile, sizeof(config.luafile), NULL, 0},
+    {"LUAFILE", gServerConfig.luafile, sizeof(gServerConfig.luafile), NULL, 0},
 #endif
 #ifdef _ITEM_LUA
-    {"ITEMLUAFILE", config.itemluafile, sizeof(config.itemluafile), NULL, 0},
+    {"ITEMLUAFILE", gServerConfig.itemluafile,
+     sizeof(gServerConfig.itemluafile), NULL, 0},
 #endif
 #ifdef _ROOKIE_ITEM
-    {"ROOKIEITEM", NULL, 0, (void *)&config.rookieitem[0], INT},
-    {"ROOKIEITEM2", NULL, 0, (void *)&config.rookieitem[1], INT},
-    {"ROOKIEITEM3", NULL, 0, (void *)&config.rookieitem[2], INT},
-    {"ROOKIEITEM4", NULL, 0, (void *)&config.rookieitem[3], INT},
-    {"ROOKIEITEM5", NULL, 0, (void *)&config.rookieitem[4], INT},
+    {"ROOKIEITEM", NULL, 0, (void *)&gServerConfig.rookieitem[0], INT},
+    {"ROOKIEITEM2", NULL, 0, (void *)&gServerConfig.rookieitem[1], INT},
+    {"ROOKIEITEM3", NULL, 0, (void *)&gServerConfig.rookieitem[2], INT},
+    {"ROOKIEITEM4", NULL, 0, (void *)&gServerConfig.rookieitem[3], INT},
+    {"ROOKIEITEM5", NULL, 0, (void *)&gServerConfig.rookieitem[4], INT},
 #endif
 #ifdef _NO_TRANS_ITEM
-    {"NOTRANSITEM", NULL, 0, (void *)&config.notransitem, INT},
+    {"NOTRANSITEM", NULL, 0, (void *)&gServerConfig.notransitem, INT},
 #endif
 #ifdef _MAX_MERGE_LEVEL
-    {"MAXMERGELEVEL", NULL, 0, (void *)&config.maxmergelevel, INT},
+    {"MAXMERGELEVEL", NULL, 0, (void *)&gServerConfig.maxmergelevel, INT},
 #endif
 #ifdef _NO_ATTACK
-    {"ATTTIME", NULL, 0, (void *)&config.atttime, INT},
-    {"ATTSAFETIME", NULL, 0, (void *)&config.attsafetime, INT},
-    {"ATTCNT", NULL, 0, (void *)&config.attcnt, INT},
-    {"LATETIME", NULL, 0, (void *)&config.latetime, INT},
-    {"ATTDMETIME", NULL, 0, (void *)&config.attdmetime, INT},
-    {"ATTDMECNT", NULL, 0, (void *)&config.attdmecnt, INT},
+    {"ATTTIME", NULL, 0, (void *)&gServerConfig.atttime, INT},
+    {"ATTSAFETIME", NULL, 0, (void *)&gServerConfig.attsafetime, INT},
+    {"ATTCNT", NULL, 0, (void *)&gServerConfig.attcnt, INT},
+    {"LATETIME", NULL, 0, (void *)&gServerConfig.latetime, INT},
+    {"ATTDMETIME", NULL, 0, (void *)&gServerConfig.attdmetime, INT},
+    {"ATTDMECNT", NULL, 0, (void *)&gServerConfig.attdmecnt, INT},
 #endif
-    {"NOATTIP1", config.noattip[0], sizeof(config.noattip[0]), NULL, 0},
-    {"NOATTIP2", config.noattip[1], sizeof(config.noattip[1]), NULL, 0},
-    {"NOATTIP3", config.noattip[2], sizeof(config.noattip[2]), NULL, 0},
-    {"NOATTIP4", config.noattip[3], sizeof(config.noattip[3]), NULL, 0},
-    {"NOATTIP5", config.noattip[4], sizeof(config.noattip[4]), NULL, 0},
+    {"NOATTIP1", gServerConfig.noattip[0], sizeof(gServerConfig.noattip[0]),
+     NULL, 0},
+    {"NOATTIP2", gServerConfig.noattip[1], sizeof(gServerConfig.noattip[1]),
+     NULL, 0},
+    {"NOATTIP3", gServerConfig.noattip[2], sizeof(gServerConfig.noattip[2]),
+     NULL, 0},
+    {"NOATTIP4", gServerConfig.noattip[3], sizeof(gServerConfig.noattip[3]),
+     NULL, 0},
+    {"NOATTIP5", gServerConfig.noattip[4], sizeof(gServerConfig.noattip[4]),
+     NULL, 0},
 #ifdef _NO_FULLPLAYER_ATT
-    {"NOFULLPLAYER", NULL, 0, (void *)&config.nofullplayer, INT},
-    {"NOFULL2PLAYER", NULL, 0, (void *)&config.nofull2player, INT},
-    {"NOCDKEYPLAYER", NULL, 0, (void *)&config.nocdkeyplayer, INT},
-    {"NOCDKEYMODE", NULL, 0, (void *)&config.nocdkeymode, INT},
-    {"NOCDKEYTYPE", NULL, 0, (void *)&config.nocdkeytype, INT},
-    {"NOFULLTIME", NULL, 0, (void *)&config.nofulltime, INT},
-    {"FENGTYPE", NULL, 0, (void *)&config.fengtype, INT},
-    {"NOFULLENDPLAYER", NULL, 0, (void *)&config.nofullendplayer, INT},
-    {"NOFULLENDTIME", NULL, 0, (void *)&config.nofullendtime, INT},
-    {"MANRENNUM", NULL, 0, (void *)&config.manrennum, INT},
+    {"NOFULLPLAYER", NULL, 0, (void *)&gServerConfig.nofullplayer, INT},
+    {"NOFULL2PLAYER", NULL, 0, (void *)&gServerConfig.nofull2player, INT},
+    {"NOCDKEYPLAYER", NULL, 0, (void *)&gServerConfig.nocdkeyplayer, INT},
+    {"NOCDKEYMODE", NULL, 0, (void *)&gServerConfig.nocdkeymode, INT},
+    {"NOCDKEYTYPE", NULL, 0, (void *)&gServerConfig.nocdkeytype, INT},
+    {"NOFULLTIME", NULL, 0, (void *)&gServerConfig.nofulltime, INT},
+    {"FENGTYPE", NULL, 0, (void *)&gServerConfig.fengtype, INT},
+    {"NOFULLENDPLAYER", NULL, 0, (void *)&gServerConfig.nofullendplayer, INT},
+    {"NOFULLENDTIME", NULL, 0, (void *)&gServerConfig.nofullendtime, INT},
+    {"MANRENNUM", NULL, 0, (void *)&gServerConfig.manrennum, INT},
 #endif
-    {"LOCKTYPE", NULL, 0, (void *)&config.locktype, INT},
+    {"LOCKTYPE", NULL, 0, (void *)&gServerConfig.locktype, INT},
 #ifdef _NEW_FUNC_DECRYPT
-    {"ALLOWERRORNUM2", NULL, 0, (void *)&config.allowerrornum2, INT},
+    {"ALLOWERRORNUM2", NULL, 0, (void *)&gServerConfig.allowerrornum2, INT},
 #endif
 #ifdef _MO_LOGIN_NO_KICK
-    {"LOGINNOKICK", NULL, 0, (void *)&config.loginnokick, INT},
+    {"LOGINNOKICK", NULL, 0, (void *)&gServerConfig.loginnokick, INT},
 #endif
 #ifdef _MO_ILLEGAL_NAME
-    {"ILLEGALNAME", config.illegalname, sizeof(config.illegalname), NULL, 0},
+    {"ILLEGALNAME", gServerConfig.illegalname,
+     sizeof(gServerConfig.illegalname), NULL, 0},
 #endif
 #ifdef _NO_USE_PACKET_MAP
-    {"NOPACKETMAP", config.nousepacketmap, sizeof(config.nousepacketmap), NULL,
-     0},
+    {"NOPACKETMAP", gServerConfig.nousepacketmap,
+     sizeof(gServerConfig.nousepacketmap), NULL, 0},
 #endif
 #ifdef _NO_USE_MAGIC_MAP
-    {"NOMAGICMAP", config.nousemagicmap, sizeof(config.nousemagicmap), NULL, 0},
+    {"NOMAGICMAP", gServerConfig.nousemagicmap,
+     sizeof(gServerConfig.nousemagicmap), NULL, 0},
 #endif
 #ifdef _SOME_PETMAIL
-    {"PETMAILFLG", NULL, 0, (void *)&config.petmailflg, INT},
-    {"SOMEPETMAIL", config.somepetmail, sizeof(config.somepetmail), NULL, 0},
+    {"PETMAILFLG", NULL, 0, (void *)&gServerConfig.petmailflg, INT},
+    {"SOMEPETMAIL", gServerConfig.somepetmail,
+     sizeof(gServerConfig.somepetmail), NULL, 0},
 #endif
 #ifdef _CTRL_TRANS_DEVELOP
-    {"CTRLTRANS", NULL, 0, (void *)&config.ctrltrans, INT},
+    {"CTRLTRANS", NULL, 0, (void *)&gServerConfig.ctrltrans, INT},
 #endif
 #ifdef _PETMAIL_TIME
-    {"PETMAILTIME", NULL, 0, (void *)&config.petmailtime, INT},
+    {"PETMAILTIME", NULL, 0, (void *)&gServerConfig.petmailtime, INT},
 #endif
 #ifdef _UP_BBPETPROB
-    {"UPBBPROB", NULL, 0, (void *)&config.upbbprob, INT},
+    {"UPBBPROB", NULL, 0, (void *)&gServerConfig.upbbprob, INT},
 #endif
 
 };
 
 // Arminius 7.12 login announce
 char announcetext[8192];
-void AnnounceToPlayer(int charaindex) {
+void AnnounceToPlayer(int char_index) {
   char *ptr, *qtr;
 
   ptr = announcetext;
   while ((qtr = strstr(ptr, "\n")) != NULL) {
     qtr[0] = '\0';
     //    printf("ptr=%s\n",ptr);
-    CHAR_talkToCli(charaindex, -1, ptr, CHAR_COLORYELLOW);
+    CHAR_talkToCli(char_index, -1, ptr, CHAR_COLORYELLOW);
     qtr[0] = '\n';
     ptr = qtr + 1;
   }
-  CHAR_talkToCli(charaindex, -1, ptr, CHAR_COLORYELLOW);
+  CHAR_talkToCli(char_index, -1, ptr, CHAR_COLORYELLOW);
 }
 
 // Robin 0720
@@ -1058,19 +1098,19 @@ void AnnounceToPlayerWN(int fd) {
   char buf[8192];
 #ifdef _VIP_LOGOUT
   char token[8192];
-  int charaindex = CONNECT_getCharaindex(fd);
-  long lastleavetime = CHAR_getInt(charaindex, CHAR_LASTLEAVETIME);
+  int char_index = CONNECT_getCharaindex(fd);
+  long lastleavetime = CHAR_getInt(char_index, CHAR_LASTLEAVETIME);
   struct tm *p;
   p = localtime(&lastleavetime);
 
   sprintf(token, "���������ʱ�� %d��%d��%d�� %d:%d:%d\n\n%s", p->tm_year + 1900,
           p->tm_mon + 1, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec,
           announcetext);
-  lssproto_WN_send(fd, WINDOW_MESSAGETYPE_LOGINMESSAGE, WINDOW_BUTTONTYPE_OK,
-                   -1, -1, makeEscapeString(token, buf, sizeof(buf)));
+  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_LOGINMESSAGE, WINDOW_BUTTONTYPE_OK,
+                     -1, -1, makeEscapeString(token, buf, sizeof(buf)));
 #else
-  lssproto_WN_send(fd, WINDOW_MESSAGETYPE_LOGINMESSAGE, WINDOW_BUTTONTYPE_OK,
-                   -1, -1, makeEscapeString(announcetext, buf, sizeof(buf)));
+  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_LOGINMESSAGE, WINDOW_BUTTONTYPE_OK,
+                     -1, -1, makeEscapeString(announcetext, buf, sizeof(buf)));
 #endif
 }
 
@@ -1236,7 +1276,7 @@ void LoadPetTalk(void) {
     fp = fopen(fn, "r");
   }
   if (fp != NULL) {
-    print("\n\n ��ȡ pettalk.mem");
+    print("\n\n pettalk.mem");
     while (fgets(line, sizeof(line), fp)) {
 #ifdef _CRYPTO_DATA
       if (crypto == TRUE) {
@@ -1344,8 +1384,6 @@ void Load_PetSkillCodes(void) {
       Code_skill[i].TempNo = num;
       Code_skill[i].PetId = ID;
       strcpy(Code_skill[i].Code, type);
-      // print("\n %s|%d|%d|%s|", Code_skill[i].name, Code_skill[i].TempNo,
-      //   Code_skill[i].PetId, Code_skill[i].Code);
       i++;
       if (i >= PETSKILL_CODE)
         break;
@@ -1393,7 +1431,6 @@ BOOL LoadGMSet(char *filename) {
     }
 #endif
     chop(line);
-    // change ʹgmset.txt��������ע��*******
     if (line[0] == '#')
       continue;
     for (i = 0; i < strlen(line); i++) {
@@ -1402,7 +1439,6 @@ BOOL LoadGMSet(char *filename) {
         break;
       }
     }
-    //*************************************
     gm_num = gm_num + 1;
     if (gm_num > GMMAXNUM)
       break;
@@ -1420,191 +1456,196 @@ BOOL LoadGMSet(char *filename) {
 }
 #endif
 
-char *getProgname(void) { return config.progname; }
+char *getProgramName(void) { return gServerConfig.program_name; }
 
-char *getConfigfilename(void) { return config.configfilename; }
+char *getConfigFilename(void) { return gServerConfig.config_filename; }
 
-void setConfigfilename(char *newv) {
-  strcpysafe(config.configfilename, sizeof(config.configfilename), newv);
+void setConfigFilename(const char *config_filename) {
+  strcpysafe(gServerConfig.config_filename,
+             sizeof(gServerConfig.config_filename), config_filename);
 }
 
-unsigned int getDebuglevel(void) { return config.debuglevel; }
+unsigned getDebugLevel(void) { return gServerConfig.debug_level; }
 
-unsigned int setDebuglevel(unsigned int newv) {
-  int old;
-  old = config.debuglevel;
-  config.debuglevel = newv;
+unsigned setDebugLevel(unsigned debug_level) {
+  int old_level = gServerConfig.debug_level;
+  gServerConfig.debug_level = newv;
   return old;
 }
 
-unsigned int getMemoryunit(void) { return config.usememoryunit; }
+unsigned getMemoryUnitSize(void) { return gServerConfig.memory_unit_size; }
 
-unsigned int getMemoryunitnum(void) { return config.usememoryunitnum; }
+unsigned getMemoryUnitNum(void) { return gServerConfig.memory_unit_num; }
 
-char *getAccountservername(void) { return config.asname; }
+char *getAccountServerName(void) { return gServerConfig.account_server_name; }
 
-unsigned short getAccountserverport(void) { return config.acservport; }
-
-char *getAccountserverpasswd(void) { return config.acpasswd; }
-/*------------------------------------------------------------
- * ʧ���������ӡ��ﾮ��έ���±ء�ة�ӡ������ƻ���  �ë  �£�
- * ¦��
- *  ئ��
- * ߯Ի��
- *  unsigned short
- ------------------------------------------------------------*/
-char *getGameservername(void) { return config.gsnamefromas; }
-
-// Arminius 7.24 manor pk
-char *getGameserverID(void) {
-  if (config.gsid[strlen(config.gsid) - 1] == '\n')
-    config.gsid[strlen(config.gsid) - 1] = '\0';
-
-  return config.gsid;
+unsigned short getAccountServerPort(void) {
+  return gServerConfig.account_server_port;
 }
 
-unsigned short getAllowManorPK(void) { return config.allowmanorpk; }
+char *getAccountServerPassword(void) {
+  return gServerConfig.account_server_password;
+}
 
-unsigned short getPortNumber(void) { return config.port; }
+char *getGameServerName(void) { return gServerConfig.game_server_name; }
 
-int getServernumber(void) { return config.servernumber; }
+char *getGameServerID(void) {
+  const int idx = strlen(gServerConfig.game_server_id) - 1;
+  if (gServerConfig.game_server_id[idx] == '\n')
+    gServerConfig.game_server_id[idx] = '\0';
+  return gServerConfig.game_server_id;
+}
 
-int getReuseaddr(void) { return config.reuseaddr; }
+unsigned short getAllowManorPK(void) { return gServerConfig.allowmanorpk; }
 
-int getNodelay(void) { return config.do_nodelay; }
-int getLogWriteTime(void) { return config.log_write_time; }
-int getLogIOTime(void) { return config.log_io_time; }
-int getLogGameTime(void) { return config.log_game_time; }
-int getLogNetloopFaster(void) { return config.log_netloop_faster; }
+unsigned short getPortNumber(void) { return gServerConfig.port; }
 
-int getSaacwritenum(void) { return config.saacwritenum; }
+int getServernumber(void) { return gServerConfig.servernumber; }
 
-void setSaacwritenum(int num) { config.saacwritenum = num; }
+int getReuseAddr(void) { return gServerConfig.reuse_addr; }
 
-int getSaacreadnum(void) { return config.saacreadnum; }
+int getNodelay(void) { return gServerConfig.do_nodelay; }
+int getLogWriteTime(void) { return gServerConfig.log_write_time; }
+int getLogIOTime(void) { return gServerConfig.log_io_time; }
+int getLogGameTime(void) { return gServerConfig.log_game_time; }
+int getLogNetloopFaster(void) { return gServerConfig.log_netloop_faster; }
 
-void setSaacreadnum(int num) { config.saacreadnum = num; }
+int getSaacwritenum(void) { return gServerConfig.saacwritenum; }
 
-unsigned int getFdnum(void) { return config.fdnum; }
+void setSaacwritenum(int num) { gServerConfig.saacwritenum = num; }
 
-unsigned int getPlayercharnum(void) { return config.charnum; }
+int getSaacreadnum(void) { return gServerConfig.saacreadnum; }
 
-unsigned int getPetcharnum(void) { return config.petcharnum; }
+void setSaacreadnum(int num) { gServerConfig.saacreadnum = num; }
 
-unsigned int getOtherscharnum(void) { return config.othercharnum; }
+unsigned int getFdnum(void) { return gServerConfig.fdnum; }
 
-unsigned int getObjnum(void) { return config.objnum; }
+unsigned int getPlayercharnum(void) { return gServerConfig.charnum; }
 
-unsigned int getItemnum(void) { return config.itemnum; }
+unsigned int getPetcharnum(void) { return gServerConfig.petcharnum; }
 
-unsigned int getBattlenum(void) { return config.battlenum; }
+unsigned int getOtherscharnum(void) { return gServerConfig.othercharnum; }
+
+unsigned int getObjnum(void) { return gServerConfig.objnum; }
+
+unsigned int getItemnum(void) { return gServerConfig.itemnum; }
+
+unsigned int getBattlenum(void) { return gServerConfig.battlenum; }
 
 #ifdef _GET_BATTLE_EXP
-unsigned int getBattleexp(void) { return config.battleexp; }
+unsigned int getBattleexp(void) { return gServerConfig.battleexp; }
 void setBattleexp(int exp) {
-  config.battleexp = exp;
+  gServerConfig.battleexp = exp;
   return;
 }
 #endif
 
-char *getTopdir(void) { return config.topdir; }
+char *getTopdir(void) { return gServerConfig.topdir; }
 
-char *getMapdir(void) { return config.mapdir; }
+char *getMapdir(void) { return gServerConfig.mapdir; }
 
-char *getMaptilefile(void) { return config.maptilefile; }
+char *getMaptilefile(void) { return gServerConfig.maptilefile; }
 
-char *getBattleMapfile(void) { return config.battlemapfile; }
+char *getBattleMapfile(void) { return gServerConfig.battlemapfile; }
 
-char *getItemfile(void) { return config.itemfile; }
+char *getItemfile(void) { return gServerConfig.itemfile; }
 
-char *getInvfile(void) { return config.invfile; }
+char *getInvfile(void) { return gServerConfig.invfile; }
 
-char *getAppearfile(void) { return config.appearfile; }
+char *getAppearfile(void) { return gServerConfig.appearfile; }
 
-char *getEffectfile(void) { return config.effectfile; }
+char *getEffectfile(void) { return gServerConfig.effectfile; }
 
-char *getTitleNamefile(void) { return config.titlenamefile; }
+char *getTitleNamefile(void) { return gServerConfig.titlenamefile; }
 
-char *getTitleConfigfile(void) { return config.titleconfigfile; }
+char *getTitleConfigfile(void) { return gServerConfig.titlegServerConfigfile; }
 
-char *getEncountfile(void) { return config.encountfile; }
+char *getEncountfile(void) { return gServerConfig.encountfile; }
 
-char *getEnemyfile(void) { return config.enemyfile; }
+char *getEnemyfile(void) { return gServerConfig.enemyfile; }
 
-char *getEnemyBasefile(void) { return config.enemybasefile; }
+char *getEnemyBasefile(void) { return gServerConfig.enemybasefile; }
 
-char *getGroupfile(void) { return config.groupfile; }
+char *getGroupfile(void) { return gServerConfig.groupfile; }
 
-char *getMagicfile(void) { return config.magicfile; }
+char *getMagicfile(void) { return gServerConfig.magicfile; }
 
 #ifdef _ATTACK_MAGIC
 
-char *getAttMagicfileName(void) { return config.attmagicfile; }
+char *getAttMagicfileName(void) { return gServerConfig.attmagicfile; }
 
 #endif
 
-char *getPetskillfile(void) { return config.petskillfile; }
+char *getPetskillfile(void) { return gServerConfig.petskillfile; }
 
-#ifdef _PROFESSION_SKILL // WON ADD ����ְҵ����
-char *getProfession(void) { return config.profession; }
+#ifdef _PROFESSION_SKILL // WON ADD
+char *getProfession(void) { return gServerConfig.profession; }
 #endif
 
 #ifdef _ITEM_QUITPARTY
-char *getitemquitparty(void) { return config.itemquitparty; }
+char *getitemquitparty(void) { return gServerConfig.itemquitparty; }
 #endif
 
-char *getItematomfile(void) { return config.itematomfile; }
+char *getItematomfile(void) { return gServerConfig.itematomfile; }
 
-char *getQuizfile(void) { return config.quizfile; }
+char *getQuizfile(void) { return gServerConfig.quizfile; }
 
-char *getLsgenlogfilename(void) { return config.lsgenlog; }
+char *getLsgenlogfilename(void) { return gServerConfig.lsgenlog; }
 
 #ifdef _GMRELOAD
-char *getGMSetfile(void) { return config.gmsetfile; }
+char *getGMSetfile(void) { return gServerConfig.gmsetfile; }
 #endif
 
-char *getStoredir(void) { return config.storedir; }
+char *getStoredir(void) { return gServerConfig.storedir; }
 
 #ifdef _STORECHAR
-char *getStorechar(void) { return config.storechar; }
+char *getStorechar(void) { return gServerConfig.storechar; }
 #endif
 
-char *getNpcdir(void) { return config.npcdir; }
+char *getNpcdir(void) { return gServerConfig.npcdir; }
 
-char *getLogdir(void) { return config.logdir; }
+char *getLogdir(void) { return gServerConfig.logdir; }
 
-char *getLogconffile(void) { return config.logconfname; }
+char *getLogconffile(void) { return gServerConfig.logconfname; }
 
-char *getChatMagicPasswd(void) { return config.chatmagicpasswd; }
+char *getChatMagicPasswd(void) { return gServerConfig.chatmagicpasswd; }
 
-void setChatMagicPasswd(void) { sprintf(config.chatmagicpasswd, "gm"); }
+void setChatMagicPasswd(void) { sprintf(gServerConfig.chatmagicpasswd, "gm"); }
 
-unsigned getChatMagicCDKeyCheck(void) { return config.chatmagiccdkeycheck; }
+unsigned getChatMagicCDKeyCheck(void) {
+  return gServerConfig.chatmagiccdkeycheck;
+}
 
-void setChatMagicCDKeyCheck(void) { config.chatmagiccdkeycheck = 0; }
+void setChatMagicCDKeyCheck(void) { gServerConfig.chatmagiccdkeycheck = 0; }
 
-unsigned int getFilesearchnum(void) { return config.filesearchnum; }
+unsigned int getFilesearchnum(void) { return gServerConfig.filesearchnum; }
 
-unsigned int getNpctemplatenum(void) { return config.npctemplatenum; }
+unsigned int getNpctemplatenum(void) { return gServerConfig.npctemplatenum; }
 
-unsigned int getNpccreatenum(void) { return config.npccreatenum; }
+unsigned int getNpccreatenum(void) { return gServerConfig.npccreatenum; }
 
-unsigned int getWalksendinterval(void) { return config.walksendinterval; }
+unsigned int getWalksendinterval(void) {
+  return gServerConfig.walksendinterval;
+}
 
 void setWalksendinterval(unsigned int interval) {
-  config.walksendinterval = interval;
+  gServerConfig.walksendinterval = interval;
 }
 
-unsigned int getCAsendinterval_ms(void) { return config.CAsendinterval_ms; }
+unsigned int getCAsendinterval_ms(void) {
+  return gServerConfig.CAsendinterval_ms;
+}
 
 void setCAsendinterval_ms(unsigned int interval_ms) {
-  config.CAsendinterval_ms = interval_ms;
+  gServerConfig.CAsendinterval_ms = interval_ms;
 }
 
-unsigned int getCDsendinterval_ms(void) { return config.CDsendinterval_ms; }
+unsigned int getCDsendinterval_ms(void) {
+  return gServerConfig.CDsendinterval_ms;
+}
 
 void setCDsendinterval_ms(unsigned int interval_ms) {
-  config.CDsendinterval_ms = interval_ms;
+  gServerConfig.CDsendinterval_ms = interval_ms;
 }
 /*------------------------------------------------------------
  * Onelooptimeë  �£�
@@ -1613,149 +1654,114 @@ void setCDsendinterval_ms(unsigned int interval_ms) {
  * ߯Ի��
  *  unsigned int
  ------------------------------------------------------------*/
-unsigned int getOnelooptime_ms(void) { return config.Onelooptime_ms; }
+unsigned int getOnelooptime_ms(void) { return gServerConfig.Onelooptime_ms; }
 
 void setOnelooptime_ms(unsigned int interval_ms) {
-  config.Onelooptime_ms = interval_ms;
+  gServerConfig.Onelooptime_ms = interval_ms;
 }
-unsigned int getPetdeletetime(void) { return config.Petdeletetime; }
+unsigned int getPetdeletetime(void) { return gServerConfig.Petdeletetime; }
 
 void setPetdeletetime(unsigned int interval) {
-  config.Petdeletetime = interval;
+  gServerConfig.Petdeletetime = interval;
 }
 
-unsigned int getItemdeletetime(void) { return config.Itemdeletetime; }
+unsigned int getItemdeletetime(void) { return gServerConfig.Itemdeletetime; }
 
 void setItemdeletetime(unsigned int interval) {
-  config.Itemdeletetime = interval;
+  gServerConfig.Itemdeletetime = interval;
 }
 
 unsigned int getCharSavesendinterval(void) {
-  return config.CharSavesendinterval;
+  return gServerConfig.CharSavesendinterval;
 }
 
 void setCharSavesendinterval(unsigned int interval) {
-  config.CharSavesendinterval = interval;
+  gServerConfig.CharSavesendinterval = interval;
 }
 
 unsigned int getAddressbookoffmsgnum(void) {
-  return config.addressbookoffmsgnum;
+  return gServerConfig.addressbookoffmsgnum;
 }
 
 unsigned int getProtocolreadfrequency(void) {
-  return config.protocolreadfrequency;
+  return gServerConfig.protocolreadfrequency;
 }
 
-unsigned int getAllowerrornum(void) { return config.allowerrornum; }
+unsigned int getAllowerrornum(void) { return gServerConfig.allowerrornum; }
 
-unsigned int getLogHour(void) { return config.loghour; }
+unsigned int getLogHour(void) { return gServerConfig.loghour; }
 
-unsigned int getBattleDebugMsg(void) { return config.battledebugmsg; }
-/*------------------------------------------------------------
- * ������  ���������붪��������ë���ʾ���
- * ¦��
- *  ئ��
- * ߯Ի��
- *  unsigned int 1ئ������
- ------------------------------------------------------------*/
-void setBattleDebugMsg(unsigned int num) { config.battledebugmsg = num; }
+unsigned int getBattleDebugMsg(void) { return gServerConfig.battledebugmsg; }
 
-/*
- * Config�������ɻ�����ë裻�������
- * ¦��
- *  argv0   char*   ��Ѩ������̼�¦�Ѽ�  ��
- */
+void setBattleDebugMsg(unsigned int num) { gServerConfig.battledebugmsg = num; }
+
 void defaultConfig(char *argv0) {
-  char *program; /* program  ë�ƻ��¼������� */
-
-  /* �����ɻ�����ë  ľ�� */
-
-  /*�����ة  */
-  program = rindex(argv0, '/');
+  char *program = rindex(argv0, '/');
   if (program == NULL)
     program = argv0;
   else
-    program++; /* "/"���ݾ��ձ������м�ƥ++����*/
-  strcpysafe(config.progname, sizeof(config.progname), program);
-
-  /*ɬ�ð����̻�  */
-  strcpysafe(config.configfilename, sizeof(config.configfilename), "setup.cf");
+    program++;
+  strcpysafe(gServerConfig.progname, sizeof(gServerConfig.progname), program);
+  strcpysafe(gServerConfig.gServerConfigfilename,
+             sizeof(gServerConfig.gServerConfigfilename), "setup.cf");
 }
 
-/*
- * ɬ�ð����̻�  ë  �Ϸ�  ƥ����  ë�浤��
- * ¦��
- *  ئ��
- * ߯Ի��
- *  ئ��
- */
 void lastConfig(void) {
   char entry[256];
-  /*  Ѩ����ū����������ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.mapdir);
-  strcpysafe(config.mapdir, sizeof(config.mapdir), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.mapdir);
+  strcpysafe(gServerConfig.mapdir, sizeof(gServerConfig.mapdir), entry);
 
-  /*  Ѩ����ɬ�ð����̻�  ��ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.maptilefile);
-  strcpysafe(config.maptilefile, sizeof(config.maptilefile), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.maptilefile);
+  strcpysafe(gServerConfig.maptilefile, sizeof(gServerConfig.maptilefile),
+             entry);
 
-  /*  ������Ѩ����ɬ�ð����̻�  ��ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.battlemapfile);
-  strcpysafe(config.battlemapfile, sizeof(config.battlemapfile), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.battlemapfile);
+  strcpysafe(gServerConfig.battlemapfile, sizeof(gServerConfig.battlemapfile),
+             entry);
 
-  /*  ʧ��  ةɬ�ð����̻�  ��ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.itemfile);
-  strcpysafe(config.itemfile, sizeof(config.itemfile), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.itemfile);
+  strcpysafe(gServerConfig.itemfile, sizeof(gServerConfig.itemfile), entry);
 
-  /*    ��ɬ�ð����̻�  ��ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.invfile);
-  strcpysafe(config.invfile, sizeof(config.invfile), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.invfile);
+  strcpysafe(gServerConfig.invfile, sizeof(gServerConfig.invfile), entry);
 
-  /*  ������  ɬ�ð����̻�  ��ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.appearfile);
-  strcpysafe(config.appearfile, sizeof(config.appearfile), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.appearfile);
+  strcpysafe(gServerConfig.appearfile, sizeof(gServerConfig.appearfile), entry);
 
-  /*  ����ɬ�ð����̻�  ��ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.effectfile);
-  strcpysafe(config.effectfile, sizeof(config.effectfile), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.effectfile);
+  strcpysafe(gServerConfig.effectfile, sizeof(gServerConfig.effectfile), entry);
 
-  /*  ������ɬ�ð����̻�  ��ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.quizfile);
-  strcpysafe(config.quizfile, sizeof(config.quizfile), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.quizfile);
+  strcpysafe(gServerConfig.quizfile, sizeof(gServerConfig.quizfile), entry);
 
-  /*  ��į  �����̻�  ��ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.titlenamefile);
-  strcpysafe(config.titlenamefile, sizeof(config.titlenamefile), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.titlenamefile);
+  strcpysafe(gServerConfig.titlenamefile, sizeof(gServerConfig.titlenamefile),
+             entry);
 
-  /*  lsgen ʧ���������������̻�      */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.lsgenlog);
-  strcpysafe(config.lsgenlog, sizeof(config.lsgenlog), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.lsgenlog);
+  strcpysafe(gServerConfig.lsgenlog, sizeof(gServerConfig.lsgenlog), entry);
 
-  /*  ����ʧ��ū����������ɬ��    */
-  /*
-      snprintf(entry,sizeof(entry), "%s/%s",config.topdir,config.storedir);
-      strcpysafe(config.storedir, sizeof(config.storedir), entry);
-  */
-  /*  NPCɬ��������ū����������ɬ��    */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.npcdir);
-  strcpysafe(config.npcdir, sizeof(config.npcdir), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.npcdir);
+  strcpysafe(gServerConfig.npcdir, sizeof(gServerConfig.npcdir), entry);
 
 #ifdef _STORECHAR
-  /*   */
-  snprintf(entry, sizeof(entry), "%s/%s", config.topdir, config.storechar);
-  strcpysafe(config.storechar, sizeof(config.storechar), entry);
+  snprintf(entry, sizeof(entry), "%s/%s", gServerConfig.topdir,
+           gServerConfig.storechar);
+  strcpysafe(gServerConfig.storechar, sizeof(gServerConfig.storechar), entry);
 #endif
 }
 
-/*
- * ���̼����������ئ����  ë  �Ȼ�ҽ  ë��������
- * ¦��
- *  to      void*   ��ëҽ  ���º��̼���
- *  type    CTYPE   to����ë裻���
- *  value   double  to��ҽ  ���°�
- * ߯Ի��
- *  ئ��
- */
 void substitutePointerFromType(void *to, CTYPE type, double value) {
   switch (type) {
   case CHAR:
@@ -1773,7 +1779,7 @@ void substitutePointerFromType(void *to, CTYPE type, double value) {
   }
 }
 
-BOOL luareadconfigfile(char *data) {
+BOOL luareadgServerConfigfile(char *data) {
   char firstToken[256];
   int ret =
       getStringFromIndexWithDelim(data, "=", 1, firstToken, sizeof(firstToken));
@@ -1781,34 +1787,30 @@ BOOL luareadconfigfile(char *data) {
     return FALSE;
   }
   int i;
-  for (i = 0; i < arraysizeof(readconf); i++) {
-    if (strcmp(readconf[i].name, firstToken) == 0) {
-      /* match */
+  for (i = 0; i < arraysizeof(gReadConf); i++) {
+    if (strcmp(gReadConf[i].name, firstToken) == 0) {
       char secondToken[256]; /*2    ��  ٯ  */
-      /* delim "=" ƥ2    �������ͼ�ë  ��*/
       ret = getStringFromIndexWithDelim(data, "=", 2, secondToken,
                                         sizeof(secondToken));
-
-      /* NULL  ٯ��������ëƩ���� */
       if (ret == FALSE) {
         break;
       }
 
-      if (readconf[i].charvalue != NULL)
-        strcpysafe(readconf[i].charvalue, readconf[i].charsize, secondToken);
-      if (readconf[i].value != NULL) {
+      if (gReadConf[i].charvalue != NULL)
+        strcpysafe(gReadConf[i].charvalue, gReadConf[i].charsize, secondToken);
+      if (gReadConf[i].value != NULL) {
         if (strcmp("ON", secondToken) == 0) {
 
-          substitutePointerFromType(readconf[i].value, readconf[i].valuetype,
+          substitutePointerFromType(gReadConf[i].value, gReadConf[i].valuetype,
                                     1.0);
 
         } else if (strcmp("OFF", secondToken) == 0) {
 
-          substitutePointerFromType(readconf[i].value, readconf[i].valuetype,
+          substitutePointerFromType(gReadConf[i].value, gReadConf[i].valuetype,
                                     1.0);
         } else {
-          strtolchecknum(secondToken, (int *)readconf[i].value, 10,
-                         readconf[i].valuetype);
+          strtolchecknum(secondToken, (int *)gReadConf[i].value, 10,
+                         gReadConf[i].valuetype);
         }
       }
       break;
@@ -1817,7 +1819,7 @@ BOOL luareadconfigfile(char *data) {
   return TRUE;
 }
 
-BOOL readconfigfile(char *filename) {
+BOOL readgServerConfigfile(char *filename) {
   FILE *f = NULL;
   char linebuf[256];
   int linenum = 0;
@@ -1828,12 +1830,12 @@ BOOL readconfigfile(char *filename) {
     initdot = index(hostname, '.');
     if (initdot != NULL)
       *initdot = '\0';
-    snprintf(realopenfilename, sizeof(realopenfilename), "%s.%s",
-             filename, hostname);
+    snprintf(realopenfilename, sizeof(realopenfilename), "%s.%s", filename,
+             hostname);
     f = fopen(realopenfilename, "r");
   }
   if (f == NULL) {
-    f = fopen(filename, "r"); 
+    f = fopen(filename, "r");
     if (f == NULL) {
       print("Can't open %s\n", filename);
       return FALSE;
@@ -1841,49 +1843,42 @@ BOOL readconfigfile(char *filename) {
   }
 
   while (fgets(linebuf, sizeof(linebuf), f)) {
-    char firstToken[256]; /*1    ��  ٯ  */
-    int i;                /*�����  ��*/
-    int ret;              /*�������������*/
+    char firstToken[256];
+    int i;
+    int ret;
     linenum++;
-    deleteWhiteSpace(linebuf); /* remove whitespace */
+    deleteWhiteSpace(linebuf);
     if (linebuf[0] == '#' || linebuf[0] == '\n')
-      continue; /* comment or blank line. */
+      continue;     /* comment or blank line. */
     chomp(linebuf); /* remove tail newline */
-    /* delim "=" ƥ  ��(1)�������ͼ�ë  ��*/
     ret = getStringFromIndexWithDelim(linebuf, "=", 1, firstToken,
                                       sizeof(firstToken));
     if (ret == FALSE) {
       print("Find error at %s in line %d. Ignore\n", filename, linenum);
       continue;
     }
-
-    /* readconf */
-    for (i = 0; i < arraysizeof(readconf); i++) {
-      if (strcmp(readconf[i].name, firstToken) == 0) {
-        /* match */
-        char secondToken[256]; /*2    ��  ٯ  */
-        /* delim "=" ƥ2    �������ͼ�ë  ��*/
+    for (i = 0; i < arraysizeof(gReadConf); i++) {
+      if (strcmp(gReadConf[i].name, firstToken) == 0) {
+        char secondToken[256];
         ret = getStringFromIndexWithDelim(linebuf, "=", 2, secondToken,
                                           sizeof(secondToken));
         if (ret == FALSE) {
           print("Find error at %s in line %d. Ignore", filename, linenum);
           break;
         }
-        if (readconf[i].charvalue != NULL)
-          strcpysafe(readconf[i].charvalue, readconf[i].charsize, secondToken);
-        /*NULL��������ҽ  ��ئ��*/
-        if (readconf[i].value != NULL) {
+        if (gReadConf[i].charvalue != NULL)
+          strcpysafe(gReadConf[i].charvalue, gReadConf[i].charsize,
+                     secondToken);
+        if (gReadConf[i].value != NULL) {
           if (strcmp("ON", secondToken) == 0) {
-            /*ON��������1ë  ľ��*/
-            substitutePointerFromType(readconf[i].value, readconf[i].valuetype,
-                                      1.0);
+            substitutePointerFromType(gReadConf[i].value,
+                                      gReadConf[i].valuetype, 1.0);
           } else if (strcmp("OFF", secondToken) == 0) {
-            /*OFF��������1ë  ľ��*/
-            substitutePointerFromType(readconf[i].value, readconf[i].valuetype,
-                                      1.0);
+            substitutePointerFromType(gReadConf[i].value,
+                                      gReadConf[i].valuetype, 1.0);
           } else {
-            strtolchecknum(secondToken, (int *)readconf[i].value, 10,
-                           readconf[i].valuetype);
+            strtolchecknum(secondToken, (int *)gReadConf[i].value, 10,
+                           gReadConf[i].valuetype);
           }
         }
         break;
@@ -1897,89 +1892,89 @@ BOOL readconfigfile(char *filename) {
 
 extern int JENCODE_KEY;
 unsigned int setEncodeKey(void) {
-  JENCODE_KEY = config.encodekey;
+  JENCODE_KEY = gServerConfig.encodekey;
   return JENCODE_KEY;
 }
 unsigned int setAcWBSize(void) {
-  AC_WBSIZE = config.acwbsize;
+  AC_WBSIZE = gServerConfig.acwbsize;
   return AC_WBSIZE;
 }
-unsigned int getAcwriteSize(void) { return config.acwritesize; }
-unsigned int getErrUserDownFlg(void) { return config.ErrUserDownFlg; }
+unsigned int getAcwriteSize(void) { return gServerConfig.acwritesize; }
+unsigned int getErrUserDownFlg(void) { return gServerConfig.ErrUserDownFlg; }
 
 #ifdef _DEL_DROP_GOLD
 unsigned int getGolddeletetime(void) {
-  if (config.Golddeletetime > 0)
-    return config.Golddeletetime;
+  if (gServerConfig.Golddeletetime > 0)
+    return gServerConfig.Golddeletetime;
   else
-    return config.Itemdeletetime;
+    return gServerConfig.Itemdeletetime;
 }
 void setIGolddeletetime(unsigned int interval) {
-  config.Golddeletetime = interval;
+  gServerConfig.Golddeletetime = interval;
 }
 #endif
 
 #ifdef _NEW_PLAYER_CF
 int getNewplayertrans(void) {
-  if (config.newplayertrans > 7)
+  if (gServerConfig.newplayertrans > 7)
     return 7;
-  else if (config.newplayertrans >= 0)
-    return config.newplayertrans;
+  else if (gServerConfig.newplayertrans >= 0)
+    return gServerConfig.newplayertrans;
   else
     return 0;
 }
 int getNewplayerlv(void) {
-  if (config.newplayerlv > 160)
+  if (gServerConfig.newplayerlv > 160)
     return 160;
-  else if (config.newplayerlv > 0)
-    return config.newplayerlv;
+  else if (gServerConfig.newplayerlv > 0)
+    return gServerConfig.newplayerlv;
   else
     return 0;
 }
 int getNewplayerpetlv(void) {
-  if (config.newplayerpetlv > 160)
+  if (gServerConfig.newplayerpetlv > 160)
     return 160;
-  else if (config.newplayerpetlv > 0)
-    return config.newplayerpetlv;
+  else if (gServerConfig.newplayerpetlv > 0)
+    return gServerConfig.newplayerpetlv;
   else
     return 0;
 }
 
 int getNewplayergivepet(int index) {
-  if (config.newplayergivepet[index] > 0)
-    return config.newplayergivepet[index];
+  if (gServerConfig.newplayergivepet[index] > 0)
+    return gServerConfig.newplayergivepet[index];
   else
     return -1;
 }
 
 int getNewplayergiveitem(int index) {
-  if (config.newplayergiveitem[index] > 0)
-    return config.newplayergiveitem[index];
+  if (gServerConfig.newplayergiveitem[index] > 0)
+    return gServerConfig.newplayergiveitem[index];
   else
     return -1;
 }
 
 void setNewplayergivepet(unsigned int index, unsigned int interval) {
-  config.newplayergivepet[index] = interval;
+  gServerConfig.newplayergivepet[index] = interval;
 }
 
 int getNewplayergivegold(void) {
-  if (config.newplayergivegold > 1000000)
+  if (gServerConfig.newplayergivegold > 1000000)
     return 1000000;
-  else if (config.newplayergivegold < 0)
+  else if (gServerConfig.newplayergivegold < 0)
     return 0;
   else
-    return config.newplayergivegold;
+    return gServerConfig.newplayergivegold;
 }
 int getRidePetLevel(void) {
-  if (config.ridepetlevel > 0)
-    return config.ridepetlevel;
+  if (gServerConfig.ridepetlevel > 0)
+    return gServerConfig.ridepetlevel;
   else
     return -1;
 }
 #ifdef _VIP_SERVER
 int getNewplayergivevip(void) {
-  return config.newplayerpetvip < 0 ? 0 : config.newplayerpetvip;
+  return gServerConfig.newplayerpetvip < 0 ? 0 : gServerConfig.newplayerpetvip;
 }
 #endif
 #endif
@@ -1987,7 +1982,7 @@ int getNewplayergivevip(void) {
 #ifdef _UNLAW_WARP_FLOOR
 int getUnlawwarpfloor(unsigned int index) {
   char unlawwarpfloor[256];
-  getStringFromIndexWithDelim(config.unlawwarpfloor, ",", index + 1,
+  getStringFromIndexWithDelim(gServerConfig.unlawwarpfloor, ",", index + 1,
                               unlawwarpfloor, sizeof(unlawwarpfloor));
   return atoi(unlawwarpfloor);
 }
@@ -1996,33 +1991,37 @@ int getUnlawwarpfloor(unsigned int index) {
 #ifdef _NO_JOIN_FLOOR
 int getNoJoinFloor(unsigned int index) {
   char nojoinfloor[256];
-  getStringFromIndexWithDelim(config.nojoinfloor, ",", index + 1, nojoinfloor,
-                              sizeof(nojoinfloor));
+  getStringFromIndexWithDelim(gServerConfig.nojoinfloor, ",", index + 1,
+                              nojoinfloor, sizeof(nojoinfloor));
   return atoi(nojoinfloor);
 }
 #endif
 
 #ifdef _WATCH_FLOOR
 int getWatchFloor(unsigned int index) {
-  if (config.watchfloor[index] > 0)
-    return config.watchfloor[index];
+  if (gServerConfig.watchfloor[index] > 0)
+    return gServerConfig.watchfloor[index];
   else
     return -1;
 }
-char *getWatchFloorCF(void) { return (config.watchfloor[0] > 0) ? "��" : "��"; }
+char *getWatchFloorCF(void) {
+  return (gServerConfig.watchfloor[0] > 0) ? "��" : "��";
+}
 #endif
 
 #ifdef _BATTLE_FLOOR
 int getBattleFloor(unsigned int index) {
 
   char battlefloor[256];
-  if (getStringFromIndexWithDelim(config.battlefloorcf, ",", index + 1,
+  if (getStringFromIndexWithDelim(gServerConfig.battlefloorcf, ",", index + 1,
                                   battlefloor, sizeof(battlefloor)) == TRUE)
     return atoi(battlefloor);
   else
     return -1;
 }
-char *getBattleFloorCF(void) { return (config.battlefloor > 0) ? "��" : "��"; }
+char *getBattleFloorCF(void) {
+  return (gServerConfig.battlefloor > 0) ? "��" : "��";
+}
 #endif
 
 #ifdef _ANGEL_SUMMON
@@ -2100,29 +2099,17 @@ BOOL LoadMissionList(void) {
     if (strcmp(token, "") == 0)
       break;
     strcpy(missionlist[mindex].detail, token);
-
-    // getStringFromIndexWithDelim(line, ",", 4, token, sizeof(token));
-    // if (strcmp(token, "") == 0)  break;
-    // strcpy( missionlist[mindex].bonus, token);
-
     getStringFromIndexWithDelim(line, ",", 5, token, sizeof(token));
     if (strcmp(token, "") == 0)
       break;
     missionlist[mindex].limittime = atoi(token);
-    /*
-        print("\nMISSION[%d] lv:%d ef:%s detail:%s limit:%d ", mindex,
-          missionlist[mindex].level, missionlist[mindex].eventflag,
-          missionlist[mindex].detail, missionlist[mindex].limittime );
-    */
     mission_num++;
-    // if (mission_num > MAXMISSION)  break;
   }
   fclose(fp);
   return TRUE;
 }
 
 BOOL LoadMissionCleanList() {
-  // ��ʽ... ʹ��,����,����,����
   FILE *fp;
   int listindex = 0;
   int i = 0;
@@ -2139,12 +2126,10 @@ BOOL LoadMissionCleanList() {
   {
     fp = fopen("./data/missionclean.txt", "r");
   }
-
   if (fp == NULL) {
     print("��������ļ��򿪴���\n");
     return FALSE;
   }
-
   while (1) {
     char line[1024];
     char token[1024];
@@ -2157,7 +2142,6 @@ BOOL LoadMissionCleanList() {
     }
 #endif
     chop(line);
-    // ��#Ϊע��*******
     if (line[0] == '#')
       continue;
     for (i = 0; i < strlen(line); i++) {
@@ -2166,7 +2150,6 @@ BOOL LoadMissionCleanList() {
         break;
       }
     }
-
     getStringFromIndexWithDelim(line, ",", 1, token, sizeof(token));
     if (strcmp(token, "") == 0)
       break;
@@ -2277,12 +2260,6 @@ BOOL LoadJobdailyfile(void) {
       break;
     strcpy(dailyfile[listindex].state, token);
 
-    /*print("\ndailyfile[%d] %s %s %s %s", listindex,
-      dailyfile[listindex].jobid,
-      dailyfile[listindex].rule,
-      dailyfile[listindex].explain,
-      dailyfile[listindex].state);
-    */
     listindex++;
     if (listindex >= MAXDAILYLIST)
       break;
@@ -2334,7 +2311,6 @@ BOOL LoadEXP(char *filename) {
         break;
       }
     }
-    //*************************************
     MaxLevel = MaxLevel + 1;
     if (MaxLevel >= 200)
       break;
@@ -2345,53 +2321,53 @@ BOOL LoadEXP(char *filename) {
   return TRUE;
 }
 
-char *getEXPfile(void) { return config.expfile; }
+char *getEXPfile(void) { return gServerConfig.expfile; }
 
 int getNeedLevelUpTbls(int level) { return NeedLevelUpTbls[level]; }
 
 #endif
 
 #ifdef _UNREG_NEMA
-char *getUnregname(int index) { return config.unregname[index]; }
+char *getUnregname(int index) { return gServerConfig.unregname[index]; }
 #endif
 
 #ifdef _TRANS_LEVEL_CF
 int getChartrans(void) {
-  if (config.chartrans > 6)
-    config.chartrans = 5;
-  return config.chartrans;
+  if (gServerConfig.chartrans > 6)
+    gServerConfig.chartrans = 5;
+  return gServerConfig.chartrans;
 }
 int getPettrans(void) {
-  if (config.pettrans > 2)
+  if (gServerConfig.pettrans > 2)
     return 2;
-  else if (config.pettrans < -1)
+  else if (gServerConfig.pettrans < -1)
     return -1;
-  return config.pettrans;
+  return gServerConfig.pettrans;
 }
 int getYBLevel(void) {
-  if (config.yblevel > config.maxlevel)
-    config.yblevel = config.maxlevel;
-  return config.yblevel;
+  if (gServerConfig.yblevel > gServerConfig.maxlevel)
+    gServerConfig.yblevel = gServerConfig.maxlevel;
+  return gServerConfig.yblevel;
 }
-int getMaxLevel(void) { return config.maxlevel; }
+int getMaxLevel(void) { return gServerConfig.maxlevel; }
 #endif
 
 #ifdef _POINT
-char *getPoint(void) { return (config.point > 0) ? "��" : "��"; }
-int getTransPoint(int index) { return config.transpoint[index]; }
+char *getPoint(void) { return (gServerConfig.point > 0) ? "��" : "��"; }
+int getTransPoint(int index) { return gServerConfig.transpoint[index]; }
 #endif
 
 #ifdef _PET_AND_ITEM_UP
-char *getPetup(void) { return (config.petup > 0) ? "��" : "��"; }
-char *getItemup(void) { return (config.itemup > 0) ? "��" : "��"; }
+char *getPetup(void) { return (gServerConfig.petup > 0) ? "��" : "��"; }
+char *getItemup(void) { return (gServerConfig.itemup > 0) ? "��" : "��"; }
 #endif
 #ifdef _LOOP_ANNOUNCE
-char *getLoopAnnouncePath(void) { return config.loopannouncepath; }
+char *getLoopAnnouncePath(void) { return gServerConfig.loopannouncepath; }
 int loadLoopAnnounce(void) {
   FILE *fp;
   int i = 0;
-  config.loopannouncemax = 0;
-  fp = fopen(config.loopannouncepath, "r");
+  gServerConfig.loopannouncemax = 0;
+  fp = fopen(gServerConfig.loopannouncepath, "r");
   if (fp == NULL) {
     print("�޷����ļ�\n");
     return FALSE;
@@ -2411,38 +2387,40 @@ int loadLoopAnnounce(void) {
       }
     }
     //*************************************
-    strcpy(config.loopannounce[config.loopannouncemax], line);
-    config.loopannouncemax++;
+    strcpy(gServerConfig.loopannounce[gServerConfig.loopannouncemax], line);
+    gServerConfig.loopannouncemax++;
   }
   fclose(fp);
   return TRUE;
 }
 int getLoopAnnounceTime(void) {
-  return (config.loopannouncetime < 0) ? -1 : config.loopannouncetime;
+  return (gServerConfig.loopannouncetime < 0) ? -1
+                                              : gServerConfig.loopannouncetime;
 }
 int getLoopAnnounceMax(void) {
-  return (config.loopannouncemax > 0) ? config.loopannouncemax : 0;
+  return (gServerConfig.loopannouncemax > 0) ? gServerConfig.loopannouncemax
+                                             : 0;
 }
-char *getLoopAnnounce(int index) { return config.loopannounce[index]; }
+char *getLoopAnnounce(int index) { return gServerConfig.loopannounce[index]; }
 #endif
 
 #ifdef _SKILLUPPOINT_CF
-int getSkup(void) { return (config.skup > 0) ? config.skup : 0; }
+int getSkup(void) { return (gServerConfig.skup > 0) ? gServerConfig.skup : 0; }
 #endif
 #ifdef _RIDELEVEL
-int getRideLevel(void) { return config.ridelevel; }
-int getRideTrans(void) { return config.ridetrans; }
+int getRideLevel(void) { return gServerConfig.ridelevel; }
+int getRideTrans(void) { return gServerConfig.ridetrans; }
 #endif
 #ifdef _REVLEVEL
-char *getRevLevel(void) { return (config.revlevel > 0) ? "��" : "��"; }
+char *getRevLevel(void) { return (gServerConfig.revlevel > 0) ? "��" : "��"; }
 #endif
 #ifdef _NEW_PLAYER_RIDE
 char *getPlayerRide(void) {
-  if (config.npride > 2)
+  if (gServerConfig.npride > 2)
     return "�����ͻ�����";
-  else if (config.npride == 2)
+  else if (gServerConfig.npride == 2)
     return "��������";
-  else if (config.npride == 1)
+  else if (gServerConfig.npride == 1)
     return "�����ͻ�";
   else
     return "�����������";
@@ -2450,165 +2428,166 @@ char *getPlayerRide(void) {
 #endif
 
 #ifdef _FIX_CHARLOOPS
-int getCharloops(void) { return config.charloops - 1; }
+int getCharloops(void) { return gServerConfig.charloops - 1; }
 #endif
 
 #ifdef _PLAYER_ANNOUNCE
-int getPAnnounce(void) { return max(-1, config.pannounce); }
+int getPAnnounce(void) { return max(-1, gServerConfig.pannounce); }
 #endif
 #ifdef _PLAYER_MOVE
-int getPMove(void) { return max(-1, config.pmove); }
+int getPMove(void) { return max(-1, gServerConfig.pmove); }
 #endif
 
 int getrecvbuffer(void) {
-  if (config.recvbuffer < 0)
+  if (gServerConfig.recvbuffer < 0)
     return 0;
-  else if (config.recvbuffer > 128)
+  else if (gServerConfig.recvbuffer > 128)
     return 128;
   else
-    return config.recvbuffer;
+    return gServerConfig.recvbuffer;
 }
 
 int getsendbuffer(void) {
-  if (config.sendbuffer < 0)
+  if (gServerConfig.sendbuffer < 0)
     return 0;
-  else if (config.sendbuffer > 128)
+  else if (gServerConfig.sendbuffer > 128)
     return 128;
   else
-    return config.sendbuffer;
+    return gServerConfig.sendbuffer;
 }
 
 int getrecvlowatbuffer(void) {
-  if (config.recvlowatbuffer < 0)
+  if (gServerConfig.recvlowatbuffer < 0)
     return 0;
-  else if (config.recvlowatbuffer > 1024)
+  else if (gServerConfig.recvlowatbuffer > 1024)
     return 1024;
   else
-    return config.recvlowatbuffer;
+    return gServerConfig.recvlowatbuffer;
 }
 
 int getrunlevel(void) {
-  if (config.runlevel < -20)
+  if (gServerConfig.runlevel < -20)
     return -20;
-  else if (config.runlevel > 19)
+  else if (gServerConfig.runlevel > 19)
     return 19;
   else
-    return config.runlevel;
+    return gServerConfig.runlevel;
 }
 
 #ifdef _SHOW_VIP_CF
 int getShowVip(void) {
-  if (config.showvip > 2)
+  if (gServerConfig.showvip > 2)
     return 2;
-  else if (config.showvip < 0)
+  else if (gServerConfig.showvip < 0)
     return 0;
   else
-    return config.showvip;
+    return gServerConfig.showvip;
 }
 #endif
 
 #ifdef _PLAYER_NUM
-int getPlayerNum(void) { return config.playernum; }
-void setPlayerNum(int num) { config.playernum = num; }
+int getPlayerNum(void) { return gServerConfig.playernum; }
+void setPlayerNum(int num) { gServerConfig.playernum = num; }
 #endif
 
 #ifdef _BATTLE_GOLD
 int getBattleGold(void) {
-  if (config.battlegold < 0)
+  if (gServerConfig.battlegold < 0)
     return 0;
-  else if (config.battlegold > 100)
+  else if (gServerConfig.battlegold > 100)
     return 100;
   else
-    return config.battlegold;
+    return gServerConfig.battlegold;
 }
 #endif
 
 #ifdef _ANGEL_TIME
 int getAngelPlayerTime(void) {
-  return (config.angelplayertime > 1) ? config.angelplayertime : 1;
+  return (gServerConfig.angelplayertime > 1) ? gServerConfig.angelplayertime
+                                             : 1;
 }
 int getAngelPlayerMun(void) {
-  return (config.angelplayermun > 2) ? config.angelplayermun : 2;
+  return (gServerConfig.angelplayermun > 2) ? gServerConfig.angelplayermun : 2;
 }
 #endif
 
 #ifdef _RIDEMODE_20
 int getRideMode(void) {
-  if (config.ridemode < 0)
-    config.ridemode = 0;
-  return config.ridemode;
+  if (gServerConfig.ridemode < 0)
+    gServerConfig.ridemode = 0;
+  return gServerConfig.ridemode;
 }
 #endif
 #ifdef _FM_POINT_PK
-char *getFmPointPK(void) { return (config.fmpointpk > 0) ? "��" : "��"; }
+char *getFmPointPK(void) { return (gServerConfig.fmpointpk > 0) ? "��" : "��"; }
 #endif
 #ifdef _ENEMY_ACTION
 int getEnemyAction(void) {
-  if (config.enemyact > 100)
+  if (gServerConfig.enemyact > 100)
     return 100;
-  else if (config.enemyact < 1)
+  else if (gServerConfig.enemyact < 1)
     return 1;
   else
-    return config.enemyact;
+    return gServerConfig.enemyact;
 }
 #endif
 
 #ifdef _FUSIONBEIT_TRANS
 int getFusionbeitTrans(void) {
-  if (config.fusionbeittrans > 2)
+  if (gServerConfig.fusionbeittrans > 2)
     return 2;
-  else if (config.fusionbeittrans < 0)
+  else if (gServerConfig.fusionbeittrans < 0)
     return 0;
   else
-    return config.fusionbeittrans;
+    return gServerConfig.fusionbeittrans;
 }
 #endif
-int getCpuUse(void) { return config.cpuuse; }
+int getCpuUse(void) { return gServerConfig.cpuuse; }
 #ifdef _CHECK_PEPEAT
-int getCheckRepeat(void) { return (config.CheckRepeat > 0) ? 1 : 0; }
+int getCheckRepeat(void) { return (gServerConfig.CheckRepeat > 0) ? 1 : 0; }
 #endif
 
 #ifdef _FM_JOINLIMIT
-int getJoinFamilyTime(void) { return config.joinfamilytime; }
+int getJoinFamilyTime(void) { return gServerConfig.joinfamilytime; }
 #endif
 
 #ifdef _MAP_HEALERALLHEAL
 int getMapHeal(int index) {
   char mapheal[256];
-  getStringFromIndexWithDelim(config.mapheal, ",", index + 1, mapheal,
+  getStringFromIndexWithDelim(gServerConfig.mapheal, ",", index + 1, mapheal,
                               sizeof(mapheal));
   return atoi(mapheal);
 }
 #endif
 
 #ifdef _THE_WORLD_SEND
-int getTheWorldTrans() { return config.thewordtrans; }
-int getTheWorldLevel() { return config.thewordlevel; }
-int getTheWorldSend() { return config.thewordsend; }
+int getTheWorldTrans() { return gServerConfig.thewordtrans; }
+int getTheWorldLevel() { return gServerConfig.thewordlevel; }
+int getTheWorldSend() { return gServerConfig.thewordsend; }
 #endif
 
 #ifdef _LOGIN_DISPLAY
-int getLoginDisplay() { return config.logindisplay; }
+int getLoginDisplay() { return gServerConfig.logindisplay; }
 #endif
 
 #ifdef _VIP_POINT_PK
 int getVipPointPK(int index) {
   char vippointpk[256];
-  if (getStringFromIndexWithDelim(config.vippointpk, ",", index + 1, vippointpk,
-                                  sizeof(vippointpk)) == TRUE) {
+  if (getStringFromIndexWithDelim(gServerConfig.vippointpk, ",", index + 1,
+                                  vippointpk, sizeof(vippointpk)) == TRUE) {
     return atoi(vippointpk);
   } else {
     return -1;
   }
 }
-float getVipPointPKCost(void) { return config.vippointpkcost / 100.00; }
+float getVipPointPKCost(void) { return gServerConfig.vippointpkcost / 100.00; }
 #endif
 
 #ifdef _SPECIAL_MAP
 int getSpecialMap(int index) {
   char specialmap[256];
-  if (getStringFromIndexWithDelim(config.specialmap, ",", index + 1, specialmap,
-                                  sizeof(specialmap)) == TRUE) {
+  if (getStringFromIndexWithDelim(gServerConfig.specialmap, ",", index + 1,
+                                  specialmap, sizeof(specialmap)) == TRUE) {
     return atoi(specialmap);
   } else {
     return -1;
@@ -2618,26 +2597,26 @@ int getSpecialMap(int index) {
 
 #ifdef _NEW_AUTO_PK
 int getAutoPkTime() {
-  if (config.autopk > 23)
-    config.autopk = 23;
-  if (config.autopk < 0)
-    config.autopk = -1;
-  return config.autopk;
+  if (gServerConfig.autopk > 23)
+    gServerConfig.autopk = 23;
+  if (gServerConfig.autopk < 0)
+    gServerConfig.autopk = -1;
+  return gServerConfig.autopk;
 }
-int getAutoPkTrans() { return config.autopktrans; }
+int getAutoPkTrans() { return gServerConfig.autopktrans; }
 
-int getAutoPkLv() { return config.autopklv; }
+int getAutoPkLv() { return gServerConfig.autopklv; }
 #ifdef _FORMULATE_AUTO_PK
-int getAutoPkPoint() { return config.autopkpoint; }
-int getKillPoint() { return config.killpoint; }
+int getAutoPkPoint() { return gServerConfig.autopkpoint; }
+int getKillPoint() { return gServerConfig.killpoint; }
 #endif
 #endif
 
 #ifdef _AUTO_DEL_PET
 int getAutoDelPet(int index) {
   char autodelpet[256];
-  getStringFromIndexWithDelim(config.autodelpet, ",", index + 1, autodelpet,
-                              sizeof(autodelpet));
+  getStringFromIndexWithDelim(gServerConfig.autodelpet, ",", index + 1,
+                              autodelpet, sizeof(autodelpet));
   return atoi(autodelpet);
 }
 #endif
@@ -2645,43 +2624,43 @@ int getAutoDelPet(int index) {
 #ifdef _AUTO_DEL_ITEM
 int getAutoDelItem(int index) {
   char autodelitem[256];
-  getStringFromIndexWithDelim(config.autodelitem, ",", index + 1, autodelitem,
-                              sizeof(autodelitem));
+  getStringFromIndexWithDelim(gServerConfig.autodelitem, ",", index + 1,
+                              autodelitem, sizeof(autodelitem));
   return atoi(autodelitem);
 }
 #endif
 
 #ifdef _BT_PET
-int getBtPet() { return config.btpet; }
+int getBtPet() { return gServerConfig.btpet; }
 #endif
 
 #ifdef _BT_ITEM
-int getBtItem() { return config.btitem; }
+int getBtItem() { return gServerConfig.btitem; }
 #endif
 
 #ifdef _LUCK_STAR
 int getLuckStarTime() {
-  if (config.luckstartime < 1)
-    config.luckstartime = 1;
-  return config.luckstartime;
+  if (gServerConfig.luckstartime < 1)
+    gServerConfig.luckstartime = 1;
+  return gServerConfig.luckstartime;
 }
-int getLuckStarChances() { return config.luckstarchances; }
+int getLuckStarChances() { return gServerConfig.luckstarchances; }
 #endif
 
 #ifdef _BATTLE_GETITEM_RATE
 int getBattleGetItemRate(int index) {
   char battlegetitemrate[256];
-  getStringFromIndexWithDelim(config.battlegetitemrate, ",", index + 1,
+  getStringFromIndexWithDelim(gServerConfig.battlegetitemrate, ",", index + 1,
                               battlegetitemrate, sizeof(battlegetitemrate));
   return atoi(battlegetitemrate);
 }
-int getBattleGetItemRateMap() { return config.battlegetitemratemap; }
+int getBattleGetItemRateMap() { return gServerConfig.battlegetitemratemap; }
 #endif
 
 #ifdef _UNLAW_THIS_LOGOUT
 int getUnlawThisLogout(int index) {
   char unlawthislogout[256];
-  getStringFromIndexWithDelim(config.unlawthislogout, ",", index + 1,
+  getStringFromIndexWithDelim(gServerConfig.unlawthislogout, ",", index + 1,
                               unlawthislogout, sizeof(unlawthislogout));
   return atoi(unlawthislogout);
 }
@@ -2690,32 +2669,32 @@ int getUnlawThisLogout(int index) {
 #ifdef _TRANS_POINT_UP
 int getTransPoinUP(int index) {
   char transpointup[256];
-  getStringFromIndexWithDelim(config.transpointup, ",", index + 1, transpointup,
-                              sizeof(transpointup));
+  getStringFromIndexWithDelim(gServerConfig.transpointup, ",", index + 1,
+                              transpointup, sizeof(transpointup));
   return atoi(transpointup);
 }
 #endif
 
 #ifdef _OPEN_STW_SEND
 int getOpenStwSendType(void) {
-  if (config.stwsendtype < -1) {
-    config.stwsendtype = -1;
-  } else if (config.stwsendtype > 5) {
-    config.stwsendtype = 5;
+  if (gServerConfig.stwsendtype < -1) {
+    gServerConfig.stwsendtype = -1;
+  } else if (gServerConfig.stwsendtype > 5) {
+    gServerConfig.stwsendtype = 5;
   }
-  return config.stwsendtype;
+  return gServerConfig.stwsendtype;
 }
-int getOpenStwSendPoint(void) { return max(1, config.stwsendpoint); }
+int getOpenStwSendPoint(void) { return max(1, gServerConfig.stwsendpoint); }
 
 #endif
 
 #ifdef _POOL_ITEM_BUG
-int getPoolItemBug(void) { return config.poolitembug; }
+int getPoolItemBug(void) { return gServerConfig.poolitembug; }
 int getPoolItem(int id) {
   if (id < 0)
     id = 0;
   char poolitem[256];
-  if (getStringFromIndexWithDelim(config.poolitem, ",", id + 1, poolitem,
+  if (getStringFromIndexWithDelim(gServerConfig.poolitem, ",", id + 1, poolitem,
                                   sizeof(poolitem)) == TRUE) {
     return atoi(poolitem);
   } else {
@@ -2726,9 +2705,9 @@ int getPoolItem(int id) {
 #endif
 
 #ifdef _NO_STW_ENEMY
-int getNoSTWNenemy(void) { return config.nostwenemy; }
+int getNoSTWNenemy(void) { return gServerConfig.nostwenemy; }
 
-int getNoSTWNenemyPoint(void) { return config.nostwenemypoint; }
+int getNoSTWNenemyPoint(void) { return gServerConfig.nostwenemypoint; }
 #endif
 
 #ifdef _NEW_STREET_VENDOR
@@ -2736,7 +2715,7 @@ int getStreetVendor(int id) {
   if (id < 0)
     id = 0;
   char streetvendorpoint[256];
-  if (getStringFromIndexWithDelim(config.streetvendorpoint, ",", id + 1,
+  if (getStringFromIndexWithDelim(gServerConfig.streetvendorpoint, ",", id + 1,
                                   streetvendorpoint,
                                   sizeof(streetvendorpoint)) == TRUE) {
     return atoi(streetvendorpoint);
@@ -2748,16 +2727,17 @@ int getStreetVendor(int id) {
 #endif
 
 #ifdef _ITEM_PET_LOCKED
-int getItemPetLocked(void) { return config.itampetlocked; }
+int getItemPetLocked(void) { return gServerConfig.itampetlocked; }
 #endif
 
 #ifdef _TALK_SAVE
-int getSaveFame(void) { return max(0, config.savefame * 100); }
+int getSaveFame(void) { return max(0, gServerConfig.savefame * 100); }
 #endif
 
 #ifdef _TALK_CHECK
 int getTalkCheck(void) {
-  return (rand() % max(10, config.talkcheckmax)) + max(10, config.talkcheckmin);
+  return (rand() % max(10, gServerConfig.talkcheckmax)) +
+         max(10, gServerConfig.talkcheckmin);
 }
 #endif
 
@@ -2765,8 +2745,8 @@ int getTalkCheck(void) {
 BOOL getDisableProfessionSkill(int floor) {
   int i = 1;
   char buff[64];
-  while (getStringFromIndexWithDelim(config.disableprofessionskill, ",", i,
-                                     buff, sizeof(buff))) {
+  while (getStringFromIndexWithDelim(gServerConfig.disableprofessionskill, ",",
+                                     i, buff, sizeof(buff))) {
     if (atoi(buff) == floor)
       return TRUE;
     i++;
@@ -2775,37 +2755,37 @@ BOOL getDisableProfessionSkill(int floor) {
 }
 #endif
 #ifdef _ALL_SERV_SEND
-int getAllServTrans() { return config.allservtrans; }
-int getAllServLevel() { return config.allservlevel; }
-int getAllServSend() { return config.allservsend; }
+int getAllServTrans() { return gServerConfig.allservtrans; }
+int getAllServLevel() { return gServerConfig.allservlevel; }
+int getAllServSend() { return gServerConfig.allservsend; }
 #endif
 #ifdef _PET_TRANS_ABILITY
 int getPetTransAbility() {
-  if (config.pettransability <= 0)
-    config.pettransability = 0;
-  return config.pettransability;
+  if (gServerConfig.pettransability <= 0)
+    gServerConfig.pettransability = 0;
+  return gServerConfig.pettransability;
 }
 int getPetTransAbility1() {
-  if (config.pettransability1 <= 0)
-    config.pettransability1 = 150;
-  return config.pettransability1;
+  if (gServerConfig.pettransability1 <= 0)
+    gServerConfig.pettransability1 = 150;
+  return gServerConfig.pettransability1;
 }
 int getPetTransAbility2() {
-  if (config.pettransability2 <= 0)
-    config.pettransability2 = 200;
-  return config.pettransability2;
+  if (gServerConfig.pettransability2 <= 0)
+    gServerConfig.pettransability2 = 200;
+  return gServerConfig.pettransability2;
 }
 #endif
 
 #ifdef _NEED_ITEM_ENEMY
-int getDelNeedItem() { return config.delneeditem; }
+int getDelNeedItem() { return gServerConfig.delneeditem; }
 #endif
 
 #ifdef _NOT_ESCAPE
 int getNotEscape(int index) {
   char notescape[256];
-  if (getStringFromIndexWithDelim(config.notescape, ",", index + 1, notescape,
-                                  sizeof(notescape)) == TRUE) {
+  if (getStringFromIndexWithDelim(gServerConfig.notescape, ",", index + 1,
+                                  notescape, sizeof(notescape)) == TRUE) {
     return atoi(notescape);
   } else {
     return -1;
@@ -2816,7 +2796,7 @@ int getNotEscape(int index) {
 #ifdef _PLAYER_OVERLAP_PK
 int getPlayerOverlapPk(int index) {
   char playeroverlappk[256];
-  if (getStringFromIndexWithDelim(config.playeroverlappk, ",", index + 1,
+  if (getStringFromIndexWithDelim(gServerConfig.playeroverlappk, ",", index + 1,
                                   playeroverlappk,
                                   sizeof(playeroverlappk)) == TRUE) {
     return atoi(playeroverlappk);
@@ -2827,26 +2807,26 @@ int getPlayerOverlapPk(int index) {
 #endif
 
 #ifdef _FIMALY_PK_TIME
-int getFimalyPkTime() { return config.fimalypktime; }
+int getFimalyPkTime() { return gServerConfig.fimalypktime; }
 #endif
 
 #ifdef _PETSKILL_SHOP_LUA
-char *getFreePetSkillShopPath() { return config.freepetskillshoppath; }
+char *getFreePetSkillShopPath() { return gServerConfig.freepetskillshoppath; }
 #endif
 
 #ifdef _CANCEL_ANGLE_TRANS
-int getCancelAngleTrans() { return config.cancelanlgetrans; }
+int getCancelAngleTrans() { return gServerConfig.cancelanlgetrans; }
 #endif
 
 #ifdef _VIP_BATTLE_EXP
-int getVipBattleexp() { return config.vipbattleexp; }
+int getVipBattleexp() { return gServerConfig.vipbattleexp; }
 #endif
 
 #ifdef _NO_HELP_MAP
 int getNoHelpMap(int index) {
   char nohelpmap[256];
-  if (getStringFromIndexWithDelim(config.nohelpmap, ",", index + 1, nohelpmap,
-                                  sizeof(nohelpmap)) == TRUE) {
+  if (getStringFromIndexWithDelim(gServerConfig.nohelpmap, ",", index + 1,
+                                  nohelpmap, sizeof(nohelpmap)) == TRUE) {
     return atoi(nohelpmap);
   } else {
     return -1;
@@ -2855,15 +2835,15 @@ int getNoHelpMap(int index) {
 #endif
 
 #ifdef _BATTLE_TIME
-int getBattleTime() { return config.battletime; }
+int getBattleTime() { return gServerConfig.battletime; }
 #endif
 
 #ifdef _SAME_IP_ONLINE_NUM
-int getSameIpOnlineNum() { return config.sameiponlinenum; }
+int getSameIpOnlineNum() { return gServerConfig.sameiponlinenum; }
 #endif
 
 #ifdef _STREET_VENDOR_TRANS
-int getStreetVendorTrans() { return config.streetvendortrans; }
+int getStreetVendorTrans() { return gServerConfig.streetvendortrans; }
 #endif
 
 #ifdef _CHECK_SEVER_IP
@@ -2884,7 +2864,7 @@ int checkServerIp(unsigned int ip) {
 
   sprintf(cliip, "%d.%d.%d.%d", a, b, c, d);
 
-  while (getStringFromIndexWithDelim(config.serverip, ",", i++, serverip,
+  while (getStringFromIndexWithDelim(gServerConfig.serverip, ",", i++, serverip,
                                      sizeof(serverip)) == TRUE) {
     if (strcmp(cliip, serverip) == 0) {
       return TRUE;
@@ -2897,8 +2877,8 @@ int checkServerIp(unsigned int ip) {
 
 #ifdef _DAMMAGE_CALC
 int getDamageCalc() {
-  if (config.dammagecalc > 0) {
-    return config.dammagecalc;
+  if (gServerConfig.dammagecalc > 0) {
+    return gServerConfig.dammagecalc;
   } else {
     return 70;
   }
@@ -2906,13 +2886,13 @@ int getDamageCalc() {
 #endif
 
 #ifdef _PET_ENEMY_DEVELOP_UP
-int getPetEnemyDevelopUp() { return config.PetEnemyDevelopUp; }
+int getPetEnemyDevelopUp() { return gServerConfig.PetEnemyDevelopUp; }
 #endif
 
 #ifdef _FIRST_LOCK_ITEM
 int getFirstLockItem(int index) {
   char FirstLockItem[256];
-  if (getStringFromIndexWithDelim(config.FirstLockItem, ",", index + 1,
+  if (getStringFromIndexWithDelim(gServerConfig.FirstLockItem, ",", index + 1,
                                   FirstLockItem,
                                   sizeof(FirstLockItem)) == TRUE) {
     return atoi(FirstLockItem);
@@ -2921,58 +2901,56 @@ int getFirstLockItem(int index) {
   }
 }
 #endif
-int getConnectnum() { return config.Connectnum; }
+int getConnectnum() { return gServerConfig.Connectnum; }
 
 #ifdef _PETSKILL_NEW_PASSIVE
 int getAutoGetSkill(void) {
-  if (config.autogetskill == 1)
+  if (gServerConfig.autogetskill == 1)
     return 1;
 
   return 0;
 }
 
-int getSkillFusion(void) { return config.skillfusion; }
+int getSkillFusion(void) { return gServerConfig.skillfusion; }
 
 int getSkillCount(void) {
-  if (config.skillcount < 1 || config.skillcount > 6)
+  if (gServerConfig.skillcount < 1 || gServerConfig.skillcount > 6)
     return 1;
-  return config.skillcount;
+  return gServerConfig.skillcount;
 }
 
 // ��ü������ɵ�λ��
 int getSkillPos(void) {
-  if (config.getskillpos < 1 || config.getskillpos > 7)
+  if (gServerConfig.getskillpos < 1 || gServerConfig.getskillpos > 7)
     return 6;
-  return config.getskillpos - 1;
+  return gServerConfig.getskillpos - 1;
 }
 
-// ���ݼ��ܵȼ����ϰ�ø���
 int getSkillProb(int skillLevel) {
   char prob[20];
-  if (getStringFromIndexWithDelim(config.skillinfolv[skillLevel - 1], "|", 1,
-                                  prob, sizeof(prob)) == FALSE)
+  if (getStringFromIndexWithDelim(gServerConfig.skillinfolv[skillLevel - 1],
+                                  "|", 1, prob, sizeof(prob)) == FALSE)
     return 0;
   return atoi(prob);
 }
 
-// ���ݼ��ܵĵȼ���ó�ʼ���߽�β�ļ������ skillLevel���ܵȼ�  start 1ʼ2��
 int getSkillRange(int skillLevel, int start) {
   char index[20];
-  if (getStringFromIndexWithDelim(config.skillinfolv[skillLevel - 1], "|",
-                                  start + 1, index, sizeof(index)) == FALSE)
-    return -1;
-  return atoi(index);
-}
-
-// ����ںϳ���ķ�Χ PETID
-int getFusionRange(int start) {
-  char index[20];
-  if (getStringFromIndexWithDelim(config.fusionrange, "|", start, index,
+  if (getStringFromIndexWithDelim(gServerConfig.skillinfolv[skillLevel - 1],
+                                  "|", start + 1, index,
                                   sizeof(index)) == FALSE)
     return -1;
   return atoi(index);
 }
-// �Ƿ����ںϳ���
+
+int getFusionRange(int start) {
+  char index[20];
+  if (getStringFromIndexWithDelim(gServerConfig.fusionrange, "|", start, index,
+                                  sizeof(index)) == FALSE)
+    return -1;
+  return atoi(index);
+}
+
 int isFusionPet(int petId) {
   if ((petId >= getFusionRange(1) && petId <= getFusionRange(2)) ||
       petId == 1045)
@@ -2980,7 +2958,6 @@ int isFusionPet(int petId) {
   return 0;
 }
 
-// ����Ǳ������ܷ���ֵΪ���� ����Ϊ����
 int isPassiveSkill(int skillId) {
   if (skillId < 0)
     return -1;
@@ -2988,10 +2965,10 @@ int isPassiveSkill(int skillId) {
   char end[20];
   int i;
   for (i = 0; i < 5; i++) {
-    if (getStringFromIndexWithDelim(config.skillinfolv[i], "|", 2, start,
+    if (getStringFromIndexWithDelim(gServerConfig.skillinfolv[i], "|", 2, start,
                                     sizeof(start)) == FALSE)
       return -1;
-    if (getStringFromIndexWithDelim(config.skillinfolv[i], "|", 3, end,
+    if (getStringFromIndexWithDelim(gServerConfig.skillinfolv[i], "|", 3, end,
                                     sizeof(end)) == FALSE)
       return -1;
     if (skillId >= atoi(start) && skillId <= atoi(end))
@@ -2999,7 +2976,7 @@ int isPassiveSkill(int skillId) {
   }
   return -1;
 }
-// ����Ǳ������ܷ���ֵΪ���ܵĵȼ�   ����Ϊ����
+
 int getSkillLevel(int skillId) {
   if (skillId < 0)
     return -1;
@@ -3007,10 +2984,10 @@ int getSkillLevel(int skillId) {
   char end[20];
   int i;
   for (i = 0; i < 5; i++) {
-    if (getStringFromIndexWithDelim(config.skillinfolv[i], "|", 2, start,
+    if (getStringFromIndexWithDelim(gServerConfig.skillinfolv[i], "|", 2, start,
                                     sizeof(start)) == FALSE)
       return -1;
-    if (getStringFromIndexWithDelim(config.skillinfolv[i], "|", 3, end,
+    if (getStringFromIndexWithDelim(gServerConfig.skillinfolv[i], "|", 3, end,
                                     sizeof(end)) == FALSE)
       return -1;
     if (skillId >= atoi(start) && skillId <= atoi(end))
@@ -3018,14 +2995,13 @@ int getSkillLevel(int skillId) {
   }
   return -1;
 }
-// ���ݵȼ������ñ�������
+
 int getRandSkillByLevel(int skillLevel) {
   if (skillLevel < 0 || skillLevel > 5)
     return -1;
   return RAND(getSkillRange(skillLevel, 1), getSkillRange(skillLevel, 2));
 }
 
-// ������һö��������
 int getRandSkill(void) {
   int i, k;
   int prob[5];
@@ -3050,7 +3026,7 @@ int getRandSkill(void) {
 #endif
 #ifdef _SHARE_EXP
 int getExpShare(void) {
-  if (config.expshare == 1)
+  if (gServerConfig.expshare == 1)
     return 1;
   else
     return 0;
@@ -3058,38 +3034,38 @@ int getExpShare(void) {
 #endif
 #ifdef _DEFEND_BIGBAO
 int getBigBao(void) {
-  if (config.bigbao <= 0)
+  if (gServerConfig.bigbao <= 0)
     return 1024;
-  return config.bigbao;
+  return gServerConfig.bigbao;
 }
 int getBigBao2(void) {
-  if (config.bigbao2 <= 0)
+  if (gServerConfig.bigbao2 <= 0)
     return 1024;
-  return config.bigbao2;
+  return gServerConfig.bigbao2;
 }
 #endif
 
 #ifdef _MO_SHOW_DEBUG
-int isDebug(void) { return config.isdebug; }
+int isDebug(void) { return gServerConfig.isdebug; }
 #endif
 #ifdef _CHAR_LOOP_TIME
-int getCharLoopTime() { return config.charlooptime; }
+int getCharLoopTime() { return gServerConfig.charlooptime; }
 #endif
 #ifdef _MO_RELOAD_NPC
 int getReloadNpcTime(void) {
-  if (config.reloadnpctime <= 0)
+  if (gServerConfig.reloadnpctime <= 0)
     return 0;
-  return config.reloadnpctime;
+  return gServerConfig.reloadnpctime;
 }
 
 int getReloadNpcType(void) {
-  if (config.reloadnpctype <= 0)
+  if (gServerConfig.reloadnpctype <= 0)
     return 0;
   return 1;
 }
 #endif
 #ifdef _JZ_NEWSCRIPT_LUA
-char *getLuaFile(void) { return config.luafile; }
+char *getLuaFile(void) { return gServerConfig.luafile; }
 BOOL ITEM_LuaInit(const char *_FileName) {
   if (strlen(_FileName) != 0)
     return TRUE;
@@ -3098,19 +3074,18 @@ BOOL ITEM_LuaInit(const char *_FileName) {
 #endif
 
 #ifdef _ITEM_LUA
-const char *getitemluafile(void) { return config.itemluafile; }
+const char *getitemluafile(void) { return gServerConfig.itemluafile; }
 #endif
 #ifdef _MO_LNS_NLSUOXU
 int GetConfigLineType(char *TM_ConfigName) {
   int i;
-
-  for (i = 0; i < arraysizeof(readconf); i++) {
-    if (strcmp(readconf[i].name, TM_ConfigName) == 0)
+  for (i = 0; i < arraysizeof(gReadConf); i++) {
+    if (strcmp(gReadConf[i].name, TM_ConfigName) == 0)
       break;
   }
-  if (i == arraysizeof(readconf))
+  if (i == arraysizeof(gReadConf))
     return -1;
-  switch (readconf[i].valuetype) {
+  switch (gReadConf[i].valuetype) {
   case CHAR:
     return 0;
     break;
@@ -3127,38 +3102,32 @@ int GetConfigLineType(char *TM_ConfigName) {
 }
 
 char *GetConfigLineVal(char *TM_ConfigName) {
-  char *filename = getConfigfilename();
+  const char *filename = getConfigFilename();
   FILE *f = NULL;
   char linebuf[256];
   int linenum = 0;
-  char realopenfilename[256]; /*    �˱�open ���°����̻�  */
+  char realopenfilename[256];
   char secondToken[256];
   char hostname[128];
 
   if (f == NULL) {
-    f = fopen(filename, "r"); /* �����̻Ｐ������ */
+    f = fopen(filename, "r");
     if (f == NULL) {
       print("Can't open %s\n", filename);
       return FALSE;
     }
   }
   while (fgets(linebuf, sizeof(linebuf), f)) {
-    char firstToken[256]; /*1    ��  ٯ  */
-    int i;                /*�����  ��*/
-    int ret;              /*�������������*/
-
+    char firstToken[256];
+    int i;
+    int ret;
     linenum++;
-
     deleteWhiteSpace(linebuf); /* remove whitespace    */
-
     if (linebuf[0] == '#')
       continue; /* comment */
     if (linebuf[0] == '\n')
-      continue; /* none    */
-
+      continue;     /* none    */
     chomp(linebuf); /* remove tail newline  */
-
-    /* delim "=" ƥ  ��(1)�������ͼ�ë  ��*/
     ret = getStringFromIndexWithDelim(linebuf, "=", 1, firstToken,
                                       sizeof(firstToken));
     if (ret == FALSE) {
@@ -3167,15 +3136,10 @@ char *GetConfigLineVal(char *TM_ConfigName) {
     }
     if (strcmp(firstToken, TM_ConfigName) != 0)
       continue;
-    /* readconf ��������ƥ����� */
-    for (i = 0; i < arraysizeof(readconf); i++) {
-      if (strcmp(readconf[i].name, firstToken) == 0) {
-        /* match */
-        /* delim "=" ƥ2    �������ͼ�ë  ��*/
+    for (i = 0; i < arraysizeof(gReadConf); i++) {
+      if (strcmp(gReadConf[i].name, firstToken) == 0) {
         ret = getStringFromIndexWithDelim(linebuf, "=", 2, secondToken,
                                           sizeof(secondToken));
-
-        /* NULL  ٯ��������ëƩ���� */
         if (ret == FALSE) {
           print("Find error at %s in line %d. Ignore", filename, linenum);
           break;
@@ -3191,73 +3155,73 @@ char *GetConfigLineVal(char *TM_ConfigName) {
   return NULL;
 }
 
-int getCopymapstartingID(void) { return config.mapstart; }
+int getCopymapstartingID(void) { return gServerConfig.mapstart; }
 #endif
 #ifdef _ROOKIE_ITEM
 unsigned int getRookieItem(int index) {
-  if (config.rookieitem[index] > 0)
-    return config.rookieitem[index];
+  if (gServerConfig.rookieitem[index] > 0)
+    return gServerConfig.rookieitem[index];
   return 0;
 }
 #endif
 #ifdef _NO_TRANS_ITEM
-unsigned int getNoTransItem(void) { return config.notransitem; }
+unsigned int getNoTransItem(void) { return gServerConfig.notransitem; }
 #endif
 #ifdef _MAX_MERGE_LEVEL
-unsigned int getMaxMergeLevel(void) { return config.maxmergelevel; }
+unsigned int getMaxMergeLevel(void) { return gServerConfig.maxmergelevel; }
 #endif
 #ifdef _NO_ATTACK
-int getAttTime(void) { return config.atttime; }
-int getAttSafeTime(void) { return config.attsafetime; }
-int getAttCnt(void) { return config.attcnt; }
-int getLateTime(void) { return config.latetime; }
-int getAttDmeTime(void) { return config.attdmetime; }
-int getAttDmeCnt(void) { return config.attdmecnt; }
+int getAttTime(void) { return gServerConfig.atttime; }
+int getAttSafeTime(void) { return gServerConfig.attsafetime; }
+int getAttCnt(void) { return gServerConfig.attcnt; }
+int getLateTime(void) { return gServerConfig.latetime; }
+int getAttDmeTime(void) { return gServerConfig.attdmetime; }
+int getAttDmeCnt(void) { return gServerConfig.attdmecnt; }
 #endif
 char *getNoAttIp(int num) {
   if (num < 0)
     num = 0;
   else if (num > 4)
     num = 4;
-  return config.noattip[num];
+  return gServerConfig.noattip[num];
 }
 #ifdef _NO_FULLPLAYER_ATT
-int getNoFullPlayer(void) { return config.nofullplayer; }
-int getNoFull2Player(void) { return config.nofull2player; }
+int getNoFullPlayer(void) { return gServerConfig.nofullplayer; }
+int getNoFull2Player(void) { return gServerConfig.nofull2player; }
 int getNoCdkeyPlayer(void) {
-  if (config.nocdkeyplayer < 0 || config.nocdkeyplayer > 2000)
+  if (gServerConfig.nocdkeyplayer < 0 || gServerConfig.nocdkeyplayer > 2000)
     return 0;
-  return config.nocdkeyplayer;
+  return gServerConfig.nocdkeyplayer;
 }
 int getNoCdkeyMode(void) {
-  if (config.nocdkeymode < 0 || config.nocdkeymode > 2)
+  if (gServerConfig.nocdkeymode < 0 || gServerConfig.nocdkeymode > 2)
     return 0;
-  return config.nocdkeymode;
+  return gServerConfig.nocdkeymode;
 }
 int getNoCdkeyType(void) {
-  if (config.nocdkeytype < 0 || config.nocdkeytype > 2)
+  if (gServerConfig.nocdkeytype < 0 || gServerConfig.nocdkeytype > 2)
     return 0;
-  return config.nocdkeytype;
+  return gServerConfig.nocdkeytype;
 }
-int getNoFullTime(void) { return config.nofulltime; }
-int getFengType(void) { return config.fengtype; }
-int getNoFullEndPlayer(void) { return config.nofullendplayer; }
-int getNoFullEndTime(void) { return config.nofullendtime; }
-int getManRenNum(void) { return config.manrennum; }
+int getNoFullTime(void) { return gServerConfig.nofulltime; }
+int getFengType(void) { return gServerConfig.fengtype; }
+int getNoFullEndPlayer(void) { return gServerConfig.nofullendplayer; }
+int getNoFullEndTime(void) { return gServerConfig.nofullendtime; }
+int getManRenNum(void) { return gServerConfig.manrennum; }
 #endif
 
 int getLockType(void) {
-  if (config.locktype <= 0)
+  if (gServerConfig.locktype <= 0)
     return 0;
-  return config.locktype;
+  return gServerConfig.locktype;
 }
 
 #ifdef _NEW_FUNC_DECRYPT
-unsigned int getAllowerrornum2(void) { return config.allowerrornum2; }
+unsigned int getAllowerrornum2(void) { return gServerConfig.allowerrornum2; }
 #endif
 #ifdef _MO_LOGIN_NO_KICK
 int getLoginNoKick(void) {
-  if (config.loginnokick == 1)
+  if (gServerConfig.loginnokick == 1)
     return 1;
   return 0;
 }
@@ -3266,7 +3230,7 @@ int getLoginNoKick(void) {
 #ifdef _MO_ILLEGAL_NAME
 char *getIllegalName(int index) {
   char illegalname[256];
-  if (getStringFromIndexWithDelim(config.illegalname, ",", index + 1,
+  if (getStringFromIndexWithDelim(gServerConfig.illegalname, ",", index + 1,
                                   illegalname, sizeof(illegalname)) == TRUE) {
     return illegalname;
   } else {
@@ -3278,7 +3242,7 @@ char *getIllegalName(int index) {
 #ifdef _NO_USE_PACKET_MAP
 int getNoPacketMap(int index) {
   char NoPacketMap[256];
-  if (getStringFromIndexWithDelim(config.nousepacketmap, ",", index + 1,
+  if (getStringFromIndexWithDelim(gServerConfig.nousepacketmap, ",", index + 1,
                                   NoPacketMap, sizeof(NoPacketMap)) == TRUE) {
     return atoi(NoPacketMap);
   } else {
@@ -3289,7 +3253,7 @@ int getNoPacketMap(int index) {
 #ifdef _NO_USE_MAGIC_MAP
 int getNoMagicMap(int index) {
   char NoMagicMap[256];
-  if (getStringFromIndexWithDelim(config.nousemagicmap, ",", index + 1,
+  if (getStringFromIndexWithDelim(gServerConfig.nousemagicmap, ",", index + 1,
                                   NoMagicMap, sizeof(NoMagicMap)) == TRUE) {
     return atoi(NoMagicMap);
   } else {
@@ -3300,15 +3264,15 @@ int getNoMagicMap(int index) {
 
 #ifdef _SOME_PETMAIL
 int getPetMailFlg(void) {
-  if (config.petmailflg == 1) {
-    return config.petmailflg;
+  if (gServerConfig.petmailflg == 1) {
+    return gServerConfig.petmailflg;
   }
   return 0;
 }
 int getPetMailPetid(unsigned int index) {
   char petid[256];
-  if (getStringFromIndexWithDelim(config.somepetmail, ",", index + 1, petid,
-                                  sizeof(petid)) == TRUE) {
+  if (getStringFromIndexWithDelim(gServerConfig.somepetmail, ",", index + 1,
+                                  petid, sizeof(petid)) == TRUE) {
     return atoi(petid);
   } else {
     return -1;
@@ -3317,8 +3281,8 @@ int getPetMailPetid(unsigned int index) {
 #endif
 #ifdef _CTRL_TRANS_DEVELOP
 int getCtrlTrans(void) {
-  if (config.ctrltrans == 1) {
-    return config.ctrltrans;
+  if (gServerConfig.ctrltrans == 1) {
+    return gServerConfig.ctrltrans;
   }
   return 0;
 }
@@ -3326,14 +3290,14 @@ int getCtrlTrans(void) {
 
 #ifdef _PETMAIL_TIME
 int getPetMailTime(void) {
-  if (config.petmailtime <= 0)
+  if (gServerConfig.petmailtime <= 0)
     return 0;
-  return config.petmailtime;
+  return gServerConfig.petmailtime;
 }
 #endif
 #ifdef _UP_BBPETPROB
 int getUpBBProb(void) {
-  if (config.upbbprob == 1)
+  if (gServerConfig.upbbprob == 1)
     return 1;
   return 0;
 }

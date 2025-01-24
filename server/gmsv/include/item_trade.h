@@ -17,8 +17,8 @@ typedef struct tagMapTrade	{
 
 BOOL CHECKMAP_TRADE( int charindex, int floor, int x, int y);
 int CHECKMAP_TRADEXY( int charindex, int floor, int x, int y);
-BOOL MAP_TRADEDROP( int charindex, int itemindex,int floor, int x, int y);
-BOOL MAP_TRADEPICKUP( int charindex, int itemindex, int floor, int x, int y, int flg);
+BOOL MAP_TRADEDROP( int charindex, int item_index,int floor, int x, int y);
+BOOL MAP_TRADEPICKUP( int charindex, int item_index, int floor, int x, int y, int flg);
 
 void InitMapTradeData( int index, int Stime);
 
@@ -32,7 +32,7 @@ void MAPTRADE_CLEANGOLD( int floor, int num);
 BOOL MAPTRADE_CHECKMASTERIN( int masterindex , int toindex, int num);
 BOOL MAPTRADE_CHECKMAPFULL(int fl, int x, int y);
 BOOL MAP_TRADEPETDROP( int charindex, int petindex,int floor, int x, int y);
-int MAPTRADE_getItemSpace( int meindex, int itemindex);
+int MAPTRADE_getItemSpace( int meindex, int item_index);
 int MAPTRADE_getPetSpace( int masterindex, int petindex);
 
 int MAPTRADE_getSellIndex( int index);
