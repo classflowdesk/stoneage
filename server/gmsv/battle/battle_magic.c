@@ -91,17 +91,13 @@ int BATTLE_AttMagicEffect(int battleindex, int attackNo, int ToList[],
                           int AttackMgcNo) {
   int i;
   char szcommand[256];
-  int attackindex;
-
-  attackindex = BATTLE_No2Index(battleindex, attackNo);
+  int attackindex = BATTLE_No2Index(battleindex, attackNo);
   if (FALSE == CHAR_CHECKINDEX(attackindex))
     return 0;
-
   if (attackNo >= 10)
     i = AttackMgcNo * 2;
   else
     i = AttackMgcNo * 2 + 1;
-
   snprintf(szcommand, sizeof(szcommand),
            "BJ|a%X|i%X|m%X|%X|%X|%X|s%X|t%X|l%X|%X|%X|%X|%X|%X|%X|o%X|o%X|o%X|"
            "s%X|%X|%X|",
@@ -537,26 +533,14 @@ int MAGIC_Recovery_Battle(int char_index, int toNo, int marray, int mp) {
   return TRUE;
 }
 
-void BATTLE_MultiResAndDef(int battleindex, // �������̼������͵�
-                           int attackNo, // ��������  į
-                           int toNo,     // ������ľ����  į
-                           int power,    // ��  �����
-                           int per,      // �Ѿ���
-                           int kind,     //   ܷ  ������
-                           int count,    // �ϼ�  ʲ��
-                           int UseEffect, // �����м��ް�������
-                           int RecevEffect // ������ľ���м��ް�������
-) {
+void BATTLE_MultiResAndDef(int battleindex, int attackNo, int toNo, int power,
+                           int per, int kind, int count, int UseEffect,
+                           int RecevEffect) {
   int i, toindex, char_index, UpPoint = 0, workhp;
   int ToList[SIDE_OFFSET * 2 + 1];
   char szCommand[256];
   BATTLE_MultiListDead(battleindex, toNo, ToList);
-  BATTLE_MagicEffect(battleindex, // �������̼������͵�
-                     attackNo, // ��������  į(��  ���)
-                     ToList, // ������ľ����  į������(��  ���)
-                     UseEffect, // �������оް�������
-                     RecevEffect // ������ľ���оް�������
-  );
+  BATTLE_MagicEffect(battleindex, attackNo, ToList, UseEffect, RecevEffect);
   char_index = BATTLE_No2Index(battleindex, attackNo);
   for (i = 0; ToList[i] != -1; i++) {
     toindex = BATTLE_No2Index(battleindex, ToList[i]);
@@ -1686,18 +1670,11 @@ void BATTLE_MultiMagicDef(int battleindex, // �������̼����
                           int count,    // ����
                           int UseEffect, // �����м��ް�������
                           int RecevEffect // ������ľ���м��ް�������
-                          )
-//
-//***********************************************************
-{
+) {
 
   int i, toindex, char_index;
   int ToList[SIDE_OFFSET * 2 + 1];
-
-  // char szBuffer[256]="";
-
   BATTLE_MultiList(battleindex, toNo, ToList);
-
   BATTLE_MagicEffect(battleindex, // �������̼������͵�
                      attackNo, // ��������  į(��  ���)
                      ToList, // ������ľ����  į������(��  ���)
@@ -1832,38 +1809,14 @@ void BATTLE_MultiAttReverse(int battleindex, //
                      UseEffect, // �������оް�������
                      RecevEffect // ������ľ���оް�������
   );
-
   char_index = BATTLE_No2Index(battleindex, attackNo);
-
-  // �����ɷ¶����������¾�
   for (i = 0; ToList[i] != -1; i++) {
-
-    // ���켰�̼������͵�
     toindex = BATTLE_No2Index(battleindex, ToList[i]);
-
     flg = CHAR_getWorkInt(toindex, CHAR_WORKBATTLEFLG);
-    flg ^= CHAR_BATTLEFLG_REVERSE; //   ��
+    flg ^= CHAR_BATTLEFLG_REVERSE;
     CHAR_setWorkInt(toindex, CHAR_WORKBATTLEFLG, flg);
     OnOff = (flg & CHAR_BATTLEFLG_REVERSE) ? (1) : (0);
-
-    // ���ƥ�ʾ�����  �������
     BATTLE_AttReverse(toindex);
-
-    if (OnOff) {
-      // snprintf( szBuffer, sizeof(szBuffer),
-      //	"(%s)�����Ա���෴��",
-      //	CHAR_getUseName( toindex ) );
-    } else {
-      // snprintf( szBuffer, sizeof(szBuffer),
-      //	"(%s)�ظ���ԭ�������ԡ�",
-      //	CHAR_getUseName( toindex ) );
-    }
-
-    //   ��  ú
-    // BATTLE_BroadCast( battleindex, szBuffer,
-    //	(attackNo >= 10)? CHAR_COLORGRAY : CHAR_COLORPURPLE ) ;
-
-    // ���ƥ����  �  ٯ  ë˪��
     sprintf(szBuffer, "BR|%X|%X|", ToList[i], OnOff);
     BATTLESTR_ADD(szBuffer);
   }
@@ -2104,13 +2057,8 @@ int MAGIC_MagicStatusChange_Battle(int char_index, int toNo, int marray,
   else if (status == 5)
     ReceveEffect = 101803;
 #endif
-  // else{
-  //	ReceveEffect = SPR_hoshi;
-  // }
-
   BATTLE_MultiMagicStatusChange(battleindex, attackNo, toNo, status, turn,
                                 MAGIC_EFFECT_USER, ReceveEffect, nums);
-
   return TRUE;
 }
 #endif
@@ -2120,7 +2068,6 @@ int MAGIC_MagicDef_Battle(int char_index, int toNo, int marray, int mp) {
   int status = -1, i, attackNo, turn = 3;
   int battleindex;
   char *pszP;
-
 
   magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
 
@@ -2441,7 +2388,6 @@ static int BATTLE_getMagicAdjustInt(int attackindex, int defindex, int MagicLv,
     At_Fire = 0;
     break;
   }
-  // ȡ�øó����Լӳ�
   At_FieldPow =
       BATTLE_FieldAttAdjust(CHAR_getWorkInt(attackindex, CHAR_WORKBATTLEINDEX),
                             At_Fire, At_Water, At_Earth, At_Wind);
@@ -2452,13 +2398,10 @@ static int BATTLE_getMagicAdjustInt(int attackindex, int defindex, int MagicLv,
   At_Wind *= damage;
   At_none *= damage;
 
-  // ȡ�÷��ط�����
   BATTLE_GetAttr(defindex, &Df_Fire, &Df_Water, &Df_Earth, &Df_Wind, &Df_none);
-  // ȡ�øó����Լӳ�
   Df_FieldPow =
       BATTLE_FieldAttAdjust(CHAR_getWorkInt(defindex, CHAR_WORKBATTLEINDEX),
                             Df_Fire, Df_Water, Df_Earth, Df_Wind);
-  // �������
   damage = BATTLE_AttrCalc(At_Fire, At_Water, At_Earth, At_Wind, At_none,
                            Df_Fire, Df_Water, Df_Earth, Df_Wind, Df_none);
   damage *= (At_FieldPow / Df_FieldPow);
@@ -2642,7 +2585,7 @@ ToCallMagic PROFESSION_magic[3] = {
      0, 65528, 65485, 0, -1, 0, 0, 0, 0, 2}, // ȫ��
 };
 
-#ifdef _PROFESSION_SKILL // WON ADD ����ְҵ����
+#ifdef _PROFESSION_SKILL // WON ADD
 void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
                              int attIdx, int FieldAttr, int skill) {
   int list[SIDE_OFFSET * 2 + 1];
@@ -2667,32 +2610,22 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
     return;
   else if (z != toNo) {
     toNo = z;
-    // terry fix for ���趨Ϊ�µ�Ŀ��������� 2004/02/10
     CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toNo);
-    // end
   }
-
-  // ����
   command = CHAR_getWorkInt(char_index, CHAR_WORKBATTLECOM1);
-
-  // ���ܵȼ�
   skill_level = CHAR_GETWORKINT_HIGH(char_index, CHAR_WORKBATTLECOM3);
   skill_level = PROFESSION_CHANGE_SKILL_LEVEL_M(skill_level);
-
-  // ��ħ���������붯��
   magic_type = analysis_profession_parameter(attIdx, skill, toNo, char_index);
   PROFESSION_MAGIC_ATTAIC_Effect(battleindex, attackNo, list, attIdx);
 
   listidx = 0;
   memset(def_is_player, -1, sizeof(def_is_player));
   memset(def_be_hit, -1, sizeof(def_be_hit));
-
-  // ���˹���
   if (toNo < 20) {
     toNo = list[0];
     listidx++;
 
-  } else if (20 == toNo) { // ����ȫ��
+  } else if (20 == toNo) { //
     for (i = 0; i < 2; i++) {
       for (j = 0; j < 5; j++) {
         if (TRUE == BATTLE_TargetCheck(battleindex, CharTable[i + 2][j])) {
@@ -2701,7 +2634,7 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
         }
       }
     }
-  } else if (21 == toNo) { // ����ȫ��
+  } else if (21 == toNo) { //
     for (i = 0; i < 2; i++) {
       for (j = 0; j < 5; j++) {
         if (TRUE == BATTLE_TargetCheck(battleindex, CharTable[i][j])) {
@@ -2710,15 +2643,13 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
         }
       }
     }
-  } // ���ϵ�һ�� , ���ϵڶ��� , ���µ�һ�� , ���µڶ���
-  else if (23 == toNo || 24 == toNo || 25 == toNo || 26 == toNo) {
+  } else if (23 == toNo || 24 == toNo || 25 == toNo || 26 == toNo) {
     basey = toNo - 23;
     for (i = 0, j = basey - 1; j <= basey + 1; i++, j++) {
       if ((25 == toNo || 26 == toNo) && (j < 2 || j > 3))
         continue;
       else if ((23 == toNo || 24 == toNo) && (j < 0 || j > 1))
         continue;
-      // ������Щ����Ҫ�����嵥
       for (k = 0; k < 5; k++) {
         if (TRUE == BATTLE_TargetCheck(battleindex, CharTable[j][k])) {
           list[listidx] = CharTable[j][k];
@@ -2729,13 +2660,9 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
   }
   qsort(list, listidx, sizeof(list[0]), (FUNC)SortLoc); // ����λ��
 
-  // ȡ������
   PROFESSION_MAGIC_GET_PRACTICE(&hp_power, &mp_power, &dec_hp, &dec_mp,
                                 char_index);
-
   power = hp_power;
-
-  // ȡ������ list
   PROFESSION_MAGIC_TOLIST_SORT(list, &listidx, char_index);
 
   for (i = 0; i < listidx; i++) {
@@ -2755,24 +2682,17 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
       CHAR_setInt(icindex, CHAR_LUCK, 1);
       CHAR_setWorkInt(icindex, CHAR_WORKATTACKPOWER, power);
       CHAR_setWorkInt(icindex, CHAR_WORKOTHERDMAGE, 0);
-
-      // ħ�����м춨
       if (PROFESSION_MAGIC_DODGE(char_index, charaidx, magic_type) == 1) {
-        // MISS
-        attvalue = 0;
+        attvalue = 0; // miss
       } else {
-        // ȡ����ħ���˺�ֵ
         power = PROFESSION_MAGIC_GET_ICE_MIRROR_DAMAGE(char_index, charaidx,
                                                        command, power);
 #ifdef _SUIT_ADDPART4
-        if (CHAR_getWorkInt(charaidx, CHAR_WORKUNMPOWER) > 0) { // �ֿ���ʦħ����װ��
+        if (CHAR_getWorkInt(charaidx, CHAR_WORKUNMPOWER) > 0) {
           power -=
               power * (CHAR_getWorkInt(charaidx, CHAR_WORKUNMPOWER) / 100.00);
-          //					print("\nWORKUNMPOWER:%d",
-          // CHAR_getWorkInt( charaidx, CHAR_WORKUNMPOWER ));
         }
 #endif
-        // ȡħ���˺�ֵ
 #ifdef _PROFESSION_ADDSKILL
         attvalue = PROFESSION_MAGIC_GET_DAMAGE(char_index, charaidx, magic_type,
                                                power, command);
@@ -2780,16 +2700,14 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
         attvalue = PROFESSION_MAGIC_GET_DAMAGE(char_index, charaidx, magic_type,
                                                power);
 #endif
-        // �ı�����״̬ħ��
         PROFESSION_MAGIC_CHANGE_STATUS(char_index, attvalue, mp_power, &add_hp,
                                        &add_mp);
 
-        // ���⹥��
         attvalue = PROFESSION_MAGIC_CHANG_STATUS(
             command, battleindex, char_index, charaidx, attvalue, i);
         def_be_hit[i] = charaidx;
 #ifdef _PROFESSION_ADDSKILL
-        if (command == BATTLE_COM_S_STORM) { // ������ ˮ����
+        if (command == BATTLE_COM_S_STORM) {
           if ((PROFESSION_BATTLE_StatusAttackCheck(
                    char_index, charaidx, BATTLE_ST_WATER, 30) == 0) // ״̬���м춨
               || (CHAR_getInt(charaidx, CHAR_HP) <= 0)) {
@@ -2816,13 +2734,8 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
         decmplist[decmplistcount++] = list[i];
 #endif
       }
-
-      // ���ħ����Ч
       CHAR_CharaDelete(icindex);
-
       charahp = CHAR_getInt(charaidx, CHAR_HP);
-
-      // û�����
       if (-1 == petidx || CHAR_getInt(petidx, CHAR_HP) <= 0) {
         if ((charahp -= attvalue) < 0) {
           charahp = 0;
@@ -2837,8 +2750,6 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
       } else {
         pethp = CHAR_getInt(petidx, CHAR_HP);
         charahurt = attvalue * BATTLE_CalcCharaRatio(FieldAttr, charaidx) / 10;
-
-        // ���µļ���,�����ﱻ����,Ѫ�����۵Ļ�,�Ὣ��������˺����ۼ�����������
         charahurt_temp = charahurt;
         if ((charahp -= charahurt) < 0) {
           charahurt = charahp;
@@ -2848,7 +2759,6 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
         attvalue = attvalue - charahurt;
         if ((pethp -= attvalue) < 0) {
           pethp = 0;
-          // ����ûѪ���˳�ս��
           CHAR_setInt(charaidx, CHAR_RIDEPET, -1);
           BATTLE_changeRideImage(charaidx);
           CHAR_setWorkInt(charaidx, CHAR_WORKPETFALL, 1);
@@ -2867,19 +2777,14 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
       }
 
       {
-        // Change fix ����������õ�DPֵ
         int aAttackList[BATTLE_ENTRY_MAX * 2 + 1];
         aAttackList[0] = attackNo;
         aAttackList[1] = -1;
         BATTLE_AddProfit(battleindex, aAttackList);
       }
-      // change fix ���������޿���������
-      // (���������з�����ְ��ս���ᶼ�ò���DPֵ,�����������õ�,����û��ϵ)
       if (CHAR_getInt(charaidx, CHAR_HP) <= 0 &&
-          CHAR_getInt(charaidx, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER
-          /*&& !BattleArray[battleindex].dpbattle*/)
+          CHAR_getInt(charaidx, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER)
         CHAR_setFlg(charaidx, CHAR_ISDIE, 1);
-
       BATTLESTR_ADD(szcommand);
     }
   }
@@ -2888,7 +2793,6 @@ void PROFESSION_MAGIC_ATTAIC(int battleindex, int attackNo, int toNo,
   BATTLESTR_ADD(szcommand);
 
 #ifdef _PROFESSION_ADDSKILL
-  // �۵з�mp
   if ((int)mp_power != 0) {
     for (i = 0; i < decmplistcount; i++) {
       if (CHAR_getInt(BATTLE_No2Index(battleindex, decmplist[i]),
@@ -3078,7 +2982,6 @@ int analysis_profession_parameter(int attIdx, int skill, int toNo,
   place2 = atoi(temp);
   PROFESSION_magic[attIdx].uiShowBehindChar = place2;
 
-  // ��ʾ��λ��X
   memset(temp, 0, sizeof(temp));
   if (!getStringFromIndexWithDelim(pszOption, "|", 4, temp, sizeof(temp)))
     return -1;
@@ -3089,40 +2992,32 @@ int analysis_profession_parameter(int attIdx, int skill, int toNo,
     return -1;
   y = atoi(temp);
 
-  // �𶯻���Ŀ�ʼ������
   memset(temp, 0, sizeof(temp));
   if (!getStringFromIndexWithDelim(pszOption, "|", 6, temp, sizeof(temp)))
     return -1;
   shake_s_time = atoi(temp);
 
-  // �𶯻���Ľ���������
   memset(temp, 0, sizeof(temp));
   if (!getStringFromIndexWithDelim(pszOption, "|", 7, temp, sizeof(temp)))
     return -1;
   shake_e_time = atoi(temp);
 
-  // ����һ�㹥����ʱ�Ƿ�������ʧ
   memset(temp, 0, sizeof(temp));
   if (!getStringFromIndexWithDelim(pszOption, "|", 8, temp, sizeof(temp)))
     return -1;
   disappear = atoi(temp);
 
-  // ׼��������ħ��ͼ��
   image_1 = PROFESSION_SKILL_getInt(skill, PROFESSION_SKILL_IMG_1);
-  PROFESSION_magic[attIdx].uiPrevMagicNum = image_1; // ǰ�ö���
+  PROFESSION_magic[attIdx].uiPrevMagicNum = image_1; //
 
-  // ս����ħ��ͼ��
   image_2 = PROFESSION_SKILL_getInt(skill, PROFESSION_SKILL_IMG_2);
-  PROFESSION_magic[attIdx].uiSpriteNum = image_2; // ���ö���
+  PROFESSION_magic[attIdx].uiSpriteNum = image_2; //
 
-  // ��ʾ�ڻ���� x,y����
   PROFESSION_magic[attIdx].siSx = x;
   PROFESSION_magic[attIdx].siSy = y;
 
-  // ȡ�ù����ұߵ�ħ��ͼ�ż�����
   PROFESSION_MAGIC_GET_IMG2(toNo, char_index, attIdx, pszOption);
 
-  // �����ʱ��
   if ((shake_s_time > 0) || (shake_e_time > 0)) {
     PROFESSION_magic[attIdx].uiShakeScreen = 1;
     PROFESSION_magic[attIdx].uiShakeFrom = shake_s_time;
@@ -3373,9 +3268,7 @@ void PROFESSION_MAGIC_GET_PRACTICE(float *hp_power, float *mp_power,
 #ifdef _SUIT_ADDPART4
   if (rand() % 100 < 30)
     *hp_power +=
-        *hp_power *
-        (CHAR_getWorkInt(char_index, CHAR_WORKMPOWER2) /
-         100.00); // ��ǿ��ʦħ����װ��(�޶�30%����)
+        *hp_power * (CHAR_getWorkInt(char_index, CHAR_WORKMPOWER2) / 100.00);
 #endif
 
   if (*hp_power > 0) {
@@ -3386,7 +3279,6 @@ void PROFESSION_MAGIC_GET_PRACTICE(float *hp_power, float *mp_power,
   }
 }
 
-// ѡ��Ļ�����
 void PROFESSION_MAGIC_TOLIST_SORT(int *list, int *listidx, int char_index) {
   int j = 0, get_num = 0, temp[SIDE_OFFSET * 2 + 1];
   int skill_level = -1, command = -1;
@@ -3434,12 +3326,12 @@ void PROFESSION_MAGIC_TOLIST_SORT(int *list, int *listidx, int char_index) {
 #endif
     break;
   }
-  case BATTLE_COM_S_STORM: // ������
+  case BATTLE_COM_S_STORM: //
   {
     get_num = skill_level;
     break;
   }
-  case BATTLE_COM_S_DOOM: // ����ĩ��
+  case BATTLE_COM_S_DOOM: //
   {
     if (skill_level >= 8)
       get_num = 10;
@@ -3454,35 +3346,9 @@ void PROFESSION_MAGIC_TOLIST_SORT(int *list, int *listidx, int char_index) {
     break;
   }
   case BATTLE_COM_S_FIRE_SPEAR: {
-    /*int miss_rate=0, rand_num=0;
-
-    miss_rate = skill_level * 2 + 10;
-    rand_num = RAND(0, 100);
-
-    if( rand_num <= miss_rate ){
-            memset(list, -1, sizeof(list));
-            *listidx = 0;
-            return;
-    }else
-            get_num = skill_level;
-
-    break;*/
-    /*
-    if( skill_level > 9 )		get_num = 10;
-    else if( skill_level > 8)   get_num = 9;
-    else if( skill_level > 7 )  get_num = 8;
-    else if( skill_level > 6 )  get_num = 7;
-    else if( skill_level > 5 )  get_num = 6;
-    else if( skill_level > 4 )  get_num = 5;
-    else if( skill_level > 3 )  get_num = 4;
-    else if( skill_level > 2 )  get_num = 3;
-    else if( skill_level > 1 )  get_num = 2;
-    else						get_num = 1;
-    */
     break;
   }
-  case BATTLE_COM_S_SIGN: // һ���Ѫ
-  {
+  case BATTLE_COM_S_SIGN: {
 #ifdef _PROFESSION_ADDSKILL
     get_num = 10;
 #else
@@ -3528,16 +3394,12 @@ void PROFESSION_MAGIC_TOLIST_SORT(int *list, int *listidx, int char_index) {
         count++;
       }
     }
-
     memset(list, -1, sizeof(list));
     memcpy(list, temp, sizeof(temp));
-
     *listidx = count;
-
     return;
   }
-  case BATTLE_COM_S_THROUGH_ATTACK: // �ᴩ����
-  {
+  case BATTLE_COM_S_THROUGH_ATTACK: {
     int toNo = -1, toNo2 = -1, battleindex = -1;
 
     battleindex = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEINDEX);
@@ -3607,7 +3469,6 @@ void PROFESSION_MAGIC_TOLIST_SORT(int *list, int *listidx, int char_index) {
   return;
 }
 
-// �ı�����״̬
 void PROFESSION_MAGIC_CHANGE_STATUS(int char_index, int hp_power,
                                     float mp_power, float *add_hp,
                                     float *add_mp) {
@@ -3654,12 +3515,6 @@ void PROFESSION_MAGIC_CHANGE_STATUS(int char_index, int hp_power,
   case BATTLE_COM_S_SIGN: // һ���Ѫ
   {
     int success = 10;
-    /*( skill_level >= 10 )		success = 30;//�ɹ���
-                    else if( skill_level > 9 )  success = 25;
-                    else if( skill_level > 8 )  success = 20;
-                    else if( skill_level > 7 )  success = 15;
-                    else						success
-       = 10; success = 30;*/
     if (RAND(0, 100) < success) {
       if (skill_level > 8) {
         *add_hp += hp_power;
@@ -3968,7 +3823,7 @@ void PROFESSION_MAGIC_GET_IMG2(int toNo, int char_index, int attIdx,
   }
   case BATTLE_COM_S_FIRE_BALL: // ������
   {
-    if (toNo == 25) { // �� 1
+    if (toNo == 25) {
       img2 = 101694;
       memset(temp, 0, sizeof(temp));
       if (getStringFromIndexWithDelim(pszOption, "|", 9, temp, sizeof(temp)))
@@ -3976,27 +3831,24 @@ void PROFESSION_MAGIC_GET_IMG2(int toNo, int char_index, int attIdx,
       memset(temp, 0, sizeof(temp));
       if (getStringFromIndexWithDelim(pszOption, "|", 10, temp, sizeof(temp)))
         y = atoi(temp);
-    } else if (toNo == 26) { // �� 2
+    } else if (toNo == 26) {
       img2 = 101694;
-
       memset(temp, 0, sizeof(temp));
       if (getStringFromIndexWithDelim(pszOption, "|", 11, temp, sizeof(temp)))
         x = atoi(temp);
       memset(temp, 0, sizeof(temp));
       if (getStringFromIndexWithDelim(pszOption, "|", 12, temp, sizeof(temp)))
         y = atoi(temp);
-    } else if (toNo == 23) { // �� 1
+    } else if (toNo == 23) {
       img2 = 101693;
-
       memset(temp, 0, sizeof(temp));
       if (getStringFromIndexWithDelim(pszOption, "|", 13, temp, sizeof(temp)))
         x = atoi(temp);
       memset(temp, 0, sizeof(temp));
       if (getStringFromIndexWithDelim(pszOption, "|", 14, temp, sizeof(temp)))
         y = atoi(temp);
-    } else if (toNo == 24) { // �� 2
+    } else if (toNo == 24) {
       img2 = 101693;
-
       memset(temp, 0, sizeof(temp));
       if (getStringFromIndexWithDelim(pszOption, "|", 15, temp, sizeof(temp)))
         x = atoi(temp);
@@ -4005,14 +3857,9 @@ void PROFESSION_MAGIC_GET_IMG2(int toNo, int char_index, int attIdx,
         y = atoi(temp);
     } else
       return;
-
-    // ���ö���
     PROFESSION_magic[attIdx].uiSpriteNum = img2;
-
-    // ���ö�������
     PROFESSION_magic[attIdx].siSx = x;
     PROFESSION_magic[attIdx].siSy = y;
-
     break;
   }
   default:
@@ -4037,15 +3884,13 @@ int PROFESSION_MAGIC_GET_DAMAGE(int attackindex, int defindex, int magic_type,
   int proficiency = 0;   // ������
   int resist = 0;        // ����
   int suit = 0;          // װ��
-  int spirit = 0;        // ʹ�þ�����ɵĿ���
+  int spirit = 0;
 
   if (command == BATTLE_COM_S_DOOM)
     magic_type = 1;
-
-  if (magic_type == 1) { // ������
-    proficiency =
-        CHAR_getWorkInt(attackindex, CHAR_WORK_F_PROFICIENCY); // ��������
-    resist = CHAR_getWorkInt(defindex, CHAR_WORK_F_RESIST); // ��
+  if (magic_type == 1) {
+    proficiency = CHAR_getWorkInt(attackindex, CHAR_WORK_F_PROFICIENCY);
+    resist = CHAR_getWorkInt(defindex, CHAR_WORK_F_RESIST);
 #ifdef _EQUIT_RESIST
     suit = CHAR_getWorkInt(defindex, CHAR_WORK_F_SUIT) +
            CHAR_getWorkInt(defindex, CHAR_WORKEQUITFIRE);
@@ -4064,10 +3909,9 @@ int PROFESSION_MAGIC_GET_DAMAGE(int attackindex, int defindex, int magic_type,
     magic_type = 2;
   }
 
-  if (magic_type == 2) { // ������
-    proficiency =
-        CHAR_getWorkInt(attackindex, CHAR_WORK_T_PROFICIENCY); // ��������
-    resist = CHAR_getWorkInt(defindex, CHAR_WORK_T_RESIST); // �翹
+  if (magic_type == 2) {
+    proficiency = CHAR_getWorkInt(attackindex, CHAR_WORK_T_PROFICIENCY);
+    resist = CHAR_getWorkInt(defindex, CHAR_WORK_T_RESIST);
 #ifdef _EQUIT_RESIST
     suit = CHAR_getWorkInt(defindex, CHAR_WORK_I_SUIT) +
            CHAR_getWorkInt(defindex, CHAR_WORKEQUITTHUNDER);
@@ -4085,11 +3929,9 @@ int PROFESSION_MAGIC_GET_DAMAGE(int attackindex, int defindex, int magic_type,
               (1 - (suit / 100.0)) * (1 - (spirit / 100.0));
     magic_type = 3;
   }
-
-  if (magic_type == 3) { // ������
-    proficiency =
-        CHAR_getWorkInt(attackindex, CHAR_WORK_I_PROFICIENCY); // ��������
-    resist = CHAR_getWorkInt(defindex, CHAR_WORK_I_RESIST); // ����
+  if (magic_type == 3) {
+    proficiency = CHAR_getWorkInt(attackindex, CHAR_WORK_I_PROFICIENCY);
+    resist = CHAR_getWorkInt(defindex, CHAR_WORK_I_RESIST);
 #ifdef _EQUIT_RESIST
     suit = CHAR_getWorkInt(defindex, CHAR_WORK_T_SUIT) +
            CHAR_getWorkInt(defindex, CHAR_WORKEQUITICE);
@@ -4122,22 +3964,16 @@ int PROFESSION_MAGIC_GET_DAMAGE(int attackindex, int defindex, int magic_type,
   electric_resist = CHAR_getWorkInt(defindex, CHAR_WORK_T_RESIST); // �翹
   ice_resist = CHAR_getWorkInt(defindex, CHAR_WORK_I_RESIST); // ����
 
-  //	print("\n won test 0.0 ==> f(%d) e(%d) i(%d)", fire_proficiency,
-  // electric_proficiency, ice_proficiency ); 	print("\n won test 0.1 ==> f(%d)
-  // e(%d) i(%d)", fire_resist, electric_resist, ice_resist );
-
-  if (magic_type == 1) { // ������
-
+  if (magic_type == 1) {
     attack = power * (100 + fire_proficiency) / 100; // �����ӳ�
-
-    if (rand_num < 40) { // ԭ�����˺�
+    if (rand_num < 40) {                             // ԭ�����˺�
       attack = attack * (100 - fire_resist) / 100;
-    } else { // ����ȡ�˺�
+    } else {
       rand_num = RAND(-20, 20);
       attack = attack * (100 - (rand_num + fire_resist)) / 100;
     }
-  } else if (magic_type == 2) {                          // ������
-    attack = power * (100 + electric_proficiency) / 100; // �����ӳ�
+  } else if (magic_type == 2) {
+    attack = power * (100 + electric_proficiency) / 100;
     if (rand_num < 40) {
       attack = attack * (100 - electric_resist) / 100;
     } else {
@@ -4148,11 +3984,11 @@ int PROFESSION_MAGIC_GET_DAMAGE(int attackindex, int defindex, int magic_type,
     attack = power * (100 + ice_proficiency) / 100; // �����ӳ�
     if (rand_num < 40) {                            // ԭ�����˺�
       attack = attack * (100 - ice_resist) / 100;
-    } else { // ����ȡ�˺�
+    } else {
       rand_num = RAND(-20, 20);
       attack = attack * (100 - (rand_num + ice_resist)) / 100;
     }
-  } else { // ��
+  } else {
     attack = power;
   }
 
@@ -4225,8 +4061,6 @@ int PROFESSION_MAGIC_GET_ICE_MIRROR_DAMAGE(int attackindex, int defindex,
       CHAR_setWorkInt(attackindex, CHAR_WORKHITRIGHT,
                       CHAR_getWorkInt(attackindex, CHAR_WORKHITRIGHT) - 50);
     }
-
-    // ȡ�ùᴩ�����˺�
     damage = BATTLE_PROFESSION_THROUGH_ATTACK_GET_DAMAGE(attackindex, defindex);
   }
 #ifdef _PROFESSION_ADDSKILL
@@ -4241,37 +4075,27 @@ int PROFESSION_MAGIC_GET_ICE_MIRROR_DAMAGE(int attackindex, int defindex,
   return damage;
 }
 
-// ����������
-// return: 0:û���� 1:����
 int PROFESSION_MAGIC_DODGE(int atk_index, int def_index, int magic_type) {
   float fLuck = 0, fResist = 0, proficiency = 0;
   float Dluck = 0.0;
   int charType = CHAR_getInt(def_index, CHAR_WHICHTYPE);
   int rand_num = RAND(1, 100);
   int command;
-
-  // Ŀ�����һ�ܣ�������
   if (CHAR_getWorkInt(def_index, CHAR_WORKBATTLECOM1) ==
       BATTLE_COM_S_EARTHROUND0) {
     return 1; // Miss
   }
-
-  // ����Ƿ����������
   if (charType == CHAR_TYPEPLAYER) {
-
-    // ����
     fLuck = (float)CHAR_getInt(def_index, CHAR_LUCK) * 3;
-    // ����
     if (magic_type != 0) {
       fResist = (float)(CHAR_getWorkInt(def_index,
                                         CHAR_WORK_F_RESIST + magic_type - 1)) *
                 0.5;
     }
     fLuck += fResist;
-    // ��ħװ��
     Dluck = (float)(CHAR_getWorkInt(def_index, CHAR_EQUITQUIMAGIC) * 0.4);
     fLuck += Dluck;
-  } else { // ����Ƿ������ǳ���
+  } else {
     fLuck = (float)CHAR_getInt(def_index, CHAR_LV) * 0.15;
     if (fLuck > 20)
       fLuck = 20;
@@ -4287,15 +4111,6 @@ int PROFESSION_MAGIC_DODGE(int atk_index, int def_index, int magic_type) {
 
     fLuck -= proficiency;
   }
-
-  /*	print("\n PROFESSION_MAGIC_DODGE atk=%s def=%s magic_type(%d)",
-                          CHAR_getChar( atk_index, CHAR_NAME),
-                          CHAR_getChar( def_index, CHAR_NAME),
-                          magic_type );
-          print("\n won test 4 ==> rand_num(%d) lucky(%d) fResist(%f) Dluck(%f)
-     proficiency(%f) fLuck(%f)", rand_num, CHAR_getInt( def_index, CHAR_LUCK) *
-     3, fResist, Dluck, proficiency, fLuck );
-  */
 
   if (rand_num > (int)fLuck) {
 #ifdef _PROFESSION_ADDSKILL
@@ -4340,10 +4155,7 @@ void PROFESSION_MAGIC_CHANG_IMG2(int img2, char *pszOption, int attIdx) {
   if (getStringFromIndexWithDelim(pszOption, "|", 10, temp, sizeof(temp)))
     y = atoi(temp);
 
-  // ���ö���
   PROFESSION_magic[attIdx].uiSpriteNum = img2;
-
-  // ���ö�������
   PROFESSION_magic[attIdx].siSx = x;
   PROFESSION_magic[attIdx].siSy = y;
 }
@@ -4374,11 +4186,6 @@ int PROFESSION_MAGIC_CHANG_STATUS(int command, int battleindex, int char_index,
   case BATTLE_COM_S_ICE_CRACK: // ������
   {
     int hit = 0, rand_num = RAND(0, 100);
-
-    // for( j = 1; j < BATTLE_ST_END; j++ ){		//�������쳣״̬��return
-    //	if( CHAR_getWorkInt( charaidx, StatusTbl[j] ) > 0 ) return 0;
-    //}
-    // ������
     if (skill_level >= 10)
       hit = 80;
     else if (skill_level >= 7)
@@ -4414,12 +4221,8 @@ int PROFESSION_MAGIC_CHANG_STATUS(int command, int battleindex, int char_index,
           break;
         }
       }
-      // BATTLE_BadStatusString( bid, BATTLE_ST_ICECRACK );
     }
-
-    // ��������һ�����˺�
     attvalue = 0;
-
     break;
   }
   case BATTLE_COM_S_ENCLOSE: // ������
@@ -4725,7 +4528,7 @@ void BATTLE_MultiAttMagic_Fire(int battleindex, int attackNo, int defNo,
       sprintf(szcommand, "r%X|f%X|d%X|p%X|", list[i], 0, attvalue, pethp);
       BATTLESTR_ADD(szcommand);
       continue;
-    } else { // û����,���㹥����
+    } else {
 #ifdef _FIX_MAGICDAMAGE
       float Kmagic = ((float)att_magic_lv[FieldAttr] * 1.4 -
                       (float)def_magic_resist[FieldAttr]);
@@ -4751,8 +4554,8 @@ void BATTLE_MultiAttMagic_Fire(int battleindex, int attackNo, int defNo,
       def_be_hit[getexp++] = charaidx;
       attvalue = BATTLE_AttrAdjust(BATTLE_No2Index(battleindex, attackNo),
                                    charaidx, Power);
-      if (DefIsPlayer) {   // ����������
-        if (AttIsPlayer) { // ����������ħ������
+      if (DefIsPlayer) {
+        if (AttIsPlayer) {
           temp = ((float)att_magic_lv[FieldAttr] -
                   (float)def_magic_resist[FieldAttr]) /
                  (float)def_magic_resist[FieldAttr] / 100;

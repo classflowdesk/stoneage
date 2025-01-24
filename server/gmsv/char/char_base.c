@@ -1,8 +1,8 @@
 #include "version.h"
 //
+#include "util.h"
 #include "saac_client.h"
 // CoolFish: 2001/10/12  _UNIQUE_P_I
-#include "pet.h"
 #include "anim_tbl.h"
 #include "autil.h"
 #include "buf.h"
@@ -10,12 +10,14 @@
 #include "enemy.h"
 #include "family.h"
 #include "function.h"
-#include "item.h"
 #include "magic.h"
 #include "net.h"
 #include "npccreate.h"
+#include "pet.h"
 #include "pet_skill.h"
 #include "title.h"
+#include "item.h"
+
 // CoolFish: 2001/10/29
 #include "log.h"
 extern int CheckCharMaxItemChar(Char *ch);
@@ -1519,8 +1521,7 @@ INLINE int CHAR_getIntStrict(int index, CHAR_DATAINT element, int *error) {
   return CHAR_chara[index].data[element];
 }
 
-INLINE int _CHAR_getInt(char *file, int line, int index, CHAR_DATAINT element)
-{
+INLINE int _CHAR_getInt(char *file, int line, int index, CHAR_DATAINT element) {
   if (!CHAR_CHECKINDEX(index)) {
     print("err CHAR_getInt index:%d. !:%s-%d\n", index, file, line);
     return -1;
@@ -2162,57 +2163,6 @@ void *CHAR_getFunctionPointer(int char_index, int functype) {
 
   return CHAR_chara[char_index].functable[functype];
 }
-
-#ifdef _ALLBLUES_LUA
-INLINE BOOL CHAR_setLUAFunction(int char_index, int functype, lua_State *L,
-                                const char *luafunctable) {
-  if (!CHAR_CHECKINDEX(char_index))
-    return FALSE;
-  if (functype < CHAR_FIRSTFUNCTION || functype >= CHAR_LASTFUNCTION) {
-    return FALSE;
-  }
-
-  CHAR_chara[char_index].lua[functype] = L;
-  CHAR_chara[char_index].luafunctable[functype] =
-      allocateMemory(strlen(luafunctable));
-  memset(CHAR_chara[char_index].luafunctable[functype], 0,
-         strlen(luafunctable));
-
-  strcpy(CHAR_chara[char_index].luafunctable[functype], luafunctable);
-
-  return TRUE;
-}
-
-INLINE BOOL CHAR_delLUAFunction(int char_index, int functype) {
-  if (!CHAR_CHECKINDEX(char_index))
-    return FALSE;
-  if (functype < CHAR_FIRSTFUNCTION || functype >= CHAR_LASTFUNCTION) {
-    return FALSE;
-  }
-
-  CHAR_chara[char_index].lua[functype] = NULL;
-  freeMemory(CHAR_chara[char_index].luafunctable[functype]);
-
-  return TRUE;
-}
-
-INLINE lua_State *CHAR_getLUAFunction(int char_index, int functype) {
-
-  if (!CHAR_CHECKINDEX(char_index))
-    return NULL;
-
-  if (functype < CHAR_FIRSTFUNCTION || functype >= CHAR_LASTFUNCTION)
-    return NULL;
-
-  if (CHAR_chara[char_index].lua[functype] == NULL) {
-    return NULL;
-  }
-
-  lua_getglobal(CHAR_chara[char_index].lua[functype],
-                CHAR_chara[char_index].luafunctable[functype]);
-  return CHAR_chara[char_index].lua[functype];
-}
-#endif
 
 BOOL CHAR_initCharArray(int pnum, int petnum, int onum) {
   int i;
@@ -3783,7 +3733,8 @@ void CHAR_ShowMyDepotItems(int char_index) {
     item_index = CHAR_getDepotItemIndex(char_index, i);
     if (!ITEM_CHECKINDEX(item_index))
       continue;
-    print("DEPOT%d: %d-%s\n", i, item_index, ITEM_getChar(item_index, ITEM_NAME));
+    print("DEPOT%d: %d-%s\n", i, item_index,
+          ITEM_getChar(item_index, ITEM_NAME));
   }
 }
 
@@ -3828,7 +3779,7 @@ BOOL CHAR_SaveDepotItem(int char_index) {
     return FALSE;
   }
   SaacClient_ACCharSavePoolItem_send(acfd, char_index, CONNECT_getFdid(fd),
-                                    CdKey, databuf);
+                                     CdKey, databuf);
   CHAR_removeDepotItem(char_index);
 
   return TRUE;
@@ -3848,7 +3799,7 @@ BOOL CHAR_GetDepotItem(int meindex, int char_index) {
 
   // 向AC要仓库资料
   SaacClient_ACCharGetPoolItem_send(acfd, meindex, char_index,
-                                   CONNECT_getFdid(fd), CdKey);
+                                    CONNECT_getFdid(fd), CdKey);
   return TRUE;
 }
 
@@ -4086,8 +4037,8 @@ BOOL CHAR_SaveDepotPet(int char_index) {
     CHAR_removeDepotPet(char_index);
     return FALSE;
   }
-  SaacClient_ACCharSavePoolPet_send(acfd, char_index, CONNECT_getFdid(fd), CdKey,
-                                   databuf);
+  SaacClient_ACCharSavePoolPet_send(acfd, char_index, CONNECT_getFdid(fd),
+                                    CdKey, databuf);
   CHAR_removeDepotPet(char_index);
 
   return TRUE;
@@ -4106,7 +4057,7 @@ BOOL CHAR_GetDepotPet(int meindex, int char_index) {
 
   // 向AC要仓库资料
   SaacClient_ACCharGetPoolPet_send(acfd, meindex, char_index,
-                                  CONNECT_getFdid(fd), CdKey);
+                                   CONNECT_getFdid(fd), CdKey);
   return TRUE;
 }
 
@@ -4594,12 +4545,7 @@ int CHAR_CheckLearnCode(int charindex, int ridno) {
   learnCode = CHAR_getInt(charindex, CHAR_LOWRIDEPETS);
   learnCode1 = CHAR_getInt(charindex, CHAR_LOWRIDEPETS1);
   learnCode2 = CHAR_getInt(charindex, CHAR_LOWRIDEPETS2);
-  // print( "RIDEPET_getPETindex128:debug: max = %d, learnCode = %d, learnCode1
-  // = %d, learnCode2 = %d, learnCode4 = %d. \n", max, learnCode, learnCode1,
-  // learnCode2, learnCode3 );
   for (i = 0; i < max; i++) {
-    // print( "debug: PetNo = %d, PetNo = %d. \n", PetNo, RideCodeMode[i].petNo
-    // );
     if (RideCodeMode[i].petNo == ridno) {
       if (i < 32) {
         if (RideCodeMode[i].learnCode & learnCode) {

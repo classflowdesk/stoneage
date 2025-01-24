@@ -4,11 +4,6 @@
 #ifdef _TRADE_PK
 #include "trade.h"
 #endif
-#ifdef _ALLBLUES_LUA_1_4
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-#endif
 #ifdef _MULTIPLAYER_
 #define  BATTLE_ENTRY_MAX 12
 #define  BATTLE_PLAYER_MAX 6
@@ -481,18 +476,6 @@ typedef struct
 #define BSIDE_FLG_SURPRISE ( 1 << 0 )
 #define BSIDE_FLG_HELP_OK ( 1 << 1 )
 
-
-
-#ifdef _ALLBLUES_LUA_1_4
-typedef enum
-{
-  BATTLE_FINISH,
-  BATTLE_ESCAPE,
-  BATTLE_FUNCTABLENUM,
-}BATTLE_FUNCTABLE;
-#endif
-
-
 typedef struct _Battle
 {
   BOOL  use;  /* ���Ȼ����¾������� */
@@ -546,10 +529,6 @@ typedef struct _Battle
   int    iEntryBack2[BATTLE_ENTRY_MAX*2];    // ��������  ��ľ�����׶������
   int    createindex;  /* �𼰾�  ë��Ի������ƽ�ҷ��̼������͵�(NPCئ��) */
   int    (*WinFunc)( int battleindex, int char_index );
-#ifdef _ALLBLUES_LUA_1_4
-    lua_State *lua[BATTLE_FUNCTABLENUM];
-    char *luafunctable[BATTLE_FUNCTABLENUM];
-#endif
   struct _Battle *pNext;    // �ݼ����������
   struct _Battle *pBefore;  // 󡼰���������
 #ifdef _BATTLE_TIME
@@ -747,10 +726,6 @@ void BATTLE_ProfessionStatusSeq( int battleindex, int char_index);
 int BATTLE_CreateVsPlayerForTrade( STradeList TradeList1, STradeList TradeList2 );
 #endif
 
-#ifdef _ALLBLUES_LUA_1_4
-INLINE BOOL BATTLE_setLUAFunction( int battleindex, int functype, lua_State *L, const char *luafunctable);
-INLINE lua_State *BATTLE_getLUAFunction( int battle, int functype);
-#endif
 #ifdef _PETSKILL_NEW_PASSIVE
  void BATTLE_PassiveSkill(int char_index);
 #endif

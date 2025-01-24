@@ -25,9 +25,6 @@
 #ifdef _PETSKILL_LER
 #include "magic_base.h"
 #endif
-#ifdef _ALLBLUES_LUA
-#include "mylua/function.h"
-#endif
 #define DEFENSE_RATE (0.5)
 #define DAMAGE_RATE (2.0)
 #define CRITICAL_RATE (1.0)
@@ -236,7 +233,8 @@ int MagicDefTbl[] = {-1,
 #endif
 };
 
-char *aszParamChange[] = {"NULL", "MOD攻击", "MOD防御", "MOD速度", "MOD魅力", "MOD捕获"};
+char *aszParamChange[] = {"NULL",    "MOD攻击", "MOD防御",
+                          "MOD速度", "MOD魅力", "MOD捕获"};
 int aParamChangeTbl[] = {-1,
                          CHAR_WORKMODATTACK,
                          CHAR_WORKMODDEFENCE,
@@ -580,7 +578,8 @@ int BATTLE_ItemCrush(int char_index) {
             szBuffer, CHAR_getInt(char_index, CHAR_FLOOR),
             CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
             ITEM_getChar(item_index, ITEM_UNIQUECODE),
-            ITEM_getChar(item_index, ITEM_NAME), ITEM_getInt(item_index, ITEM_ID)
+            ITEM_getChar(item_index, ITEM_NAME),
+            ITEM_getInt(item_index, ITEM_ID)
 
     );
   }
@@ -3943,15 +3942,11 @@ BOOL BATTLE_CaptureItemDelAll(int attackindex, int defindex) {
         {
           typedef void (*DETACHFUNC)(int, int);
           DETACHFUNC def;
-          def = (DETACHFUNC)ITEM_getFunctionPointer(item_index, ITEM_DETACHFUNC);
+          def =
+              (DETACHFUNC)ITEM_getFunctionPointer(item_index, ITEM_DETACHFUNC);
           if (def) {
             def(attackindex, item_index);
           }
-#ifdef _ALLBLUES_LUA_1_2
-          else {
-            RunItemDetachEvent(attackindex, item_index);
-          }
-#endif
         }
         CHAR_DelItem(attackindex, j);
         CHAR_complianceParameter(attackindex);
@@ -3977,23 +3972,9 @@ BOOL BATTLE_Capture(int battleindex, int attackNo, int defNo) {
 
   szBuffer[0] = 0;
 
-  if (BATTLE_CaptureItemCheck(attackindex, defindex) == FALSE
-#ifdef _ALLBLUES_LUA_1_8
-      || CaptureCheckFunction(attackindex, defindex) == FALSE
-#endif
-  ) {
+  if (BATTLE_CaptureItemCheck(attackindex, defindex) == FALSE) {
     flg = 0;
-    // snprintf( szBuffer, sizeof(szBuffer),
-    //	"(%s)û�в���(%s)�ı�Ҫ���ߡ�",
-    //	CHAR_getUseName( attackindex ),
-    //	CHAR_getUseName( defindex )
-    //);
   } else if (BATTLE_CaptureCheck(attackindex, defindex, &per) == FALSE) {
-    // snprintf( szBuffer, sizeof(szBuffer),
-    // "(%s)�޷�����(%s)(%.2f%%)", 	CHAR_getUseName( attackindex ),
-    //	CHAR_getUseName( defindex ),
-    //	per
-    //);
     flg = 0;
   }
   CHAR_setWorkInt(attackindex, CHAR_WORKMODCAPTURE, 0);
@@ -4020,10 +4001,6 @@ BOOL BATTLE_Capture(int battleindex, int attackNo, int defNo) {
              CHAR_getInt(attackindex, CHAR_X), CHAR_getInt(attackindex, CHAR_Y),
              CHAR_getChar(defindex, CHAR_UNIQUECODE) // shan 2001/12/14
       );
-#ifdef _ALLBLUES_LUA_1_8
-      CaptureOkFunction(attackindex, defindex);
-#endif
-
 #ifdef _CAPTURE_FREES
       BATTLE_CaptureItemDelAll(attackindex, defindex);
 #else
@@ -4222,35 +4199,15 @@ BOOL BATTLE_Escape(int battleindex, int attackNo, int flag) {
   }
 
   if (flg == 1 || flag == 1) {
-    // snprintf( szBuffer, sizeof(szBuffer), "(%s)������(%d%%)",
-    //	CHAR_getUseName( attackindex ), iPar
-    //);
-    // if( getBattleDebugMsg( ) != 0 ){
-    //	BATTLE_BroadCast( battleindex, szBuffer,
-    //		(attackNo >= 10)? CHAR_COLORGRAY : CHAR_COLORPURPLE ) ;
-    // }
-
     if (BattleArray[battleindex].type == BATTLE_TYPE_P_vs_P &&
         CHAR_getInt(attackindex, CHAR_HP) > 0) {
       BATTLE_EscapeDpSend(battleindex, attackindex);
       BATTLE_GetDuelPoint(battleindex, side, SubNo);
     }
 
-#ifdef _ALLBLUES_LUA_1_4
-    BattleEscape(battleindex, attackindex);
-#endif
-
     CHAR_setWorkInt(attackindex, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_FINAL);
     CHAR_DischargePartyNoMsg(attackindex);
     BATTLE_Exit(attackindex, battleindex);
-  } else {
-    // if( getBattleDebugMsg( ) != 0 ){
-    // snprintf( szBuffer, sizeof(szBuffer), "(%s)�������(%d%%)",
-    //	CHAR_getUseName( attackindex ), iPar
-    //);
-    // BATTLE_BroadCast( battleindex, szBuffer,
-    //	(attackNo >= 10)? CHAR_COLORGRAY : CHAR_COLORPURPLE ) ;
-    //}
   }
   snprintf(szCommand, sizeof(szCommand), "f%X|", flg);
   BATTLESTR_ADD(szCommand);
@@ -5551,21 +5508,9 @@ BOOL BATTLE_Abduct(int battleindex, int attackNo, int defNo, int array) {
   if (BattleArray[battleindex].WinFunc != NULL) {
     per = 0;
   }
-#ifdef _ALLBLUES_LUA
-  else if (CHAR_getInt(BattleArray[battleindex].createindex, CHAR_WHICHTYPE) ==
-           CHAR_TYPELUANPC) {
-    per = 0;
-  }
-#endif
   iRet = TRUE;
   if (RAND(1, 100) < per) {
     flg = 1;
-    // snprintf( szBuffer, sizeof(szBuffer),
-    //	"(%s)����(%s)�뿪�ô�(%d%%)",
-    //	CHAR_getUseName( attackindex ),
-    //	CHAR_getUseName( defindex ),
-    //	per
-    //);
     if (Deftype == CHAR_TYPEPET) {
       BATTLE_PetDefaultExit(defoyaindex, battleindex);
       CHAR_setInt(defoyaindex, CHAR_DEFAULTPET, -1);
@@ -5574,18 +5519,8 @@ BOOL BATTLE_Abduct(int battleindex, int attackNo, int defNo, int array) {
     }
   } else {
     flg = 0;
-    // snprintf( szBuffer, sizeof(szBuffer),
-    //	"(%s)�޷�����(%s)һ����ĬĬ���뿪(%d%%)",
-    //	CHAR_getUseName( attackindex ),
-    //	CHAR_getUseName( defindex ),
-    //	per
-    //);
   }
 
-  // if( getBattleDebugMsg( ) != 0 ){
-  //	BATTLE_BroadCast( battleindex, szBuffer,
-  //		(attackNo >= 10)? CHAR_COLORGRAY : CHAR_COLORPURPLE ) ;
-  // }
   sprintf(szCommand, "B!|a%X|d%X|f%X|", attackNo, defNo, flg);
   BATTLESTR_ADD(szCommand);
 
@@ -6590,18 +6525,19 @@ void BATTLE_S_ToothCrushe(int battleindex, int attackindex, int defindex,
               ITEM_getChar(item_index, ITEM_NAME));
       CHAR_talkToCli(defindex, -1, buf2, CHAR_COLORYELLOW);
 
-      LogItem(
-          CHAR_getChar(defindex, CHAR_NAME), CHAR_getChar(defindex, CHAR_CDKEY),
+      LogItem(CHAR_getChar(defindex, CHAR_NAME),
+              CHAR_getChar(defindex, CHAR_CDKEY),
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
-          item_index,
+              item_index,
 #else
-          ITEM_getInt(item_index, ITEM_ID),
+               ITEM_getInt(item_index, ITEM_ID),
 #endif
-          "������𻵶���ʧ",
-          CHAR_getInt(defindex, CHAR_FLOOR), CHAR_getInt(defindex, CHAR_X),
-          CHAR_getInt(defindex, CHAR_Y),
-          ITEM_getChar(item_index, ITEM_UNIQUECODE),
-          ITEM_getChar(item_index, ITEM_NAME), ITEM_getInt(item_index, ITEM_ID));
+              "������𻵶���ʧ",
+              CHAR_getInt(defindex, CHAR_FLOOR), CHAR_getInt(defindex, CHAR_X),
+              CHAR_getInt(defindex, CHAR_Y),
+              ITEM_getChar(item_index, ITEM_UNIQUECODE),
+              ITEM_getChar(item_index, ITEM_NAME),
+              ITEM_getInt(item_index, ITEM_ID));
 
       CHAR_setItemIndex(defindex, crushindex, -1);
       ITEM_endExistItemsOne(item_index);
@@ -10361,8 +10297,7 @@ void BATTLE_BattleModel(int battleindex, int attackNo, int myside) {
                                   iEffect, iTurn, iEffectHit, iType);
       }
     }
-  }
-  else {
+  } else {
     i0 = i;
     for (i = 0; i < iObjectNum; i++) {
       if (AAttackObject[i].index != -1) {

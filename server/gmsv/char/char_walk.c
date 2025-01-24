@@ -1,4 +1,7 @@
 #include "version.h"
+//
+#include "gmsv_server.h"
+//
 #include "battle.h"
 #include "char.h"
 #include "char_base.h"
@@ -6,7 +9,6 @@
 #include "config_file.h"
 #include "encount.h"
 #include "handletime.h"
-#include "gmsv_server.h"
 #include "map_deal.h"
 #include "net.h"
 #include "npc_npcenemy.h"
@@ -14,11 +16,7 @@
 #include "npcutil.h"
 #include "object.h"
 #include "readmap.h"
-#include <ctype.h>
 
-#ifdef _ALLBLUES_LUA
-#include "mylua/function.h"
-#endif
 void CHAR_sendCharaAtWalk(int char_index, int of, int ox, int oy, int xflg,
                           int yflg);
 static void CHAR_sendCDCharaAtWalk(int char_index, int of, int ox, int oy,
@@ -51,11 +49,6 @@ static CHAR_WALKRET CHAR_walk_turn(int index, int dir) {
     case OBJTYPE_ITEM:
       pfunc = (POSTOFUNC)ITEM_getFunctionPointer(OBJECT_getIndex(objindex),
                                                  ITEM_POSTOVERFUNC);
-#ifdef _ALLBLUES_LUA_1_2
-      if (!pfunc) {
-        RunItemPostOverEvent(OBJECT_getIndex(objindex), index);
-      }
-#endif
       break;
     case OBJTYPE_GOLD:
       break;
@@ -246,39 +239,6 @@ static CHAR_WALKRET CHAR_walk_move(int char_index, int dir) {
     switch (OBJECT_getType(objindex)) {
     case OBJTYPE_CHARA:
       if (CHAR_CHECKINDEX(OBJECT_getIndex(objindex)) == TRUE) {
-#ifdef _ALLBLUES_LUA
-        int meindex = -1, toindex = -1;
-        if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-          if (CHAR_getInt(OBJECT_getIndex(objindex), CHAR_WHICHTYPE) ==
-              CHAR_TYPELUANPC) {
-            meindex = OBJECT_getIndex(objindex);
-            toindex = char_index;
-          }
-        } else if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPELUANPC) {
-          if (CHAR_getInt(OBJECT_getIndex(objindex), CHAR_WHICHTYPE) ==
-              CHAR_TYPEPLAYER) {
-            meindex = char_index;
-            toindex = OBJECT_getIndex(objindex);
-          }
-        }
-        if (CHAR_CHECKINDEX(meindex) == TRUE ||
-            CHAR_CHECKINDEX(toindex) == TRUE) {
-          if (CHAR_getWorkInt(meindex, CHAR_WORKBATTLEMODE) ==
-                  BATTLE_CHARMODE_NONE &&
-              CHAR_getWorkInt(toindex, CHAR_WORKBATTLEMODE) ==
-                  BATTLE_CHARMODE_NONE) {
-            if (CHAR_getFlg(meindex, CHAR_ISVISIBLE) == TRUE &&
-                CHAR_getFlg(meindex, CHAR_ISDIE) == FALSE) {
-              if (CHAR_getWorkInt(meindex, CHAR_WORKPARTYMODE) !=
-                      CHAR_PARTY_CLIENT &&
-                  CHAR_getWorkInt(toindex, CHAR_WORKPARTYMODE) !=
-                      CHAR_PARTY_CLIENT) {
-                RunCharOverlapEvent(meindex, toindex);
-              }
-            }
-          }
-        }
-#endif
 #ifdef _PLAYER_OVERLAP_PK
         if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER &&
             CHAR_getInt(OBJECT_getIndex(objindex), CHAR_WHICHTYPE) ==
@@ -344,11 +304,6 @@ static CHAR_WALKRET CHAR_walk_move(int char_index, int dir) {
       case OBJTYPE_ITEM:
         pfunc = (PREOFUNC)ITEM_getFunctionPointer(OBJECT_getIndex(objindex),
                                                   ITEM_PREOVERFUNC);
-#ifdef _ALLBLUES_LUA_1_2
-        if (!pfunc) {
-          RunItemPreOverEvent(OBJECT_getIndex(objindex), char_index);
-        }
-#endif
         break;
       case OBJTYPE_GOLD:
         break;
@@ -393,11 +348,6 @@ static CHAR_WALKRET CHAR_walk_move(int char_index, int dir) {
       case OBJTYPE_ITEM:
         pfunc = (POSTOFUNC)ITEM_getFunctionPointer(OBJECT_getIndex(objindex),
                                                    ITEM_POSTOVERFUNC);
-#ifdef _ALLBLUES_LUA_1_2
-        if (!pfunc) {
-          RunItemPostOverEvent(OBJECT_getIndex(objindex), char_index);
-        }
-#endif
         break;
       case OBJTYPE_GOLD:
         break;
@@ -490,9 +440,6 @@ CHAR_AFTERWALK:
         CHAR_setWorkInt(char_index, CHAR_WORKENCOUNTPROBABILITY_MAX, par);
       }
     }
-#ifdef _ALLBLUES_LUA_1_9
-//			if(WalkFunction( char_index ) == FALSE)
-#endif
     {
       int enfd = getfdFromCharaIndex(char_index);
       int eqen = getEqNoenemy(enfd); // Arminius 7.2: Ra's amulet
@@ -637,9 +584,6 @@ CHAR_AFTERWALK:
 #endif
 #ifdef _PETRACE
              || CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_PETRACEPET
-#endif
-#ifdef _ALLBLUES_LUA
-             || CHAR_getInt(char_index, CHAR_WHICHTYPE) >= CHAR_TYPELUANPC
 #endif
   ) {
     CHAR_setWorkInt(char_index, CHAR_WORKACTION, -1);

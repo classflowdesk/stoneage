@@ -20,9 +20,6 @@
 #include "npcgen.h"
 #include "petmail.h"
 #include "trade.h"
-#ifdef _ALLBLUES_LUA
-#include "mylua/ablua.h"
-#endif
 #ifdef _CHATROOMPROTOCOL
 #include "chatroom.h"
 #endif
@@ -135,22 +132,17 @@ void mainloop(void) {
   NPC_Lua_Init(getLuaFile());
   print("succeed.\n");
 #endif
-#ifdef _ALLBLUES_LUA
-  print("Init allblues lua......");
-  LoadAllbluesLUA("data/ablua");
-  print("succeed.\n");
-#endif
 
 #ifdef _EPOLL_ET_MODE
-  print("������������߳�...");
+  print("Init EPOLL ET MODE...");
   if (Start_PacketWrapper() != 0) {
     print("failed.\n");
     return;
   }
   print("succeed.\n");
-  print("����epoll��ѭ���߳�...");
+  print("Strat epoll loop...");
   if (Start_Epoll_Loop() != 0) {
-    print("ʧ��\n");
+    print("failed.\n");
     return;
   }
   print("succeed.\n");

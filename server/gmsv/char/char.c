@@ -56,9 +56,6 @@ extern int CheckCharMaxItem(int char_index);
 #ifdef _CHATROOMPROTOCOL // (不可开) Syu ADD 聊天室频道
 #include "chatroom.h"
 #endif
-#ifdef _ALLBLUES_LUA
-#include "mylua/function.h"
-#endif
 #ifdef _NPC_EVENT_NOTICE
 #include "npcutil.h"
 #endif
@@ -375,9 +372,6 @@ void CHAR_createNewChar(int clifd, int dataplacenum, char *charname, int imgno,
     return;
   }
 
-#ifdef _ALLBLUES_LUA_1_5
-  FreeCharCreate(char_index);
-#endif
 #ifndef _CANCEL_BORN_PET
 #ifdef _NEW_PLAYER_CF // 新手出生配置
   int petNum = 0;
@@ -563,11 +557,6 @@ void CHAR_loginCheckUserItem(int char_index) {
       if (atf) {
         atf(char_index, item_index);
       }
-#ifdef _ALLBLUES_LUA_1_2
-      else {
-        RunItemAttachEvent(char_index, item_index);
-      }
-#endif
 
       if (ITEM_canuseMagic(item_index)) {
         snprintf(category, sizeof(category), "J%d", i);
@@ -1764,11 +1753,6 @@ void CHAR_login(int clifd, char *data, int saveindex) {
 #else
     AnnounceToPlayerWN(clifd);
 #endif
-#ifdef _ALLBLUES_LUA_1_5
-  if (FreeCharLogin(char_index) == 0) {
-    return;
-  }
-#endif
 
 #ifdef _ANGEL_SUMMON
   {
@@ -2022,16 +2006,6 @@ BOOL CHAR_charSaveFromConnectAndChar(int fd, Char *ch, BOOL unlock) {
                               CONNECT_getFdid(fd));
 #endif
 #ifdef _CHARADATA_SAVE_SQL
-  /*
-    char*  list = CHAR_make_list_String( ch );
-    char*  list_info1 = CHAR_make_list_info1_String( ch );
-    SaacClient_CharadataSaveSQL_send(acfd, ch->string[CHAR_CDKEY].string,
-                                             list,
-                                             list_info1,
-                                             ch->data[CHAR_SAVEINDEXNUMBER],
-                                             0 );
-  */
-
   CHAR_CharadataSaveSQL(ch);
 #endif
   return TRUE;
@@ -2060,14 +2034,7 @@ BOOL CHAR_charSaveFromConnect(int char_index, BOOL unlock) {
   return CHAR_charSaveFromConnectAndChar(fd, ch, unlock);
 }
 
-/*------------------------------------------------------------
- * 夫弘失它玄允月凛卞  匀凶引引夫弘失它玄匹五卅中失奶  丞毛
- *   允
- * 娄醒
- *  char_index  int     平乓仿弁正□及奶件犯永弁旦
- * 忒曰袄
- *  卅仄
- ------------------------------------------------------------*/
+// 有些物品登出就回被丢弃
 static void CHAR_dropItemAtLogout(int char_index) {
   int i;
   for (i = 0; i < CheckCharMaxItem(char_index); i++) {
@@ -2322,12 +2289,6 @@ BOOL _CHAR_logout(char *file, int line, int char_index, BOOL save) {
   playeronlinenum--;
 #endif
 
-#ifdef _ALLBLUES_LUA_1_4
-  RunCharLogOutEvent(char_index);
-#endif
-#ifdef _ALLBLUES_LUA_1_9
-  FreeCharLogout(char_index);
-#endif
   if (save) {
     CHAR_charSaveFromConnect(char_index, TRUE);
   }
@@ -4081,9 +4042,6 @@ int _CHAR_complianceParameter(int index, char *FILE, int LINE) {
   if (CHAR_getInt(index, CHAR_WHICHTYPE) != CHAR_TYPEPLAYER &&
       CHAR_getInt(index, CHAR_WHICHTYPE) != CHAR_TYPEENEMY &&
       CHAR_getInt(index, CHAR_WHICHTYPE) != CHAR_TYPEPET
-#ifdef _ALLBLUES_LUA
-      && CHAR_getInt(index, CHAR_WHICHTYPE) != CHAR_TYPELUANPC
-#endif
 #ifdef _PLAYER_NPC
       && CHAR_getInt(index, CHAR_WHICHTYPE) != CHAR_TYPEPLAYERNPC &&
       CHAR_getInt(index, CHAR_WHICHTYPE) != CHAR_TYPEPLAYERPETNPC
@@ -4110,9 +4068,6 @@ int _CHAR_complianceParameter(int index, char *FILE, int LINE) {
 #endif
 
   Other_DefcharWorkInt(index);
-#ifdef _ALLBLUES_LUA_1_9
-  FreeComplianceParameter(index);
-#endif
   CHAR_setInt(
       index, CHAR_HP,
       min(CHAR_getInt(index, CHAR_HP), CHAR_getWorkInt(index, CHAR_WORKMAXHP)));
@@ -4313,12 +4268,6 @@ void CHAR_Look(int char_index, int dir) {
             if (talkedfunc) {
               talkedfunc(OBJECT_getIndex(objindex), char_index, "hi", 1, -1);
             }
-#ifdef _ALLBLUES_LUA
-            else {
-              RunCharTalkedEvent(OBJECT_getIndex(objindex), char_index, "hi", 1,
-                                 -1);
-            }
-#endif
             return;
           }
         }
@@ -4352,12 +4301,6 @@ void CHAR_Look(int char_index, int dir) {
             if (talkedfunc) {
               talkedfunc(OBJECT_getIndex(objindex), char_index, "hi", 1, -1);
             }
-#ifdef _ALLBLUES_LUA
-            else {
-              RunCharTalkedEvent(OBJECT_getIndex(objindex), char_index, "hi", 1,
-                                 -1);
-            }
-#endif
           }
         }
       }
@@ -5317,14 +5260,7 @@ void CHAR_sendArroundCharaData(int char_index) {
         }
 
         if (OBJECT_getType(objindex) == OBJTYPE_CHARA) {
-          if (CHAR_getInt(c_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER
-#ifdef _ALLBLUES_LUA
-              || CHAR_getInt(c_index, CHAR_WHICHTYPE) >= CHAR_TYPELUANPC
-#endif
-          )
-
-          {
-            /* 苇尹凶平乓仿互醮棉汹五及褪卅日壬伉□母□  憎CA毛霜月 */
+          if (CHAR_getInt(c_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
             if (CHAR_getWorkInt(c_index, CHAR_WORKPARTYMODE) ==
                 CHAR_PARTY_LEADER) {
               if (CHAR_makeCAOPT1String(objindex, cabuf, sizeof(cabuf),
@@ -5783,21 +5719,6 @@ static BOOL CHAR_callLoop(int char_index) {
   old.tv_sec = CHAR_getWorkInt(char_index, CHAR_WORKLOOPSTARTSECAB);
   old.tv_usec = CHAR_getWorkInt(char_index, CHAR_WORKLOOPSTARTMSECAB);
   timediff_us = time_diff_us(NowTime, old);
-#ifdef _ALLBLUES_LUA
-  if (timediff_us >= loopinterval1 * 1000.0 && loopinterval1 > 0) {
-    if (!RunCharLoopEvent(char_index))
-      iRet = FALSE;
-    else
-      iRet = TRUE;
-    if (iRet == FALSE) {
-      CHAR_setInt(char_index, CHAR_LOOPINTERVALAB, 0);
-    }
-    if (CHAR_CHECKINDEX(char_index) == TRUE) {
-      CHAR_setWorkInt(char_index, CHAR_WORKLOOPSTARTSECAB, NowTime.tv_sec);
-      CHAR_setWorkInt(char_index, CHAR_WORKLOOPSTARTMSECAB, NowTime.tv_usec);
-    }
-  }
-#endif
   return iRet;
 }
 
@@ -6557,15 +6478,8 @@ void CHAR_processWindow(int char_index, int seqno, int select, int objindex,
         windowtalkedfunc(OBJECT_getIndex(objindex), char_index, seqno, select,
                          data);
       }
-#ifdef _ALLBLUES_LUA
-      else {
-        RunCharWindowTalked(OBJECT_getIndex(objindex), char_index, seqno,
-                            select, data);
-      }
-#endif
     }
   } else {
-
     if (seqno == CHAR_WINDOWTYPE_SELECTBATTLE) {
       CHAR_JoinBattle_WindowResult(char_index, select, data);
     }
@@ -7236,19 +7150,10 @@ static void CHAR_setMyPosition_sendData(int char_index, int prev_x, int prev_y,
             }
           }
         }
-        /* 苇尹凶平乓仿互爵    卅日爵  失奶戊件  憎    毛霜月 */
-#ifdef _ALLBLUES_LUA
-        if ((CHAR_getInt(c_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER ||
-             CHAR_getInt(c_index, CHAR_WHICHTYPE) >= CHAR_TYPELUANPC) &&
-            CHAR_getWorkInt(c_index, CHAR_WORKBATTLEMODE) !=
-                BATTLE_CHARMODE_NONE)
-#else
           if (CHAR_getInt(c_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER &&
               CHAR_getWorkInt(c_index, CHAR_WORKBATTLEMODE) !=
                   BATTLE_CHARMODE_NONE)
-#endif
         {
-          /* 棋爵CA */
           if (CHAR_getWorkInt(c_index, CHAR_WORKBATTLEWATCH) == TRUE) {
             if (CHAR_makeCAOPT1String(CurrentObjCollection[i], cabuf,
                                       sizeof(cabuf), CHAR_ACTBATTLEWATCH, 1)) {
@@ -7264,7 +7169,6 @@ static void CHAR_setMyPosition_sendData(int char_index, int prev_x, int prev_y,
                  BSIDE_FLG_HELP_OK)
                     ? TRUE
                     : FALSE;
-            /* HelpNo = 1 反移 */
             if (CHAR_makeCAOPT3String(CurrentObjCollection[i], cabuf,
                                       sizeof(cabuf), CHAR_ACTBATTLE, battleno,
                                       sideno, helpno)) {
@@ -7272,7 +7176,6 @@ static void CHAR_setMyPosition_sendData(int char_index, int prev_x, int prev_y,
             }
           }
         }
-        /* 苇尹凶平乓仿互窒井及失弁扑亦件毛仄化中木壬霜月［ */
         if ((CHAR_getInt(c_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER ||
              CHAR_getInt(c_index, CHAR_WHICHTYPE) == CHAR_TYPEPET) &&
             CHAR_getWorkInt(c_index, CHAR_WORKACTION) != -1) {
@@ -8699,28 +8602,20 @@ int storeCharaData(void) {
 #ifdef _PETFOLLOW_NEW_
     CHAR_pickupFollowPet(i, -1);
 #endif
-#ifdef _ALLBLUES_LUA_1_4
-    RunCharLogOutEvent(i);
-#endif
     print(".");
     strcpy(charId, CHAR_getChar(i, CHAR_CDKEY));
-    //    print("账号:%s", charId);
     hash = 0;
     for (j = 0; j < strlen(charId); j++) {
       hash += (int)charId[j];
       hash = hash % 256;
     }
-    //    sprintf( pathname, "%s/char/0x%x", getStoredir(), hash);
     sprintf(pathname, "%s/0x%x", getStoredir(), hash);
-    //    print("文件路径:%s\n", pathname);
     dir = mkdir(pathname, -1);
     if (dir != 0 && errno != EEXIST)
       continue;
-    // print("dir:%d\n", dir);
     sprintf(szFileName, "%s/%s.%d.char", pathname,
             CHAR_getChar(i, CHAR_CDKEY), // ID
             CHAR_getInt(i, CHAR_SAVEINDEXNUMBER));
-    //    print("\n存储:%s\n", szFileName);
     fp = fopen(szFileName, "w");
     if (fp == NULL)
       continue;
@@ -8766,13 +8661,6 @@ int storeCharaData(void) {
     }
 #endif
   }
-
-  //  if( execlp( getStorechar(), "" ) == -1 ) {
-  //    print( " run %s error!:%d\n", getStorechar(), errno );
-  //  }else {
-  //    print( " run %s\n", getStorechar());
-  //  }
-
   print("\n");
   return 0;
 }
@@ -8786,41 +8674,31 @@ int storeCharaData(void) {
     char szFileName[256], *chardata;
     char outbuff[CHARDATASIZE];
     Char *ch;
-
     print(" run_storeCharaData ");
-
     pLtime = localtime(&NowTime.tv_sec);
     charamax = getFdnum();
 
     for (i = 0; i < charamax; i++) {
-
       if (CHAR_getCharUse(i) == FALSE)
         continue;
-
       sprintf(szFileName, "%s/%s_%d%02d%02d_%02d%02d", getStoredir(),
               CHAR_getChar(i, CHAR_CDKEY), // ID
               pLtime->tm_year + 1900, pLtime->tm_mon + 1, pLtime->tm_mday,
               pLtime->tm_hour, pLtime->tm_min);
-
       fp = fopen(szFileName, "w");
       if (fp == NULL)
         continue;
-
       ch = CHAR_getCharPointer(i);
       if (!ch)
         continue;
-
       chardata = CHAR_makeStringFromCharData(ch);
-
       if (makeSaveCharString(outbuff, sizeof(outbuff),
                              CHAR_getChar(i, CHAR_NAME),
                              CHAR_makeOptionString(ch), chardata) == 0) {
-
         fprintf(fp, outbuff);
       } else {
-        fprintf(fp, "本□皮撩  \n");
+        fprintf(fp, "makeSaveCharString Failed.\n");
       }
-
       fclose(fp);
     }
     return 0;

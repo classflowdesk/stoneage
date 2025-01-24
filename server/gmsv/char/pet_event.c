@@ -1,4 +1,7 @@
 #include "version.h"
+//
+#include "gmsv_server.h"
+//
 #include "object.h"
 #include "char_base.h"
 #include "char.h"
@@ -7,15 +10,10 @@
 #include "pet_event.h"
 #include "npcutil.h"
 #include "log.h"
-#include "gmsv_server.h"
 // Arminius 8.14 pet talk
 #include "npc_exchangeman.h"
 #include "npc_eventaction.h"
-#ifdef _ALLBLUES_LUA
-#include "mylua/function.h"
-#endif
 #ifdef _PET_TALK
-//BOOL PetTalk_CheckFree( int meindex, int  toindex, char *buf);
 BOOL PetTalk_CheckFree( int meindex, int talker, char *buf);
 #ifdef _NEW_ITEM_
 
@@ -149,9 +147,6 @@ void PET_Talkfunc( int meindex, int talkerindex, char *msg, int color)
   for( i = 0 ; i < 5 ; i++ )	{
   	strcpy( AllTalk[i], "\0" );
   }
-#ifdef _ALLBLUES_LUA_1_5
-	RunCharTalkedEvent( meindex, talkerindex, msg, color, 1);
-#endif
 
 #ifdef _PET_TALKPRO
   for( i=0;i<PETTALK_MAXID;i++)	{

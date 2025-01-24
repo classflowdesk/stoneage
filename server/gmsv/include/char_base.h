@@ -5,17 +5,10 @@
 #include "skill.h"
 #include "title.h"
 #include "addressbook.h"
-#ifdef _ALLBLUES_LUA
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-#endif
+
 #define CHAR_DELIMITER "\n"
-
 #define NONCHAR_DELIMITER "|"
-
 #define STATUSSENDDELIMITER "|"
-
 #define CHAR_MAXGOLDHAVE    (10000*10000)
 #define CHAR_MAXBANKGOLDHAVE    (10000*10000)
 #define CHAR_MAXFMBANKGOLDHAVE  (10000*100000)
@@ -278,9 +271,6 @@ typedef enum
 
 #ifdef _NPC_WELFARE
   CHAR_TYPEWELFARE,
-#endif
-#ifdef _ALLBLUES_LUA 
-  CHAR_TYPELUANPC,
 #endif
 #ifdef _PLAYER_NPC 
   CHAR_TYPEPLAYERNPC,
@@ -1609,20 +1599,11 @@ typedef enum
   CHAR_ITEMPUTFUNC,
   CHAR_SPECIALTALKEDFUNC,
   CHAR_WINDOWTALKEDFUNC,
+  CHAR_TYPELUANPC,
 #ifdef _USER_CHARLOOPS
   CHAR_LOOPFUNCTEMP1,
   CHAR_LOOPFUNCTEMP2,
   CHAR_BATTLEPROPERTY,
-#endif
-#ifdef _ALLBLUES_LUA
-  CHAR_OVERLAPEDFUNC,
-  CHAR_BATTLEOVERDFUNC,
-#ifdef _ALLBLUES_LUA_1_4
-  CHAR_LOGINOUTFUNC,
-#endif
-#ifdef _ALLBLUES_LUA_1_9
-  CHAR_BATTLESETFUNC,
-#endif
 #endif
   CHAR_LASTFUNCTION,
   CHAR_FUNCTABLENUM = CHAR_LASTFUNCTION,
@@ -1784,13 +1765,8 @@ typedef struct tagChar
 #ifdef _STREET_VENDOR
   StreetVendor_t StreetVendor[MAX_SELL_ITEM];
 #endif
-#ifdef _ALLBLUES_LUA
-  lua_State *lua[CHAR_FUNCTABLENUM];
-  char *luafunctable[CHAR_FUNCTABLENUM];
-#endif
 #ifdef _JZ_NEWSCRIPT_LUA
   STRING32 lua_charfunctable[CHAR_FUNCTABLENUM];
-
   void* sur_functable[CHAR_FUNCTABLENUM];
   STRING32 sur_charfunctable[CHAR_FUNCTABLENUM];
 #endif
@@ -1878,12 +1854,6 @@ extern Char *CHAR_chara;
 INLINE int CHAR_getCharMakeSequenceNumber( int char_index );
 void CHAR_constructFunctable( int char_index );
 void* CHAR_getFunctionPointer( int char_index, int functype );
-#ifdef _ALLBLUES_LUA
-
-INLINE BOOL CHAR_setLUAFunction( int char_index, int functype, lua_State *L, const char *luafunctable );
-INLINE BOOL CHAR_delLUAFunction( int char_index, int functype);
-INLINE lua_State *CHAR_getLUAFunction( int char_index, int functype);
-#endif
 BOOL CHAR_initCharArray( int pnum,  int petnum,int onum );
 BOOL CHAR_endCharArray( void );
 int CHAR_initCharOneArray( Char* ch );

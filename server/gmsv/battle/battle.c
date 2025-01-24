@@ -39,11 +39,6 @@
 #include "profession_skill.h"
 #include "skill.h"
 #endif
-#ifdef _ALLBLUES_LUA
-#include "mylua/function.h"
-#include "mylua/mylua.h"
-extern MY_Lua MYLua;
-#endif
 
 #ifdef _ABSOLUTE_DEBUG
 extern int debugline;
@@ -1127,9 +1122,6 @@ INLINE int _BATTLE_Exit(char *file, int line, int char_index, int battleindex) {
         floorid == 4032) {
       CHAR_setWorkInt(char_index, CHAR_WORKDBATTLETIME, time(NULL));
     }
-#endif
-#ifdef _ALLBLUES_LUA_1_4
-    BattleFinish(battleindex, char_index);
 #endif
   }
   if (BattleArray[battleindex].type == BATTLE_TYPE_P_vs_E) {
@@ -2419,9 +2411,6 @@ int BATTLE_CreateVsEnemyNew(int char_index, int npcindex, int *table) {
       // int ENEMY_RandomChange( int enemy_index, int tempno ){
       BATTLE_EnemyRandowSetSkill(enemy_index, skillType);
     }
-#ifdef _ALLBLUES_LUA_1_9
-    SetBattleEnmeyFunction(npcindex, enemy_index, i);
-#endif
 
     if ((iRet = BATTLE_NewEntry(enemy_index, battleindex, 1))) {
       goto BATTLE_CreateVsEnemy_End;
@@ -2613,9 +2602,6 @@ int BATTLE_CreateVsEnemyLvNew(int char_index, int npcindex, int *table,
       // int ENEMY_RandomChange( int enemy_index, int tempno ){
       BATTLE_EnemyRandowSetSkill(enemy_index, skillType);
     }
-#ifdef _ALLBLUES_LUA_1_9
-    SetBattleEnmeyFunction(npcindex, enemy_index, i);
-#endif
 
     if ((iRet = BATTLE_NewEntry(enemy_index, battleindex, 1))) {
       goto BATTLE_CreateVsEnemy_End;
@@ -2740,16 +2726,6 @@ int BATTLE_CreateVsEnemy(int char_index, int mode, int npcindex) {
   battleindex = BATTLE_CreateBattle();
   if (battleindex < 0)
     return BATTLE_ERR_NOTASK;
-
-#ifdef _ALLBLUES_LUA_1_7
-  if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-    if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
-        BATTLE_CHARMODE_NONE) {
-      if (CharVsEnemyFunction(char_index) == TRUE)
-        return 0;
-    }
-  }
-#endif
 
   if (CHAR_CHECKINDEX(npcindex)) {
     skillType = CHAR_getWorkInt(npcindex, CHAR_NPCWORKINT11);
@@ -3734,16 +3710,8 @@ int BATTLE_GetExp(int char_index)
   if (getexp < 0 ||
       CHAR_GetLevelExp(char_index, CHAR_getInt(char_index, CHAR_LV) + 1) ==
           -1) {
-#ifdef _ALLBLUES_LUA_1_9
-    FreeCharExpSave(char_index, getexp);
-#endif
     getexp = 0;
   }
-#ifdef _ALLBLUES_LUA_1_9
-  addexp = FreeModeExp(char_index, getexp, modexp);
-#else
-  addexp = getexp + ((getexp * modexp * 2) / 100);
-#endif
 #ifdef _GET_BATTLE_EXP
   // addexp += getexp * getBattleexp();
 #endif
@@ -4478,22 +4446,6 @@ static int BATTLE_Finish(int battleindex) {
     BattleArray[battleindex].WinFunc(battleindex,
                                      BattleArray[battleindex].createindex);
   }
-#ifdef _ALLBLUES_LUA
-  if (BattleArray[battleindex].type == BATTLE_TYPE_P_vs_E) {
-    if (CHAR_CHECKINDEX(BattleArray[battleindex].createindex) == TRUE) {
-      CHAR_setWorkInt(BattleArray[battleindex].createindex, CHAR_WORKBATTLEMODE,
-                      BATTLE_CHARMODE_NONE);
-      CHAR_sendBattleEffect(BattleArray[battleindex].createindex, OFF);
-      if (BattleArray[battleindex].winside == -1) {
-        RunCharBattleOverEvent(BattleArray[battleindex].createindex,
-                               battleindex, 1);
-      } else {
-        RunCharBattleOverEvent(BattleArray[battleindex].createindex,
-                               battleindex, 0);
-      }
-    }
-  }
-#endif
 #ifdef _BATTLE_PK
   if (CHAR_CHECKINDEX(BattleArray[battleindex].rivalindex) &&
       CHAR_CHECKINDEX(BattleArray[battleindex].leaderindex)) {
@@ -4563,12 +4515,6 @@ static int BATTLE_Finish(int battleindex) {
 
         CHAR_setInt(winindex, CHAR_DUELSTWINCOUNT,
                     CHAR_getInt(winindex, CHAR_DUELSTWINCOUNT) + 1);
-
-#ifdef _ALLBLUES_LUA_1_9
-        BattleFinishFunction(winindex, BattleArray[battleindex].CreateTime,
-                             BattleArray[battleindex].turn, 1);
-#endif
-
         CHAR_setInt(winindex, CHAR_DUELBATTLECOUNT,
                     CHAR_getInt(winindex, CHAR_DUELBATTLECOUNT) + 1);
         CHAR_setInt(winindex, CHAR_DUELWINCOUNT,
@@ -4588,10 +4534,6 @@ static int BATTLE_Finish(int battleindex) {
         CHAR_setInt(lostindex, CHAR_DUELSTLOSECOUNT,
                     CHAR_getInt(lostindex, CHAR_DUELSTLOSECOUNT) + 1);
 
-#ifdef _ALLBLUES_LUA_1_9
-        BattleFinishFunction(lostindex, BattleArray[battleindex].CreateTime,
-                             BattleArray[battleindex].turn, 0);
-#endif
         CHAR_setInt(lostindex, CHAR_DUELBATTLECOUNT,
                     CHAR_getInt(lostindex, CHAR_DUELBATTLECOUNT) + 1);
         CHAR_setInt(lostindex, CHAR_DUELLOSECOUNT,
@@ -4975,10 +4917,6 @@ static int BATTLE_Command(int battleindex) {
       char_index = pBattle->Side[j].Entry[i].char_index;
       if (CHAR_CHECKINDEX(char_index) == TRUE) {
         if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-
-#ifdef _ALLBLUES_LUA_1_9
-//				BattleCommand( char_index, battleindex );
-#endif
 
 #ifdef _BATTLE_BOUT_TIME
           if (CHAR_getInt(char_index, CHAR_FLOOR) == 40001 ||
@@ -10895,12 +10833,6 @@ BOOL CHECK_ITEM_RELIFE(int battleindex, int toindex) {
       Drf(toindex, item_index, i);
       return TRUE;
     }
-#ifdef _ALLBLUES_LUA_1_2
-    else {
-      if (RunItemDieReLifeEvent(toindex, item_index, i) == TRUE)
-        return TRUE;
-    }
-#endif
   }
 
   return FALSE;
@@ -11335,43 +11267,6 @@ void BATTLE_ProfessionStatusSeq(int battleindex, int char_index) {
   return;
 }
 
-#endif
-
-#ifdef _ALLBLUES_LUA_1_4
-INLINE BOOL BATTLE_setLUAFunction(int battleindex, int functype, lua_State *L,
-                                  const char *luafunctable) {
-  if (!BATTLE_CHECKINDEX(battleindex))
-    return FALSE;
-
-  if (functype < 0 || functype >= BATTLE_FUNCTABLENUM)
-    return FALSE;
-
-  BattleArray[battleindex].lua[functype] = L;
-  BattleArray[battleindex].luafunctable[functype] =
-      allocateMemory(strlen(luafunctable));
-  memset(BattleArray[battleindex].luafunctable[functype], 0,
-         strlen(luafunctable));
-  strcpy(BattleArray[battleindex].luafunctable[functype], luafunctable);
-
-  return TRUE;
-}
-
-INLINE lua_State *BATTLE_getLUAFunction(int battleindex, int functype) {
-
-  if (!BATTLE_CHECKINDEX(battleindex))
-    return NULL;
-
-  if (functype < 0 || functype >= BATTLE_FUNCTABLENUM)
-    return NULL;
-
-  if (BattleArray[battleindex].lua[functype] == NULL) {
-    return NULL;
-  }
-
-  lua_getglobal(BattleArray[battleindex].lua[functype],
-                BattleArray[battleindex].luafunctable[functype]);
-  return BattleArray[battleindex].lua[functype];
-}
 #endif
 
 int BATTLE_getType(int battleindex) {

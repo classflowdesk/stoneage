@@ -36,9 +36,6 @@
 #ifdef _PROFESSION_SKILL // WON ADD ����ְҵ����
 #include "profession_skill.h"
 #endif
-#ifdef _ALLBLUES_LUA
-#include "mylua/mylua.h"
-#endif
 #ifdef _ONLINE_SHOP
 #include "longzoro/newshop.h"
 #endif

@@ -1,10 +1,12 @@
 #include "version.h"
+//
+#include "gmsv_server.h"
+//
 #include "battle.h"
 #include "pet.h"
 #include "function.h"
 #include "handletime.h"
 #include "log.h"
-#include "gmsv_server.h"
 #include "map_deal.h"
 #include "object.h"
 #include "petmail.h"

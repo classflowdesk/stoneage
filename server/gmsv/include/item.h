@@ -288,10 +288,6 @@ typedef struct tagItem {
   STRING64 string[ITEM_CHAR_DATA_ENUM_MAX];
   int workint[ITEM_WORKDATAINTNUM];
   void *functable[ITEM_LASTFUNCTION - ITEM_FIRSTFUNCTION];
-#ifdef _ALLBLUES_LUA_1_2
-  lua_State *lua[ITEM_LASTFUNCTION - ITEM_FIRSTFUNCTION];
-  char *luafunctable[ITEM_LASTFUNCTION - ITEM_FIRSTFUNCTION];
-#endif
 #ifdef _JZ_NEWSCRIPT_LUA
   STRING32 lua_charfunctable[ITEM_LASTFUNCTION - ITEM_FIRSTFUNCTION];
   void *sur_functable[ITEM_LASTFUNCTION - ITEM_FIRSTFUNCTION];
@@ -349,21 +345,6 @@ void ITEM_constructFunctable(int item_index);
   _ITEM_getFunctionPointer(item_index, functype, __FILE__, __LINE__)
 void *_ITEM_getFunctionPointer(int item_index, int functype, char *file,
                                int line);
-#ifdef _ALLBLUES_LUA_1_2
-typedef struct ITEM_tagLuaFunc {
-  lua_State *lua;
-  char luafuncname[128];
-  char luafunctable[128];
-  struct ITEM_tagLuaFunc *next;
-} ITEM_LuaFunc;
-
-INLINE BOOL ITEM_setLUAFunction(int item_index, int function_type,
-                                const char *lua_function_name);
-INLINE lua_State *ITEM_getLUAFunction(int item_index, int function_type);
-
-BOOL ITEM_addLUAListFunction(lua_State *L, const char *lua_function_name,
-                             const char *lua_function_table);
-#endif
 INLINE ITEM_Item *ITEM_getItemPointer(int index);
 int ITEM_getItemMaxIdNum(void);
 

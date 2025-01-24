@@ -16,6 +16,7 @@
 #include "family.h"
 #include "handletime.h"
 #include "item.h"
+#include "item_event.h"
 #include "log.h"
 #include "magic.h"
 #include "net.h"
@@ -24,7 +25,6 @@
 #include "pet.h"
 #include "readmap.h"
 #include "util.h"
-#include "item_event.h"
 #ifdef _Item_ReLifeAct
 #include "battle_magic.h"
 #endif
@@ -51,15 +51,16 @@ extern tagRidePetTable ridePetTable[296];
 extern int CheckCharMaxItem(int char_index);
 #endif
 
-
 int ITEM_TimeDelCheck(int item_index) {
   int player_idx, player_item_idx, player_num;
   player_num = CHAR_getPlayerMaxNum();
   for (player_idx = 0; player_idx < player_num; player_idx++) {
     if (CHAR_CHECKINDEX(player_idx)) {
-      for (player_item_idx = 0; player_item_idx < CheckCharMaxItem(player_idx); player_item_idx++) {
+      for (player_item_idx = 0; player_item_idx < CheckCharMaxItem(player_idx);
+           player_item_idx++) {
         if (CHAR_getItemIndex(player_idx, player_item_idx) == item_index) {
-          print("����Ч��ʱ���ѵ���������ֵ��ߴ���(%s)(%s)\n", CHAR_getUseName(player_idx),
+          print("����Ч��ʱ���ѵ���������ֵ��ߴ���(%s)(%s)\n",
+                CHAR_getUseName(player_idx),
                 ITEM_getAppropriateName(item_index));
           return FALSE;
         }
@@ -98,7 +99,7 @@ int ITEM_eventDrop(int item_index, int char_index, int itemchar_index) {
 #ifdef _add_item_log_name // WON ADD
             item_index,
 #else
-             ITEM_getInt(item_index, ITEM_ID),
+            ITEM_getInt(item_index, ITEM_ID),
 #endif
             "Drop&Delete(��������ʧ)", CHAR_getInt(char_index, CHAR_FLOOR),
             CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -119,7 +120,7 @@ typedef struct {
   char *onmessage;  /*  ����������  ٯ      */
   char *offmessage; /*  ����������  ٯ      */
   int element;      /* ���ޱ�ئ��ۢ�� */
-  int maxElement; /* element*/
+  int maxElement;   /* element*/
 } ITEM_EFFECTPARAM;
 static ITEM_EFFECTPARAM ITEM_restorableParam[] = {
     {"hp", "HP�ظ��ˡ�", "HP�����ˡ�", CHAR_HP, CHAR_WORKMAXHP},
@@ -127,11 +128,13 @@ static ITEM_EFFECTPARAM ITEM_restorableParam[] = {
 };
 static ITEM_EFFECTPARAM ITEM_statusParam[] = {
     {"po", CHAR_POISONSTRING, CHAR_RECOVERPOISONSTRING, CHAR_POISON, UNDEF},
-    {"pa", CHAR_PARALYSISSTRING, CHAR_RECOVERPARALYSISSTRING, CHAR_PARALYSIS, UNDEF},
+    {"pa", CHAR_PARALYSISSTRING, CHAR_RECOVERPARALYSISSTRING, CHAR_PARALYSIS,
+     UNDEF},
     {"si", CHAR_SILENCESTRING, CHAR_RECOVERSILENCESTRING, CHAR_SLEEP, UNDEF},
     {"st", CHAR_STONESTRING, CHAR_RECOVERSTONESTRING, CHAR_STONE, UNDEF},
     {"da", CHAR_DARKNESSSTRING, CHAR_RECOVERDARKNESSSTRING, CHAR_DRUNK, UNDEF},
-    {"co", CHAR_CONFUSIONSTRING, CHAR_RECOVERCONFUSIONSTRING, CHAR_CONFUSION, UNDEF},
+    {"co", CHAR_CONFUSIONSTRING, CHAR_RECOVERCONFUSIONSTRING, CHAR_CONFUSION,
+     UNDEF},
 };
 
 static BOOL ITEM_isValidEffect(char *cmd, int value) {
@@ -334,14 +337,16 @@ void ITEM_SandClockLogout(int char_index) {
   }
 }
 
-BOOL ITEM_getArgument(const char *argument, const char *entry, char *val, const int val_len) {
+BOOL ITEM_getArgument(const char *argument, const char *entry, char *val,
+                      const int val_len) {
   int i;
   const int key_len = 512;
   char key[key_len];
   char segment[key_len];
   BOOL ret;
   for (i = 1;; i++) {
-    ret = getStringFromIndexWithDelim(argument, "|", i, segment, sizeof(segment));
+    ret =
+        getStringFromIndexWithDelim(argument, "|", i, segment, sizeof(segment));
     if (ret == TRUE) {
       ret &= getStringFromIndexWithDelim(segment, ":", 1, key, key_len);
       ret &= getStringFromIndexWithDelim(segment, ":", 2, val, val_len);
@@ -435,7 +440,7 @@ void ITEM_DeleteTimeWatched(int objindex, int moveobjindex, CHAR_ACTION act,
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
               item_index,
 #else
-               ITEM_getInt(item_index, ITEM_ID),
+              ITEM_getInt(item_index, ITEM_ID),
 #endif
               "TiemDelete", OBJECT_getFloor(objindex), OBJECT_getX(objindex),
               OBJECT_getY(objindex), ITEM_getChar(item_index, ITEM_UNIQUECODE),
@@ -463,8 +468,8 @@ void ITEM_useEffectTohelos(int char_index, int to_char_index,
 
   CHAR_setItemIndex(char_index, haveitem_index, -1);
   CHAR_sendItemDataOne(char_index, haveitem_index);
-  ret = getStringFromIndexWithDelim(ITEM_getChar(item_index, ITEM_ARGUMENT), "|",
-                                    1, buf, sizeof(buf));
+  ret = getStringFromIndexWithDelim(ITEM_getChar(item_index, ITEM_ARGUMENT),
+                                    "|", 1, buf, sizeof(buf));
   if (ret != TRUE) {
     {
       LogItem(CHAR_getChar(char_index, CHAR_NAME),
@@ -472,7 +477,7 @@ void ITEM_useEffectTohelos(int char_index, int to_char_index,
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
               item_index,
 #else
-               ITEM_getInt(item_index, ITEM_ID),
+              ITEM_getInt(item_index, ITEM_ID),
 #endif
               "FieldErrorUse", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -486,8 +491,8 @@ void ITEM_useEffectTohelos(int char_index, int to_char_index,
   cutrate = atoi(buf);
   if (cutrate < 0)
     cutrate = 0;
-  ret = getStringFromIndexWithDelim(ITEM_getChar(item_index, ITEM_ARGUMENT), "|",
-                                    2, buf, sizeof(buf));
+  ret = getStringFromIndexWithDelim(ITEM_getChar(item_index, ITEM_ARGUMENT),
+                                    "|", 2, buf, sizeof(buf));
   if (ret != TRUE) {
     {
       LogItem(CHAR_getChar(char_index, CHAR_NAME),
@@ -495,7 +500,7 @@ void ITEM_useEffectTohelos(int char_index, int to_char_index,
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
               item_index,
 #else
-               ITEM_getInt(item_index, ITEM_ID),
+              ITEM_getInt(item_index, ITEM_ID),
 #endif
               "FieldUse", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -532,7 +537,7 @@ void ITEM_useEffectTohelos(int char_index, int to_char_index,
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
             item_index,
 #else
-             ITEM_getInt(item_index, ITEM_ID),
+            ITEM_getInt(item_index, ITEM_ID),
 #endif
             "FieldUse", CHAR_getInt(char_index, CHAR_FLOOR),
             CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -802,17 +807,16 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitem_index) {
 #ifdef _ITEM_ADDPETEXP
   if ((p = strstr(arg, "GETEXP")) != NULL) {
     if (CHAR_getInt(toindex, CHAR_WHICHTYPE) == CHAR_TYPEPET) {
-      getStringFromIndexWithDelim(arg, "|", 2, msgbuf, sizeof(msgbuf)); // ������
+      getStringFromIndexWithDelim(arg, "|", 2, msgbuf, sizeof(msgbuf));
       if (atoi(msgbuf) == CHAR_getInt(toindex, CHAR_PETID)) {
         getStringFromIndexWithDelim(arg, "|", 3, msgbuf,
-                                    sizeof(msgbuf)); // �ȼ�����(�ȼ������ſ���)
+                                    sizeof(msgbuf));
         if (CHAR_getInt(toindex, CHAR_LV) >= atoi(msgbuf)) {
           getStringFromIndexWithDelim(arg, "|", 4, msgbuf,
-                                      sizeof(msgbuf)); // ����ֵ����
+                                      sizeof(msgbuf));
           if (CHAR_getInt(toindex, CHAR_LV) < CHAR_MAXUPLEVEL) {
             int UpLevel = 0;
-            CHAR_setWorkInt(toindex, CHAR_WORKGETEXP,
-                            atoi(msgbuf)); // �ش�CHAR_WORKGETEXP
+            CHAR_setWorkInt(toindex, CHAR_WORKGETEXP, atoi(msgbuf));
             CHAR_AddMaxExp(toindex, CHAR_getWorkInt(toindex, CHAR_WORKGETEXP));
             sprintf(msgbuf, "��ʯͷ���治֪����ʲ�����Ŀ����ҿ�����(���Ӿ���%d)",
                     CHAR_getWorkInt(toindex, CHAR_WORKGETEXP));
@@ -834,12 +838,6 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitem_index) {
           } else {
             CHAR_talkToCli(char_index, -1, "����ʹ��", CHAR_COLORWHITE);
           }
-          /*CHAR_send_P_StatusString(  charindex, CHAR_P_STRING_DUELPOINT|
-          CHAR_P_STRING_TRANSMIGRATION| CHAR_P_STRING_RIDEPET|
-          CHAR_P_STRING_BASEBASEIMAGENUMBER| CHAR_P_STRING_GOLD|
-          CHAR_P_STRING_EXP| CHAR_P_STRING_LV|
-          CHAR_P_STRING_HP|CHAR_P_STRING_LEARNRIDE);
-        */
         } else
           CHAR_talkToCli(
               char_index, -1,
@@ -1008,7 +1006,7 @@ void ITEM_useRecovery_Field(int char_index, int toindex, int haveitem_index) {
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
             item_index,
 #else
-             ITEM_getInt(item_index, ITEM_ID),
+            ITEM_getInt(item_index, ITEM_ID),
 #endif
             "FieldUse", CHAR_getInt(char_index, CHAR_FLOOR),
             CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -1148,7 +1146,7 @@ void ITEM_useOtherEditBase(int char_index, int toindex, int haveitem_index) {
 void ITEM_useStatusChange(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
-    return; // ����
+    return; //
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
@@ -1160,12 +1158,11 @@ void ITEM_useStatusChange(int char_index, int toindex, int haveitem_index) {
 void ITEM_useStatusRecovery(int char_index, int toindex, int haveitem_index) {
   int battlemode;
   if (CHAR_CHECKINDEX(char_index) == FALSE)
-    return; // ����
+    return;
   battlemode = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE);
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
     ITEM_useStatusRecovery_Battle(char_index, toindex, haveitem_index);
-  } else {
   }
 }
 
@@ -1177,7 +1174,6 @@ void ITEM_useMagicDef(int char_index, int toindex, int haveitem_index) {
   if (battlemode == BATTLE_CHARMODE_INIT) {
   } else if (battlemode) {
     ITEM_useMagicDef_Battle(char_index, toindex, haveitem_index);
-  } else {
   }
 }
 
@@ -1251,9 +1247,10 @@ static void ITEM_usePetSkillCanned_PrintWindow(int char_index, int flg) {
     return;
 
   sprintf(message, "%d", flg);
-  GmsvServer_WN_send(fd, WINDOWS_MESSAGETYPE_PETSKILLSHOW, WINDOW_BUTTONTYPE_NONE,
-                   ITEM_WINDOWTYPE_SELECTPETSKILL_SELECT, -1,
-                   makeEscapeString(message, buf, sizeof(buf)));
+  GmsvServer_WN_send(fd, WINDOWS_MESSAGETYPE_PETSKILLSHOW,
+                     WINDOW_BUTTONTYPE_NONE,
+                     ITEM_WINDOWTYPE_SELECTPETSKILL_SELECT, -1,
+                     makeEscapeString(message, buf, sizeof(buf)));
 }
 
 void ITEM_usePetSkillCanned_WindowResult(int char_index, int seqno, int select,
@@ -1442,8 +1439,8 @@ static void ITEM_useRenameItem_PrintWindow(int char_index, int page) {
     break;
   }
   GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, btntype,
-                   CHAR_WINDOWTYPE_SELECTRENAMEITEM_PAGE1 + page, -1,
-                   makeEscapeString(message, buf, sizeof(buf)));
+                     CHAR_WINDOWTYPE_SELECTRENAMEITEM_PAGE1 + page, -1,
+                     makeEscapeString(message, buf, sizeof(buf)));
 }
 
 void ITEM_useRenameItem(int char_index, int toindex, int haveitem_index) {
@@ -1510,7 +1507,7 @@ void ITEM_useRenameItem_WindowResult(int char_index, int seqno, int select,
       int item_index;
       if (haveitem_index == -1) {
         haveitem_index = (seqno - CHAR_WINDOWTYPE_SELECTRENAMEITEM_PAGE1) * 5 +
-                        (atoi(data) - 1);
+                         (atoi(data) - 1);
         CHAR_setWorkInt(char_index, CHAR_WORKRENAMEITEMNUM, haveitem_index);
       }
       item_index = CHAR_getItemIndex(char_index, haveitem_index);
@@ -1522,9 +1519,9 @@ void ITEM_useRenameItem_WindowResult(int char_index, int seqno, int select,
                ITEM_getChar(item_index, ITEM_NAME));
 
       GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                       WINDOW_BUTTONTYPE_OKCANCEL,
-                       CHAR_WINDOWTYPE_SELECTRENAMEITEM_RENAME, -1,
-                       makeEscapeString(message, buf, sizeof(buf)));
+                         WINDOW_BUTTONTYPE_OKCANCEL,
+                         CHAR_WINDOWTYPE_SELECTRENAMEITEM_RENAME, -1,
+                         makeEscapeString(message, buf, sizeof(buf)));
     }
   } else {
     BOOL flg = FALSE;
@@ -1567,8 +1564,8 @@ void ITEM_useRenameItem_WindowResult(int char_index, int seqno, int select,
 
     if (!flg) {
       GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK,
-                       CHAR_WINDOWTYPE_SELECTRENAMEITEM_RENAME_ATTENTION, -1,
-                       makeEscapeString(message, buf, sizeof(buf)));
+                         CHAR_WINDOWTYPE_SELECTRENAMEITEM_RENAME_ATTENTION, -1,
+                         makeEscapeString(message, buf, sizeof(buf)));
     } else {
       char haveitem_index = CHAR_getWorkInt(char_index, CHAR_WORKRENAMEITEMNUM);
       int item_index;
@@ -1584,7 +1581,8 @@ void ITEM_useRenameItem_WindowResult(int char_index, int seqno, int select,
       }
       ITEM_setChar(item_index, ITEM_SECRETNAME, data);
 #ifndef _PET_AND_ITEM_UP
-      ITEM_setChar(item_index, ITEM_CDKEY, CHAR_getChar(char_index, CHAR_CDKEY));
+      ITEM_setChar(item_index, ITEM_CDKEY,
+                   CHAR_getChar(char_index, CHAR_CDKEY));
 #endif
       CHAR_sendItemDataOne(char_index, haveitem_index);
       snprintf(msgbuf, sizeof(msgbuf), "�� %s ������ %s ",
@@ -1645,7 +1643,8 @@ void ITEM_pickupDice(int char_index, int item_index) {
   ITEM_setInt(item_index, ITEM_BASEIMAGENUMBER,
               ITEM_getInt(item_index, ITEM_VAR1));
   //   ������  ��
-  ITEM_setChar(item_index, ITEM_SECRETNAME, ITEM_getChar(item_index, ITEM_NAME));
+  ITEM_setChar(item_index, ITEM_SECRETNAME,
+               ITEM_getChar(item_index, ITEM_NAME));
 }
 enum {
   ITEM_LOTTERY_1ST, // 1�
@@ -2083,7 +2082,8 @@ void ITEM_petFollowNew(int char_index, int toindex, int haveitem_index) {
     if (CHAR_getWorkInt(char_index, CHAR_WORKPETFOLLOW + petnum) != -1) {
       if (CHAR_CHECKINDEX(
               CHAR_getWorkInt(char_index, CHAR_WORKPETFOLLOW + petnum))) {
-        // CHAR_talkToCli( char_index, -1, "�����ջطų��ĳ��", CHAR_COLORWHITE
+        // CHAR_talkToCli( char_index, -1, "�����ջطų��ĳ��",
+        // CHAR_COLORWHITE
         // ); return;
         c++;
       } else
@@ -2876,10 +2876,11 @@ void ITEM_metamo(int char_index, int toindex, int haveitem_index) {
 #endif
 #ifdef _PETSKILL_BECOMEPIG
   if (CHAR_getInt(char_index, CHAR_BECOMEPIG) > -1) { // ���������
-    CHAR_talkToCli(char_index, -1,
-                   "�޷��������������в��ܱ����"
-                   "�",
-                   CHAR_COLORYELLOW);
+    CHAR_talkToCli(
+        char_index, -1,
+        "�޷��������������в��ܱ����"
+        "�",
+        CHAR_COLORYELLOW);
     return;
   }
 #endif
@@ -3814,7 +3815,7 @@ void ITEM_ThrowItemBox(int char_index, int toindex, int haveitem_index) {
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
               item_index,
 #else
-               ITEM_getInt(item_index, ITEM_ID),
+              ITEM_getInt(item_index, ITEM_ID),
 #endif
               "WarpManDelItem", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -3893,7 +3894,8 @@ void ITEM_LoverSelectUser(int char_index, int toindex, int haveitem_index) {
       CHAR_talkToCli(char_index, -1, "����ѡ���Լ�ʹ�á�", CHAR_COLORYELLOW);
       return;
     }
-    ITEM_setChar(item_index, ITEM_FORUSERNAME, CHAR_getChar(toindex, CHAR_NAME));
+    ITEM_setChar(item_index, ITEM_FORUSERNAME,
+                 CHAR_getChar(toindex, CHAR_NAME));
     ITEM_setChar(item_index, ITEM_FORUSERCDKEY,
                  CHAR_getChar(toindex, CHAR_CDKEY));
     ITEM_setInt(item_index, ITEM_TARGET, 0);
@@ -4058,10 +4060,11 @@ void ITEM_changePetOwner(int char_index, int toindex, int haveitem_index) {
       CHAR_send_K_StatusString(
           char_index, i, CHAR_K_STRING_NAME | CHAR_K_STRING_CHANGENAMEFLG);
 
-  CHAR_talkToCli(char_index, -1,
-                 "��������԰���ֻ����������ˡ"
-                 "�",
-                 CHAR_COLORYELLOW);
+  CHAR_talkToCli(
+      char_index, -1,
+      "��������԰���ֻ����������ˡ"
+      "�",
+      CHAR_COLORYELLOW);
 
   CHAR_DelItemMess(char_index, haveitem_index, 0);
 }
@@ -4326,14 +4329,16 @@ void ITEM_LoverWarp(int char_index, int toindex, int haveitem_index) {
 
     if (checkUnlawWarpFloor(CHAR_getInt(char_index, CHAR_FLOOR))) {
       CHAR_talkToCli(char_index, -1,
-                     "�ܱ�Ǹ�����İ���������ңԶ�ط����޷����͡"
+                     "�ܱ�Ǹ�����İ���������ңԶ�ط����޷����"
+                     "͡"
                      "�",
                      CHAR_COLORYELLOW);
       return;
     } // UNWARP��ͼ��ֹʹ��
     if (checkUnlawWarpFloor(CHAR_getInt(i, CHAR_FLOOR))) {
       CHAR_talkToCli(char_index, -1,
-                     "�ܱ�Ǹ�����İ���������ңԶ�ط����޷����͡"
+                     "�ܱ�Ǹ�����İ���������ңԶ�ط����޷����"
+                     "͡"
                      "�",
                      CHAR_COLORYELLOW);
       return;
@@ -4517,10 +4522,11 @@ void ITEM_ColorMetamo(int char_index, int toindex, int haveitem_index) {
         break;
       }
     default:
-      CHAR_talkToCli(char_index, -1,
-                     "�ý�ָֻ��ӵ��ׯ԰�Ĺ��������Աʹ�ã"
-                     "�",
-                     CHAR_COLORYELLOW);
+      CHAR_talkToCli(
+          char_index, -1,
+          "�ý�ָֻ��ӵ��ׯ԰�Ĺ��������Աʹ�ã"
+          "�",
+          CHAR_COLORYELLOW);
       return;
     }
 #endif
@@ -5072,10 +5078,11 @@ void ITEM_MetamoTime(int char_index, int toindex, int haveitem_index) {
 #endif
 #ifdef _PETSKILL_BECOMEPIG
   if (CHAR_getInt(char_index, CHAR_BECOMEPIG) > -1) { // ���������
-    CHAR_talkToCli(char_index, -1,
-                   "�޷��������������в��ܱ����"
-                   "�",
-                   CHAR_COLORYELLOW);
+    CHAR_talkToCli(
+        char_index, -1,
+        "�޷��������������в��ܱ����"
+        "�",
+        CHAR_COLORYELLOW);
     return;
   }
 #endif
@@ -5547,9 +5554,10 @@ void ITEM_OnlineCost(int char_index, int toindex, int haveitem_index) {
   if (fd == -1)
     return;
 
-  GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                   WINDOW_BUTTONTYPE_OKCANCEL, CHAR_WINDOWTYPE_ONLINE_COST, -1,
-                   makeEscapeString("��������ĳ�ֵ�����봮��\n", buf, sizeof(buf)));
+  GmsvServer_WN_send(
+      fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT, WINDOW_BUTTONTYPE_OKCANCEL,
+      CHAR_WINDOWTYPE_ONLINE_COST, -1,
+      makeEscapeString("��������ĳ�ֵ�����봮��\n", buf, sizeof(buf)));
 
   CHAR_DelItem(char_index, haveitem_index);
 }
@@ -5566,13 +5574,13 @@ void ITEM_OldToNew(int char_index, int toindex, int haveitem_index) {
       return;
     } else {
       SaacClient_OldToNew_send(osfd, getfdFromCharaIndex(char_index),
-                              CHAR_getChar(char_index, CHAR_CDKEY),
-                              CHAR_getInt(char_index, CHAR_AMPOINT));
+                               CHAR_getChar(char_index, CHAR_CDKEY),
+                               CHAR_getInt(char_index, CHAR_AMPOINT));
     }
 #else
     SaacClient_OldToNew_send(acfd, getfdFromCharaIndex(char_index),
-                            CHAR_getChar(char_index, CHAR_CDKEY),
-                            CHAR_getInt(char_index, CHAR_AMPOINT));
+                             CHAR_getChar(char_index, CHAR_CDKEY),
+                             CHAR_getInt(char_index, CHAR_AMPOINT));
 #endif
     CHAR_talkToCli(char_index, -1, "����ת�������Ժ�", CHAR_COLORYELLOW);
 #ifdef _SQL_VIPPOINT_LOG
@@ -5647,8 +5655,8 @@ void ITEM_PointToSQLPkPoint(int char_index, int toindex, int haveitem_index) {
   if (CHAR_getInt(char_index, CHAR_AMPOINT) > 0) {
     CHAR_talkToCli(char_index, -1, "����ת�������Ժ�", CHAR_COLORYELLOW);
     SaacClient_FormulateAutoPk_send(getfdFromCharaIndex(char_index),
-                                   CHAR_getChar(char_index, CHAR_CDKEY),
-                                   CHAR_getInt(char_index, CHAR_AMPOINT));
+                                    CHAR_getChar(char_index, CHAR_CDKEY),
+                                    CHAR_getInt(char_index, CHAR_AMPOINT));
 #ifdef _SQL_VIPPOINT_LOG
     LogSqlVipPoint(CHAR_getChar(char_index, CHAR_NAME),
                    CHAR_getChar(char_index, CHAR_CDKEY), "(����ת��)",
@@ -5735,12 +5743,12 @@ void ITEM_CostItem(int char_index, int toindex, int haveitem_index) {
     return;
   } else {
     SaacClient_CostItem_send(osfd, getfdFromCharaIndex(char_index),
-                            CHAR_getChar(char_index, CHAR_CDKEY),
-                            atoi(itemarg));
+                             CHAR_getChar(char_index, CHAR_CDKEY),
+                             atoi(itemarg));
   }
 #else
   SaacClient_CostItem_send(acfd, getfdFromCharaIndex(char_index),
-                          CHAR_getChar(char_index, CHAR_CDKEY), atoi(itemarg));
+                           CHAR_getChar(char_index, CHAR_CDKEY), atoi(itemarg));
 #endif
   sprintf(token, "����ػر���%d������ȡ����ǰ�ػر�����...", atoi(itemarg));
   CHAR_talkToCli(char_index, -1, token, CHAR_COLORYELLOW);
@@ -5816,11 +5824,13 @@ void ITEM_NullCheck(int char_index, int toindex, int haveitem_index) {
 
     CHAR_setWorkInt(char_index, CHAR_WORKITEMINDEX, item_index);
 
-    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                     WINDOW_BUTTONTYPE_OKCANCEL, CHAR_WINDOWTYPE_NULL_CHECK, -1,
-                     makeEscapeString("��������Ҫ��д�Ļ���֧Ʊ��("
-                                      "���������֣���ֹ�����ַ���)\n",
-                                      buf, sizeof(buf)));
+    GmsvServer_WN_send(
+        fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT, WINDOW_BUTTONTYPE_OKCANCEL,
+        CHAR_WINDOWTYPE_NULL_CHECK, -1,
+        makeEscapeString(
+            "��������Ҫ��д�Ļ���֧Ʊ��("
+            "���������֣���ֹ�����ַ���)\n",
+            buf, sizeof(buf)));
   }
 }
 #endif
