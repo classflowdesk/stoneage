@@ -494,7 +494,7 @@ int Magic_RideGetHP(int toindex, int petindex, int flg) {
 }
 #endif
 
-int MAGIC_Recovery_Battle(int char_index, int toNo, int marray, int mp) {
+int MAGIC_Recovery_Battle(int char_index, int toNo, int magic_index, int mp) {
   char *magicarg;
   float power;
   int battleindex, attackNo, HealedEffect = 0, per = 0;
@@ -504,7 +504,7 @@ int MAGIC_Recovery_Battle(int char_index, int toNo, int marray, int mp) {
   battleindex = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEINDEX);
   attackNo = BATTLE_Index2No(battleindex, char_index);
 
-  range = MAGIC_getInt(marray, MAGIC_TARGET);
+  range = MAGIC_getInt(magic_index, MAGIC_TARGET);
   if (range == 0 && toNo != attackNo) {
     return FALSE;
   }
@@ -513,7 +513,7 @@ int MAGIC_Recovery_Battle(int char_index, int toNo, int marray, int mp) {
   }
   if (BATTLE_CHECKINDEX(battleindex) == FALSE)
     return FALSE;
-  magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   if (magicarg == "\0")
     return FALSE;
   power = atoi(magicarg);
@@ -708,10 +708,16 @@ int BATTLE_CalcCharaRatio(int AttEle, int charaidx) {
   return charahurt;
 }
 
-static int BATTLE_AttrCalc(int My_Fire, int My_Water, int My_Earth, int My_Wind,
-                           int My_None, int Vs_Fire, int Vs_Water, int Vs_Earth,
-                           int Vs_Wind, int Vs_None) {
-  int iRet = 0;
+int BATTLE_AttrCalc(int My_Fire,   // 施法玩家火属性
+                    int My_Water,  // 施法玩家水属性
+                    int My_Earth,  // 施法玩家土属性
+                    int My_Wind,   // 施法玩家风属性
+                    int My_None,   // 施法玩家无属性
+                    int Vs_Fire,   // 目标玩家火属性
+                    int Vs_Water,  // 目标玩家水属性
+                    int Vs_Earth,  // 目标玩家土属性
+                    int Vs_Wind,   // 目标玩家风属性
+                    int Vs_None) { // 目标玩家无属性
   My_Fire = My_Fire * Vs_None * AJ_UP + My_Fire * Vs_Fire * AJ_SAME +
             My_Fire * Vs_Water * AJ_DOWN + My_Fire * Vs_Earth * AJ_SAME +
             My_Fire * Vs_Wind * AJ_UP;
@@ -727,8 +733,7 @@ static int BATTLE_AttrCalc(int My_Fire, int My_Water, int My_Earth, int My_Wind,
   My_None = My_None * Vs_None * AJ_SAME + My_None * Vs_Fire * AJ_DOWN +
             My_None * Vs_Water * AJ_DOWN + My_None * Vs_Earth * AJ_DOWN +
             My_None * Vs_Wind * AJ_DOWN;
-  iRet = (My_Fire + My_Water + My_Earth + My_Wind + My_None);
-  return (iRet * D_ATTR);
+  return (My_Fire + My_Water + My_Earth + My_Wind + My_None) * D_ATTR;
 }
 
 extern float BATTLE_FieldAttAdjust(int battleindex, int pAt_Fire, int pAt_Water,
@@ -1213,7 +1218,6 @@ void BATTLE_MultiAttMagic(int battleindex, int attackNo, int toNo, int attIdx,
                 CHAR_EARTH_ATTMAGIC_EXP + DefFieldAttr, att_magic_exp_sub);
   }
 
-  // ���ط��ľ���ֵ-----------------------------------------------------------------------------
   for (i = 0; i < listidx; i++) {
     if (def_is_player[i] != -1) {
       charaidx = BATTLE_No2Index(battleindex, def_is_player[i]);
@@ -1456,22 +1460,22 @@ void BATTLE_MultiToCallDragonMagic(int battleindex, int attackNo, int toNo,
 #endif
 
 void BATTLE_MultiRessurect(int battleindex, // �������̼������͵�
-                           int attackNo, // ��������  į
-                           int toNo,     // ������ľ����  į
-                           int power,    // ��  �����
-                           int per,      // �Ѿ���
-                           int UseEffect, // �����м��ް�������
-                           int RecevEffect // ������ľ���м��ް�������
+                           int attackNo,    // ��������  į
+                           int toNo,        // ������ľ����  į
+                           int power,       // ��  �����
+                           int per,         // �Ѿ���
+                           int UseEffect,   // �����м��ް�������
+                           int RecevEffect  // ������ľ���м��ް�������
 ) {
   int i, toindex, UpPoint = 0, workhp;
   int ToList[SIDE_OFFSET * 2 + 1];
   char szCommand[256];
   BATTLE_MultiListDead(battleindex, toNo, ToList);
   BATTLE_MagicEffect(battleindex, // �������̼������͵�
-                     attackNo, // ��������  į(��  ���)
-                     ToList, // ������ľ����  į������(��  ���)
-                     UseEffect, // �������оް�������
-                     RecevEffect // ������ľ���оް�������
+                     attackNo,    // ��������  į(��  ���)
+                     ToList,      // ������ľ����  į������(��  ���)
+                     UseEffect,   // �������оް�������
+                     RecevEffect  // ������ľ���оް�������
   );
 
   for (i = 0; ToList[i] != -1; i++) {
@@ -1578,10 +1582,10 @@ void BATTLE_MultiStatusChange(int battleindex, int attackNo, int toNo,
   int ToList[SIDE_OFFSET * 2 + 1];
   BATTLE_MultiList(battleindex, toNo, ToList);
   BATTLE_MagicEffect(battleindex, // �������̼������͵�
-                     attackNo, // ��������  į(��  ���)
-                     ToList, // ������ľ����  į������(��  ���)
-                     UseEffect, // �������оް�������
-                     RecevEffect // ������ľ���оް�������
+                     attackNo,    // ��������  į(��  ���)
+                     ToList,      // ������ľ����  į������(��  ���)
+                     UseEffect,   // �������оް�������
+                     RecevEffect  // ������ľ���оް�������
   );
 
   char_index = BATTLE_No2Index(battleindex, attackNo);
@@ -1664,22 +1668,22 @@ void BATTLE_MultiStatusRecovery(int battleindex, int attackNo, int toNo,
 }
 
 void BATTLE_MultiMagicDef(int battleindex, // �������̼������͵�
-                          int attackNo, // ��������  į
-                          int toNo,     // ������ľ����  į
-                          int kind,     // ����  ܷ  ����
-                          int count,    // ����
-                          int UseEffect, // �����м��ް�������
-                          int RecevEffect // ������ľ���м��ް�������
+                          int attackNo,    // ��������  į
+                          int toNo,        // ������ľ����  į
+                          int kind,        // ����  ܷ  ����
+                          int count,       // ����
+                          int UseEffect,   // �����м��ް�������
+                          int RecevEffect  // ������ľ���м��ް�������
 ) {
 
   int i, toindex, char_index;
   int ToList[SIDE_OFFSET * 2 + 1];
   BATTLE_MultiList(battleindex, toNo, ToList);
   BATTLE_MagicEffect(battleindex, // �������̼������͵�
-                     attackNo, // ��������  į(��  ���)
-                     ToList, // ������ľ����  į������(��  ���)
-                     UseEffect, // �������оް�������
-                     RecevEffect // ������ľ���оް�������
+                     attackNo,    // ��������  į(��  ���)
+                     ToList,      // ������ľ����  į������(��  ���)
+                     UseEffect,   // �������оް�������
+                     RecevEffect  // ������ľ���оް�������
   );
 
   char_index = BATTLE_No2Index(battleindex, attackNo);
@@ -1702,13 +1706,13 @@ void BATTLE_MultiMagicDef(int battleindex, // �������̼����
 #if 1
 
 void BATTLE_MultiParamChange(int battleindex, // �������̼������͵�
-                             int attackNo, // ��������  į
-                             int toNo, // ������ľ����  į
-                             int kind, // �����ɷ¶�������
-                             int power, // ���̼���
-                             int par,   // �ѻ�ң����
-                             int UseEffect, // �����м��ް�������
-                             int RecevEffect // ������ľ���м��ް�������
+                             int attackNo,    // ��������  į
+                             int toNo,        // ������ľ����  į
+                             int kind,        // �����ɷ¶�������
+                             int power,       // ���̼���
+                             int par,         // �ѻ�ң����
+                             int UseEffect,   // �����м��ް�������
+                             int RecevEffect  // ������ľ���м��ް�������
 ) {
 
   int i, toindex, char_index;
@@ -1719,10 +1723,10 @@ void BATTLE_MultiParamChange(int battleindex, // �������̼���
   BATTLE_MultiList(battleindex, toNo, ToList);
 
   BATTLE_MagicEffect(battleindex, // �������̼������͵�
-                     attackNo, // ��������  į(��  ���)
-                     ToList, // ������ľ����  į������(��  ���)
-                     UseEffect, // �������оް�������
-                     RecevEffect // ������ľ���оް�������
+                     attackNo,    // ��������  į(��  ���)
+                     ToList,      // ������ľ����  į������(��  ���)
+                     UseEffect,   // �������оް�������
+                     RecevEffect  // ������ľ���оް�������
   );
 
   char_index = BATTLE_No2Index(battleindex, attackNo);
@@ -1804,10 +1808,10 @@ void BATTLE_MultiAttReverse(int battleindex, //
   BATTLE_MultiList(battleindex, toNo, ToList);
 
   BATTLE_MagicEffect(battleindex, // �������̼������͵�
-                     attackNo, // ��������  į(��  ���)
-                     ToList, // ������ľ����  į������(��  ���)
-                     UseEffect, // �������оް�������
-                     RecevEffect // ������ľ���оް�������
+                     attackNo,    // ��������  į(��  ���)
+                     ToList,      // ������ľ����  į������(��  ���)
+                     UseEffect,   // �������оް�������
+                     RecevEffect  // ������ľ���оް�������
   );
   char_index = BATTLE_No2Index(battleindex, attackNo);
   for (i = 0; ToList[i] != -1; i++) {
@@ -1919,12 +1923,12 @@ int MAGIC_FieldAttChange_Battle(int char_index, int toNo, int magic_index,
 }
 
 int MAGIC_StatusChange_Battle(int char_index, // �������м��̼������͵�
-                              int toNo, // ������ľ���м��̼������͵�
-                              int marray, // magicindex
+                              int toNo,       // ������ľ���м��̼������͵�
+                              int magic_index,     // magicindex
                               int mp) {
   int status = -1, i, attackNo, turn = 3;
   int battleindex, ReceveEffect, Success = 15;
-  char *magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  char *magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   char *pszP = magicarg;
   for (; status == -1 && pszP[0] != 0; pszP++) {
     for (i = 1; i < BATTLE_ST_END; i++) {
@@ -1959,14 +1963,14 @@ int MAGIC_StatusChange_Battle(int char_index, // �������м��̼
 
 #ifdef _MAGIC_DEEPPOISON
 int MAGIC_StatusChange_Battle2(int char_index, // �������м��̼������͵�
-                               int toNo, // ������ľ���м��̼������͵�
-                               int marray, // magicindex
-                               int mp      // MP
+                               int toNo,       // ������ľ���м��̼������͵�
+                               int magic_index,     // magicindex
+                               int mp          // MP
 ) {
   char *magicarg;
   int status = -1, i, attackNo, turn = 3;
   int battleindex, ReceveEffect, Success = 15;
-  magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   if (magicarg == "\0") {
     print("\n magicarg == NULL ");
     return FALSE;
@@ -2006,14 +2010,14 @@ int MAGIC_StatusChange_Battle2(int char_index, // �������м���
 }
 #endif
 #ifdef _OTHER_MAGICSTAUTS
-int MAGIC_MagicStatusChange_Battle(int char_index, int toNo, int marray,
+int MAGIC_MagicStatusChange_Battle(int char_index, int toNo, int magic_index,
                                    int mp) {
   char *magicarg;
   int status = -1, i, attackNo, turn = 3, nums = 0;
   int battleindex, ReceveEffect;
   char buf1[256];
 
-  magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
 
   if (getStringFromIndexWithDelim(magicarg, "|", 1, buf1, sizeof(buf1)) ==
       FALSE)
@@ -2063,13 +2067,13 @@ int MAGIC_MagicStatusChange_Battle(int char_index, int toNo, int marray,
 }
 #endif
 
-int MAGIC_MagicDef_Battle(int char_index, int toNo, int marray, int mp) {
+int MAGIC_MagicDef_Battle(int char_index, int toNo, int magic_index, int mp) {
   char *magicarg;
   int status = -1, i, attackNo, turn = 3;
   int battleindex;
   char *pszP;
 
-  magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
 
   pszP = magicarg;
 
@@ -2100,13 +2104,13 @@ int MAGIC_MagicDef_Battle(int char_index, int toNo, int marray, int mp) {
   return TRUE;
 }
 
-int MAGIC_ParamChange_Battle(int char_index, // �������м��̼������͵�
-                             int toNo, // ������ľ���м��̼������͵�
-                             int marray, // magicindex
+int MAGIC_ParamChange_Battle(int char_index, //
+                             int toNo,       //
+                             int magic_index,     // magic_index
                              int mp) {
   int kind = -1, i, attackNo;
   int battleindex, pow, par = 0;
-  char *magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  char *magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   char *pszP = magicarg;
   for (; kind == -1 && pszP[0] != 0; pszP++) {
     for (i = 1; i < BATTLE_MD_END; i++) {
@@ -2134,9 +2138,9 @@ int MAGIC_ParamChange_Battle(int char_index, // �������м��̼�
 }
 
 int MAGIC_AttReverse_Battle(int char_index, // �������м��̼������͵�
-                            int toNo, // ������ľ���м��̼������͵�
-                            int marray, // magicindex
-                            int mp      // MP
+                            int toNo,       // ������ľ���м��̼������͵�
+                            int magic_index,     // magicindex
+                            int mp          // MP
 ) {
   int attackNo;
   int battleindex;
@@ -2147,12 +2151,12 @@ int MAGIC_AttReverse_Battle(int char_index, // �������м��̼�
   return TRUE;
 }
 
-int MAGIC_StatusRecovery_Battle(int char_index, int toNo, int marray, int mp) {
+int MAGIC_StatusRecovery_Battle(int char_index, int toNo, int magic_index, int mp) {
   char *magicarg;
   int status = -1, i, attackNo;
   int ReceveEffect;
   char *pszP;
-  magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   pszP = magicarg;
   for (; status == -1 && pszP[0] != 0; pszP++) {
     for (i = 0; i < BATTLE_ST_END; i++) {
@@ -2174,10 +2178,10 @@ int MAGIC_StatusRecovery_Battle(int char_index, int toNo, int marray, int mp) {
   return TRUE;
 }
 
-int MAGIC_Ressurect_Battle(int char_index, int toNo, int marray, int mp) {
+int MAGIC_Ressurect_Battle(int char_index, int toNo, int magic_index, int mp) {
   int attackNo, ReceveEffect;
   int pow = 0, par = 0;
-  char *magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  char *magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   char *pszP = magicarg;
   if (strstr(pszP, "%")) {
     par = 1;
@@ -2201,7 +2205,7 @@ int MAGIC_Ressurect_Battle(int char_index, int toNo, int marray, int mp) {
   return TRUE;
 }
 
-int MAGIC_ResAndDef_Battle(int char_index, int toNo, int marray, int mp) {
+int MAGIC_ResAndDef_Battle(int char_index, int toNo, int magic_index, int mp) {
   int attackNo, i;
   int battleindex, pow = 0, par = 0, turn = 3, status = -1;
 #ifdef _PREVENT_TEAMATTACK
@@ -2216,7 +2220,7 @@ int MAGIC_ResAndDef_Battle(int char_index, int toNo, int marray, int mp) {
     }
   }
 #endif
-  char *magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  char *magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   char *pszP = magicarg;
   if (strstr(pszP, "%")) {
     par = 1;
@@ -2249,14 +2253,14 @@ int MAGIC_ResAndDef_Battle(int char_index, int toNo, int marray, int mp) {
 
 #ifdef _ATTACK_MAGIC
 
-int MAGIC_AttMagic_Battle(int char_index, int toNo, int marray, int mp) {
+int MAGIC_AttMagic_Battle(int char_index, int toNo, int magic_index, int mp) {
   int attno, attidx, battleindex;
   int attr = -1, i, power;
   char aszattr[][32] = {"��", "ˮ", "��", "��"};
   char buf1[256];
   char *magicarg;
   int magiclv = 0;
-  magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   if (magicarg == "\0") {
     print("\n Magic magicarg == NULL ");
     return FALSE;
@@ -2285,7 +2289,7 @@ int MAGIC_AttMagic_Battle(int char_index, int toNo, int marray, int mp) {
 
   battleindex = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEINDEX);
   attno = BATTLE_Index2No(battleindex, char_index);
-  attidx = MAGIC_getInt(marray, MAGIC_IDX);
+  attidx = MAGIC_getInt(magic_index, MAGIC_IDX);
   if (-1 == attidx || attidx >= ATTMAGIC_magicnum)
     return FALSE;
 #ifdef _FIX_MAGICDAMAGE
@@ -2300,11 +2304,11 @@ int MAGIC_AttMagic_Battle(int char_index, int toNo, int marray, int mp) {
 
 #ifdef _MAGIC_TOCALL
 
-int MAGIC_ToCallDragon_Battle(int char_index, int toNo, int marray, int mp) {
+int MAGIC_ToCallDragon_Battle(int char_index, int toNo, int magic_index, int mp) {
   int attno, attidx, battleindex;
   int attr = -1, /* i , */ power, imageno;
   char buf1[256];
-  char *magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  char *magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   if (magicarg == "\0") {
     print("\n Magic magicarg == NULL ");
     return FALSE;
@@ -2321,7 +2325,7 @@ int MAGIC_ToCallDragon_Battle(int char_index, int toNo, int marray, int mp) {
 
   battleindex = CHAR_getWorkInt(char_index, CHAR_WORKBATTLEINDEX);
   attno = BATTLE_Index2No(battleindex, char_index);
-  attidx = MAGIC_getInt(marray, MAGIC_IDX);
+  attidx = MAGIC_getInt(magic_index, MAGIC_IDX);
   if (-1 == attidx || attidx >= ATTMAGIC_magicnum)
     return FALSE;
 
@@ -2334,10 +2338,10 @@ int MAGIC_ToCallDragon_Battle(int char_index, int toNo, int marray, int mp) {
 #endif
 
 int MAGIC_CaptureUp_Battle(int char_index, // �������м��̼������͵�
-                           int toNo, int marray, int mp) {
+                           int toNo, int magic_index, int mp) {
   int attackNo, ReceveEffect;
   int battleindex, pow = 5;
-  char *magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  char *magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
 
   if (sscanf(magicarg, "%d", &pow) != 1) {
     pow = 5;
@@ -2508,13 +2512,12 @@ void Magic_ComputeDefExp(int charindex, int Mnum, int MagicLv, int Damage) {
 #endif
 
 #ifdef _MAGIC_WEAKEN
-int MAGIC_ParamChange_Turn_Battle(int char_index, int toNo, int marray,
+int MAGIC_ParamChange_Turn_Battle(int char_index, int toNo, int magic_index,
                                   int mp) {
-  char *magicarg;
   int status = -1, i, attackNo, turn = 3;
   int battleindex, Success = 15;
   char *pszP;
-  magicarg = MAGIC_getChar(marray, MAGIC_OPTION);
+  char *magicarg = MAGIC_getChar(magic_index, MAGIC_OPTION);
   if (magicarg == "\0") {
     print("\n magicarg == NULL ");
     return FALSE;
@@ -2578,11 +2581,11 @@ void BATTLE_MultiParamChangeTurn(int battleindex, int attackNo, int toNo,
 
 ToCallMagic PROFESSION_magic[3] = {
     {0, 0,     0,     1, 0,  0, 1, 1, 0, 0,
-     0, 65528, 65485, 0, -1, 0, 0, 0, 1, 0}, // ����
+     0, 65528, 65485, 0, -1, 0, 0, 0, 1, 0}, //
     {0, 3,     0,     1, 0,  0, 1, 1, 0, 0,
-     0, 65528, 65485, 0, -1, 0, 0, 0, 1, 1}, // ����
+     0, 65528, 65485, 0, -1, 0, 0, 0, 1, 1}, //
     {0, 5,     0,     1, 0,  0, 1, 1, 0, 0,
-     0, 65528, 65485, 0, -1, 0, 0, 0, 0, 2}, // ȫ��
+     0, 65528, 65485, 0, -1, 0, 0, 0, 0, 2}, //
 };
 
 #ifdef _PROFESSION_SKILL // WON ADD
@@ -3959,10 +3962,10 @@ int PROFESSION_MAGIC_GET_DAMAGE(int attackindex, int defindex, int magic_type,
   electric_proficiency =
       CHAR_getWorkInt(attackindex, CHAR_WORK_T_PROFICIENCY); // ��������
   ice_proficiency =
-      CHAR_getWorkInt(attackindex, CHAR_WORK_I_PROFICIENCY); // ��������
+      CHAR_getWorkInt(attackindex, CHAR_WORK_I_PROFICIENCY);       // ��������
   fire_resist = CHAR_getWorkInt(defindex, CHAR_WORK_F_RESIST);     // ��
   electric_resist = CHAR_getWorkInt(defindex, CHAR_WORK_T_RESIST); // �翹
-  ice_resist = CHAR_getWorkInt(defindex, CHAR_WORK_I_RESIST); // ����
+  ice_resist = CHAR_getWorkInt(defindex, CHAR_WORK_I_RESIST);      // ����
 
   if (magic_type == 1) {
     attack = power * (100 + fire_proficiency) / 100; // �����ӳ�
@@ -4101,7 +4104,6 @@ int PROFESSION_MAGIC_DODGE(int atk_index, int def_index, int magic_type) {
       fLuck = 20;
   }
 
-  // ������
   // Robin fix
   // if( magic_type != 0 ){
   if (magic_type > 0) {
@@ -4140,7 +4142,7 @@ int PROFESSION_MAGIC_DODGE(int atk_index, int def_index, int magic_type) {
 #endif
     return 0; // hit
   } else
-    return 1; // Miss
+    return 1; // miss
 }
 
 void PROFESSION_MAGIC_CHANG_IMG2(int img2, char *pszOption, int attIdx) {
@@ -4217,7 +4219,7 @@ int PROFESSION_MAGIC_CHANG_STATUS(int command, int battleindex, int char_index,
         if (CHAR_getWorkInt(charaidx, CHAR_WORKICECRACK + i) <= 0) {
           CHAR_setWorkInt(charaidx, CHAR_WORKICECRACK + i, 3);
           CHAR_setWorkInt(charaidx, CHAR_WORKMODICECRACK + i, damage);
-          print("\niceidx:%d", charaidx);
+          logOut("\nchar idx:%d", charaidx);
           break;
         }
       }
@@ -4234,9 +4236,7 @@ int PROFESSION_MAGIC_CHANG_STATUS(int command, int battleindex, int char_index,
     {
       int success = 0, rand_num = 0, round = 1;
       int bid = BATTLE_Index2No(battleindex, charaidx);
-
       skill_level = CHAR_GETWORKINT_HIGH(char_index, CHAR_WORKBATTLECOM3);
-
       if (skill_level >= 100)
         success = 50;
       else if (skill_level > 90)
@@ -4300,7 +4300,6 @@ int PROFESSION_MAGIC_CHANG_STATUS(int command, int battleindex, int char_index,
           dec_dex = 20;
         else
           dec_dex = 10;
-
         if (skill_level >= 10)
           turn = 3;
         else if (skill_level >= 6)
@@ -4381,7 +4380,6 @@ int PROFESSION_MAGIC_CHANG_STATUS(int command, int battleindex, int char_index,
         CHAR_setWorkInt(charaidx, CHAR_WORKSIGN, turn + 1);
         CHAR_setWorkInt(charaidx, CHAR_WORKMODSIGN, skill_level);
         CHAR_setWorkInt(charaidx, CHAR_WORKSIGNID, char_index);
-
         BATTLE_BadStatusString(bid, BATTLE_ST_SIGN);
       }
     }

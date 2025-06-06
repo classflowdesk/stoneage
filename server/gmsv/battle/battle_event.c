@@ -887,32 +887,6 @@ static BOOL BATTLE_DuckCheck(int attackindex, int defindex) {
   return flg;
 }
 
-static int BATTLE_AttrCalc(int My_Fire, int My_Water, int My_Earth, int My_Wind,
-                           int My_None, int Vs_Fire, int Vs_Water, int Vs_Earth,
-                           int Vs_Wind, int Vs_None) {
-  int iRet = 0;
-  My_Fire = My_Fire * Vs_None * AJ_UP + My_Fire * Vs_Fire * AJ_SAME +
-            My_Fire * Vs_Water * AJ_DOWN + My_Fire * Vs_Earth * AJ_SAME +
-            My_Fire * Vs_Wind * AJ_UP;
-  My_Water = My_Water * Vs_None * AJ_UP + My_Water * Vs_Fire * AJ_UP +
-             My_Water * Vs_Water * AJ_SAME + My_Water * Vs_Earth * AJ_DOWN +
-             My_Water * Vs_Wind * AJ_SAME;
-
-  My_Earth = My_Earth * Vs_None * AJ_UP + My_Earth * Vs_Fire * AJ_SAME +
-             My_Earth * Vs_Water * AJ_UP + My_Earth * Vs_Earth * AJ_SAME +
-             My_Earth * Vs_Wind * AJ_DOWN;
-
-  My_Wind = My_Wind * Vs_None * AJ_UP + My_Wind * Vs_Fire * AJ_DOWN +
-            My_Wind * Vs_Water * AJ_SAME + My_Wind * Vs_Earth * AJ_UP +
-            My_Wind * Vs_Wind * AJ_SAME;
-
-  My_None = My_None * Vs_None * AJ_SAME + My_None * Vs_Fire * AJ_DOWN +
-            My_None * Vs_Water * AJ_DOWN + My_None * Vs_Earth * AJ_DOWN +
-            My_None * Vs_Wind * AJ_DOWN;
-
-  iRet = (My_Fire + My_Water + My_Earth + My_Wind + My_None);
-  return (iRet * D_ATTR);
-}
 
 static void BATTLE_GetAttr(int char_index, int *T_pow) {
 #ifdef _BATTLE_NEWPOWER

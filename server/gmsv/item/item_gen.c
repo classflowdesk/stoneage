@@ -1,4 +1,5 @@
 #include "version.h"
+//
 #include "autil.h"
 #include "buf.h"
 #include "config_file.h"
@@ -704,8 +705,6 @@ int ITEM_mergeItem(int char_index, ITEM_Item *items, int num, int money,
   for (i = 0; i < num; i++) {
     if (!items[i].data[ITEM_CANMERGEFROM])
       continue;
-
-    // �����ʳ������߲�����ʧ��
     if (item_type == -1)
       item_type = items[i].data[ITEM_TYPE];
     else if (item_type == ITEM_DISH /*20*/) {

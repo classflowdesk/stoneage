@@ -13,13 +13,13 @@ extern int acfd;
 
 #ifdef _ALLDOMAN // (不可开) Syu ADD 排行榜NPC
 void SaacClient_UpdataStele_send(int fd, char *cdkey, char *name, char *title,
-                                 int level, int trns, int time, int floor) {
+                                 int level, int trans, int time, int floor) {
   CreateHeader(ws->work, "UpdataStele");
   strcatsafe(ws->work, mkstr_string(cdkey), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(name), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(title), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(level), ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_int(trns), ws->work_buf_size);
+  strcatsafe(ws->work, mkstr_int(trans), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(time), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(floor), ws->work_buf_size);
   Send(ws, fd, ws->work);
@@ -28,9 +28,9 @@ void SaacClient_UpdataStele_send(int fd, char *cdkey, char *name, char *title,
 
 #if _ATTESTAION_ID == 1
 void SaacClient_ACServerLogin_send(int fd, int id, char *servername,
-                                   char *serverpas)
+                                   char *serverpass)
 #else
-void SaacClient_ACServerLogin_send(int fd, char *servername, char *serverpas)
+void SaacClient_ACServerLogin_send(int fd, char *servername, char *serverpass)
 #endif
 {
   CreateHeader(ws->work, "ACServerLogin");
@@ -38,7 +38,7 @@ void SaacClient_ACServerLogin_send(int fd, char *servername, char *serverpas)
   strcatsafe(ws->work, mkstr_int(id), ws->work_buf_size);
 #endif
   strcatsafe(ws->work, mkstr_string(servername), ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(serverpas), ws->work_buf_size);
+  strcatsafe(ws->work, mkstr_string(serverpass), ws->work_buf_size);
   Send(ws, fd, ws->work);
 }
 
@@ -668,11 +668,11 @@ int SaacClient_ClientDispatchMessage(int fd, char *line) {
   }
 
   if (strcmp(funcname, "ACCharSave") == 0) {
-    result = strncpysafe2(ws->string_buffer[1], ws->work_buf_size,
-                          demkstr_string(ws->token_list[2]));
-    data = strncpysafe2(ws->string_buffer[2], ws->work_buf_size,
-                        demkstr_string(ws->token_list[3]));
-    id = demkstr_int(ws->token_list[4]);
+    char *result = strncpysafe2(ws->string_buffer[1], ws->work_buf_size,
+                                demkstr_string(ws->token_list[2]));
+    char *data = strncpysafe2(ws->string_buffer[2], ws->work_buf_size,
+                              demkstr_string(ws->token_list[3]));
+    const int id = demkstr_int(ws->token_list[4]);
     SaacClient_ACCharSave_recv(fd, result, data, id);
     return 0;
   }

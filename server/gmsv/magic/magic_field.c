@@ -8,25 +8,20 @@
 #include "magic_base.h"
 #include "magic_field.h"
 
-int MAGIC_Recovery_Field(int char_index, int magicindex) {
-  char *magicarg;
-  float power;
-  int workhp;
-  int prevhp;
+int MAGIC_Recovery_Field(int char_index, int magic_index) {
   char msgbuf[64];
-
 #ifdef _TYPE_TOXICATION
   if (CHAR_CanCureFlg(char_index, "HP") == FALSE)
     return TRUE;
 #endif
-  magicarg = MAGIC_getChar(magicindex, MAGIC_OPTION);
-  power = atoi(magicarg);
+  const char *magic_arg = MAGIC_getChar(magic_index, MAGIC_OPTION);
+  float power = atoi(magic_arg);
   power = RAND((power * 0.9), (power * 1.1));
 #ifndef _MAGIC_REHPAI
   power *= GetRecoveryRate(char_index);
 #endif
-  prevhp = CHAR_getInt(char_index, CHAR_HP);
-  workhp = prevhp + (int)power;
+  const int prevhp = CHAR_getInt(char_index, CHAR_HP);
+  const int workhp = prevhp + (int)power;
   CHAR_setInt(char_index, CHAR_HP,
               min(workhp, CHAR_getWorkInt(char_index, CHAR_WORKMAXHP)));
   CHAR_send_P_StatusString(char_index, CHAR_P_STRING_HP | CHAR_P_STRING_MP);
@@ -57,71 +52,73 @@ int MAGIC_Recovery_Field(int char_index, int magicindex) {
       }
     }
   }
-  snprintf(msgbuf, sizeof(msgbuf), "�;����ظ�%d",
+  snprintf(msgbuf, sizeof(msgbuf), "恢复生命%d",
            min(workhp, CHAR_getWorkInt(char_index, CHAR_WORKMAXHP)) - prevhp);
   CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORWHITE);
   return TRUE;
 }
 
-int MAGIC_OtherRecovery_Field(int char_index, int toindex, int magicindex) {
-  char *magicarg;
-  float power;
-  int workhp;
-  int prevhp;
+int MAGIC_OtherRecovery_Field(int from_char_index, int to_char_index,
+                              int magic_index) {
   char msgbuf[64];
-
 #ifdef _TYPE_TOXICATION
-  if (CHAR_CanCureFlg(char_index, "HP") == FALSE)
+  if (CHAR_CanCureFlg(to_char_index, "HP") == FALSE)
     return FALSE;
 #endif
-  magicarg = MAGIC_getChar(magicindex, MAGIC_OPTION);
-  power = atoi(magicarg);
+  const char *magic_arg = MAGIC_getChar(magic_index, MAGIC_OPTION);
+  float power = atoi(magic_arg);
   power = RAND((power * 0.9), (power * 1.1));
 #ifndef _MAGIC_REHPAI
-  power *= GetRecoveryRate(toindex);
+  power *= GetRecoveryRate(to_char_index);
 #endif
-  prevhp = CHAR_getInt(toindex, CHAR_HP);
-  workhp = prevhp + (int)power;
-  CHAR_setInt(toindex, CHAR_HP,
-              min(workhp, CHAR_getWorkInt(toindex, CHAR_WORKMAXHP)));
-  if (CHAR_getInt(toindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-    if (char_index != toindex) {
-      CHAR_send_P_StatusString(toindex, CHAR_P_STRING_HP);
+  const int prevhp = CHAR_getInt(to_char_index, CHAR_HP);
+  const int workhp = prevhp + (int)power;
+  CHAR_setInt(to_char_index, CHAR_HP,
+              min(workhp, CHAR_getWorkInt(to_char_index, CHAR_WORKMAXHP)));
+  if (CHAR_getInt(to_char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+    if (from_char_index != to_char_index) {
+      CHAR_send_P_StatusString(to_char_index, CHAR_P_STRING_HP);
     }
   }
-  CHAR_send_P_StatusString(char_index, CHAR_P_STRING_HP | CHAR_P_STRING_MP);
-  if (char_index != toindex) {
-    CHAR_PartyUpdate(char_index, CHAR_N_STRING_MP);
-    CHAR_PartyUpdate(toindex, CHAR_N_STRING_HP);
+  CHAR_send_P_StatusString(from_char_index,
+                           CHAR_P_STRING_HP | CHAR_P_STRING_MP);
+  if (from_char_index != to_char_index) {
+    CHAR_PartyUpdate(from_char_index, CHAR_N_STRING_MP);
+    CHAR_PartyUpdate(to_char_index, CHAR_N_STRING_HP);
   } else {
-    CHAR_PartyUpdate(char_index, CHAR_N_STRING_MP | CHAR_N_STRING_HP);
+    CHAR_PartyUpdate(from_char_index, CHAR_N_STRING_MP | CHAR_N_STRING_HP);
   }
-  if (CHAR_getInt(toindex, CHAR_WHICHTYPE) == CHAR_TYPEPET) {
+  if (CHAR_getInt(to_char_index, CHAR_WHICHTYPE) == CHAR_TYPEPET) {
     int i;
     for (i = 0; i < CHAR_MAXPETHAVE; i++) {
-      int workindex = CHAR_getCharPet(char_index, i);
-      if (workindex == toindex) {
-        CHAR_send_K_StatusString(char_index, i, CHAR_K_STRING_HP);
+      int workindex = CHAR_getCharPet(from_char_index, i);
+      if (workindex == to_char_index) {
+        CHAR_send_K_StatusString(from_char_index, i, CHAR_K_STRING_HP);
       }
     }
   }
 
-  if (char_index != toindex) {
-    snprintf(msgbuf, sizeof(msgbuf), "%s���;����ظ�%d", CHAR_getUseName(toindex),
-             min(workhp, CHAR_getWorkInt(toindex, CHAR_WORKMAXHP)) - prevhp);
-    CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORWHITE);
+  if (from_char_index != to_char_index) {
+    // 施术者为其他玩家恢复生命
+    snprintf(
+        msgbuf, sizeof(msgbuf), "%s恢复生命%d", CHAR_getUseName(to_char_index),
+        min(workhp, CHAR_getWorkInt(to_char_index, CHAR_WORKMAXHP)) - prevhp);
+    CHAR_talkToCli(from_char_index, -1, msgbuf, CHAR_COLORWHITE);
 
-    if (CHAR_getInt(toindex, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
-      snprintf(msgbuf, sizeof(msgbuf), "����%s�;����ظ�%d",
-               CHAR_getUseName(char_index),
-               min(workhp, CHAR_getWorkInt(toindex, CHAR_WORKMAXHP)) - prevhp);
-      CHAR_talkToCli(toindex, -1, msgbuf, CHAR_COLORWHITE);
+    if (CHAR_getInt(to_char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER) {
+      // 受术者同样显示
+      snprintf(msgbuf, sizeof(msgbuf), "玩家%s为你恢复生命%d",
+               CHAR_getUseName(from_char_index),
+               min(workhp, CHAR_getWorkInt(to_char_index, CHAR_WORKMAXHP)) -
+                   prevhp);
+      CHAR_talkToCli(to_char_index, -1, msgbuf, CHAR_COLORWHITE);
     }
   } else {
-    snprintf(msgbuf, sizeof(msgbuf), "�;����ظ�%d",
-             min(workhp, CHAR_getWorkInt(char_index, CHAR_WORKMAXHP)) - prevhp);
-    CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORWHITE);
+    // 施术者为自身恢复生命
+    snprintf(msgbuf, sizeof(msgbuf), "恢复生命%d",
+             min(workhp, CHAR_getWorkInt(from_char_index, CHAR_WORKMAXHP)) -
+                 prevhp);
+    CHAR_talkToCli(from_char_index, -1, msgbuf, CHAR_COLORWHITE);
   }
-
   return TRUE;
 }

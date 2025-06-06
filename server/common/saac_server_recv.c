@@ -126,7 +126,7 @@ void SaacServer_ACCharList_recv(int ti, char *id, char *pas, char *ip,
     SaacServer_ACCharList_send(ti, FAILED, "账号密码不能为空！", mesgid);
     return;
   }
-  if (sasql_chehk_lock(id)) {
+  if (sasql_check_lock(id)) {
     SaacServer_ACCharList_send(ti, FAILED, "你的游戏账号被锁定，无法登陆！",
                                mesgid);
     return;
@@ -159,20 +159,20 @@ void SaacServer_ACCharList_recv(int ti, char *id, char *pas, char *ip,
     SaacServer_ACCharList_send(ti, FAILED, "账号或密码不能为空！", mesgid);
     return;
   }
-  if (sasql_chehk_lock(id)) {
+  if (sasql_check_lock(id)) {
     printf("该账号%s禁止登陆!\n", id);
     SaacServer_ACCharList_send(ti, FAILED, "你的游戏账号被锁定，无法登陆！",
                                mesgid);
     return;
   }
-  if (sasql_chehk_lock(ip)) {
+  if (sasql_check_lock(ip)) {
     printf("该IP%s禁止登陆!\n", ip);
     SaacServer_ACCharList_send(ti, FAILED, "你的游戏IP已被锁定，无法登陆！",
                                mesgid);
     return;
   }
   if (strlen(mac) > 0) {
-    if (sasql_chehk_lock(mac)) {
+    if (sasql_check_lock(mac)) {
       printf("该MAC%s禁止登陆!\n", ip);
       SaacServer_ACCharList_send(ti, FAILED, "你的游戏IP已被锁定，无法登陆！",
                                  mesgid);
@@ -1599,18 +1599,18 @@ void SaacServer_ACCharLogin_recv(int fd, int clifd, char *id, char *pas,
     SaacServer_ACCharLogin_send(fd, clifd, 1);
     return;
   }
-  if (sasql_chehk_lock(id)) {
+  if (sasql_check_lock(id)) {
     printf("该账号%s禁止登陆!\n", id);
     SaacServer_ACCharLogin_send(fd, clifd, 2);
     return;
   }
-  if (sasql_chehk_lock(ip)) {
+  if (sasql_check_lock(ip)) {
     printf("该IP%s禁止登陆!\n", ip);
     SaacServer_ACCharLogin_send(fd, clifd, 3);
     return;
   }
   if (strlen(mac) > 0) {
-    if (sasql_chehk_lock(mac)) {
+    if (sasql_check_lock(mac)) {
       printf("该MAC%s禁止登陆!\n", ip);
       SaacServer_ACCharLogin_send(fd, clifd, 3);
       return;
@@ -1660,7 +1660,7 @@ void SaacServer_LockLogin_recv(int fd, char *id, char *ip, int flag) {
     break;
   case 1:
     if (strlen(id) > 0) {
-      if (!sasql_chehk_lock(id)) {
+      if (!sasql_check_lock(id)) {
         if (sasql_add_lock(id)) {
           logOut("成功锁定账号:%s\n", id);
         } else {
@@ -1671,7 +1671,7 @@ void SaacServer_LockLogin_recv(int fd, char *id, char *ip, int flag) {
       }
     }
     if (strlen(ip) > 0) {
-      if (!sasql_chehk_lock(ip)) {
+      if (!sasql_check_lock(ip)) {
         if (sasql_add_lock(ip)) {
           logOut("成功锁定IP:%s\n", ip);
         } else {

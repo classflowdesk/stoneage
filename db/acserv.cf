@@ -59,13 +59,13 @@ OACBIND
 saacname Test
 
 ##############################
-# 更新人物点数间隔xx祿
+# 更新人物点数间隔, 单位:秒
 Total_Charlist 3600
-# 更新进期邮件间隔xx祿
+# 更新进期邮件间隔, 单位:秒
 Expired_mail 600
-# 删除家族成员间隔xx祿
+# 删除家族成员间隔, 单位:秒
 Del_Family_or_Member 3600
-# 更新家族信息间隔xx祿
+# 更新家族信息间隔, 单位:秒
 Write_Family 600
 
 ##############################
@@ -91,47 +91,36 @@ sql_PASS        PassWord
 sql_LOCK        LOCK
 
 ########后台功能############
-#是台开始后台功聿
+#是否开启后台功能
 openbackground  1
-#openbackground值为1则开始以下功聿
+# openbackground==1, 则开启以下功能
 sql_RegIP       IP
 sql_RegTime     RegTime
 sql_LoginTime   LoginTime
 sql_Path        Path
 sql_OnlineName  OnlineName
-
-#禁止多少天未上线的账号登闿
+# 禁止多少天未上线的账号登陆
 uLoginDay        60
-
-############################
-
-#是否限制同一IP登陆次数(0为不限制)
+# 是否限制同一IP登陆次数(0为不限制)
 SameIpMun        0
-
-#是否使用MD5(0为否ﺿ为是)
+# 是否使用MD5(0为否1为是)
 USEMD5           0
-
-#每隔几天自动备份一次数拿
+# 每隔几天自动备份一次数据
 AUTOBACKUPDAY    1   
-
-#几点进行自动备份
+# 几点进行自动备份
 AUTOBACKUPHOUR   2  
-
 #是否自动注册
 AutoReg          0
-
-#六合彩间格时长墿
+# 六合彩间格时长墿
 LOTTERYSYSTEM    1000
-
-#充值积分倍数
+# 充值积分倍数
 DoublePayPoint   1
-
 #IP验证
 ip1 127.0.0.1
 ip2 127.0.0.2
 ip3 127.0.0.3
 ip4 127.0.0.4
 ip5 127.0.0.5
-
 savezip  1
 #endif
+

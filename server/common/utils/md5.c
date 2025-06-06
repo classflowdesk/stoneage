@@ -85,7 +85,9 @@ inline void Decode(unsigned *output, unsigned char *input, unsigned len) {
                 (((unsigned)input[j + 3]) << 24);
 }
 
-inline void MD5Transform(unsigned state[4], unsigned char block[64]) {
+// static避免其未定义的方法问题
+// 取消inline和添加static都可以解决这个问题
+static inline void MD5Transform(unsigned state[4], unsigned char block[64]) {
   unsigned a = state[0], b = state[1], c = state[2], d = state[3], x[16];
   Decode(x, block, 64);
   FF(a, b, c, d, x[0], S11, 0xd76aa478);  /*   1   */

@@ -16,22 +16,22 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
 
   if (strcmp(funcname, "ACServerLogin") == 0) {
     char *servername;
-    char *serverpas;
+    char *serverpass;
 #if _ATTESTAION_ID == 1
     int id;
     id = demkstr_int(ws->token_list[2]);
     servername = strcpysafe2(ws->string_buffer[2], ws->work_buf_size,
                              demkstr_string(ws->token_list[3]));
-    serverpas = strcpysafe2(ws->string_buffer[3], ws->work_buf_size,
-                            demkstr_string(ws->token_list[4]));
-    SaacServer_ACServerLogin_recv(fd, id, servername, serverpas);
+    serverpass = strcpysafe2(ws->string_buffer[3], ws->work_buf_size,
+                             demkstr_string(ws->token_list[4]));
+    SaacServer_ACServerLogin_recv(fd, id, servername, serverpass);
     return 0;
 #else
     servername = strcpysafe2(ws->string_buffer[1], ws->work_buf_size,
                              demkstr_string(ws->token_list[2]));
-    serverpas = strcpysafe2(ws->string_buffer[2], ws->work_buf_size,
-                            demkstr_string(ws->token_list[3]));
-    SaacServer_ACServerLogin_recv(fd, servername, serverpas);
+    serverpass = strcpysafe2(ws->string_buffer[2], ws->work_buf_size,
+                             demkstr_string(ws->token_list[3]));
+    SaacServer_ACServerLogin_recv(fd, servername, serverpass);
     return 0;
 #endif
   }
@@ -95,7 +95,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
 #ifdef _NewSave
     charindex = demkstr_int(ws->token_list[8]);
     SaacServer_ACCharSave_recv(fd, id, charname, opt, charinfo, unlock, mesgid,
-                              charindex);
+                               charindex);
 #else
     SaacServer_ACCharSave_recv(fd, id, charname, opt, charinfo, unlock, mesgid);
 #endif
@@ -211,7 +211,8 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
                        demkstr_string(ws->token_list[5]));
     msgid = demkstr_int(ws->token_list[6]);
     msgid2 = demkstr_int(ws->token_list[7]);
-    SaacServer_DBUpdateEntryInt_recv(fd, table, key, value, info, msgid, msgid2);
+    SaacServer_DBUpdateEntryInt_recv(fd, table, key, value, info, msgid,
+                                     msgid2);
     return 0;
   }
 
@@ -250,7 +251,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     time = demkstr_int(ws->token_list[7]);
     floor = demkstr_int(ws->token_list[8]);
     SaacServer_UpdataStele_recv(fd, cdkey, name, title, level, trns, time,
-                               floor);
+                                floor);
     return 0;
   }
 #endif
@@ -298,7 +299,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     msgid = demkstr_int(ws->token_list[5]);
     msgid2 = demkstr_int(ws->token_list[6]);
     SaacServer_DBGetEntryByRank_recv(fd, table, rank_start, rank_end, msgid,
-                                    msgid2);
+                                     msgid2);
     return 0;
   }
 
@@ -315,7 +316,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     msgid = demkstr_int(ws->token_list[5]);
     msgid2 = demkstr_int(ws->token_list[6]);
     SaacServer_DBGetEntryByCount_recv(fd, table, count_start, num, msgid,
-                                     msgid2);
+                                      msgid2);
     return 0;
   }
 
@@ -355,7 +356,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
                           demkstr_string(ws->token_list[6]));
     option = demkstr_int(ws->token_list[7]);
     SaacServer_Message_recv(fd, id_from, charname_from, id_to, charname_to,
-                           message, option);
+                            message, option);
     return 0;
   }
 
@@ -408,19 +409,19 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     int fmbadge = demkstr_int(ws->token_list[13]);
 #endif
     SaacServer_ACAddFM_recv(fd, fmname, fmleadername, fmleaderid, fmleaderlv,
-                           petname, petattr, fmrule, fmsprite, fmleadergrano,
-                           fame
+                            petname, petattr, fmrule, fmsprite, fmleadergrano,
+                            fame
 #ifdef _FAMILYBADGE_
-                           ,
-                           fmbadge
+                            ,
+                            fmbadge
 #endif
-                           ,
-                           charfdid);
+                            ,
+                            charfdid);
 #else
     charfdid = demkstr_int(ws->token_list[11]);
     SaacServer_ACAddFM_recv(fd, fmname, fmleadername, fmleaderid, fmleaderlv,
-                           petname, petattr, fmrule, fmsprite, fmleadergrano,
-                           charfdid);
+                            petname, petattr, fmrule, fmsprite, fmleadergrano,
+                            charfdid);
 #endif
     return 0;
   }
@@ -445,11 +446,11 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     fame = demkstr_int(ws->token_list[8]);
     charfdid = demkstr_int(ws->token_list[9]);
     SaacServer_ACJoinFM_recv(fd, fmname, fmindex, charname, charid, charlv,
-                            index, fame, charfdid);
+                             index, fame, charfdid);
 #else
     charfdid = demkstr_int(ws->token_list[8]);
     SaacServer_ACJoinFM_recv(fd, fmname, fmindex, charname, charid, charlv,
-                            index, charfdid);
+                             index, charfdid);
 #endif
     return 0;
   }
@@ -467,7 +468,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     index = demkstr_int(ws->token_list[6]);
     charfdid = demkstr_int(ws->token_list[7]);
     SaacServer_ACLeaveFM_recv(fd, fmname, fmindex, charname, charid, index,
-                             charfdid);
+                              charfdid);
     return 0;
   }
   // 解散家族
@@ -485,7 +486,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
                          demkstr_string(ws->token_list[6]));
     charfdid = demkstr_int(ws->token_list[7]);
     SaacServer_ACDelFM_recv(fd, fmname, fmindex, index, charname, charid,
-                           charfdid);
+                            charfdid);
     return 0;
   }
 #else
@@ -584,15 +585,15 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
 #ifdef _FM_MODIFY
     gsnum = demkstr_int(ws->token_list[9]);
     SaacServer_ACFMCharLogin_recv(fd, fmname, fmindex, charname, charid, charlv,
-                                 eventflag, charfdid, gsnum);
+                                  eventflag, charfdid, gsnum);
 #else
     SaacServer_ACFMCharLogin_recv(fd, fmname, fmindex, charname, charid, charlv,
-                                 eventflag, charfdid);
+                                  eventflag, charfdid);
 #endif
 #else
     charfdid = demkstr_int(ws->token_list[7]);
     SaacServer_ACFMCharLogin_recv(fd, fmname, fmindex, charname, charid, charlv,
-                                 charfdid);
+                                  charfdid);
 #endif
     return 0;
   }
@@ -610,8 +611,8 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     charlv = demkstr_int(ws->token_list[6]);
     index = demkstr_int(ws->token_list[7]);
     charfdid = demkstr_int(ws->token_list[8]);
-    SaacServer_ACFMCharLogout_recv(fd, fmname, fmindex, charname, charid, charlv,
-                                  index, charfdid);
+    SaacServer_ACFMCharLogout_recv(fd, fmname, fmindex, charname, charid,
+                                   charlv, index, charfdid);
     return 0;
   }
   // 族长审核成员加入家族、修改家族成员职位
@@ -633,11 +634,11 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     meindex = demkstr_int(ws->token_list[8]);
     charfdid = demkstr_int(ws->token_list[9]);
     SaacServer_ACMemberJoinFM_recv(fd, fmname, fmindex, charname, charindex,
-                                  index, result, meindex, charfdid);
+                                   index, result, meindex, charfdid);
 #else
     charfdid = demkstr_int(ws->token_list[8]);
     SaacServer_ACMemberJoinFM_recv(fd, fmname, fmindex, charname, charindex,
-                                  index, result, charfdid);
+                                   index, result, charfdid);
 #endif
     return 0;
   }
@@ -659,11 +660,11 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     meindex = demkstr_int(ws->token_list[7]);
     charfdid = demkstr_int(ws->token_list[8]);
     SaacServer_ACMemberLeaveFM_recv(fd, fmname, fmindex, charname, charindex,
-                                   index, meindex, charfdid);
+                                    index, meindex, charfdid);
 #else
     charfdid = demkstr_int(ws->token_list[7]);
     SaacServer_ACMemberLeaveFM_recv(fd, fmname, fmindex, charname, charindex,
-                                   index, charfdid);
+                                    index, charfdid);
 #endif
     return 0;
   }
@@ -686,8 +687,8 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     x = demkstr_int(ws->token_list[7]);
     y = demkstr_int(ws->token_list[8]);
     charfdid = demkstr_int(ws->token_list[9]);
-    SaacServer_ACSetFMPoint_recv(fd, fmname, fmindex, index, fmpointindex, fl, x,
-                                y, charfdid);
+    SaacServer_ACSetFMPoint_recv(fd, fmname, fmindex, index, fmpointindex, fl,
+                                 x, y, charfdid);
     return 0;
   }
   // 设定家族据点
@@ -703,8 +704,8 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     losefmindex = demkstr_int(ws->token_list[6]);
     loseindex = demkstr_int(ws->token_list[7]);
     village = demkstr_int(ws->token_list[8]);
-    SaacServer_ACFixFMPoint_recv(fd, winfmname, winfmindex, winindex, losefmname,
-                                losefmindex, loseindex, village);
+    SaacServer_ACFixFMPoint_recv(fd, winfmname, winfmindex, winindex,
+                                 losefmname, losefmindex, loseindex, village);
     return 0;
   }
   // 族长对全员广播
@@ -747,7 +748,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     charindex = demkstr_int(ws->token_list[8]);
     charfdid = demkstr_int(ws->token_list[9]);
     SaacServer_ACFixFMData_recv(fd, fmname, fmindex, index, kindflag, data1,
-                               data2, charindex, charfdid);
+                                data2, charindex, charfdid);
     return 0;
   }
 
@@ -764,7 +765,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     losefmindex = demkstr_int(ws->token_list[6]);
     loseindex = demkstr_int(ws->token_list[7]);
     SaacServer_ACFixFMPK_recv(fd, winfmname, winfmindex, winindex, losefmname,
-                             losefmindex, loseindex);
+                              losefmindex, loseindex);
     return 0;
   }
   // GM修正家族资料
@@ -859,7 +860,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     userindex = demkstr_int(ws->token_list[4]);
     clifdid = demkstr_int(ws->token_list[5]);
     SaacServer_ACCharInsertPoolItem_recv(fd, cdkey, userindex, clifdid,
-                                        Pooldataarg);
+                                         Pooldataarg);
     return 0;
   }
   if (strcmp(funcname, "ACSavePoolItem") == 0) {
@@ -873,7 +874,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     userindex = demkstr_int(ws->token_list[4]);
     clifdid = demkstr_int(ws->token_list[5]);
     SaacServer_ACCharSavePoolItem_recv(fd, cdkey, userindex, clifdid,
-                                      Pooldataarg);
+                                       Pooldataarg);
     return 0;
   }
 
@@ -903,7 +904,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     userindex = demkstr_int(ws->token_list[4]);
     clifdid = demkstr_int(ws->token_list[5]);
     SaacServer_ACCharInsertPoolPet_recv(fd, cdkey, userindex, clifdid,
-                                       Pooldataarg);
+                                        Pooldataarg);
     return 0;
   }
   if (strcmp(funcname, "ACSavePoolPet") == 0) {
@@ -917,7 +918,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     userindex = demkstr_int(ws->token_list[4]);
     clifdid = demkstr_int(ws->token_list[5]);
     SaacServer_ACCharSavePoolPet_recv(fd, cdkey, userindex, clifdid,
-                                     Pooldataarg);
+                                      Pooldataarg);
     return 0;
   }
 
@@ -1218,7 +1219,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
 }
 
 void SaacServer_ACServerLogin_send(const int fd, const char *result,
-                                  const char *data) {
+                                   const char *data) {
   CreateHeader(ws->work, "ACServerLogin");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(data), ws->work_buf_size);
@@ -1235,7 +1236,7 @@ void SaacServer_ACCharList_send(int fd, char *result, char *output, int id) {
 static int CharDataLens = 0;
 #ifdef _NewSave
 void SaacServer_ACCharLoad_send(int fd, char *result, char *data, int id,
-                               int charindex)
+                                int charindex)
 #else
 void SaacServer_ACCharLoad_send(int fd, char *result, char *data, int id)
 #endif
@@ -1287,7 +1288,7 @@ void SaacServer_ACUCheck_send(int fd, char *mem_id) {
 }
 
 void SaacServer_DBUpdateEntryString_send(int fd, char *result, char *table,
-                                        char *key, int msgid, int msgid2) {
+                                         char *key, int msgid, int msgid2) {
   CreateHeader(ws->work, "DBUpdateEntryString");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(table), ws->work_buf_size);
@@ -1298,7 +1299,7 @@ void SaacServer_DBUpdateEntryString_send(int fd, char *result, char *table,
 }
 
 void SaacServer_DBDeleteEntryString_send(int fd, char *result, char *table,
-                                        char *key, int msgid, int msgid2) {
+                                         char *key, int msgid, int msgid2) {
   CreateHeader(ws->work, "DBDeleteEntryString");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(table), ws->work_buf_size);
@@ -1309,8 +1310,8 @@ void SaacServer_DBDeleteEntryString_send(int fd, char *result, char *table,
 }
 
 void SaacServer_DBGetEntryString_send(int fd, char *result, char *value,
-                                     char *table, char *key, int msgid,
-                                     int msgid2) {
+                                      char *table, char *key, int msgid,
+                                      int msgid2) {
   CreateHeader(ws->work, "DBGetEntryString");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(value), ws->work_buf_size);
@@ -1329,8 +1330,8 @@ void SaacServer_UpdataStele_send(int fd, char *data) {
 }
 
 void SaacServer_S_UpdataStele_send(int fd, char *ocdkey, char *oname,
-                                  char *ncdkey, char *nname, char *title,
-                                  int level, int trns, int floor) {
+                                   char *ncdkey, char *nname, char *title,
+                                   int level, int trns, int floor) {
   CreateHeader(ws->work, "S_UpdataStele");
   strcatsafe(ws->work, mkstr_string(ocdkey), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(oname), ws->work_buf_size);
@@ -1344,7 +1345,7 @@ void SaacServer_S_UpdataStele_send(int fd, char *ocdkey, char *oname,
 }
 #endif
 void SaacServer_DBUpdateEntryInt_send(int fd, char *result, char *table,
-                                     char *key, int msgid, int msgid2) {
+                                      char *key, int msgid, int msgid2) {
   CreateHeader(ws->work, "DBUpdateEntryInt");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(table), ws->work_buf_size);
@@ -1355,8 +1356,8 @@ void SaacServer_DBUpdateEntryInt_send(int fd, char *result, char *table,
 }
 
 void SaacServer_DBGetEntryRank_send(int fd, char *result, int rank, int count,
-                                   char *table, char *key, int msgid,
-                                   int msgid2) {
+                                    char *table, char *key, int msgid,
+                                    int msgid2) {
   CreateHeader(ws->work, "DBGetEntryRank");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(rank), ws->work_buf_size);
@@ -1369,7 +1370,7 @@ void SaacServer_DBGetEntryRank_send(int fd, char *result, int rank, int count,
 }
 
 void SaacServer_DBDeleteEntryInt_send(int fd, char *result, char *table,
-                                     char *key, int msgid, int msgid2) {
+                                      char *key, int msgid, int msgid2) {
   CreateHeader(ws->work, "DBDeleteEntryInt");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(table), ws->work_buf_size);
@@ -1380,7 +1381,7 @@ void SaacServer_DBDeleteEntryInt_send(int fd, char *result, char *table,
 }
 
 void SaacServer_DBGetEntryInt_send(int fd, char *result, int value, char *table,
-                                  char *key, int msgid, int msgid2) {
+                                   char *key, int msgid, int msgid2) {
   CreateHeader(ws->work, "DBGetEntryInt");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(value), ws->work_buf_size);
@@ -1392,7 +1393,7 @@ void SaacServer_DBGetEntryInt_send(int fd, char *result, int value, char *table,
 }
 
 void SaacServer_DBGetEntryByRank_send(int fd, char *result, char *list,
-                                     char *table, int msgid, int msgid2) {
+                                      char *table, int msgid, int msgid2) {
   CreateHeader(ws->work, "DBGetEntryByRank");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(list), ws->work_buf_size);
@@ -1403,8 +1404,8 @@ void SaacServer_DBGetEntryByRank_send(int fd, char *result, char *list,
 }
 
 void SaacServer_DBGetEntryByCount_send(int fd, char *result, char *list,
-                                      char *table, int count_start, int msgid,
-                                      int msgid2) {
+                                       char *table, int count_start, int msgid,
+                                       int msgid2) {
   CreateHeader(ws->work, "DBGetEntryByCount");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(list), ws->work_buf_size);
@@ -1416,7 +1417,7 @@ void SaacServer_DBGetEntryByCount_send(int fd, char *result, char *list,
 }
 
 void SaacServer_Broadcast_send(int fd, char *id, char *charname,
-                              char *message) {
+                               char *message) {
   CreateHeader(ws->work, "Broadcast");
   strcatsafe(ws->work, mkstr_string(id), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(charname), ws->work_buf_size);
@@ -1425,8 +1426,8 @@ void SaacServer_Broadcast_send(int fd, char *id, char *charname,
 }
 
 void SaacServer_Message_send(int fd, char *id_from, char *charname_from,
-                            char *id_to, char *charname_to, char *message,
-                            int option, int mesgid) {
+                             char *id_to, char *charname_to, char *message,
+                             int option, int mesgid) {
   CreateHeader(ws->work, "Message");
   strcatsafe(ws->work, mkstr_string(id_from), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(charname_from), ws->work_buf_size);
@@ -1440,7 +1441,7 @@ void SaacServer_Message_send(int fd, char *id_from, char *charname_from,
 
 // 成立家族
 void SaacServer_ACAddFM_send(int fd, char *result, int fmindex, int index,
-                            int charfdid) {
+                             int charfdid) {
   CreateHeader(ws->work, "ACAddFM");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(fmindex), ws->work_buf_size);
@@ -1459,7 +1460,7 @@ void SaacServer_ACJoinFM_send(int fd, char *result, int recv, int charfdid) {
 
 // 退出家族
 void SaacServer_ACLeaveFM_send(int fd, char *result, int resultflag,
-                              int charfdid) {
+                               int charfdid) {
   CreateHeader(ws->work, "ACLeaveFM");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(resultflag), ws->work_buf_size);
@@ -1495,9 +1496,10 @@ void SaacServer_ACShowFMTotem_send(int fd, char *result, int num, char *data) {
 #endif
 // 列出成员列表
 void SaacServer_ACShowMemberList_send(int fd, char *result, int index, int num,
-                                     int acceptflag, int fmjoinnum, char *data
+                                      int acceptflag, int fmjoinnum, char *data
 #ifdef _FAMILYBADGE_
-                                     , int badge
+                                      ,
+                                      int badge
 #endif
 ) {
   CreateHeader(ws->work, "ACShowMemberList");
@@ -1515,7 +1517,7 @@ void SaacServer_ACShowMemberList_send(int fd, char *result, int index, int num,
 
 // 列出家族详细资料
 void SaacServer_ACFMDetail_send(int fd, char *result, char *data,
-                               int charfdid) {
+                                int charfdid) {
   CreateHeader(ws->work, "ACFMDetail");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(data), ws->work_buf_size);
@@ -1542,17 +1544,17 @@ void SaacServer_ACMemberLeaveFM_send(int fd, char *result, int charfdid) {
 // 家族成员login
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
 void SaacServer_ACFMCharLogin_send(int fd, char *result, int index, int floor,
-                                  int fmpopular, int joinflag, int fmsetupflag,
-                                  int flag, int charindex, int charfame,
-                                  int charfdid,
+                                   int fmpopular, int joinflag, int fmsetupflag,
+                                   int flag, int charindex, int charfame,
+                                   int charfdid,
 #ifdef _NEW_MANOR_LAW
-                                  int momentum
+                                   int momentum
 #endif
 )
 #else
 void SaacServer_ACFMCharLogin_send(int fd, char *result, int index, int floor,
-                                  int fmpopular, int joinflag, int fmsetupflag,
-                                  int flag, int charindex, int charfdid)
+                                   int fmpopular, int joinflag, int fmsetupflag,
+                                   int flag, int charindex, int charfdid)
 #endif
 {
   CreateHeader(ws->work, "ACFMCharLogin");
@@ -1584,7 +1586,7 @@ void SaacServer_ACFMCharLogout_send(int fd, char *result, int charfdid) {
 
 // 读取家族留言板
 void SaacServer_ACFMReadMemo_send(int fd, char *result, int index, int num,
-                                 int dataindex, char *data) {
+                                  int dataindex, char *data) {
   CreateHeader(ws->work, "ACFMReadMemo");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(index), ws->work_buf_size);
@@ -1629,8 +1631,8 @@ void SaacServer_ACFixFMPoint_send(int fd, char *result, int r) {
 
 // 族长对星系家族成员广播
 void SaacServer_ACFMAnnounce_send(int fd, char *result, char *fmname,
-                                 int fmindex, int index, int kindflag,
-                                 char *data, int color) {
+                                  int fmindex, int index, int kindflag,
+                                  char *data, int color) {
   CreateHeader(ws->work, "ACFMAnnounce");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(fmname), ws->work_buf_size);
@@ -1642,8 +1644,8 @@ void SaacServer_ACFMAnnounce_send(int fd, char *result, char *fmname,
   Send(ws, fd, ws->work);
 }
 // 列出家族排行榜
-void SaacServer_ACShowTopFMList_send(int fd, char *result, int kindflag, int num,
-                                    char *data) {
+void SaacServer_ACShowTopFMList_send(int fd, char *result, int kindflag,
+                                     int num, char *data) {
   CreateHeader(ws->work, "ACShowTopFMList");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(kindflag), ws->work_buf_size);
@@ -1652,8 +1654,8 @@ void SaacServer_ACShowTopFMList_send(int fd, char *result, int kindflag, int num
   Send(ws, fd, ws->work);
 }
 
-void SaacServer_ACFixFMData_send(int fd, char *result, int kindflag, char *data1,
-                                char *data2, int charfdid) {
+void SaacServer_ACFixFMData_send(int fd, char *result, int kindflag,
+                                 char *data1, char *data2, int charfdid) {
   CreateHeader(ws->work, "ACFixFMData");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(kindflag), ws->work_buf_size);
@@ -1664,7 +1666,7 @@ void SaacServer_ACFixFMData_send(int fd, char *result, int kindflag, char *data1
 }
 // 设定家族据点
 void SaacServer_ACFixFMPK_send(int fd, char *result, int award, int winindex,
-                              int loseindex) {
+                               int loseindex) {
   CreateHeader(ws->work, "ACFixFMPK");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(award), ws->work_buf_size);
@@ -1674,7 +1676,7 @@ void SaacServer_ACFixFMPK_send(int fd, char *result, int award, int winindex,
 }
 // GM修正家族资料
 void SaacServer_ACGMFixFMData_send(int fd, char *result, char *fmname,
-                                  int charfdid) {
+                                   int charfdid) {
   CreateHeader(ws->work, "ACGMFixFMData");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(fmname), ws->work_buf_size);
@@ -1683,7 +1685,7 @@ void SaacServer_ACGMFixFMData_send(int fd, char *result, char *fmname,
 }
 // 取得家族资料
 void SaacServer_ACGetFMData_send(int fd, char *result, int kindflag, int data,
-                                int charfdid) {
+                                 int charfdid) {
   CreateHeader(ws->work, "ACGetFMData");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(kindflag), ws->work_buf_size);
@@ -1692,8 +1694,8 @@ void SaacServer_ACGetFMData_send(int fd, char *result, int kindflag, int data,
   Send(ws, fd, ws->work);
 }
 //
-void SaacServer_ACFMClearPK_send(int fd, char *result, char *fmname, int fmindex,
-                                int index) {
+void SaacServer_ACFMClearPK_send(int fd, char *result, char *fmname,
+                                 int fmindex, int index) {
   CreateHeader(ws->work, "ACFMClearPK");
   strcatsafe(ws->work, mkstr_string(result), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(fmname), ws->work_buf_size);
@@ -1745,7 +1747,7 @@ void SaacServer_SendEffect_send(int fd, char *effect) {
 
 #ifdef _CHAR_POOLITEM
 void SaacServer_ACCharSavePoolItem_send(int fd, char *Acces, char *Pooldataarg,
-                                       int clifdid) {
+                                        int clifdid) {
   CreateHeader(ws->work, "ACSavePoolItem");
   strcatsafe(ws->work, mkstr_string(Acces), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(Pooldataarg), ws->work_buf_size);
@@ -1754,7 +1756,7 @@ void SaacServer_ACCharSavePoolItem_send(int fd, char *Acces, char *Pooldataarg,
 }
 
 void SaacServer_ACCharGetPoolItem_send(int fd, char *Acces, char *Pooldataarg,
-                                      int clifdid, int npcid) {
+                                       int clifdid, int npcid) {
   CreateHeader(ws->work, "ACGetPoolItem");
   strcatsafe(ws->work, mkstr_string(Acces), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(Pooldataarg), ws->work_buf_size);
@@ -1767,7 +1769,7 @@ void SaacServer_ACCharGetPoolItem_send(int fd, char *Acces, char *Pooldataarg,
 
 #ifdef _CHAR_POOLPET
 void SaacServer_ACCharSavePoolPet_send(int fd, char *Acces, char *Pooldataarg,
-                                      int clifdid) {
+                                       int clifdid) {
   CreateHeader(ws->work, "ACSavePoolPet");
   strcatsafe(ws->work, mkstr_string(Acces), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(Pooldataarg), ws->work_buf_size);
@@ -1776,7 +1778,7 @@ void SaacServer_ACCharSavePoolPet_send(int fd, char *Acces, char *Pooldataarg,
 }
 
 void SaacServer_ACCharGetPoolPet_send(int fd, char *Acces, char *Pooldataarg,
-                                     int clifdid, int npcid) {
+                                      int clifdid, int npcid) {
   CreateHeader(ws->work, "ACGetPoolPet");
   strcatsafe(ws->work, mkstr_string(Acces), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_string(Pooldataarg), ws->work_buf_size);
@@ -1789,7 +1791,7 @@ void SaacServer_ACCharGetPoolPet_send(int fd, char *Acces, char *Pooldataarg,
 
 #ifdef _ANGEL_SUMMON
 void SaacServer_ACMissionTable_send(int fd, int num, int type, char *data,
-                                   char *angelinfo) {
+                                    char *angelinfo) {
   CreateHeader(ws->work, "ACMissionTable");
   strcatsafe(ws->work, mkstr_int(num), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(type), ws->work_buf_size);
@@ -1801,7 +1803,7 @@ void SaacServer_ACMissionTable_send(int fd, int num, int type, char *data,
 
 #ifdef _TEACHER_SYSTEM
 void SaacServer_ACCheckCharacterOnLine_send(int fd, int charaindex, int iOnline,
-                                           char *data, int flag) {
+                                            char *data, int flag) {
   CreateHeader(ws->work, "ACCheckCharacterOnLine");
   strcatsafe(ws->work, mkstr_int(charaindex), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(iOnline), ws->work_buf_size);
@@ -1827,7 +1829,7 @@ void SaacServer_QueryPoint_send(int fd, int clifd, int point) {
 }
 
 void SaacServer_NewVipShop_send(int fd, int clifd, int point, char *buf,
-                               int flag) {
+                                int flag) {
   CreateHeader(ws->work, "NewVipShop");
   strcatsafe(ws->work, mkstr_int(clifd), ws->work_buf_size);
   strcatsafe(ws->work, mkstr_int(point), ws->work_buf_size);

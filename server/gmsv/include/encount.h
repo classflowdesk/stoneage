@@ -1,10 +1,10 @@
 #ifndef __ENCOUNT_H__
 #define __ENCOUNT_H__
 
-#define		ENCOUNT_GROUPMAXNUM		10
+#define ENCOUNT_GROUPMAXNUM 10
 
-BOOL ENCOUNT_initEncount( char* filename );
-BOOL ENCOUNT_reinitEncount( void );
+BOOL ENCOUNT_initEncount(char* filename);
+BOOL ENCOUNT_reinitEncount(void);
 int ENCOUNT_getEncountAreaArray( int floor, int x, int y);
 int ENCOUNT_getEncountPercentMin( int char_index, int floor , int x, int y );
 int ENCOUNT_getEncountPercentMax( int char_index, int floor , int x, int y );
@@ -24,7 +24,7 @@ typedef struct tagENCOUNT_Table
     int                 floor;
     int                 encountprob_min;                /* 巨件市它件玄割   */
     int                 encountprob_max;                /* 巨件市它件玄割   */
-    int                 enemymaxnum;        /* 升木分仃衬毛综月井 */
+    int                 enemymaxnum;                    /* 升木分仃衬毛综月井 */
     int                 zorder;
     int                 groupid[ENCOUNT_GROUPMAXNUM];       /* 弘伙□皿No */
     int                 createprob[ENCOUNT_GROUPMAXNUM];    /* 公及弘伙□皿及请蜇   */
@@ -32,9 +32,8 @@ typedef struct tagENCOUNT_Table
 	int					event_end;
 	int					enemy_group;		// 怪物的group 编号
     RECT                rect;
-}ENCOUNT_Table;
-
-ENCOUNT_Table           *ENCOUNT_table;
+} ENCOUNT_Table;
+ENCOUNT_Table *ENCOUNT_table;
 #endif
 
 #endif

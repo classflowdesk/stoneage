@@ -114,10 +114,9 @@ INLINE int ENEMYTEMP_getInt(int index, ENEMYTEMP_DATAINT element) {
 }
 
 INLINE int ENEMYTEMP_setInt(int index, ENEMYTEMP_DATAINT element, int data) {
-  int buf;
-  buf = ENEMYTEMP_enemy[index].intdata[element];
+  int original_data = ENEMYTEMP_enemy[index].intdata[element];
   ENEMYTEMP_enemy[index].intdata[element] = data;
-  return buf;
+  return original_data;
 }
 
 INLINE char *ENEMYTEMP_getChar(int index, ENEMYTEMP_DATACHAR element) {
@@ -125,7 +124,6 @@ INLINE char *ENEMYTEMP_getChar(int index, ENEMYTEMP_DATACHAR element) {
     return "\0";
   if (!ENEMYTEMP_CHECKCHARDATAINDEX(element))
     return "\0";
-
   return ENEMYTEMP_enemy[index].chardata[element].string;
 }
 
@@ -638,7 +636,7 @@ static int ENEMY_getExp(int array, int tarray, int level, int rank) {
   p = ENEMY_enemy[array].intdata;
   tp = ENEMYTEMP_enemy[tarray].intdata;
 
-  // 仿件弁井日    毛潸
+  //
   if (rank < 0 || rank > 5)
     rank = 0;
   ranknum = ranktbl[rank].rank;
@@ -685,26 +683,26 @@ int ENEMY_getRank(int array, int tarray) {
 }
 
 static int EnemyGymSkill[] = {
-    PETSKILL_GUARDBREAK,          // ㄢ“布□玉旰仄(3)
-    PETSKILL_CONTINUATIONATTACK1, // ㄠㄟ“  粮  猾(10)
-    PETSKILL_CONTINUATIONATTACK2, // ㄠㄠ“  粮  猾(11)
-    PETSKILL_CONTINUATIONATTACK3, // ㄠㄡ“  粮  猾(12)
+    PETSKILL_GUARDBREAK,          // 破除防御(3)
+    PETSKILL_CONTINUATIONATTACK1, // 连续攻击1(10)
+    PETSKILL_CONTINUATIONATTACK2, // 连续攻击2(11)
+    PETSKILL_CONTINUATIONATTACK3, // 连续攻击3(12)
     PETSKILL_CHARGE1,             // ㄢㄟ“民乓□斥ㄠ(30)
-    PETSKILL_CHARGE2,             // ㄢㄠ“民乓□斥ㄡ(31)
+    PETSKILL_CHARGE2,             // ㄢㄠ“民乓□斥ㄡ (31)
     PETSKILL_MIGHTY1,             // ㄣㄟ“域猾  诮(40)
     PETSKILL_MIGHTY2,             // ㄣㄠ“域猾  诮(41)
-    PETSKILL_POWERBALANCE1,       // ㄤㄟ“    及讽ㄠ(50)
-    PETSKILL_POWERBALANCE2,       // ㄤㄠ“    及讽ㄡ(51)
-    PETSKILL_POWERBALANCE3,       // ㄤㄡ“    及讽ㄢ(52)
+    PETSKILL_POWERBALANCE1,       // 背水之战一(50)
+    PETSKILL_POWERBALANCE2,       // 背水之战二(51)
+    PETSKILL_POWERBALANCE3,       // 背水之战三(52) 攻击+50%，防御-50%
     PETSKILL_POISON_ATTACK1,      // ㄥㄟ“    猾(60)
     PETSKILL_POISON_ATTACK2,      // ㄥㄠ“    猾(61)
-    PETSKILL_STONE,               // ㄧㄟ“檗祭  猾(80)
-    PETSKILL_CONFUSION_ATTACK,    // ㄨㄟ“渔刭  猾(90)
-    PETSKILL_DRUNK_ATTACK,        // ㄠㄟㄟ“听办  猾(100)
-    PETSKILL_SLEEP_ATTACK,        // ㄠㄠㄟ“戽曰  猾(110)
-    PETSKILL_NOGUARD1,            // ㄠㄤㄟ“用□布□玉ㄠ(150)
-    PETSKILL_NOGUARD2,            // ㄠㄤㄠ“用□布□玉ㄡ(151)
-    PETSKILL_NOGUARD3,            // ㄠㄤㄡ“用□布□玉ㄢ(152)
+    PETSKILL_STONE,               // 石化攻击(80)
+    PETSKILL_CONFUSION_ATTACK,    // 混乱攻击(90)
+    PETSKILL_DRUNK_ATTACK,        // 醉酒攻击(100)
+    PETSKILL_SLEEP_ATTACK,        // 睡眠攻击(110)
+    PETSKILL_NOGUARD1,            // 不防守战法一(150)
+    PETSKILL_NOGUARD2,            // 不防守战法二(151)
+    PETSKILL_NOGUARD3,            // 不防守战法三(152)
 #ifdef _PSKILL_FALLGROUND
     PETSKILL_FALLGROUND, // 落马术
 #endif
@@ -809,9 +807,7 @@ int ENEMY_RandomChange(int enemy_index, int tempno) {
 
   if (iRet == 1) {
     //********************************************
-    //
     // 皿伊奶乩□及涌仄凶衬卅及匹｝箪岭手仿件母丞
-    //
     //********************************************
     // 铣手仿件母丞
     CHAR_setInt(enemy_index, CHAR_BASEBASEIMAGENUMBER,

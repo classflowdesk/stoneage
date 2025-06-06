@@ -1,10 +1,8 @@
 #ChangeRunLevel
 #运行等级 范围是-20~19 其中-20的运行级别最高
 runlevel=0
-
 #性能调节，诺想CPU使用率大些的请把值设大些
 CPUUSE=1
-
 #recvbuffer表示每个玩家接收缓冲区大小 范围0K-128K
 recvbuffer=64
 #recvbuffer表示每个玩家发送缓冲区大小 范围0K-128K
@@ -33,7 +31,8 @@ CTRLTRANS=1
 FMMAGICMPRATE1=0.2
 FMMAGICMPRATE2=0.2
 
-#带宽优化,原地状态下VS不显(1全部开启,2单人开启,3队员开启,0关闭)
+# 带宽优化, 原地状态下VS不显
+# 1: 全部开启; 2: 单人开启; 3: 队员开启; 0: 关闭)
 VSFLG=1
 
 #暂时无用的
@@ -62,9 +61,9 @@ FMWARPLAYERNUM=50
 #线路族战最大数显示
 FMWARPLAYERNUMBUFF=石器一线,50,石器PK二线,60,石器PK三线,80,石器PK四线,100,石器PK单号线,200
 
-#原地延时
+# 原地战斗延迟(milliseconds)
 BATTLESPEED=2000
-#战斗回合延迟(毫秒)
+# 战斗回合延迟(milliseconds)
 battletime=200
 
 声望模式（0为默认，1为自定义）
@@ -76,7 +75,9 @@ FirstLockItem=1,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
 #伤害程度设置(默认为100)
 dammagecalc=85
 
-#刷新NPC设置（RELOADNPCTIME*10 秒 0为关闭 最大值10000 ，RELOADNPCTYPE 0为关闭 1为传送当前坐标）
+# 刷新NPC设置
+# RELOADNPCTIME 0: 关闭; 最大值10000; 单位: 100 milliseconds
+# RELOADNPCTYPE 0: 关闭; 1: 传送当前坐标
 RELOADNPCTIME=0
 RELOADNPCTYPE=1
 
@@ -711,7 +712,6 @@ Petdeletetime=60
 # (物品消失时间)
 Itemdeletetime=60
 
-
 #删除石币时间间隔
 Golddeletetime=30
 
@@ -733,17 +733,16 @@ loghour=0
 # ?(战斗错误消息?)
 battledebugmsg=0
 
-#   //ttom add because the second had
+# ttom add because the second had
 # 客户端验证码 大陆无效
 encodekey=1
-# 往writebuffer缓冲区写数据大小 单位字节
+# 往writebuffer缓冲区写数据大小 单位:Byte
 acwritesize=1048576
 # 缓冲区大小
 acwbsize=1048576
 # 如果发现玩家使用非法手段 比如说改封包跳NPC判断 或者点数异常 则关进监狱
 erruser_down=1
 #   //ttom end
-
 ====================================================================
 #以下可省略
 #ifdef _AUCTIONEER

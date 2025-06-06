@@ -4,14 +4,14 @@
 #include "saac_server.h"
 #include "util.h"
 
-typedef enum {
+typedef enum enumMailState {
   MS_NOUSE = 0,
   MS_NEWMESSAGE,
   MS_WAIT_ACK,
-} MAILSTATE;
+} MailState;
 
 #define TEXT_MAX 1024
-struct mail {
+typedef struct tagMail {
   int use;
   unsigned int id_char_name_hash;
   char id_to[USERID_MAX];
@@ -21,11 +21,11 @@ struct mail {
   char text[TEXT_MAX];
   int option;
   unsigned int message_id;
-  MAILSTATE state;
+  MailState state;
   time_t recv_time;
-};
+} Mail;
 
-struct mail *mailbuf;
+Mail *mailbuf;
 int mailbufsize = 0;
 
 static unsigned getNextMessageID(void) {
@@ -64,8 +64,8 @@ static unsigned getNextMessageID(void) {
 }
 
 static int reallocMailBuf(void) {
-  struct mail *previous = mailbuf;
-  struct mail *newbuf;
+  Mail *previous = mailbuf;
+  Mail *newbuf;
   int new_mailbufsize;
   if (mailbufsize == 0) {
     new_mailbufsize = 1;
@@ -73,20 +73,19 @@ static int reallocMailBuf(void) {
     new_mailbufsize = mailbufsize * 2;
   }
 
-  newbuf = (struct mail *)calloc(1, new_mailbufsize * sizeof(struct mail));
+  newbuf = (Mail *)calloc(1, new_mailbufsize * sizeof(Mail));
   if (newbuf == NULL) {
     logErr("回复邮件缓冲: 内件不足!! 新邮件大小:%d\n", new_mailbufsize);
     return -1;
   }
-  memset(newbuf, 0, new_mailbufsize * sizeof(struct mail));
+  memset(newbuf, 0, new_mailbufsize * sizeof(Mail));
   if (previous)
-    memcpy((char *)newbuf, (char *)previous, mailbufsize * sizeof(struct mail));
+    memcpy((char *)newbuf, (char *)previous, mailbufsize * sizeof(Mail));
   free(previous);
   mailbufsize = new_mailbufsize;
   mailbuf = newbuf;
 
-  logErr("重新分配邮件缓冲: "
-      "新邮件缓冲:%d 旧地址:%x 新地址:%x\n",
+  logErr("重新分配邮件缓冲: 新邮件缓冲:%d, 旧地址:%x, 新地址:%x.\n",
       new_mailbufsize, (unsigned int)previous, (unsigned int)newbuf);
   return 0;
 }
@@ -115,9 +114,9 @@ static int allocMail(int use_msgid, unsigned int msgid) {
       return mailbuf_finder;
     }
   }
-  logErr("分配邮件: 邮件缓冲失败.正在进行分配...\n");
+  logErr("分配邮件: 邮件缓冲失败, 正在重新分配...\n");
   if (reallocMailBuf() < 0) {
-    logErr("分配邮件: 分配失败\n");
+    logErr("分配邮件: 重分配失败!\n");
   } else {
     return allocMail(use_msgid, msgid);
   }

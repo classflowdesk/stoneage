@@ -17,3 +17,4 @@ csa
 *.exe
 test
 server/saac/acserv.cf
+.DS_Store

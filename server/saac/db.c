@@ -1,7 +1,8 @@
+#define __DB_C__
+#include "db.h"
+
 #include "main.h"
 #include "util.h"
-#define _DB_C_
-#include "db.h"
 
 // #define CHARVALUE_MAX 1024
 #define MAXTABLE 16
@@ -51,8 +52,8 @@ typedef struct tagTable {
   int ent_finder; // 指向最後一次配置的 hashentry
 } Table;
 
-DBEntry *gDBEntry; /* 巨件玄伉筏盛迕 */
-int dbsize = 0;    /* 1,2,4,8,16...*/
+DBEntry *gDBEntry; /* DB数据句柄 */
+int dbsize = 0;    /* 按1,2,4,8,16...进行扩容 */
 static int dbent_finder = 0;
 Table dbt[MAXTABLE];
 

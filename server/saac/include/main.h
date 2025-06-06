@@ -78,7 +78,7 @@ int login_game_server(const int ti, const char *svname, const char *svpas,
 #endif
 
 #ifdef _ANGEL_SUMMON
-void delMissionTableOnedata( int index);
+void delMissionTableOnedata(int index);
 
 typedef enum
 {
@@ -87,7 +87,7 @@ typedef enum
   MISSION_DOING,
   MISSION_HERO_COMPLETE,
   MISSION_TIMEOVER,
-}ANGEL_MISSIONFLAG;
+} ANGEL_MISSIONFLAG;
 #endif
 
 #undef EXT

@@ -629,7 +629,7 @@ BOOL init(int argc, char **argv, char **env) {
   else
     print("succeed.\n");
 #endif
-  print("��ʼ�� NPC ������...... ");
+  print("Start to init NPC config......");
   if (InitWorkSpace(gmsvWorkSpace, lsrpcClientWriteFunc, CHARDATASIZE, LSGENWORKINGBUFFER) < 0)
     goto CLOSEBIND;
   print("succeed.\n");
@@ -688,25 +688,9 @@ BOOL init(int argc, char **argv, char **env) {
 #endif
 #ifdef _ITEM_QUITPARTY
   print("Start to init item quit party......");
-#ifdef _CRYPTO_DATA
-  char realopfile[256];
-  BOOL crypto = FALSE;
-  sprintf(realopfile, "%s.allblues", getitemquitparty());
-  f = fopen(realopfile, "r");
-  if (f != NULL) {
-    crypto = TRUE;
-  } else
-#endif
-  {
-    f = fopen(getitemquitparty(), "r");
-  }
+  f = fopen(getitemquitparty(), "r");
   if (f != NULL) {
     while (fgets(line, sizeof(line), f)) {
-#ifdef _CRYPTO_DATA
-      if (crypto == TRUE) {
-        DecryptKey(line);
-      }
-#endif
       if (line[0] == '#')
         continue;
       if (line[0] == '\n')
@@ -753,15 +737,15 @@ BOOL init(int argc, char **argv, char **env) {
   return TRUE;
 
 CLOSEAC:
-  print("Close AC.\n");
+  LogOut("Close AC.\n");
   close(acfd);
 CLOSEBIND:
-  print("Close Bind.\n");
+  LogOut("Close Bind.\n");
   close(bindedfd);
   // print("close binded fd.\n");
   endConnect();
   // print("End Close Bind.\n");
 MEMEND:
-  print("Mem End.\n");
+  LogOut("Mem End.\n");
   memEnd();
 }

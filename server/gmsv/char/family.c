@@ -102,7 +102,7 @@ int fmdplevelexp[]={0,			// 0
 // Arminius end
 
 // shan begin
-int getFmLv(int playerindex)	// �ϳ�ʱר��
+int getFmLv(int playerindex)
 {
     int i, dp;
     dp = CHAR_getWorkInt(playerindex, CHAR_WORKFMDP);
@@ -169,7 +169,7 @@ void SetFMPetVarInit(int meindex)
 
 void SetFMVarInit(int meindex)
 {
-		SetFMPetVarInit(meindex); // ����ػ��� Flag
+    SetFMPetVarInit(meindex); //
    	CHAR_setInt(meindex, CHAR_FMINDEX, -1);
    	CHAR_setChar(meindex, CHAR_FMNAME, "");
    	CHAR_setInt(meindex, CHAR_FMSPRITE, -1);
@@ -185,16 +185,15 @@ void SetFMVarInit(int meindex)
 
 void FAMILY_Init( void )
 {
-	int i, j ,k;
-
+	int i, j, k;
 	for( i=0; i<FAMILY_MAXNUM; i++)	{
 	    for( j=0; j<FAMILY_MAXCHANNEL; j++)
 	        for( k=0; k<FAMILY_MAXMEMBER; k++)
 	        	channelMember[i][j][k] = -1;
 	}
 
-	for( i=0; i<FAMILY_MAXNUM; i++)
-	    for( j=0; j<FAMILY_MAXMEMBER; j++ )
+	for(i=0; i<FAMILY_MAXNUM; i++)
+	    for(j=0; j<FAMILY_MAXMEMBER; j++ )
 	    	familyMemberIndex[i][j] = -1;	    
 #ifdef _NEW_MANOR_LAW
 	for(i=0;i<FAMILY_MAXHOME;i++){
@@ -210,8 +209,7 @@ void FAMILY_Init( void )
 #endif		
 	familyListBuf[0] = '\0';
 	SaacClient__ACShowFMList_send( acfd );
-
-	//print( "FamilyData_Init:%s ", familyListBuf );
+	// print("FamilyData_Init:%s ", familyListBuf );
 }
 
 
@@ -220,18 +218,12 @@ void CHAR_Family(int fd, int index, char *message)
    char		firstToken[64];
    char		messageeraseescape[512];
    char*	messagebody;
-
    {
-      if (*message == 0)	return;
-      CHAR_getMessageBody(message, firstToken,
-         sizeof(firstToken), &messagebody);
-         
-      if (!messagebody)		return;
-      
-      strcpysafe(messageeraseescape, sizeof(messageeraseescape),
-         messagebody);
+      if (*message == 0) return;
+      CHAR_getMessageBody(message, firstToken, sizeof(firstToken), &messagebody);
+      if (!messagebody)	return;
+      strcpysafe(messageeraseescape, sizeof(messageeraseescape), messagebody);
       makeStringFromEscaped(messageeraseescape);
-
       switch(tolower(firstToken[0]))
       {
 			case 'a':
@@ -317,29 +309,49 @@ int CheckFMLeader(int meindex)
    return 1;
 }
 
-int CheckFMMember(int meindex)
+/**
+ * 检查角色是否为家族族长。
+ * 
+ * @param char_index 角色索引
+ * @return int 如果是族长返回-1，否则返回1
+ */
+int CheckFMMember(int char_index)
 {
-   if (CHAR_getInt(meindex, CHAR_FMINDEX) > 0)   	return -1;
-   if (strcmp(CHAR_getChar(meindex, CHAR_FMNAME), "") != 0)	return -1;
+   if (CHAR_getInt(char_index, CHAR_FMINDEX) > 0) return -1;
+   if (strcmp(CHAR_getChar(char_index, CHAR_FMNAME), "") != 0) return -1;
 #ifdef _FMVER21
-   if (CHAR_getInt(meindex, CHAR_FMLEADERFLAG) > 0 &&
-       CHAR_getInt(meindex, CHAR_FMLEADERFLAG) != FMMEMBER_APPLY )	return -1;
+   if (CHAR_getInt(char_index, CHAR_FMLEADERFLAG) > 0 &&
+       CHAR_getInt(char_index, CHAR_FMLEADERFLAG) != FMMEMBER_APPLY) return -1;
 #else
-   if (CHAR_getInt(meindex, CHAR_FMLEADERFLAG) > 0 )	return -1;
+   if (CHAR_getInt(char_index, CHAR_FMLEADERFLAG) > 0) return -1;
 #endif       
    return 1;
 }
+
+/**
+ * 检查角色是否为家族成员。
+ *
+ * @param char_index 角色索引
+ * @return int 如果是家族成员返回-1，否则返回1
+ */
 
 int CheckLeaderQ(int meindex)
 {
    if (CHAR_getInt(meindex, CHAR_LV) < FMLEADERLV
    	&& CHAR_getInt(meindex, CHAR_TRANSMIGRATION) <= 0)
-   	return	-1;
+   	return -1;
    if (!NPC_EventCheckFlg(meindex, 4))
-   	return	-2;
-   return	0;
+   	return -2;
+   return 0;
 }
 
+/**
+ * 添加家族成员。
+ *
+ * @param fd 连接描述符
+ * @param meindex 角色索引
+ * @param message 消息
+ */
 void FAMILY_Add(int fd, int meindex, char* message)
 {
 	char token[128], fmname[128], charname[128], charid[128];
@@ -488,22 +500,22 @@ void FAMILY_Add(int fd, int meindex, char* message)
 	SaacClient__ACAddFM_send(acfd, fmname, charname, charid, charlv,
    	petname, petattr, fmrule, fmsprite, chargrano, CONNECT_getFdid(fd));
 #endif
-	
-	// Ҫ�����¼����б�
 	//SaacClient__ACShowFMList_send( acfd );
 	
 }
 
-/*
-  �q�����r
-�q���������r
-���������������r
-�q�ة����ȡ�~~���r
-����辶��������
-�t�Щ����s������ ~~~~~~~~~��
-��������������������������������
 
-*/
+
+/**
+ * 添加家族（族长创建家族）的处理函数。
+ *
+ * 该函数会根据传入的参数，组装家族相关信息，并调用 SaacClient__ACAddFM_send
+ * 向 SAAC 服务器发送创建家族的请求。会设置角色和宠物的家族相关属性。
+ *
+ * @param fd        连接描述符
+ * @param meindex   角色索引
+ * @param message   客户端传来的消息字符串
+ */
 
 void ACAddFM(int fd, int result, int fmindex, int index)
 {
@@ -1141,7 +1153,7 @@ void ACShowFMMemo(int result, int index, int num, int dataindex, char *data)
    }
 }
 
-#ifdef _PERSONAL_FAME   // Arminius: ������\\��������
+#ifdef _PERSONAL_FAME   // Arminius:
 void ACFMCharLogin(int fd, int result, int index, int floor, int fmdp,
 	int joinflag, int fmsetupflag, int flag, int charindex, int charfame
 	#ifdef _NEW_MANOR_LAW
@@ -1388,12 +1400,12 @@ void FAMILY_Detail(int fd, int meindex, char *message)
 			struct tm *tm1 = localtime(&titletime);
 			
 			sprintf( sendbuf, "��Ŀǰ��Ӣ�۳ƺ���Ч�ڣ�%4d��%2d��%2d�� %2d:%2d:%2d\n",
-																											tm1->tm_year + 1900,
-																											tm1->tm_mon + 1,
-																											tm1->tm_mday,
-																											tm1->tm_hour,
-																											tm1->tm_min,
-																											tm1->tm_sec);	
+				tm1->tm_year + 1900,
+			    tm1->tm_mon + 1,
+			    tm1->tm_mday,
+			    tm1->tm_hour,
+			    tm1->tm_min,
+			    tm1->tm_sec);	
 			CHAR_talkToCli(meindex, -1, sendbuf, CHAR_COLORBLUE);
 		}
 	}
@@ -2706,8 +2718,6 @@ void getNewFMList()
 void checkFamilyIndex( void )
 {
 	int i, j, k, char_index, err1=0, err2=0;
-//	print(" checkFamilyIndex! ");
-	
 	for( i=0; i<FAMILY_MAXNUM; i++){
 		for( j=0; j<FAMILY_MAXMEMBER; j++){
 			char_index = familyMemberIndex[i][j];
@@ -3060,115 +3070,113 @@ void FAMILY_LeaderFunc( int fd, int meindex, char *message )
    }
 }
 
-void ACFMJob( int fd, int ret, char* data1, char* data2 )
+void ACFMJob(int fd, int ret, char* data1, char* data2)
 {
-	
-	int char_index = CONNECT_getCharaindex( fd );
-	if( !CHAR_CHECKINDEX(char_index) ) return;
-	
-	
-        if( 1 ){
-        	
-        	int leaderindex = CHAR_getWorkInt( char_index, CHAR_WORKLEADERCHANGE );
-        	char buf[256], buf2[256];
+	const int char_index = CONNECT_getCharaindex(fd);
+	if ( !CHAR_CHECKINDEX(char_index) ) return;
+	int leaderindex = CHAR_getWorkInt( char_index, CHAR_WORKLEADERCHANGE );
+    char buf[256], buf2[256];
 
-        	CHAR_setWorkInt( char_index, CHAR_WORKLEADERCHANGE, 0 );
-        	print("leaderindex:%d:%s\n", leaderindex,CHAR_getChar(leaderindex,CHAR_NAME) );
-        	
-        	if( !CHAR_CHECKINDEX(leaderindex) ) return;
-        	//if( CHAR_getWorkInt( leaderindex, CHAR_WORKLEADERCHANGE ) != char_index ) return;
-        	CHAR_setWorkInt( leaderindex, CHAR_WORKLEADERCHANGE, 0 );
-        	
-        	if( ret == 0 ){
-        		CHAR_talkToCli( char_index, -1, "�峤��λʧ�ܣ�", CHAR_COLORYELLOW );
-        		CHAR_talkToCli( leaderindex, -1, "�峤��λʧ�ܣ�", CHAR_COLORYELLOW );
-	        	return;
-	        }
-	        
-	        // Robin 10/02 debug
-        	if( CHAR_getInt( leaderindex, CHAR_FMINDEX) != CHAR_getInt( char_index, CHAR_FMINDEX)
+    CHAR_setWorkInt( char_index, CHAR_WORKLEADERCHANGE, 0 );
+    print("leaderindex:%d:%s\n", leaderindex,CHAR_getChar(leaderindex,CHAR_NAME) );
+    
+    if( !CHAR_CHECKINDEX(leaderindex) ) return;
+    //if( CHAR_getWorkInt( leaderindex, CHAR_WORKLEADERCHANGE ) != char_index ) return;
+    CHAR_setWorkInt( leaderindex, CHAR_WORKLEADERCHANGE, 0 );
+    
+    if( ret == 0 ){
+    	CHAR_talkToCli( char_index, -1, "�峤��λʧ�ܣ�", CHAR_COLORYELLOW );
+    	CHAR_talkToCli( leaderindex, -1, "�峤��λʧ�ܣ�", CHAR_COLORYELLOW );
+	   	return;
+	   }
+	   
+	   // Robin 10/02 debug
+    if( CHAR_getInt( leaderindex, CHAR_FMINDEX) != CHAR_getInt( char_index, CHAR_FMINDEX)
 #ifdef _FMVER21        	
 			// || CHAR_getInt( leaderindex, CHAR_FMLEADERFLAG) != FMMEMBER_LEADER )
 #else
 			// || CHAR_getInt( leaderindex, CHAR_FMLEADERFLAG) != 1
 #endif
-		)
-		{
-			sprintf( buf, "leaderindex:%d:%s\n", leaderindex, CHAR_getChar( leaderindex, CHAR_NAME) );
-			LogFamily(
-				CHAR_getChar(char_index, CHAR_FMNAME),
-				CHAR_getInt(char_index, CHAR_FMINDEX),
-				CHAR_getChar(char_index, CHAR_NAME),
-				CHAR_getChar(char_index, CHAR_CDKEY),
-				"LEADERCHANGE_ERROR(�峤��λʧ��)",
-				buf
-			);
-			return;
-		}
-		
-		//CHAR_setInt( leaderindex, CHAR_FMLEADERFLAG, FMMEMBER_MEMBER);
-		//CHAR_setInt( char_index, CHAR_FMLEADERFLAG, FMMEMBER_LEADER);
-		SetFMPetVarInit( leaderindex );
-		SetFMPetVarInit( char_index );
-		CHAR_sendStatusString( leaderindex, "F");
-		CHAR_sendStatusString( char_index, "F");
-		
-		GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
-			WINDOW_BUTTONTYPE_OK,
-			-1, -1,
-			makeEscapeString( "\n��ϲ�㣡���Ѿ������ε��峤�ˡ�\n��úõ�Ŭ���ɣ�\n���ˡ��ǵ����ȵ��峤�ҵļ������Աѡ��\n�µļ����ػ��ޣ�������彫�ᱻ��ɢࡣ�", buf, sizeof(buf)));
-			
-		sprintf( buf2, "\n�������ˣ����Ѿ����峤��λ�ӽ���%s�ˡ�", CHAR_getChar( char_index, CHAR_NAME) );
-		GmsvServer_WN_send( CHAR_getWorkInt( leaderindex, CHAR_WORKFD) , WINDOW_MESSAGETYPE_MESSAGE,
-			WINDOW_BUTTONTYPE_OK,
-			-1, -1,
-			makeEscapeString( buf2, buf, sizeof(buf)));
-
-		sprintf( buf, "%s\t%s\t%s",
-			CHAR_getChar(leaderindex, CHAR_FMNAME),
-			CHAR_getChar(leaderindex, CHAR_NAME),
-			CHAR_getChar(leaderindex, CHAR_CDKEY)
-		);
-		
+	)
+	{
+		sprintf( buf, "leaderindex:%d:%s\n", leaderindex, CHAR_getChar( leaderindex, CHAR_NAME) );
 		LogFamily(
 			CHAR_getChar(char_index, CHAR_FMNAME),
 			CHAR_getInt(char_index, CHAR_FMINDEX),
 			CHAR_getChar(char_index, CHAR_NAME),
 			CHAR_getChar(char_index, CHAR_CDKEY),
-			"LEADERCHANGE(�峤��λ)",
-			buf);
-  }
+			"LEADERCHANGE_ERROR(�峤��λʧ��)",
+			buf
+		);
+		return;
+	}
+	
+	//CHAR_setInt( leaderindex, CHAR_FMLEADERFLAG, FMMEMBER_MEMBER);
+	//CHAR_setInt( char_index, CHAR_FMLEADERFLAG, FMMEMBER_LEADER);
+	SetFMPetVarInit( leaderindex );
+	SetFMPetVarInit( char_index );
+	CHAR_sendStatusString( leaderindex, "F");
+	CHAR_sendStatusString( char_index, "F");
+	
+	GmsvServer_WN_send( fd, WINDOW_MESSAGETYPE_MESSAGE,
+		WINDOW_BUTTONTYPE_OK,
+		-1, -1,
+		makeEscapeString( "\n��ϲ�㣡���Ѿ������ε��峤�ˡ�\n��úõ�Ŭ���ɣ�\n���ˡ��ǵ����ȵ��峤�ҵļ������Աѡ��\n�µļ����ػ��ޣ�������彫�ᱻ��ɢࡣ�", buf, sizeof(buf)));
+		
+	sprintf( buf2, "\n�������ˣ����Ѿ����峤��λ�ӽ���%s�ˡ�", CHAR_getChar( char_index, CHAR_NAME) );
+	GmsvServer_WN_send( CHAR_getWorkInt( leaderindex, CHAR_WORKFD) , WINDOW_MESSAGETYPE_MESSAGE,
+		WINDOW_BUTTONTYPE_OK,
+		-1, -1,
+		makeEscapeString( buf2, buf, sizeof(buf)));
+
+	sprintf( buf, "%s\t%s\t%s",
+		CHAR_getChar(leaderindex, CHAR_FMNAME),
+		CHAR_getChar(leaderindex, CHAR_NAME),
+		CHAR_getChar(leaderindex, CHAR_CDKEY)
+	);
+	
+	LogFamily(
+		CHAR_getChar(char_index, CHAR_FMNAME),
+		CHAR_getInt(char_index, CHAR_FMINDEX),
+		CHAR_getChar(char_index, CHAR_NAME),
+		CHAR_getChar(char_index, CHAR_CDKEY),
+		"LEADERCHANGE(�峤��λ)",
+		buf);
 }
 #ifdef _MO_LNS_CHARSUOXU
-int Char_GetFm( int id, int x)
+int Char_GetFm(int id, int x)
 {
-	int	fd = getfdFromCharaIndex( id);
+	int	fd = getfdFromCharaIndex(id);
 	if (x == 1)
 		return fmdptop.fmMomentum[id];
 	else if (x == 2)
 		return fmdptop.fmtopdp[id];
 	else if (x == 3)
-	{
 		return familyTax[CHAR_getWorkInt( id, CHAR_WORKFMINDEXI )];
-	}
 }
 
-char * FM_getManorData(int ManorId,int Flg)
+char * FM_getManorData(int manor_id, const int flag)
 {
 	char *pointbuf = "";
-	if( getStringFromIndexWithDelim(fmpointlist.pointlistarray[ManorId], "|", Flg, pointbuf, sizeof(pointbuf)) == FALSE ) return -1;
+	if (getStringFromIndexWithDelim(fmpointlist.pointlistarray[manor_id], "|", flag, pointbuf, sizeof(pointbuf)) == FALSE) return -1;
 	return pointbuf;
 }
 #endif
 
 #ifdef _FAMILYBADGE_
-int getFamilyBadge(int index)
+/**
+ * 获取家族徽章。
+ *
+ * @param char_index 角色索引
+ * @return int 家族徽章的int类型
+ */
+int getFamilyBadge(const int char_index)
 {
-	if(CHAR_CHECKINDEX(index)){
-		int  fmindex_wk = CHAR_getWorkInt( index, CHAR_WORKFMINDEXI);
-		if( fmindex_wk < 0 || fmindex_wk >= FAMILY_MAXNUM ) return 0;
-		return  memberlist[fmindex_wk].badge;
-	}else
-		return 0;
+	if (CHAR_CHECKINDEX(char_index)) {
+		int fmindex_wk = CHAR_getWorkInt(char_index, CHAR_WORKFMINDEXI);
+		if (fmindex_wk < 0 || fmindex_wk >= FAMILY_MAXNUM) return 0;
+		return memberlist[fmindex_wk].badge;
+	}
+	return 0;
 }
 #endif

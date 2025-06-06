@@ -74,20 +74,38 @@
 #define logErr(format, args...) fprintf(stderr, format, ##args)
 #define logOut(format, args...) fprintf(stdout, format, ##args)
 #define logFile(filename, format, args...)                                     \
-  {                                                                            \
-    FILE *f;                                                                   \
-    f = fopen(filename, "a");                                                  \
-    if (f != NULL) {                                                           \
-      fprintf(f, format, ##args);                                              \
-      fclose(f);                                                               \
+  do {                                                                         \
+    FILE *fp;                                                                  \
+    fp = fopen(filename, "a+");                                                \
+    if (fp != NULL) {                                                          \
+      if (sizeof(#args) == 0) {                                                \
+        fwrite(format, strlen(format), 1, fp);                                 \
+      } else {                                                                 \
+        fprintf(fp, format, ##args);                                           \
+      }                                                                        \
+      fclose(fp);                                                              \
     } else {                                                                   \
       fprintf(stderr, "cannot open file %s. reason:%s\n", filename,            \
               strerror(errno));                                                \
     }                                                                          \
-  }
+  } while (0);
+
+// struct tm now;
+// time_t timestamp; 长整型时间戳
+#define logFileToday(format, args...)                                          \
+  do {                                                                         \
+    char filename[32];                                                         \
+    struct tm today;                                                           \
+    time_t timestamp;                                                          \
+    time(&timestamp);                                                          \
+    memcpy(&today, localtime(&timestamp), sizeof(today));                      \
+    sprintf(filename, "%04d-%02d-%02d.log", today.tm_year + 1900,              \
+            today.tm_mon + 1, today.tm_mday);                                  \
+    logFile(filename, format, ##args);                                         \
+  } while (0);
 #ifdef __GNUC__
-#define print(format, arg...) fprintf(stderr, format, ##arg)
-#define fprint(format, arg...)                                                 \
+#define printErr(format, arg...) fprintf(stderr, format, ##arg)
+#define printErrX(format, arg...)                                              \
   fprintf(stderr, "%s:%d:", format, __FILE__, __LINE__, ##arg)
 #endif // __GUNC__
 
@@ -112,27 +130,28 @@
 #define RAND(x, y)                                                             \
   ((x - 1) + 1 + (int)((double)(y - (x - 1)) * rand() / (RAND_MAX + 1.0)))
 
-#define GETLOWVALUE(x) ((x)&0x0000FFFF)
-#define GETHIGHVALUE(x) ((((x)&0xFFFF0000) >> 16) & 0x0000FFFF)
-#define SETLOWVALUE(x, y) ((x) = ((x)&0xFFFF0000) | ((y)&0x0000FFFF))
-#define SETHIGHVALUE(x, y) ((x) = ((x)&0x0000FFFF) | (((y) << 16) & 0xFFFF0000))
-#define MAKE2VALUE(x, y) ((((x) << 16) & 0xFFFF0000) | ((y)&0x0000FFFF))
+#define GETLOWVALUE(x) ((x) & 0x0000FFFF)
+#define GETHIGHVALUE(x) ((((x) & 0xFFFF0000) >> 16) & 0x0000FFFF)
+#define SETLOWVALUE(x, y) ((x) = ((x) & 0xFFFF0000) | ((y) & 0x0000FFFF))
+#define SETHIGHVALUE(x, y)                                                     \
+  ((x) = ((x) & 0x0000FFFF) | (((y) << 16) & 0xFFFF0000))
+#define MAKE2VALUE(x, y) ((((x) << 16) & 0xFFFF0000) | ((y) & 0x0000FFFF))
 
-#define GETFIRSTVALUE(x) ((x)&0x000000FF)
-#define GETSECONDVALUE(x) ((((x)&0x0000FF00) >> 8) & 0x000000FF)
-#define GETTHIRDVALUE(x) ((((x)&0x00FF0000) >> 16) & 0x000000FF)
-#define GETFOURTHVALUE(x) ((((x)&0xFF000000) >> 24) & 0x000000FF)
+#define GETFIRSTVALUE(x) ((x) & 0x000000FF)
+#define GETSECONDVALUE(x) ((((x) & 0x0000FF00) >> 8) & 0x000000FF)
+#define GETTHIRDVALUE(x) ((((x) & 0x00FF0000) >> 16) & 0x000000FF)
+#define GETFOURTHVALUE(x) ((((x) & 0xFF000000) >> 24) & 0x000000FF)
 
-#define SETFIRSTVALUE(x, y) ((x) = (((x)&0xFFFFFF00) | (y & 0x000000FF)))
+#define SETFIRSTVALUE(x, y) ((x) = (((x) & 0xFFFFFF00) | (y & 0x000000FF)))
 #define SETSECONDVALUE(x, y)                                                   \
-  ((x) = (((x)&0xFFFF00FF) | (((y) << 8) & 0x0000FF00)))
+  ((x) = (((x) & 0xFFFF00FF) | (((y) << 8) & 0x0000FF00)))
 #define SETTHIRDVALUE(x, y)                                                    \
-  ((x) = (((x)&0xFF00FFFF) | (((y) << 16) & 0x00FF0000)))
+  ((x) = (((x) & 0xFF00FFFF) | (((y) << 16) & 0x00FF0000)))
 #define SETFOURTHVALUE(x, y)                                                   \
-  ((x) = (((x)&0x00FFFFFF) | (((y) << 24) & 0xFF000000)))
+  ((x) = (((x) & 0x00FFFFFF) | (((y) << 24) & 0xFF000000)))
 
 #define MAKE4VALUE(a, b, c, d)                                                 \
   ((((a) << 24) & 0xFF000000) | (((b) << 16) & 0x00FF0000) |                   \
-   (((c) << 8) & 0x0000FF00) | ((d)&0x000000FF))
+   (((c) << 8) & 0x0000FF00) | ((d) & 0x000000FF))
 
 #endif // __COMMON_COMMON_H__

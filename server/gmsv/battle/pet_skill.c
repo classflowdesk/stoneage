@@ -1120,10 +1120,7 @@ int PETSKILL_Sacrifice(int char_index, int toindex, int array, char *data
 }
 #endif
 #ifdef _SKILL_REFRESH
-int PETSKILL_Refresh(int char_index, int toindex, int array, char *data
-
-) {
-
+int PETSKILL_Refresh(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_REFRESH);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
@@ -1132,9 +1129,7 @@ int PETSKILL_Refresh(int char_index, int toindex, int array, char *data
 }
 #endif
 #ifdef _SKILL_WEAKEN // vincent宠技:虚弱
-int PETSKILL_Weaken(int char_index, int toindex, int array, char *data
-
-) {
+int PETSKILL_Weaken(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_WEAKEN);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
@@ -1155,9 +1150,7 @@ int PETSKILL_Deeppoison(int char_index, int toindex, int array, char *data
 #endif
 
 #ifdef _SKILL_BARRIER // vincent宠技:魔障
-int PETSKILL_Barrier(int char_index, int toindex, int array, char *data
-
-) {
+int PETSKILL_Barrier(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_BARRIER);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
@@ -1167,9 +1160,7 @@ int PETSKILL_Barrier(int char_index, int toindex, int array, char *data
 #endif
 
 #ifdef _SKILL_NOCAST // vincent宠技:沉默
-int PETSKILL_Nocast(int char_index, int toindex, int array, char *data
-
-) {
+int PETSKILL_Nocast(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_NOCAST);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
@@ -1179,9 +1170,7 @@ int PETSKILL_Nocast(int char_index, int toindex, int array, char *data
 #endif
 
 #ifdef _SKILL_ROAR // vincent宠技:大吼
-int PETSKILL_Roar(int char_index, int toindex, int array, char *data
-
-) {
+int PETSKILL_Roar(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_ROAR);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
@@ -1191,61 +1180,46 @@ int PETSKILL_Roar(int char_index, int toindex, int array, char *data
 #endif
 
 #ifdef _SKILL_GUARDBREAK2 // 破除防御2 vincent add 2002/05/20
-int PETSKILL_GuardBreak2(int char_index, int toNo, int array, char *data
-
-) {
-
+int PETSKILL_GuardBreak2(int char_index, int toNo, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_GBREAK2);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toNo);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   return TRUE;
 }
 #endif
 
-//*******************************************************
-int PETSKILL_NormalAttack(int char_index, int toindex, int array, char *data
-
-) {
+int PETSKILL_NormalAttack(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_ATTACK);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   return TRUE;
 }
 
 #ifdef _INVERSION_PETSKILL
-int PETSKILL_Inversion(int char_index, int toindex, int array, char *data
-
-) {
+int PETSKILL_Inversion(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_INVERSION);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   return TRUE;
 }
 #endif
 
 #ifdef _MASSAGE_PETSKILL
 int PETSKILL_Massage(int char_index, int toindex, int array, char *data
-
 ) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_MASSAGE);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   return TRUE;
 }
 #endif
 
 #ifdef _PETOUT_PETSKILL
 int PETSKILL_Petout(int char_index, int toindex, int array, char *data
-
 ) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_PETOUT);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   CHAR_SETWORKINT_LOW(char_index, CHAR_WORKBATTLECOM3, array); // 记录属性
   return TRUE;
 }
@@ -1257,14 +1231,11 @@ int PETSKILL_Strength(int char_index, int toNo, int array, char *data) {
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return FALSE;
   nums = CHAR_getWorkInt(char_index, CHAR_WORK_STRENGTH);
-
   char *skillarg = PETSKILL_getChar(array, PETSKILL_OPTION);
   char buf1[256];
-
   if (getStringFromIndexWithDelim(skillarg, "|", 1, buf1, sizeof(buf1)) ==
       FALSE)
     return FALSE;
-
   if (nums >= max(1, atoi(buf1))) {
     int toindex = CHAR_getWorkInt(char_index, CHAR_WORKPLAYERINDEX);
     char buf[256];
@@ -1274,7 +1245,6 @@ int PETSKILL_Strength(int char_index, int toNo, int array, char *data) {
   }
 
   CHAR_setWorkInt(char_index, CHAR_WORK_STRENGTH, ++nums);
-
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_STRENGTH);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toNo);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
@@ -1283,13 +1253,10 @@ int PETSKILL_Strength(int char_index, int toNo, int array, char *data) {
 }
 #endif
 
-int PETSKILL_NormalGuard(int char_index, int toindex, int array, char *data
-
-) {
+int PETSKILL_NormalGuard(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_GUARD);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   return TRUE;
 }
 
@@ -1297,14 +1264,12 @@ int PETSKILL_None(int char_index, int toindex, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_NONE);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toindex);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   return TRUE;
 }
 
 int PETSKILL_EarthRound(int char_index, int toNo, int array, char *data) {
   char *pszOption, *pszP;
   float fPer = 0.01;
-
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_EARTHROUND1);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toNo);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
@@ -1318,9 +1283,7 @@ int PETSKILL_EarthRound(int char_index, int toNo, int array, char *data) {
   return TRUE;
 }
 
-int PETSKILL_GuardBreak(int char_index, int toNo, int array, char *data
-
-) {
+int PETSKILL_GuardBreak(int char_index, int toNo, int array, char *data) {
   char *pszOption, *pszP;
   float fPer = 0.01;
   int strdef;
@@ -1328,9 +1291,7 @@ int PETSKILL_GuardBreak(int char_index, int toNo, int array, char *data
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_GBREAK);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toNo);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   pszOption = PETSKILL_getChar(array, PETSKILL_OPTION);
-
   if ((pszP = strstr(pszOption, "攻%")) != NULL) {
     sscanf(pszP + 3, "%f", &fPer);
     fPer = (fPer / 100);
@@ -1370,9 +1331,7 @@ int PETSKILL_SpeedyAttack(int char_index, int toNo, int array, char *data
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_SPEEDYATTACK);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toNo);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   pszOption = PETSKILL_getChar(array, PETSKILL_OPTION);
-
   if (pszOption == "\0") {
     print("\n pszOption == NULL ");
     return FALSE;
@@ -1506,7 +1465,6 @@ int PETSKILL_AttackMagic(int char_index, int toindex, int array, char *data) {
                    //	int item = 19659;
   // 取得宠物技能命令
   pszP = PETSKILL_getChar(array, PETSKILL_OPTION);
-
   // 取得施放的魔法的magic id
   if ((pszP = strstr(pszP, szMagic)) != NULL) {
     pszP += sizeof(szMagic);
@@ -2507,9 +2465,7 @@ int PETSKILL_Hector(int char_index, int toNo, int array, char *data) {
     CHAR_setWorkInt(char_index, CHAR_WORKQUICK,
                     CHAR_getWorkInt(char_index, CHAR_WORKFIXDEX) + d_dep);
   }
-
   CHAR_SETWORKINT_LOW(char_index, CHAR_WORKBATTLECOM3, array); // 记录属性
-
   return TRUE;
 }
 #endif
@@ -2519,9 +2475,7 @@ int PETSKILL_Firekill(int char_index, int toNo, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_S_FIREKILL);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, toNo);
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-
   CHAR_SETWORKINT_LOW(char_index, CHAR_WORKBATTLECOM3, array); // 记录属性
-
   return TRUE;
 }
 #endif
@@ -2534,15 +2488,11 @@ int PETSKILL_DamageToHp2(int char_index, int toNo, int array, char *data) {
   CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
   CHAR_SETWORKINT_LOW(char_index, CHAR_WORKBATTLECOM3, array); // 记录技能
   /*	pszOption = PETSKILL_getChar( array, PETSKILL_OPTION );
-
-          if( pszOption == "\0" ) return FALSE;
-
-          strdef = CHAR_getWorkInt(char_index,CHAR_WORKFIXSTR);
-          def = (atoi( pszOption)/100);
-          strdef = strdef - (int)(strdef*def);
-          CHAR_setWorkInt( char_index, CHAR_WORKATTACKPOWER, strdef);
-  */
-
+      if( pszOption == "\0" ) return FALSE;
+      strdef = CHAR_getWorkInt(char_index,CHAR_WORKFIXSTR);
+      def = (atoi( pszOption)/100);
+      strdef = strdef - (int)(strdef*def);
+      CHAR_setWorkInt( char_index, CHAR_WORKATTACKPOWER, strdef); */
   return TRUE;
 }
 #endif

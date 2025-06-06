@@ -221,31 +221,7 @@ void BattleCommandDispach(int fd, char *command) {
         (CHAR_getInt(char_index, CHAR_RIDEPET) == iNum)) {
       iNum = -1;
     }
-    // shan end
-#ifdef _STANDBYPET
-    // if( iNum >= 0) {
-    //	if( ! (CHAR_getWorkInt( char_index, CHAR_WORKSTANDBYPET) & ( 1 << iNum))
-    //) { 		print("\n �ķ��!�г��Ǵ�����!!:%s ", CHAR_getChar(
-    //char_index, CHAR_CDKEY) ); 		iNum = -1;
-    //	}
-    // }
-#endif
-
     int petindex = CHAR_getCharPet(char_index, iNum);
-    /*
-    if(CHAR_CHECKINDEX(petindex) == 1){
-            if(( CHAR_getWorkInt( petindex, CHAR_WORKBATTLECOM1 ) ==
-    BATTLE_COM_S_EARTHROUND1
-                    || CHAR_getWorkInt( petindex, CHAR_WORKBATTLECOM1 ) ==
-    BATTLE_COM_S_EARTHROUND0
-                    )&&(CHAR_getFlg( petindex, CHAR_ISDIE ) == TRUE)){
-                    CHAR_talkToCli( char_index,
-    -1,"��������ʹ�õ���һ�ܣ��޷����裬��˰ѳ��ջأ�",
-    CHAR_COLORYELLOW
-    ); iNum = -1;
-            }
-    }
-*/
 #ifdef _PET_VALIDITY
     if (CHAR_getInt(petindex, CHAR_PETVALIDITY) > 0 &&
         CHAR_getInt(petindex, CHAR_PETVALIDITY) < time(NULL)) {
@@ -257,12 +233,8 @@ void BattleCommandDispach(int fd, char *command) {
     CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM2, iNum);
     if (iNum < 0) {
       CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_PETIN);
-      // sprintf( szBuffer, "Command(%s)(���س���)", CHAR_getUseName( char_index
-      // ) );
     } else {
       CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_PETOUT);
-      // sprintf( szBuffer, "Command(%s)(�г�����)", CHAR_getUseName( char_index
-      // ) );
     }
     CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
 
@@ -327,14 +299,8 @@ void BattleCommandDispach(int fd, char *command) {
 #endif
         if (petskillindex >= 0 &&
             PETSKILL_Use(petindex, iNum, ToNo, NULL) == TRUE) {
-          // sprintf( szBuffer, "Command(%s)(ʯ��)", CHAR_getUseName( petindex )
-          // );
-
           EscapeFree = 0;
-
         } else {
-          // sprintf( szBuffer, "Command(%s)(�Զ�)", CHAR_getUseName( petindex )
-          // );
           CHAR_setWorkInt(petindex, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
         }
       }
@@ -389,8 +355,6 @@ void BattleCommandDispach(int fd, char *command) {
           CHAR_SETWORKINT_HIGH(char_index, CHAR_WORKBATTLECOM3, iNum);
           CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE,
                           BATTLE_CHARMODE_C_OK);
-          // sprintf( szBuffer, "Command(%s)(����)", CHAR_getUseName( char_index
-          // ) );
 #ifdef _ITEM_ATTSKILLMAGIC
         }
 #endif
@@ -399,8 +363,6 @@ void BattleCommandDispach(int fd, char *command) {
       EscapeFree = 0;
       CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_WAIT);
       CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-      // sprintf( szBuffer, "Command(%s)(����)", CHAR_getUseName( char_index )
-      // );
     }
     endFlg = 1;
   } else if (strncmp(command, "I|", 1) == 0) {
@@ -431,8 +393,6 @@ void BattleCommandDispach(int fd, char *command) {
       CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_ITEM);
       CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM3, iNum);
       CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-      // sprintf( szBuffer, "Command(%s)(����)", CHAR_getUseName( char_index )
-      // );
       endFlg = 1;
     }
   } else if (strncmp(command, "@", 1) == 0) {
@@ -463,18 +423,13 @@ void BattleCommandDispach(int fd, char *command) {
 
       if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
           BATTLE_CHARMODE_NONE) {
-//			print("\n\n �Ƿ����(19001)(%s)(%s)\n\n",
-// CHAR_getChar(char_index, CHAR_CDKEY), CHAR_getChar(char_index, CHAR_NAME) );
 #ifdef _PROSKILL_ERR_KICK
         CONNECT_setCloseRequest(fd, 1);
 #endif
         return;
       }
-#ifndef _PROSKILL_OPTIMUM // Robin fix cancel �˴��Թ�ְҵ���, ����
-                          // PROFESSION_SKILL_Use �м��
-      // �����ְҵ
+#ifndef _PROSKILL_OPTIMUM // Robin fix cancel.
       char_pskill = CHAR_getInt(char_index, PROFESSION_CLASS);
-      // ���ܵ�ְҵ
       skillindex = PROFESSION_SKILL_GetArray(char_index, iNum);
       Pskillid = PROFESSION_SKILL_getskillArray(skillindex);
       profession_skill =
@@ -485,28 +440,18 @@ void BattleCommandDispach(int fd, char *command) {
       if (1) {
 #endif
         if (PROFESSION_SKILL_Use(char_index, iNum, ToNo, NULL) == 1) {
-          // sprintf( szBuffer, "Command(%s)(ְҵ����)", CHAR_getUseName(
-          // char_index ) );
           endFlg = 1;
         } else {
-          //				print("\nְҵ����ʧ��!!\n");
           CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_WAIT);
           CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE,
                           BATTLE_CHARMODE_C_OK);
-          // sprintf( szBuffer, "Command(%s)(����)", CHAR_getUseName( char_index
-          // ) );
 #ifdef _PROSKILL_ERR_KICK
           CONNECT_setCloseRequest(fd, 1);
 #endif
         }
       } else {
-        //			print("\n�ķ��??ְҵ����ID����ȷ:%s:%d:%d \n",
-        // CHAR_getChar( char_index, CHAR_CDKEY), char_pskill,
-        // profession_skill);
         CHAR_setWorkInt(char_index, CHAR_WORKBATTLECOM1, BATTLE_COM_WAIT);
         CHAR_setWorkInt(char_index, CHAR_WORKBATTLEMODE, BATTLE_CHARMODE_C_OK);
-        // sprintf( szBuffer, "Command(%s)(����)", CHAR_getUseName( char_index )
-        // );
 #ifdef _PROSKILL_ERR_KICK
         CONNECT_setCloseRequest_debug(fd, 1);
 #endif
@@ -515,12 +460,9 @@ void BattleCommandDispach(int fd, char *command) {
       EscapeFree = 0;
     } else
 #endif
-
     {
-      // sprintf( szBuffer, "Command(%s)(ʧ��)", CHAR_getUseName( char_index ) );
       endFlg = 2;
     }
-
   if (endFlg) {
     BATTLE_ActSettingSend(battleindex);
     /*
@@ -533,7 +475,6 @@ void BattleCommandDispach(int fd, char *command) {
                     }
     */
   }
-
   {
     // if( BATTLE_CHECKINDEX( battleindex ) == TRUE ){
     //	BATTLE_BroadCast( battleindex, szBuffer, CHAR_COLORWHITE ) ;
@@ -628,18 +569,10 @@ BOOL BATTLE_IsHide(int char_index) {
   return FALSE;
 }
 
-//*******************************************************
-//
-//  �����Ｐ��Ѩ����ë�ͷ���ʧ������˪��
-//
-BOOL _BATTLE_CommandSend(int char_index, char *pszCommand, char *file, int line)
-//
-//********************************************************
-{
+BOOL _BATTLE_CommandSend(int char_index, char *pszCommand, char *file,
+                         int line) {
   //	printf("�������=%s\n",pszCommand);
-
   //	printf("���·��%s  ��=%d\n",file,line);
-
   if (CHAR_CHECKINDEX(char_index) == FALSE)
     return FALSE;
   if (getfdFromCharaIndex(char_index) < 0)
@@ -659,17 +592,12 @@ BOOL BATTLE_MakeCharaString(int battleindex, char *pszCommand, int size) {
     return FALSE;
   pszTop = pszCommand;
   pszLast = pszCommand + size - 1;
-#if 1
   sprintf(szBuffer, "BC|%X|", BattleArray[battleindex].field_att);
-#else
-  sprintf(szBuffer, "BC|");
-#endif
   STRCPY_TAIL(pszTop, pszLast, szBuffer);
 
   for (j = 0; j < 2; j++) {
     if (j == 1) {
-      iOffset =
-          SIDE_OFFSET; // ���𵤴���������������µ�����
+      iOffset = SIDE_OFFSET;
     } else {
       iOffset = 0;
     }
@@ -703,12 +631,12 @@ BOOL BATTLE_MakeCharaString(int battleindex, char *pszCommand, int size) {
             flg |= BC_FLG_DEEPPOISON;
           } else
 #endif
-#ifdef _MAGIC_NOCAST //   ��Ĭ
+#ifdef _MAGIC_NOCAST
             if (CHAR_getWorkInt(char_index, CHAR_WORKNOCAST) > 0) {
               flg |= BC_FLG_NOCAST;
             } else
 #endif
-#ifdef _MAGIC_BARRIER //   ħ��
+#ifdef _MAGIC_BARRIER
               if (CHAR_getWorkInt(char_index, CHAR_WORKBARRIER) > 0) {
                 flg |= BC_FLG_BARRIER;
               } else
@@ -846,23 +774,18 @@ BOOL BATTLE_MakeCharaString(int battleindex, char *pszCommand, int size) {
   return TRUE;
 }
 
-void BATTLE_BpSendToWatch(BATTLE *pBattle, // ��������������ͼ����̼���
-                          char *pszBcString // BC  ٯ
-) {
+void BATTLE_BpSendToWatch(BATTLE *pBattle,  //
+                          char *pszBcString // BC) {
 
   char szBp[256];
   int flg = 0, i, char_index;
-
-  //	for( ; pBattle ; pBattle = pBattle->pNext ){
   if (pBattle == NULL)
     return;
-  // ��ʧ�������������о���������
   if (BATTLE_CHECKADDRESS(pBattle) == FALSE) {
-    fprint("err:��սbattle address����(%p)\n", pBattle);
+    logErr("err:battle address:(%p)\n", pBattle);
     return;
   }
 
-  // �幻��˪��
   for (i = 0; i < BATTLE_ENTRY_MAX; i++) {
     char_index = pBattle->Side[0].Entry[i].char_index;
     if (CHAR_CHECKINDEX(char_index) == FALSE)
@@ -929,10 +852,10 @@ void BATTLE_CharSendAll(int battleindex) {
 #ifdef _PETSKILL_DAMAGETOHP
         {
           /*
-                          �ÿ�,�ÿ�~~~~~~~
-                       �q�T�T�r
-                     �q�s�����U
-                     �t�ѨT�Ѩs�����������±���
+                  �ÿ�,�ÿ�~~~~~~~
+                  �q�T�T�r
+                  �q�s�����U
+                  �t�ѨT�Ѩs�����������±���
           */
           char msg[32] = {0};
           // print("\n����id:%d",CHAR_getInt( pindex, CHAR_PETID));
@@ -942,8 +865,6 @@ void BATTLE_CharSendAll(int battleindex) {
           //	&& CHAR_getInt( pindex, CHAR_HP) ){
           sprintf(msg, "o%d", pet);
           CHAR_sendStatusString(char_index, msg);
-
-          //}
         }
 #endif
 
@@ -1033,13 +954,7 @@ void BattleEncountOut(int char_index) {
   }
 }
 
-//**************************************************
-//
-// �����ɻ�������Ѩ����ë  ľ��ʸ������
-//
 BOOL BATTLE_PetDefaultCommand(int petindex)
-//
-//**************************************************
 {
   if (CHAR_CHECKINDEX(petindex) == FALSE)
     return FALSE;
@@ -1061,7 +976,7 @@ int checkErrorStatus(int char_index) {
       || CHAR_getWorkInt(char_index, CHAR_WORKSTONE) > 0  // ʯ��
       || CHAR_getWorkInt(char_index, CHAR_WORKSLEEP) > 0  // ˯��
   //|| CHAR_getWorkInt( char_index, CHAR_WORKBARRIER ) > 0	// ħ��
-#ifdef _PROFESSION_SKILL // WON ADD ����ְҵ����
+#ifdef _PROFESSION_SKILL                                 // WON ADD ����ְҵ����
       || CHAR_getWorkInt(char_index, CHAR_WORKDIZZY) > 0 // ��ѣ
       ||
       CHAR_getWorkInt(char_index, CHAR_WORKDRAGNET) > 0 // ���޵���
@@ -1077,9 +992,6 @@ int checkErrorStatus(int char_index) {
       strcpy(cdkey, CHAR_getChar(char_index, CHAR_CDKEY));
     else
       strcpy(cdkey, CHAR_getChar(char_index, CHAR_OWNERCDKEY));
-
-    //		print("\n �ķ��!����ս����״̬!!:%s ", cdkey );
-
     return 1;
   }
   return 0;

@@ -7,7 +7,7 @@ export SED=sed
 export SHELL=/bin/sh
 
 INCFLAGS=-I./include -I../lua -I../common
-CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
+CFLAGS=-m64 -w -O3 -Wall -pipe $(INCFLAGS)
 
 ifeq ($(shell uname),Linux)
 	SQL=-L/usr/lib/mysql/ -lmysqlclient -lz

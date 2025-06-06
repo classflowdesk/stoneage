@@ -120,20 +120,19 @@ ITEM_intDataSetting ITEM_setIntData[ITEM_DATA_ENUM_MAX] = {
     {"lv", 0},          /*  ITEM_LEVEL  */
 
 #ifdef _ITEM_MAXUSERNUM
-    {"dib", -1},        /*ITEM_DAMAGEBREAK*/
+    {"dib", -1}, /*ITEM_DAMAGEBREAK*/
 #endif
 
 #ifdef _ITEMSET4_TXT
-    {"upin", 1},        // ITEM_USEPILENUMS,
-    {"canpile", 0},     // ITEM_CANBEPILE
-    {"nestr", 0},       // ITEM_NEEDSTR,
-    {"nedex", 0},       // ITEM_NEEDDEX,
-    {"netra", 0},       // ITEM_NEEDTRANS,
-    {"neprof", 0},      // ITEM_NEEDPROFESSION,
+    {"upin", 1},    // ITEM_USEPILENUMS,
+    {"canpile", 0}, // ITEM_CANBEPILE
+    {"nestr", 0},   // ITEM_NEEDSTR,
+    {"nedex", 0},   // ITEM_NEEDDEX,
+    {"netra", 0},   // ITEM_NEEDTRANS,
+    {"neprof", 0},  // ITEM_NEEDPROFESSION,
 #endif
-
-    {"dmce", 0},   /*ITEM_DAMAGECRUSHE*/
-    {"mdmce", 0},  // ITEM_MAXDAMAGECRUSHE
+    {"dmce", 0},  /*ITEM_DAMAGECRUSHE*/
+    {"mdmce", 0}, // ITEM_MAXDAMAGECRUSHE
 
 #ifdef _ADD_DEAMGEDEFC
     {"otdmag", 0}, // ITEM_OTHERDAMAGE,
@@ -141,31 +140,28 @@ ITEM_intDataSetting ITEM_setIntData[ITEM_DATA_ENUM_MAX] = {
 #endif
 
 #ifdef _SUIT_ITEM
-    {"nsuit", 0},  // ITEM_SUITCODE,
+    {"nsuit", 0}, // ITEM_SUITCODE,
 #endif
-    {"ann", 0},    /*  ITEM_ATTACKNUM_MIN  */
-    {"anx", 0},    /*  ITEM_ATTACKNUM_MAX  */
-    {"ma", 0},     /*  ITEM_MODIFYATTACK    */
-    {"md", 0},     /*  ITEM_MODIFYDEFENCE  */
-    {"mh", 0},     /*  ITEM_MODIFYHP    */
-    {"mm", 0},     /*  ITEM_MODIFYMP    */
-
-    {"mq", 0}, /*  ITEM_MODIFYQUICK */
-
-    {"ml", 0},  /*  ITEM_MODIFYLUCK */
-    {"mc", 0},  /*  ITEM_MODIFYCHARM */
-    {"mv", 0},  /*  ITEM_MODIFYAVOID */
-    {"mat", 0}, /*  ITEM_MODIFYATTRIB */
-    {"mav", 0}, /*  ITEM_MODIFYATTRIBVALUE */
-
-    {"mid", -1},    /*  ITEM_MAGICID	*/
-    {"mpr", 0},     /*  ITEM_MAGICPROB  */
-    {"mu", 0},      /*  ITEM_MAGICUSEMP  */
+    {"ann", 0},  /*  ITEM_ATTACKNUM_MIN  */
+    {"anx", 0},  /*  ITEM_ATTACKNUM_MAX  */
+    {"ma", 0},   /*  ITEM_MODIFYATTACK    */
+    {"md", 0},   /*  ITEM_MODIFYDEFENCE  */
+    {"mh", 0},   /*  ITEM_MODIFYHP    */
+    {"mm", 0},   /*  ITEM_MODIFYMP    */
+    {"mq", 0},   /*  ITEM_MODIFYQUICK */
+    {"ml", 0},   /*  ITEM_MODIFYLUCK */
+    {"mc", 0},   /*  ITEM_MODIFYCHARM */
+    {"mv", 0},   /*  ITEM_MODIFYAVOID */
+    {"mat", 0},  /*  ITEM_MODIFYATTRIB */
+    {"mav", 0},  /*  ITEM_MODIFYATTRIBVALUE */
+    {"mid", -1}, /*  ITEM_MAGICID	*/
+    {"mpr", 0},  /*  ITEM_MAGICPROB  */
+    {"mu", 0},   /*  ITEM_MAGICUSEMP  */
 #ifdef _ITEMSET5_TXT
-    {"arr", 0},     /*ITEM_MODIFYARRANGE*/
-    {"seqce", 0},   // ITEM_MODIFYSEQUENCE,
-    {"iapi", 0},    // ITEM_ATTACHPILE
-    {"hirt", 0},    // ITEM_HITRIGHT
+    {"arr", 0},   /*ITEM_MODIFYARRANGE*/
+    {"seqce", 0}, // ITEM_MODIFYSEQUENCE,
+    {"iapi", 0},  // ITEM_ATTACHPILE
+    {"hirt", 0},  // ITEM_HITRIGHT
 #endif
 
 #ifdef _ITEMSET6_TXT
@@ -187,14 +183,11 @@ ITEM_intDataSetting ITEM_setIntData[ITEM_DATA_ENUM_MAX] = {
     {"cmf", TRUE},   /* ITEM_CANMERGEFROM   */
     {"cmt", TRUE},   /* ITEM_CANMERGETO   */
     {"ingv0", 0},    /* ITEM_INGVALUE0 */
-    {"ingv1", 0}, 
-    {"ingv2", 0},
-    {"ingv3", 0},
-    {"ingv4", 0},
-    {"ipt", 0}, /*  ITEM_PUTTIME    */
-    {"ll", 0},  /*  ITEM_LEAKLEVEL  */
-    {"mrf", 0}, /*  ITEM_MERGEFLG  */
-    {"clv", 0}, /*	ITEM_CRUSHLEVEL */
+    {"ingv1", 0},       {"ingv2", 0}, {"ingv3", 0},
+    {"ingv4", 0},       {"ipt", 0}, /*  ITEM_PUTTIME    */
+    {"ll", 0},                      /*  ITEM_LEAKLEVEL  */
+    {"mrf", 0},                     /*  ITEM_MERGEFLG  */
+    {"clv", 0},                     /*	ITEM_CRUSHLEVEL */
 
     {"v1", 0}, /*  ITEM_VAR1  */
     {"v2", 0}, /*  ITEM_VAR2  */
@@ -203,24 +196,24 @@ ITEM_intDataSetting ITEM_setIntData[ITEM_DATA_ENUM_MAX] = {
 };
 
 ITEM_charDataSetting ITEM_setCharData[ITEM_CHAR_DATA_ENUM_MAX] = {
-    {"na", ""},        /*  ITEM_NAME   */
-    {"sn", ""},        /*  ITEM_SCRETNAME  */
-    {"en", ""},        /*  ITEM_EFFECTSTRING  */
-    {"ar", ""},        /*  ITEM_ARGUMENT   */
+    {"na", ""}, /*  ITEM_NAME   */
+    {"sn", ""}, /*  ITEM_SCRETNAME  */
+    {"en", ""}, /*  ITEM_EFFECTSTRING  */
+    {"ar", ""}, /*  ITEM_ARGUMENT   */
 #ifdef _ITEM_INSLAY
     {"acode", ""},     /*ITEM_TYPECODE,*/
     {"inlaycode", ""}, /*ITEM_INLAYCODE,*/
 #endif
-    {"cdk", ""},       /*  ITEM_CDKEY   */
+    {"cdk", ""}, /*  ITEM_CDKEY   */
 #ifdef _ITEM_FORUSERNAMES
-    {"forname", ""},   // ITEM_FORUSERNAME,
-    {"forcdkey", ""},  // ITEM_FORUSERCDKEY
+    {"forname", ""},  // ITEM_FORUSERNAME,
+    {"forcdkey", ""}, // ITEM_FORUSERCDKEY
 #endif
-                       // CoolFish: 2001/10/11
+    // CoolFish: 2001/10/11
 #ifdef _UNIQUE_P_I
-    {"ucode", ""},     /*  ITEM_UNIQUECODE  */
+    {"ucode", ""}, /*  ITEM_UNIQUECODE  */
 #endif
-    {"ingn0", ""},     /*  ITEM_INGNAME0 */
+    {"ingn0", ""}, /*  ITEM_INGNAME0 */
     {"ingn1", ""},
     {"ingn2", ""},
     {"ingn3", ""},
@@ -236,7 +229,7 @@ ITEM_charDataSetting ITEM_setCharData[ITEM_CHAR_DATA_ENUM_MAX] = {
     {"attaf", ""},                    /*  ITEM_ATTACHFUNC */
     {"pickupf", ""},                  /*  ITEM_PICKUPFUNC  */
 #ifdef _Item_ReLifeAct
-    {"relifes", ""},                  /*ITEM_DIERELIFEFUNC*/
+    {"relifes", ""}, /*ITEM_DIERELIFEFUNC*/
 #endif
 };
 
@@ -376,7 +369,6 @@ static struct ITEM_tagItemConfentry {
     {"ingvalue4", ITEM_INTENTRY, ITEM_INGVALUE4, NULL},
 };
 
-
 static INLINE BOOL ITEM_CHECKARRAYINDEX(int index) {
   if (ITEM_sItemNum <= (index) || (index) < 0)
     return FALSE;
@@ -480,7 +472,7 @@ int _ITEM_initExistItemsOne(char *file, int line, ITEM_Item *item) {
       ITEM_gExists[Sindex].use = TRUE;
       {
         BOOL (*initfunc)(ITEM_Item *) = NULL;
-        initfunc = (BOOL(*)(ITEM_Item *))getFunctionPointerFromName(
+        initfunc = (BOOL (*)(ITEM_Item *))getFunctionPointerFromName(
             item->string[ITEM_INITFUNC].string);
         if (initfunc) {
           if (initfunc(&ITEM_gExists[Sindex].item) == FALSE) {
@@ -499,25 +491,24 @@ int _ITEM_initExistItemsOne(char *file, int line, ITEM_Item *item) {
   return -1;
 }
 
-void _ITEM_endExistItemsOne(int index, char *file, int line) {
+void _ITEM_endExistItemsOne(int item_index, char *file, int line) {
   int i, j;
   int hitcnt = 0;
-  int playernum = CHAR_getPlayerMaxNum();
-
-  if (!ITEM_CHECKINDEX(index))
+  const int playernum = CHAR_getPlayerMaxNum();
+  if (!ITEM_CHECKINDEX(item_index))
     return;
 
   for (i = 0; i < playernum; i++) {
     if (CHAR_CHECKINDEX(i)) {
       for (j = 0; j < CheckCharMaxItem(i); j++) {
-        if (CHAR_getItemIndex(i, j) == index) {
+        if (CHAR_getItemIndex(i, j) == item_index) {
           print(
               "warning !! player have this item:%d call from [%s:%d](%s)(%s)\n",
-              index, file, line, CHAR_getUseName(i),
-              ITEM_gExists[index].item.string[ITEM_NAME].string);
+              item_index, file, line, CHAR_getUseName(i),
+              ITEM_gExists[item_index].item.string[ITEM_NAME].string);
           hitcnt++;
           if (hitcnt > 1) {
-            print("ITEM_INDEX(%d) duplicate!!\n", index);
+            print("ITEM_INDEX(%d) duplicate!!\n", item_index);
           }
         }
       }
@@ -538,7 +529,8 @@ INLINE int ITEM_getIntStrict(int index, ITEM_DATA_ENUM element, int *error) {
   return ITEM_gExists[index].item.data[element];
 }
 
-INLINE int _ITEM_getInt(char *file, int line, int index, ITEM_DATA_ENUM element) {
+INLINE int _ITEM_getInt(char *file, int line, int index,
+                        ITEM_DATA_ENUM element) {
   if (!ITEM_CHECKINDEX(index)) {
     return -1;
   }
@@ -633,7 +625,8 @@ void ITEM_constructFunctable(int item_index) {
     ITEM_gExists[item_index].item.functable[i - ITEM_FIRSTFUNCTION] =
         getFunctionPointerFromName(ITEM_getChar(item_index, i));
 #ifdef _ALLBLUES_LUA_1_2
-    if (ITEM_gExists[item_index].item.functable[i - ITEM_FIRSTFUNCTION] == NULL) {
+    if (ITEM_gExists[item_index].item.functable[i - ITEM_FIRSTFUNCTION] ==
+        NULL) {
       ITEM_setLUAFunction(item_index, i, ITEM_getChar(item_index, i));
     }
 #endif
@@ -645,7 +638,8 @@ void *_ITEM_getFunctionPointer(int item_index, int functype, char *file,
   if (!ITEM_CHECKINDEX(item_index))
     return NULL;
   if (functype < ITEM_FIRSTFUNCTION || functype >= ITEM_LASTFUNCTION) {
-    print("GetFunctionFailed. func_type:%d, file:%s, line:%d\n", functype, file, line);
+    print("GetFunctionFailed. func_type:%d, file:%s, line:%d\n", functype, file,
+          line);
     return NULL;
   }
   return ITEM_gExists[item_index].item.functable[functype - ITEM_FIRSTFUNCTION];
@@ -666,21 +660,23 @@ INLINE BOOL ITEM_setLUAFunction(int item_index, int functype,
     if (strcmp(luaFunc->luafuncname, luafuncname) == 0) {
       ITEM_gExists[item_index].item.lua[functype - ITEM_FIRSTFUNCTION] =
           luaFunc->lua;
-      ITEM_gExists[item_index].item.luafunctable[functype - ITEM_FIRSTFUNCTION] =
+      ITEM_gExists[item_index]
+          .item.luafunctable[functype - ITEM_FIRSTFUNCTION] =
           allocateMemory(strlen(luaFunc->luafunctable));
-      memset(
-          ITEM_gExists[item_index].item.luafunctable[functype - ITEM_FIRSTFUNCTION],
-          0, strlen(luaFunc->luafunctable));
-      strcpy(
-          ITEM_gExists[item_index].item.luafunctable[functype - ITEM_FIRSTFUNCTION],
-          luaFunc->luafunctable);
+      memset(ITEM_gExists[item_index]
+                 .item.luafunctable[functype - ITEM_FIRSTFUNCTION],
+             0, strlen(luaFunc->luafunctable));
+      strcpy(ITEM_gExists[item_index]
+                 .item.luafunctable[functype - ITEM_FIRSTFUNCTION],
+             luaFunc->luafunctable);
       return TRUE;
     }
     luaFunc = luaFunc->next;
   }
 
   ITEM_gExists[item_index].item.lua[functype - ITEM_FIRSTFUNCTION] = NULL;
-  ITEM_gExists[item_index].item.luafunctable[functype - ITEM_FIRSTFUNCTION] = NULL;
+  ITEM_gExists[item_index].item.luafunctable[functype - ITEM_FIRSTFUNCTION] =
+      NULL;
 
   return FALSE;
 }
@@ -712,12 +708,14 @@ INLINE lua_State *ITEM_getLUAFunction(int item_index, int functype) {
     print("���ʹ���2:%d\n", functype);
     return NULL;
   }
-  if (ITEM_gExists[item_index].item.lua[functype - ITEM_FIRSTFUNCTION] == NULL) {
+  if (ITEM_gExists[item_index].item.lua[functype - ITEM_FIRSTFUNCTION] ==
+      NULL) {
     return NULL;
   }
   lua_getglobal(
       ITEM_gExists[item_index].item.lua[functype - ITEM_FIRSTFUNCTION],
-      ITEM_gExists[item_index].item.luafunctable[functype - ITEM_FIRSTFUNCTION]);
+      ITEM_gExists[item_index]
+          .item.luafunctable[functype - ITEM_FIRSTFUNCTION]);
   return ITEM_gExists[item_index].item.lua[functype - ITEM_FIRSTFUNCTION];
 }
 
@@ -736,7 +734,8 @@ BOOL ITEM_checksetdata(void) {
   for (i = 0; i < arraysizeof(ITEM_setCharData); i++) {
     strings[num++] = ITEM_setCharData[i].dumpchar;
   }
-  strings[ITEM_DATA_ENUM_MAX + ITEM_CHAR_DATA_ENUM_MAX] = ITEM_setMemData.dumpchar;
+  strings[ITEM_DATA_ENUM_MAX + ITEM_CHAR_DATA_ENUM_MAX] =
+      ITEM_setMemData.dumpchar;
 
   if (!checkStringsUnique(strings, num, 1)) {
     fprint("ITEM_set????data is overlapped.\nIt is not allowed\n");
@@ -748,7 +747,8 @@ BOOL ITEM_checksetdata(void) {
   for (i = 0; i < ITEM_CHAR_DATA_ENUM_MAX; i++)
     strings[ITEM_DATA_ENUM_MAX + i] = ITEM_setCharData[i].dumpchar;
 
-  strings[ITEM_DATA_ENUM_MAX + ITEM_CHAR_DATA_ENUM_MAX] = ITEM_setMemData.dumpchar;
+  strings[ITEM_DATA_ENUM_MAX + ITEM_CHAR_DATA_ENUM_MAX] =
+      ITEM_setMemData.dumpchar;
 
   if (!checkStringsUnique(strings, arraysizeof(strings), 1)) {
     fprint("ITEM_set????data is overlapped.\nIt is not allowed\n");
@@ -903,7 +903,6 @@ BOOL ITEM_makeExistItemsFromStringToArg(char *src, ITEM_Item *item, int mode) {
   while (1) {
     BOOL ret;
     char linebuf[512];
-
     char firstToken[256];
     char secondToken[256];
     int i;
@@ -1062,7 +1061,7 @@ void callbackReadItemConfigFile(int *line_num, const char *line) {
 #endif
   char token[64];
   int ret = getStringFromIndexWithDelim(line, ",", ITEM_ID_TOKEN_INDEX, token,
-                                    sizeof(token));
+                                        sizeof(token));
   if (ret != TRUE) {
     print("Failed to parse %s, %d\n", line, ITEM_ID_TOKEN_INDEX);
     return;
@@ -1074,8 +1073,7 @@ void callbackReadItemConfigFile(int *line_num, const char *line) {
   ++(*line_num);
 }
 
-void callbackReadItemConfigFile2(int *line_num, const char *line)
-{
+void callbackReadItemConfigFile2(int *line_num, const char *line) {
   char token[256];
   int intdata[ITEM_DATA_ENUM_MAX];
   memset(intdata, 0, sizeof(intdata));
@@ -1085,7 +1083,8 @@ void callbackReadItemConfigFile2(int *line_num, const char *line)
   ITEM_Item item;
   ITEM_getDefaultItemSetting(&item);
   for (i = 0; i < arraysizeof(ITEM_itemDescriptors); i++) {
-    ret = getStringFromIndexWithDelim(line, ",", read_pos, token, sizeof(token));
+    ret =
+        getStringFromIndexWithDelim(line, ",", read_pos, token, sizeof(token));
     if (ret == FALSE) {
       data_error = TRUE;
       return;
@@ -1137,7 +1136,7 @@ void callbackReadItemConfigFile2(int *line_num, const char *line)
                &item.string[ITEM_NAME].string,
                sizeof(item.string[ITEM_NAME].string));
       }
-      
+
       int attacknum_min, attacknum_max;
       attacknum_min = item.data[ITEM_ATTACKNUM_MIN];
       attacknum_max = item.data[ITEM_ATTACKNUM_MAX];
@@ -1145,7 +1144,7 @@ void callbackReadItemConfigFile2(int *line_num, const char *line)
         attacknum_min = attacknum_max;
       item.data[ITEM_ATTACKNUM_MIN] = min(attacknum_min, attacknum_max);
       item.data[ITEM_ATTACKNUM_MAX] = max(attacknum_min, attacknum_max);
-      
+
       memcpy(&ITEM_gTable[*line_num].item, &item, sizeof(ITEM_Item));
       ITEM_gIndex[item_id].use = TRUE;
       ITEM_gIndex[item_id].index = *line_num;
@@ -1196,8 +1195,6 @@ BOOL ITEM_readItemConfFile(char *filename) {
   return TRUE;
 }
 
-
-
 CHAR_EquipPlace ITEM_getEquipPlace(int char_index, int itemid) {
   ITEM_CATEGORY cat;
   cat = ITEM_getInt(itemid, ITEM_TYPE);
@@ -1220,7 +1217,8 @@ CHAR_EquipPlace ITEM_getEquipPlace(int char_index, int itemid) {
       int Pskillid = PROFESSION_SKILL_getskillArray(skillid);
       if (Pskillid <= 0)
         continue;
-      skill_name = PROFESSION_SKILL_getChar(Pskillid, PROFESSION_SKILL_FUNCNAME);
+      skill_name =
+          PROFESSION_SKILL_getChar(Pskillid, PROFESSION_SKILL_FUNCNAME);
       if (skill_name == "\0")
         continue;
 
@@ -1389,36 +1387,36 @@ char *ITEM_makeItemStatusString(int haveitem_index, int item_index) {
 
 #ifdef _ITEM_PILENUMS
 #ifdef _ALCHEMIST
-            "%s|%s|%d|%s|%d|%d|%d|%d|%d|%s|%d|%s|%d|",
+             "%s|%s|%d|%s|%d|%d|%d|%d|%d|%s|%d|%s|%d|",
 #else
-            "%s|%s|%d|%s|%d|%d|%d|%d|%d|%s|%d|%s",
+             "%s|%s|%d|%s|%d|%d|%d|%d|%d|%s|%d|%s",
 #endif
 #else
-            "%s|%s|%d|%s|%d|%d|%d|%d|%d|%s",
+             "%s|%s|%d|%s|%d|%d|%d|%d|%d|%s",
 #endif
-            escapename, paramshow, itemcolor, escapeeffectstring,
-            ITEM_getInt(item_index, ITEM_BASEIMAGENUMBER),
-            ITEM_getInt(item_index, ITEM_ABLEUSEFIELD),
-            ITEM_getInt(item_index, ITEM_TARGET),
-            ITEM_getInt(item_index, ITEM_LEVEL), flg, buff1
+             escapename, paramshow, itemcolor, escapeeffectstring,
+             ITEM_getInt(item_index, ITEM_BASEIMAGENUMBER),
+             ITEM_getInt(item_index, ITEM_ABLEUSEFIELD),
+             ITEM_getInt(item_index, ITEM_TARGET),
+             ITEM_getInt(item_index, ITEM_LEVEL), flg, buff1
 #ifdef _ITEM_PILENUMS
-            ,
-            ITEM_getInt(item_index, ITEM_USEPILENUMS)
+             ,
+             ITEM_getInt(item_index, ITEM_USEPILENUMS)
 #ifdef _ALCHEMIST
-            ,
-            INGNAME0 //,ITEM_getInt( item_index, ITEM_ALCHEMIST)
-            ,
-            ITEM_getInt(item_index, ITEM_TYPE)
+                 ,
+             INGNAME0 //,ITEM_getInt( item_index, ITEM_ALCHEMIST)
+             ,
+             ITEM_getInt(item_index, ITEM_TYPE)
 #endif
 #endif
     );
 #else
     snprintf(ITEM_itemStatusStringBuffer, sizeof(ITEM_itemStatusStringBuffer),
-            "%s|%s|%d|%s|%d|%d|%d|%d|%d", escapename, paramshow, itemcolor,
-            escapeeffectstring, ITEM_getInt(item_index, ITEM_BASEIMAGENUMBER),
-            ITEM_getInt(item_index, ITEM_ABLEUSEFIELD),
-            ITEM_getInt(item_index, ITEM_TARGET),
-            ITEM_getInt(item_index, ITEM_LEVEL), flg);
+             "%s|%s|%d|%s|%d|%d|%d|%d|%d", escapename, paramshow, itemcolor,
+             escapeeffectstring, ITEM_getInt(item_index, ITEM_BASEIMAGENUMBER),
+             ITEM_getInt(item_index, ITEM_ABLEUSEFIELD),
+             ITEM_getInt(item_index, ITEM_TARGET),
+             ITEM_getInt(item_index, ITEM_LEVEL), flg);
 #endif
   } else {
 #ifdef _ADD_SHOW_ITEMDAMAGE
@@ -1525,13 +1523,14 @@ BOOL ITEM_makeItem(ITEM_Item *item, int number) {
     // print(" Can't makeItem for itemid:%d!!\n", number);
     return FALSE;
   }
-  memcpy(item, &ITEM_gTable[ITEM_gIndex[number].index].item, sizeof(ITEM_Item)); // new
+  memcpy(item, &ITEM_gTable[ITEM_gIndex[number].index].item,
+         sizeof(ITEM_Item)); // new
   for (i = 0; i < ITEM_DATA_ENUM_MAX; i++) {
     int randomvalue;
     randomvalue =
         RAND(0, ITEM_gTable[ITEM_gIndex[number].index].randomdata[i]); // new
-    item->data[i] =
-        ITEM_gTable[ITEM_gIndex[number].index].item.data[i] + randomvalue; // new
+    item->data[i] = ITEM_gTable[ITEM_gIndex[number].index].item.data[i] +
+                    randomvalue; // new
   }
   item->data[ITEM_LEAKLEVEL] = 0;
   return TRUE;
@@ -1635,7 +1634,8 @@ void ITEM_equipEffect(int index) {
               if (Pskillid <= 0)
                 continue;
               // SKILL NAME
-              skill_name = PROFESSION_SKILL_getChar(Pskillid, PROFESSION_SKILL_FUNCNAME);
+              skill_name =
+                  PROFESSION_SKILL_getChar(Pskillid, PROFESSION_SKILL_FUNCNAME);
               if (skill_name == "\0")
                 continue;
 
@@ -1920,24 +1920,24 @@ void Other_DefcharWorkInt(int index) {
                                    f_res = CHAR_getWorkInt( index, CHAR_WORK_F_RESIST );
                                    i_res = CHAR_getWorkInt( index, CHAR_WORK_I_RESIST );
                                    t_res = CHAR_getWorkInt( index, CHAR_WORK_T_RESIST );
-                       
+                         
                                    CHAR_setWorkInt( index, CHAR_WORK_F_RESIST, f_res+CHAR_getWorkInt(
                            index, CHAR_WORK_F_SUIT ) );                        CHAR_setWorkInt( index,
-                           CHAR_WORK_I_RESIST,                        i_res+CHAR_getWorkInt( index, CHAR_WORK_I_SUIT ) );
-                           CHAR_setWorkInt( index,                        CHAR_WORK_T_RESIST, t_res+CHAR_getWorkInt( index,
-                           CHAR_WORK_T_SUIT ) );
+                           CHAR_WORK_I_RESIST,                        i_res+CHAR_getWorkInt( index,
+                           CHAR_WORK_I_SUIT ) );                          CHAR_setWorkInt( index,                          CHAR_WORK_T_RESIST,
+                           t_res+CHAR_getWorkInt( index,                          CHAR_WORK_T_SUIT ) );
                            }*/
 #endif
 
 #ifdef _PETSKILL_SETDUCK
-    // profession fix
-    // ʹ�ûر���ʽʱ,�Ὣ��ֵ��ȥ30%Ȼ���趨�ɻر�ֵ,��ֵ��趨,Ҳ���ԭ���趨�Ļر�ֵ��û��һ��,�����(Change)�Ȱ������õ�
-    /*if( CHAR_getWorkInt( index, CHAR_MYSKILLDUCK) > 0 ){
-            int mtgh = CHAR_getWorkInt( index, CHAR_WORKFIXTOUGH);
-            mtgh -= (mtgh*30)/100;
-            if( mtgh < 0 ) mtgh=0;
-            CHAR_setWorkInt( index, CHAR_MYSKILLDUCKPOWER, mtgh);
-    }*/
+  // profession fix
+  // ʹ�ûر���ʽʱ,�Ὣ��ֵ��ȥ30%Ȼ���趨�ɻر�ֵ,��ֵ��趨,Ҳ���ԭ���趨�Ļر�ֵ��û��һ��,�����(Change)�Ȱ������õ�
+  /*if( CHAR_getWorkInt( index, CHAR_MYSKILLDUCK) > 0 ){
+          int mtgh = CHAR_getWorkInt( index, CHAR_WORKFIXTOUGH);
+          mtgh -= (mtgh*30)/100;
+          if( mtgh < 0 ) mtgh=0;
+          CHAR_setWorkInt( index, CHAR_MYSKILLDUCKPOWER, mtgh);
+  }*/
 #endif
 #ifdef _MAGICPET_SKILL
   if (CHAR_getWorkInt(index, CHAR_MYSKILLSTR) > 0) {
@@ -2120,7 +2120,8 @@ int ITEM_getmergeItemFromFromITEMtabl(int itemid) {
 BOOL ITEM_canuseMagic(int item_index) {
   if (!ITEM_CHECKINDEX(item_index))
     return FALSE;
-  if (MAGIC_getMagicArray(ITEM_gExists[item_index].item.data[ITEM_MAGICID]) != -1) {
+  if (MAGIC_getMagicArray(ITEM_gExists[item_index].item.data[ITEM_MAGICID]) !=
+      -1) {
     return TRUE;
   }
   return FALSE;
@@ -2203,7 +2204,9 @@ char *ITEMTBL_getChar(int ItemID, ITEM_CHAR_DATA_ENUM datatype) {
     return "\0";
   if (ITEM_CHECKITEMTABLE(ItemID) == FALSE)
     return "\0";
-  return ITEM_gTable[ITEM_gIndex[ItemID].index].item.string[datatype].string; // new
+  return ITEM_gTable[ITEM_gIndex[ItemID].index]
+      .item.string[datatype]
+      .string; // new
 }
 
 INLINE BOOL ITEM_CHECKITEMTABLE(int number) {
@@ -2262,8 +2265,7 @@ void ITEM_reChangeItemToPile(int item_index) {
                 ITEMTBL_getInt(item_id, ITEM_CANBEPILE));
 }
 
-void ITEM_reChangeItemName(int item_index) {
-}
+void ITEM_reChangeItemName(int item_index) {}
 
 #ifdef _PET_ITEM
 char *ITEM_petmakeItemStatusString(int petindex, int itemid) {

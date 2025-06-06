@@ -25,27 +25,24 @@ static ProfressionSkillFunctionTable sProfessionSkillFunctionTable[] = {
     {"PROFESSION_FIRE_BALL", PROFESSION_fire_ball, 0},
     {"PROFESSION_FIRE_SPEAR", PROFESSION_fire_spear, 0},
     {"PROFESSION_SUMMON_THUNDER", PROFESSION_summon_thunder, 0}, // ������
-    {"PROFESSION_CURRENT", PROFESSION_current, 0},       // ������
-    {"PROFESSION_STORM", PROFESSION_storm, 0},           // ������
-    {"PROFESSION_ICE_ARROW", PROFESSION_ice_arrow, 0},   // ������
-    {"PROFESSION_ICE_CRACK", PROFESSION_ice_crack, 0},   // ������
-    {"PROFESSION_ICE_MIRROR", PROFESSION_ice_mirror, 0}, // ������
-    {"PROFESSION_DOOM", PROFESSION_doom, 0},             // ����ĩ��
-    {"PROFESSION_BLOOD", PROFESSION_blood, 0},           // ��Ѫ����
-    {"PROFESSION_BLOOD_WORMS", PROFESSION_blood_worms, 0},   // ��Ѫ��
-    {"PROFESSION_SIGN", PROFESSION_sign, 0},                 // һ���Ѫ
-    {"PROFESSION_FIRE_ENCLOSE", PROFESSION_fire_enclose, 0}, // ����
-    {"PROFESSION_ICE_ENCLOSE", PROFESSION_ice_eclose, 0}, // ������
+    {"PROFESSION_CURRENT", PROFESSION_current, 0},               // ������
+    {"PROFESSION_STORM", PROFESSION_storm, 0},                   // ������
+    {"PROFESSION_ICE_ARROW", PROFESSION_ice_arrow, 0},           // ������
+    {"PROFESSION_ICE_CRACK", PROFESSION_ice_crack, 0},           // ������
+    {"PROFESSION_ICE_MIRROR", PROFESSION_ice_mirror, 0},         // ������
+    {"PROFESSION_DOOM", PROFESSION_doom, 0},                     // ����ĩ��
+    {"PROFESSION_BLOOD", PROFESSION_blood, 0},                   // ��Ѫ����
+    {"PROFESSION_BLOOD_WORMS", PROFESSION_blood_worms, 0},       // ��Ѫ��
+    {"PROFESSION_SIGN", PROFESSION_sign, 0},                     // һ���Ѫ
+    {"PROFESSION_FIRE_ENCLOSE", PROFESSION_fire_enclose, 0},     // ����
+    {"PROFESSION_ICE_ENCLOSE", PROFESSION_ice_eclose, 0},        // ������
     {"PROFESSION_THUNDER_ENCLOSE", PROFESSION_thunder_enclose, 0},
-    {"PROFESSION_FIRE_PRACTICE", PROFESSION_fire_practice, 0}, // ��ħ��������
-    {"PROFESSION_ICE_PRACTICE", PROFESSION_ice_practice, 0}, // ��ħ��������
-    {"PROFESSION_THUNDER_PRACTICE", PROFESSION_thunder_practice,
-     0}, // ��ħ��������
+    {"PROFESSION_FIRE_PRACTICE", PROFESSION_fire_practice, 0},   // ��ħ��������
+    {"PROFESSION_ICE_PRACTICE", PROFESSION_ice_practice, 0},     // ��ħ��������
+    {"PROFESSION_THUNDER_PRACTICE", PROFESSION_thunder_practice, 0},
     {"PROFESSION_ENCLOSE", PROFESSION_enclose, 0},     // ������
     {"PROFESSION_TRANSPOSE", PROFESSION_transpose, 0}, // ���λ�λ
-    //	{ "PROFESSION_ALCHEMY",			PROFESSION_alchemy,
-    //0
-    //},
+    // {"PROFESSION_ALCHEMY",	PROFESSION_alchemy, 0},
     {"PROFESSION_CHAIN_ATK", PROFESSION_chain_atk, 0}, // ��������
     {"PROFESSION_AVOID", PROFESSION_avoid, 0},         // �ر�
     {"PROFESSION_WEAPON_FOCUS", PROFESSION_weapon_focus, 0}, // ����ר��
@@ -328,11 +325,8 @@ INLINE BOOL PROFESSION_SKILL_setChar(int index,
 }
 
 int PROFESSION_SKILL_getskillNum(void) { return profession_skill_num; }
-
-/*----------------------------------------------------------------------*/
-
 int PROFESSION_SKILL_getskillArray(int skillid) {
-#ifdef _PROSKILL_OPTIMUM // ��ѯְ��ID��Ϊ����ʽ
+#ifdef _PROSKILL_OPTIMUM //
   if (skillid >= 0 && skillid < profession_skill_num)
     return PROFESSION_skill[skillid].data[PROFESSION_SKILL_ID];
 #else
@@ -431,7 +425,7 @@ int PROFESSION_SKILL_Use(int char_index, int skill, int toNo, char *data) {
 
     PROFESSION_NORMAL_SKILL_LEVLE_UP(&hskill->skill, Pskillid, char_index);
   } else {
-    print("\n ����!�Ҳ���ְ��func ");
+    logErr("\n func ");
   }
 
   return ret;

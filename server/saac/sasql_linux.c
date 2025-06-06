@@ -5,6 +5,8 @@
 #include "main.h"
 #include "sasql.h"
 #include "util.h"
+
+// third_party
 #include <mysql/mysql.h>
 
 MYSQL mysql;
@@ -109,14 +111,15 @@ BOOL sasql_init(void) {
                           config.sql_DataBase, // 选择的资料库
                           config.sql_Port, NULL, 0)) {
     fprintf(stderr, "%s\n", mysql_error(&mysql));
-    printf("\n数据库连接失败！\n%s, %s, %s, %s, %s.\n", config.sql_IP, config.sql_Port, config.sql_ID, config.sql_PS, config.sql_DataBase);
+    printf("\n数据库连接失败！\n%s, %s, %s, %s, %s.\n", config.sql_IP,
+           config.sql_Port, config.sql_ID, config.sql_PS, config.sql_DataBase);
     return FALSE;
   }
 
   /* SET NAMES 'utf8mb4' 设置以下三个系统变量：
-	 * character_set_client：客户端发送给服务器的字符集。
-	 * character_set_results：服务器返回给客户端的字符集。
-	 * character_set_connection：连接层使用的字符集。
+   * character_set_client：客户端发送给服务器的字符集。
+   * character_set_results：服务器返回给客户端的字符集。
+   * character_set_connection：连接层使用的字符集。
    */
   mysql_query(&mysql, "SET NAMES 'utf8mb4'");
   printf("\n数据库连接成功！\n");
@@ -144,7 +147,7 @@ BOOL sasql_ckeckStrint(char *str) {
 int sasql_query(char *username, char *password) {
 
   char sqlstr[1024];
-	char md5str[64];
+  char md5str[64];
   if (sasql_ckeckStrint(username) == FALSE) {
     printf("异常字符的用户名%s\n", username);
     return 3;
@@ -234,7 +237,8 @@ BOOL sasql_online(char *ID, char *username, char *IP, char *MAC, int flag) {
       sprintf(sqlstr,
               "update %s set LoginTime=NOW(), OnlineName='%s', Online=1, "
               "Path='char/0x%x'where %s=BINARY'%s'",
-              config.sql_Table, username, getHash(ID) & 0xff, config.sql_NAME, ID);
+              config.sql_Table, username, getHash(ID) & 0xff, config.sql_NAME,
+              ID);
     else if (flag == 3)
       sprintf(sqlstr, "update %s set Online=0", config.sql_Table);
     if (!sasql_mysql_query(sqlstr)) {
@@ -247,46 +251,48 @@ BOOL sasql_online(char *ID, char *username, char *IP, char *MAC, int flag) {
 #endif
 
 #ifdef _SQL_REGISTER
-BOOL sasql_register(char *id, char *ps) {
+// 允许直接通过sql注册
+BOOL sasql_register(const char *username, const char *password) {
   char sqlstr[256];
-	char md5str[64];
+  char md5password[64];
   if (config.AutoReg != 1)
     return FALSE;
 
-  if (sasql_ckeckStrint(id) == FALSE) {
-    printf("异常字符的用户名%s\n", id);
+  if (sasql_ckeckStrint(username) == FALSE) {
+    printf("异常字符的用户名%s\n", username);
     return FALSE;
   }
-  if (sasql_ckeckStrint(ps) == FALSE) {
-    printf("异常字符的游戏密码%s\n", ps);
+  if (sasql_ckeckStrint(password) == FALSE) {
+    printf("异常字符的游戏密码%s\n", password);
     return FALSE;
   }
 
 #ifdef _OLDPS_TO_MD5PS
-  MD5Digest(ps, strlen(ps), md5str);
+  MD5Digest(password, strlen(password), md5password);
   sprintf(sqlstr,
           "INSERT INTO %s (%s,%s,RegTime,Path) VALUES "
           "(BINARY'%s','%s',NOW(),'char/0x%x')",
-          config.sql_Table, config.sql_NAME, config.sql_PASS, id, md5str,
-          getHash(id) & 0xff);
+          config.sql_Table, config.sql_NAME, config.sql_PASS, username,
+          md5password, getHash(username) & 0xff);
 #else
   sprintf(sqlstr,
           "INSERT INTO %s (%s,%s,RegTime,Path) VALUES "
           "(BINARY'%s','%s',NOW(),'char/0x%x')",
-          config.sql_Table, config.sql_NAME, config.sql_PASS, id, ps,
-          getHash(id) & 0xff);
+          config.sql_Table, config.sql_NAME, config.sql_PASS, username,
+          password, getHash(username) & 0xff);
 #endif
 
   if (!sasql_mysql_query(sqlstr)) {
     printf("\n新用户注册成功！\n");
     return TRUE;
+  } else {
+    printf("\n新用户注册失败！\n");
+    return FALSE;
   }
-  printf("\n新用户注册失败！\n");
-  return FALSE;
 }
 #endif
 
-BOOL sasql_chehk_lock(char *idip) {
+BOOL sasql_check_lock(char *idip) {
   if (sasql_ckeckStrint(idip) == FALSE) {
     printf("异常字符%s\n", idip);
     return FALSE;
@@ -298,7 +304,6 @@ BOOL sasql_chehk_lock(char *idip) {
     mysql_free_result(mysql_result);
     mysql_result = mysql_store_result(&mysql);
     num_row = mysql_num_rows(mysql_result);
-
     if (num_row > 0) {
       return TRUE;
     }
@@ -826,7 +831,7 @@ void sasql_OldpsToMd5ps() {
           config.sql_Table);
   if (!sasql_mysql_query(sqlstr)) {
     printf("Failed to query mysql: %s", sqlstr);
-		return;
+    return;
   }
   mysql_free_result(mysql_result);
   mysql_result = mysql_store_result(&mysql);
@@ -837,8 +842,8 @@ void sasql_OldpsToMd5ps() {
     if (strlen(password) <= 16) {
       MD5Digest(password, strlen(password), md5str);
       sprintf(sqlstr, "update %s set %s=BINARY'%s' where %s=BINARY'%s'",
-              config.sql_Table, config.sql_PASS, md5str,
-              config.sql_NAME, username);
+              config.sql_Table, config.sql_PASS, md5str, config.sql_NAME,
+              username);
       printf("%16s%16s%32s: ", username, password, md5str);
       sasql_mysql_query(sqlstr) ? printf("转换成功.\n") : printf("转换失败.\n");
     }

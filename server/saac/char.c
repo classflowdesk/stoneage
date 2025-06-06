@@ -1,4 +1,4 @@
-#define _CHAR_C_
+#define __CHAR_C__
 #include "char.h"
 #include "main.h"
 #include "saac_server.h"
@@ -203,7 +203,7 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
   // Nuke *1 add escape
   if (makeSaveCharString(savebuf, sizeof(savebuf), charname, opt, charinfo) <
       0) {
-    logErr("\n AC存档:太长  ");
+    logErr("\n AC存档:太长.");
     SaacServer_ACCharSave_send(ti, FAILED, "too long", mesgid);
     // Spock fixed 2000/11/1
     return ret;
@@ -216,13 +216,13 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
   char_index = getCharIndexByName(id, charname);
 #endif
   if (char_index < 0) {
-    int blankind = findBlankCharIndex(id);
-    if (blankind < 0) {
-      logErr("\n ACCharSave:char full  ");
+    int blank_index = findBlankCharIndex(id);
+    if (blank_index < 0) {
+      logErr("\n ACCharSave:char full.");
       SaacServer_ACCharSave_send(ti, FAILED, "char full", mesgid);
       return ret;
     } else {
-      char_index = blankind;
+      char_index = blank_index;
     }
   }
 

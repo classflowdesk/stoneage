@@ -2569,33 +2569,16 @@ void CHAR_sendWatchEvent(int objindex, int chac, int *opt, int optlen,
  *  撩  (  端卞霜日卅井匀凶日巨仿□手殖引木月)    FALSE(0)
  ------------------------------------------------------------*/
 BOOL CHAR_Skillupsend(int char_index) {
-#if 1
   // 旦玄□件巨奶斥迕卞  凳仄凶手及
-  int point;
-  int fd;
   if (!CHAR_CHECKINDEX(char_index))
     return FALSE;
   // 中仁勾禾奶件玄失永皿匹五月井
-  point = CHAR_getInt(char_index, CHAR_SKILLUPPOINT);
-  fd = getfdFromCharaIndex(char_index);
+  int point = CHAR_getInt(char_index, CHAR_SKILLUPPOINT);
+  int fd = getfdFromCharaIndex(char_index);
   if (fd != -1) {
     GmsvServer_SKUP_send(fd, point);
   }
   return TRUE;
-#else
-    char sendbuf[128];
-
-    // 仇切日反LS2凛及手及
-    if (SKILL_getUpableSkillID(char_index, sendbuf, sizeof(sendbuf))) {
-      int fd;
-      fd = getfdFromCharaIndex(char_index);
-      if (fd != -1 && sendbuf[0] != '\0') {
-        GmsvServer_SKUP_send(fd, sendbuf);
-        return TRUE;
-      }
-    }
-#endif
-  return FALSE;
 }
 
 /*------------------------------------------------------------
@@ -2770,8 +2753,7 @@ INLINE int CHAR_getDY(int dir) {
 /*------------------------------------------------------------
  *   元穴旦及平乓仿弁正□毛  月［
  * 娄醒
- *  objbuf      int*        object     匹及 index 毛医  允月
- *                              田永白央
+ *  objbuf      int*        object
  *  siz         int         objbuf 及 扔奶术
  *  ff          int         白夫失
  *  fx          int         x
@@ -2816,26 +2798,21 @@ char *CHAR_makeOptionString(Char *ch) {
     CHAR_optiondataString[0] = '\0';
     return CHAR_optiondataString;
   } else {
-    /* 动票反StoneAge 酷  匹丐月［
-
-       dataplace|faceimg|level|hp|str|def|dex|charm|dp|earth|water|fire|wind|login|Name|Place
-       午卅月［
-     */
-    {
-      snprintf(
-          CHAR_optiondataString, sizeof(CHAR_optiondataString),
-          "%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%s",
-          ch->data[CHAR_DATAPLACENUMBER], ch->data[CHAR_FACEIMAGENUMBER],
-          ch->data[CHAR_LV], ch->workint[CHAR_WORKMAXHP],
-          ch->workint[CHAR_WORKATTACKPOWER], ch->workint[CHAR_WORKDEFENCEPOWER],
-          ch->workint[CHAR_WORKQUICK], ch->workint[CHAR_WORKFIXCHARM],
-          ch->data[CHAR_DUELPOINT], /* dp, FIXME */
-          ch->workint[CHAR_WORKFIXEARTHAT], ch->workint[CHAR_WORKFIXWATERAT],
-          ch->workint[CHAR_WORKFIXFIREAT], ch->workint[CHAR_WORKFIXWINDAT],
-          ch->data[CHAR_LOGINCOUNT], ch->string[CHAR_NAME].string,
-          makeEscapeString(showstr, escapeshowstring,
-                           sizeof(escapeshowstring)));
-    }
+    /* StoneAge:
+     [dataplace|faceimg|level|hp|str|def|dex|charm|dp|earth|water|fire|wind|login|Name|Place] */
+    snprintf(
+        CHAR_optiondataString, sizeof(CHAR_optiondataString),
+        "%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%s",
+        ch->data[CHAR_DATAPLACENUMBER], ch->data[CHAR_FACEIMAGENUMBER],
+        ch->data[CHAR_LV], ch->workint[CHAR_WORKMAXHP],
+        ch->workint[CHAR_WORKATTACKPOWER], ch->workint[CHAR_WORKDEFENCEPOWER],
+        ch->workint[CHAR_WORKQUICK], ch->workint[CHAR_WORKFIXCHARM],
+        ch->data[CHAR_DUELPOINT], /* dp, FIXME */
+        ch->workint[CHAR_WORKFIXEARTHAT], ch->workint[CHAR_WORKFIXWATERAT],
+        ch->workint[CHAR_WORKFIXFIREAT], ch->workint[CHAR_WORKFIXWINDAT],
+        ch->data[CHAR_LOGINCOUNT], ch->string[CHAR_NAME].string,
+        makeEscapeString(showstr, escapeshowstring,
+                         sizeof(escapeshowstring)));
   }
   return CHAR_optiondataString;
 }

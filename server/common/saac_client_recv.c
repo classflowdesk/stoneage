@@ -1260,7 +1260,7 @@ void SaacClient_ACCheckCharacterOnLine_recv(int acfd, int charaindex,
 void SaacClient_ACCharLogin_recv(int fd, int client_fd, int flag) {
   // 告诉客户端SaacServer的返回情况.
   GmsvServer_ClientLogin_send(client_fd, "ok");
-  char reaseon[128];
+  char reason[128];
   switch (flag) {
   case 1:
     snprintf(reason, sizeof(reason), "");

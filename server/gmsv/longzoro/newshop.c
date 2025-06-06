@@ -129,12 +129,12 @@ void OnlineShop_ShowList(int fd, int char_index, int type, int page)
 		if(i>SHOPLISTMAX)break;
 		if(onlineshop[type-1][i].use==TRUE){
 			sprintf(buf,"%d#%d#%s#%d#%d#%d#%s|",i,
-																					onlineshop[type-1][i].picid,
-																					onlineshop[type-1][i].name,
-																					onlineshop[type-1][i].color,
-																					onlineshop[type-1][i].percentage,
-																					onlineshop[type-1][i].price,
-																					onlineshop[type-1][i].readme);
+			onlineshop[type-1][i].picid,
+			onlineshop[type-1][i].name,
+			onlineshop[type-1][i].color,
+			onlineshop[type-1][i].percentage,
+			onlineshop[type-1][i].price,
+			onlineshop[type-1][i].readme);
 			strcat(token, buf);
 			availability++;
 		}

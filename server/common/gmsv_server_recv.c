@@ -34,33 +34,30 @@
 #ifdef _ONLINE_SHOP
 #include "longzoro/newshop.h"
 #endif
-#ifdef _ALLBLUES_LUA
-#include "mylua/function.h"
-#endif
 extern int player_online;
 BOOL checkStringErr(char *);
 
 extern struct FM_PKFLOOR fmpkflnum[FAMILY_FMPKFLOOR];
 
 static int Callfromcli_Util_getTargetCharaindex(int fd, int to_index) {
-  int to_chara_index = -1;
+  int to_char_index = -1;
   const int char_index = CONNECT_getCharaindex(fd);
   // 如何解释to_index是个什么东东?
   if (to_index == 0) {
     to_char_index = char_index;
-  } else if (toindex > 0 && toindex < 6) {
-    to_char_index = CHAR_getCharPet(char_index, toindex - 1);
+  } else if (to_index > 0 && to_index < 6) {
+    to_char_index = CHAR_getCharPet(char_index, to_index - 1);
     if (!CHAR_CHECKINDEX(to_char_index)) {
       to_char_index = -1;
     }
-  } else if (toindex > 5 && toindex < 11) {
-    to_char_index = CHAR_getPartyIndex(char_index, toindex - 6);
+  } else if (to_index > 5 && to_index < 11) {
+    to_char_index = CHAR_getPartyIndex(char_index, to_index - 6);
   }
   return to_char_index;
 }
 
 void GmsvServer_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
-                               int servid, char *Newip) {
+                                 int servid, char *Newip) {
   if (CONNECT_getState(fd) == NULLCONNECT) {
     CONNECT_setState(fd, NOTLOGIN);
   }
@@ -135,13 +132,12 @@ void GmsvServer_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
             strcmp(ip, getNoAttIp(4)) != 0) {
           if (getNoCdkeyType() == 0) {
             if (sasql_query_online_ip(ip) == 0) {
-              print("����3��\n");
+              print("online ip is illegal.\n");
               CONNECT_endOne_debug(fd);
               return;
-              //}
             }
           } else {
-            print("����4��\n");
+            print("???\n");
             CONNECT_endOne_debug(fd);
             return;
           }
@@ -160,9 +156,9 @@ void GmsvServer_ClientLogin_recv(int fd, char *cdkey, char *passwd, char *mac,
 }
 
 void GmsvServer_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
-                                 int imgno, int faceimgno, int vital, int str,
-                                 int tgh, int dex, int earth, int water,
-                                 int fire, int wind, int hometown) {
+                                   int imgno, int faceimgno, int vital, int str,
+                                   int tgh, int dex, int earth, int water,
+                                   int fire, int wind, int hometown) {
   char cdkey[CDKEYLEN];
   if (CONNECT_isCLI(fd) == FALSE)
     return;
@@ -232,7 +228,7 @@ void GmsvServer_CreateNewChar_recv(int fd, int dataplacenum, char *charname,
     if (strstr(charname, getIllegalName(j)) && strlen(getIllegalName(j)) > 0) {
       // GmsvServer_CreateNewChar_send(fd,FAILED, "Invalid charname\n");
       GmsvServer_CreateNewChar_send(fd, FAILED,
-                                  "角色名称命中非法角色名称名单.\n");
+                                    "角色名称命中非法角色名称名单.\n");
       return;
     }
   }
@@ -299,18 +295,18 @@ void GmsvServer_CharLogin_recv(int fd, char *charname) {
   CONNECT_getPasswd(fd, passwd, sizeof(passwd));
 
   SaacClient_ACCharLoad_send(acfd, cdkey, passwd, charname, 1, "",
-                            CONNECT_getFdid(fd));
+                             CONNECT_getFdid(fd));
   CONNECT_setState(fd, WHILELOGIN);
 }
 #ifdef _NEW_ITEM_
 extern int CheckCharMaxItem(int charindex);
 #endif
 #ifdef _ITEM_CHECKDROPATLOGOUT
-BOOL CheckDropatLogout(int charaindex) {
+BOOL CheckDropatLogout(int char_index) {
   int i;
-  for (i = 0; i < CheckCharMaxItem(charaindex); i++) {
+  for (i = 0; i < CheckCharMaxItem(char_index); i++) {
     int itemindex;
-    itemindex = CHAR_getItemIndex(charaindex, i);
+    itemindex = CHAR_getItemIndex(char_index, i);
     if (ITEM_CHECKINDEX(itemindex) == FALSE)
       continue;
     if (ITEM_getInt(itemindex, ITEM_DROPATLOGOUT) == TRUE) {
@@ -323,7 +319,7 @@ BOOL CheckDropatLogout(int charaindex) {
 
 void GmsvServer_CharLogout_recv(int fd, int flg) {
   char cdkey[CDKEYLEN], charname[CHARNAMELEN];
-  int charaindex = CONNECT_getCharaindex(fd);
+  int char_index = CONNECT_getCharaindex(fd);
   if (CONNECT_isCLI(fd) == FALSE)
     return;
   if (CONNECT_isLOGIN(fd) == FALSE) {
@@ -332,28 +328,28 @@ void GmsvServer_CharLogout_recv(int fd, int flg) {
     return;
   }
 #ifdef _OFFLINE_SYSTEM
-  if (CHAR_getWorkInt(charaindex, CHAR_WORK_OFFLINE) > 0) {
-    CHAR_setWorkInt(charaindex, CHAR_WORKFD, -1);
+  if (CHAR_getWorkInt(char_index, CHAR_WORK_OFFLINE) > 0) {
+    CHAR_setWorkInt(char_index, CHAR_WORKFD, -1);
   } else
 #endif
   {
 
     int fl, x, y;
     // CoolFish: 2001/10/18
-    if (!CHAR_CHECKINDEX(charaindex))
+    if (!CHAR_CHECKINDEX(char_index))
       return;
 
-    if (CHAR_getInt(charaindex, CHAR_LASTTALKELDER) >= 0) {
-      if (CHAR_getElderPosition(CHAR_getInt(charaindex, CHAR_LASTTALKELDER),
+    if (CHAR_getInt(char_index, CHAR_LASTTALKELDER) >= 0) {
+      if (CHAR_getElderPosition(CHAR_getInt(char_index, CHAR_LASTTALKELDER),
                                 &fl, &x, &y) == FALSE) {
-        CHAR_talkToCli(charaindex, -1, "����ǰ�ļ�¼����������¼�¼��",
+        CHAR_talkToCli(char_index, -1, "����ǰ�ļ�¼����������¼�¼��",
                        CHAR_COLORYELLOW);
         return;
       }
 #ifdef _NO_TEAMWARP_SKYLAND
-      if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) != CHAR_PARTY_NONE &&
+      if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) != CHAR_PARTY_NONE &&
           fl == 30691) {
-        CHAR_talkToCli(charaindex, -1,
+        CHAR_talkToCli(char_index, -1,
                        "�Ŷ����޷������֮����",
                        CHAR_COLORYELLOW);
         return;
@@ -362,47 +358,47 @@ void GmsvServer_CharLogout_recv(int fd, int flg) {
 
 #ifdef _CHAR_NEWLOGOUT
       if (flg == 1) { // �ؼ�¼��
-        if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) !=
+        if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
             BATTLE_CHARMODE_NONE) {
-          CHAR_talkToCli(charaindex, -1,
+          CHAR_talkToCli(char_index, -1,
                          "ս�����޷��ؼ�¼�㣡",
                          CHAR_COLORYELLOW);
           return;
         }
 #ifdef _ITEM_CHECKWARES
-        if (CHAR_CheckInItemForWares(charaindex, 0) == FALSE) {
-          CHAR_talkToCli(charaindex, -1,
+        if (CHAR_CheckInItemForWares(char_index, 0) == FALSE) {
+          CHAR_talkToCli(char_index, -1,
                          "Я�������޷�ʹ�á�",
                          CHAR_COLORYELLOW);
           return;
         }
 #endif
-        if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) ==
+        if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) ==
             CHAR_PARTY_CLIENT) {
-          CHAR_talkToCli(charaindex, -1,
+          CHAR_talkToCli(char_index, -1,
                          "�Ŷ����޷��ؼ�¼�㣡",
                          CHAR_COLORYELLOW);
           return;
         }
 #ifdef _ITEM_CHECKDROPATLOGOUT
-        if (CheckDropatLogout(charaindex)) {
+        if (CheckDropatLogout(char_index)) {
           CHAR_talkToCli(
-              charaindex, -1,
+              char_index, -1,
               "Я������Ʒʹ���޷��ؼ�¼�㣡",
               CHAR_COLORYELLOW);
           return;
         }
 #endif
 #ifdef _AUTO_PK
-        if (CHAR_getInt(charaindex, CHAR_FLOOR) == 20000 &&
-            CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) ==
+        if (CHAR_getInt(char_index, CHAR_FLOOR) == 20000 &&
+            CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) ==
                 BATTLE_CHARMODE_NONE &&
-            CHAR_getWorkInt(charaindex, CHAR_WORK_AUTOPK) != -1) {
+            CHAR_getWorkInt(char_index, CHAR_WORK_AUTOPK) != -1) {
           char buf[64];
           int i, num = 0, winindex = -1;
           int playernum = CHAR_getPlayerMaxNum();
           sprintf(buf, "��С�� %s �˳���ǰ������",
-                  CHAR_getChar(charaindex, CHAR_NAME));
+                  CHAR_getChar(char_index, CHAR_NAME));
           AutoPk_PKSystemTalk(buf, buf);
           if (AutoPk_PKTimeGet() <= 0) {
             for (i = 0; i < playernum; i++) {
@@ -411,7 +407,7 @@ void GmsvServer_CharLogout_recv(int fd, int flg) {
                 continue;
               if (CHAR_getInt(i, CHAR_FLOOR) == 20000) {
                 if (CHAR_getWorkInt(i, CHAR_WORK_AUTOPK) != -1) {
-                  if (i != charaindex)
+                  if (i != char_index)
                     winindex = i;
                   num++;
                 }
@@ -425,7 +421,7 @@ void GmsvServer_CharLogout_recv(int fd, int flg) {
               AutoPk_ChampionShipSet(
                   winindex, CHAR_getWorkInt(winindex, CHAR_WORK_AUTOPK), 1);
               AutoPk_ChampionShipSet(
-                  charaindex, CHAR_getWorkInt(charaindex, CHAR_WORK_AUTOPK), 2);
+                  char_index, CHAR_getWorkInt(char_index, CHAR_WORK_AUTOPK), 2);
               AutoPk_GetChampionShip();
 #ifdef _FORMULATE_AUTO_PK
               CHAR_setInt(winindex, CHAR_AMPOINT,
@@ -437,19 +433,19 @@ void GmsvServer_CharLogout_recv(int fd, int flg) {
           }
         }
 #endif
-        if (CHAR_getInt(charaindex, CHAR_FLOOR) != 117 &&
-            CHAR_getInt(charaindex, CHAR_FLOOR) != 887
+        if (CHAR_getInt(char_index, CHAR_FLOOR) != 117 &&
+            CHAR_getInt(char_index, CHAR_FLOOR) != 887
 #ifdef _ADD_DUNGEON
-            && CHAR_getInt(charaindex, CHAR_FLOOR) != 8513
+            && CHAR_getInt(char_index, CHAR_FLOOR) != 8513
 #endif
         ) {
-          CHAR_warpToSpecificPoint(charaindex, fl, x, y);
-          if (CHAR_getWorkInt(charaindex, CHAR_WORKPARTYMODE) ==
+          CHAR_warpToSpecificPoint(char_index, fl, x, y);
+          if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) ==
               CHAR_PARTY_LEADER) {
             int i;
-            for (i = 1; i < getPartyNum(charaindex); i++) {
+            for (i = 1; i < getPartyNum(char_index); i++) {
               int pindex =
-                  CHAR_getWorkInt(charaindex, i + CHAR_WORKPARTYINDEX1);
+                  CHAR_getWorkInt(char_index, i + CHAR_WORKPARTYINDEX1);
               if (CHAR_CHECKINDEX(pindex)) {
                 CHAR_warpToSpecificPoint(pindex, fl, x, y);
               }
@@ -461,13 +457,13 @@ void GmsvServer_CharLogout_recv(int fd, int flg) {
         CONNECT_endOne_debug(fd);
       }
 #else
-      if (CHAR_getInt(charaindex, CHAR_FLOOR) == 117) {
-        CHAR_setInt(charaindex, CHAR_X, 225);
-        CHAR_setInt(charaindex, CHAR_Y, 13);
+      if (CHAR_getInt(char_index, CHAR_FLOOR) == 117) {
+        CHAR_setInt(char_index, CHAR_X, 225);
+        CHAR_setInt(char_index, CHAR_Y, 13);
       } else {
-        CHAR_setInt(charaindex, CHAR_FLOOR, fl);
-        CHAR_setInt(charaindex, CHAR_X, x);
-        CHAR_setInt(charaindex, CHAR_Y, y);
+        CHAR_setInt(char_index, CHAR_FLOOR, fl);
+        CHAR_setInt(char_index, CHAR_X, x);
+        CHAR_setInt(char_index, CHAR_Y, y);
       }
 #endif
     }
@@ -485,15 +481,12 @@ void GmsvServer_CharDelete_recv(int fd, char *charname, char *passwd) {
   CONNECT_getCdkey(fd, cdkey, sizeof(cdkey));
   int fdid = CONNECT_getFdid(fd);
   SaacClient_ACCharDelete_send(acfd, cdkey, passwd, charname, "", fdid);
-  {
-    char buff[512];
-    char escapebuf[1024];
-    snprintf(buff, sizeof(buff), "%s_%s", cdkey, charname);
-    makeEscapeString(buff, escapebuf, sizeof(escapebuf));
-    SaacClient_DBDeleteEntryInt_send(acfd, DB_DUELPOINT, escapebuf, fdid, 0);
-    SaacClient_DBDeleteEntryString_send(acfd, DB_ADDRESSBOOK, escapebuf, fdid,
-                                       0);
-  }
+  char buff1[512];
+  char buff2[1024];
+  snprintf(buff1, sizeof(buff1), "%s_%s", cdkey, charname);
+  makeEscapeString(buff1, buff2, sizeof(buff2));
+  SaacClient_DBDeleteEntryInt_send(acfd, DB_DUELPOINT, buff2, fdid, 0);
+  SaacClient_DBDeleteEntryString_send(acfd, DB_ADDRESSBOOK, buff2, fdid, 0);
   SaacClient_Broadcast_send(acfd, cdkey, charname, "chardelete", 0);
   CONNECT_setState(fd, WHILECHARDELETE);
 }
@@ -521,7 +514,7 @@ void GmsvServer_NewCharDelete_recv(int fd, char *charname, char *passwd) {
     makeEscapeString(buff, escapebuf, sizeof(escapebuf));
     SaacClient_DBDeleteEntryInt_send(acfd, DB_DUELPOINT, escapebuf, fdid, 0);
     SaacClient_DBDeleteEntryString_send(acfd, DB_ADDRESSBOOK, escapebuf, fdid,
-                                       0);
+                                        0);
   }
   SaacClient_Broadcast_send(acfd, cdkey, charname, "chardelete", 0);
   CONNECT_setState(fd, WHILECHARDELETE);
@@ -638,8 +631,7 @@ void GmsvServer_W_recv(int fd, int x, int y, char *direction) {
 #ifdef _NETLOG_
     char cdkey[16];
     char charname[32];
-    CONNECT_getCharname(CHAR_getWorkInt(char_index, CHAR_WORKFD), charname,
-                        32);
+    CONNECT_getCharname(CHAR_getWorkInt(char_index, CHAR_WORKFD), charname, 32);
     CONNECT_getCdkey(CHAR_getWorkInt(char_index, CHAR_WORKFD), cdkey, 16);
     LogCharOut(charname, cdkey, __FILE__, __FUNCTION__, __LINE__, "Ѷ�Ŵ���");
 #endif
@@ -669,8 +661,7 @@ void GmsvServer_W_recv(int fd, int x, int y, char *direction) {
       y = iy;
     }
   }
-  if (!(MAP_walkAble(char_index, CHAR_getInt(char_index, CHAR_FLOOR), x,
-                     y))) {
+  if (!(MAP_walkAble(char_index, CHAR_getInt(char_index, CHAR_FLOOR), x, y))) {
     // Robin 03/14
     x = ix;
     y = iy;
@@ -688,8 +679,7 @@ void GmsvServer_W2_recv(int fd, int x, int y, char *direction) {
   char_index = CONNECT_getCharaindex(fd);
   if (!CHAR_CHECKINDEX(char_index))
     return;
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
   if (CHAR_getWorkInt(char_index, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE)
     return;
@@ -698,8 +688,7 @@ void GmsvServer_W2_recv(int fd, int x, int y, char *direction) {
       CHAR_getWorkInt(char_index, CHAR_WORK_Y) == x) {
     if (strlen(direction) == 1) {
       if (direction[0] >= 'a' && direction[0] <= 'h') {
-        if (CHAR_getWorkInt(char_index, CHAR_WORK_DIR) !=
-            direction[0] - 'a') {
+        if (CHAR_getWorkInt(char_index, CHAR_WORK_DIR) != direction[0] - 'a') {
           CHAR_setWorkInt(char_index, CHAR_WORK_DIR, direction[0] - 'a');
           CHAR_setWorkInt(char_index, CHAR_WORK_W, 0);
         } else if (CHAR_getWorkInt(char_index, CHAR_WORK_W) > 30) {
@@ -707,7 +696,7 @@ void GmsvServer_W2_recv(int fd, int x, int y, char *direction) {
               CHAR_PARTY_CLIENT) {
             if (CONNECT_getBDTime(fd) < time(NULL)) {
               GmsvServer_EN_recv(fd, CHAR_getInt(char_index, CHAR_X),
-                               CHAR_getInt(char_index, CHAR_Y));
+                                 CHAR_getInt(char_index, CHAR_Y));
               CONNECT_setBDTime(fd, (int)time(NULL) + 3);
             }
           }
@@ -729,11 +718,10 @@ void GmsvServer_W2_recv(int fd, int x, int y, char *direction) {
 
 #ifdef _FIX_STW_SPEED_ENEMY
   if (strstr(direction, "gcgc") != NULL) {
-    if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) !=
-        CHAR_PARTY_CLIENT) {
+    if (CHAR_getWorkInt(char_index, CHAR_WORKPARTYMODE) != CHAR_PARTY_CLIENT) {
       if (CONNECT_getBDTime(fd) < time(NULL)) {
         GmsvServer_EN_recv(fd, CHAR_getInt(char_index, CHAR_X),
-                         CHAR_getInt(char_index, CHAR_Y));
+                           CHAR_getInt(char_index, CHAR_Y));
         CONNECT_setBDTime(fd, (int)time(NULL) + 3);
       }
     }
@@ -765,8 +753,7 @@ void GmsvServer_W2_recv(int fd, int x, int y, char *direction) {
             return;
           }
         }
-        if (BATTLE_CreateVsEnemy(char_index, 0, -1) !=
-            BATTLE_ERR_CHARAINDEX) {
+        if (BATTLE_CreateVsEnemy(char_index, 0, -1) != BATTLE_ERR_CHARAINDEX) {
           if (getNoSTWNenemyPoint() > 0) {
             CHAR_setInt(char_index, CHAR_GOLD,
                         CHAR_getInt(char_index, CHAR_GOLD) -
@@ -797,8 +784,7 @@ void GmsvServer_W2_recv(int fd, int x, int y, char *direction) {
       y = iy;
     }
   } // ttom
-  if (!(MAP_walkAble(char_index, CHAR_getInt(char_index, CHAR_FLOOR), x,
-                     y))) {
+  if (!(MAP_walkAble(char_index, CHAR_getInt(char_index, CHAR_FLOOR), x, y))) {
     x = ix;
     y = iy;
   }
@@ -823,8 +809,7 @@ void GmsvServer_ID_recv(int fd, int x, int y, int haveitemindex, int toindex) {
   if (CHAR_getWorkInt(char_index, CHAR_WORKSTREETVENDOR) != -1)
     return;
 #endif
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
   // ttom avoid the warp at will 12/5
   {
@@ -889,16 +874,14 @@ void GmsvServer_PI_recv(int fd, int x, int y, int dir) {
   } // ttom end
 
   CHAR_setMyPosition(char_index, x, y, TRUE);
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
   CHAR_PickUpItem(char_index, dir);
 }
 
 void GmsvServer_DI_recv(int fd, int x, int y, int itemindex) {
-  int charaindex;
   CHECKFDANDTIME;
-  charaindex = CONNECT_getCharaindex(fd);
+  const int charaindex = CONNECT_getCharaindex(fd);
 
   if (CHAR_getWorkInt(charaindex, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE)
     return;
@@ -915,9 +898,9 @@ void GmsvServer_DI_recv(int fd, int x, int y, int itemindex) {
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
 
     GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                     WINDOW_BUTTONTYPE_OKCANCEL,
-                     CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
-                     makeEscapeString(message, buf, sizeof(buf)));
+                       WINDOW_BUTTONTYPE_OKCANCEL,
+                       CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
+                       makeEscapeString(message, buf, sizeof(buf)));
 
     return;
   }
@@ -945,9 +928,9 @@ void GmsvServer_DP_recv(int fd, int x, int y, int petindex) {
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
 
     GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                     WINDOW_BUTTONTYPE_OKCANCEL,
-                     CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
-                     makeEscapeString(message, buf, sizeof(buf)));
+                       WINDOW_BUTTONTYPE_OKCANCEL,
+                       CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
+                       makeEscapeString(message, buf, sizeof(buf)));
 
     return;
   }
@@ -962,8 +945,7 @@ void GmsvServer_DP_recv(int fd, int x, int y, int petindex) {
     y = iy;
   }
   CHAR_setMyPosition(char_index, x, y, TRUE);
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
   PET_dropPet(char_index, petindex);
 }
@@ -981,8 +963,7 @@ void GmsvServer_DG_recv(int fd, int x, int y, int amount) {
   }
   CHAR_setMyPosition(char_index, x, y, TRUE);
 
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
 
   // CoolFish: Prevent Trade Cheat 2001/4/18
@@ -1039,13 +1020,14 @@ void GmsvServer_MI_recv(int fd, int fromid, int toid) {
                            "1��������Ʒ������װ���������˷�����ʯͷ\n"
                            "2��������Ʒ�ɹ��ȼ�+1��ʧ����ȼ�-1\n"
                            "3��װ���ȼ�Խ�ߣ������ɹ�������Խ��\n"
-                           "4�����ʹ��ͣ��Ƿ��Ǹ����߼�������ʯ��"
+                           "4�����ʹ��ͣ��Ƿ��Ǹ����߼�������ʯ�"
+                           "�"
                            "\n");
 
           GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE,
-                           WINDOW_BUTTONTYPE_YESNO,
-                           CHAR_WINDOWTYPE_ITEM_UPLEVEL, -1,
-                           makeEscapeString(message, buf, sizeof(buf)));
+                             WINDOW_BUTTONTYPE_YESNO,
+                             CHAR_WINDOWTYPE_ITEM_UPLEVEL, -1,
+                             makeEscapeString(message, buf, sizeof(buf)));
 
           return;
         }
@@ -1059,15 +1041,14 @@ void GmsvServer_MI_recv(int fd, int fromid, int toid) {
 #endif
     }
   }
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
   CHAR_moveEquipItem(char_index, fromid, toid);
 }
 
 #ifdef _PET_ITEM
 void GmsvServer_PETITEM_recv(int fd, int x, int y, int petindex, int fromindex,
-                           int toindex) {
+                             int toindex) {
   int char_index;
   CHECKFDANDTIME;
   char_index = CONNECT_getCharaindex(fd);
@@ -1078,9 +1059,9 @@ void GmsvServer_PETITEM_recv(int fd, int x, int y, int petindex, int fromindex,
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
 
     GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                     WINDOW_BUTTONTYPE_OKCANCEL,
-                     CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
-                     makeEscapeString(message, buf, sizeof(buf)));
+                       WINDOW_BUTTONTYPE_OKCANCEL,
+                       CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
+                       makeEscapeString(message, buf, sizeof(buf)));
     return;
   }
 #endif
@@ -1089,8 +1070,7 @@ void GmsvServer_PETITEM_recv(int fd, int x, int y, int petindex, int fromindex,
   if (CHAR_getWorkInt(char_index, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE)
     return;
 
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
   CHAR_movePetItem(char_index, petindex, fromindex, toindex);
 }
@@ -1102,8 +1082,7 @@ void GmsvServer_SKUP_recv(int fd, int skillid) {
   char_index = CONNECT_getCharaindex(fd);
 
   /* ��Ʈ��Ͻ��� �ʥ饰�Ǥ���˰��ä������ǽ�������*/
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
   CHAR_SkillUp(char_index, skillid);
 }
@@ -1163,7 +1142,7 @@ void GmsvServer_L_recv(int fd, int dir) {
 }
 
 void GmsvServer_TK_recv(int fd, int x, int y, char *message, int color,
-                      int area) {
+                        int area) {
   int char_index, ix, iy; // ttom+2
   int fmindex, channel;
 
@@ -1206,7 +1185,8 @@ void GmsvServer_TK_recv(int fd, int x, int y, char *message, int color,
         CHAR_setInt(char_index, CHAR_SILENT, 60);
         CHAR_setWorkInt(char_index, CHAR_WORKLOGINTIME, (int)NowTime.tv_sec);
         CHAR_talkToCli(char_index, -1,
-                       "��̫�໰��ࡣ�������������Ϣ��һ���Ӱɣ"
+                       "��̫�໰��ࡣ�������������Ϣ��һ���Ӱ"
+                       "ɣ"
                        "�",
                        color);
         CHAR_setWorkInt(char_index, CHAR_WORKTALKCOUNT, 0);
@@ -1253,8 +1233,8 @@ void GmsvServer_M_recv(int fd, int fl, int x1, int y1, int x2, int y2) {
 #ifdef _MO_MAP_AUTO_UPDATE
   mapdata = MAP_getdataFromRECT(fl, &seek, &ret);
   if (mapdata != NULL) {
-    GmsvServer_M_send(fd, fl, ret.x, ret.y, ret.x + ret.width, ret.y + ret.height,
-                    mapdata);
+    GmsvServer_M_send(fd, fl, ret.x, ret.y, ret.x + ret.width,
+                      ret.y + ret.height, mapdata);
   }
 #endif
 }
@@ -1305,7 +1285,7 @@ void GmsvServer_EV_recv(int fd, int event, int seqno, int x, int y, int dir) {
     }
     goto OK;
   }
-CK1 : {
+CK1: {
   OBJECT object;
   int ix, iy, ifloor, i, j;
   int warp_point_x[9];
@@ -1388,8 +1368,7 @@ OK:
   if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER &&
       CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT_MANOR) > 0) {
     char msg[256];
-    sprintf(msg, "3|%d",
-            CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT_MANOR));
+    sprintf(msg, "3|%d", CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT_MANOR));
     GmsvServer_CHAREFFECT_send(fd, msg);
   }
 #endif
@@ -1768,7 +1747,8 @@ void GmsvServer_DU_recv(int fd, int x, int y) {
           if (menum != tonum) {
             sprintf(token,
                     "�ҷ�ս������%d���Է�ս������%"
-                    "d�������������Գƣ��޷���ս�"
+                    "d�������������Գƣ��޷���ս"
+                    "�"
                     "�",
                     menum, tonum);
             CHAR_talkToCli(charaindex, -1, token, CHAR_COLORYELLOW);
@@ -1884,9 +1864,10 @@ void GmsvServer_DU_recv(int fd, int x, int y) {
         strlength += strlen(buf);
       }
 
-      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_CANCEL,
-                       CHAR_WINDOWTYPE_SELECTDUEL, -1,
-                       makeEscapeString(msgbuf, escapebuf, sizeof(escapebuf)));
+      GmsvServer_WN_send(
+          fd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_CANCEL,
+          CHAR_WINDOWTYPE_SELECTDUEL, -1,
+          makeEscapeString(msgbuf, escapebuf, sizeof(escapebuf)));
       ret = TRUE;
     }
   }
@@ -1924,8 +1905,7 @@ void GmsvServer_EO_recv(int fd, int dummy) {
   if (CHAR_getInt(char_index, CHAR_WHICHTYPE) == CHAR_TYPEPLAYER &&
       CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT_MANOR) > 0) {
     char msg[256];
-    sprintf(msg, "3|%d",
-            CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT_MANOR));
+    sprintf(msg, "3|%d", CHAR_getWorkInt(char_index, CHAR_PLAYER_EFFECT_MANOR));
     GmsvServer_CHAREFFECT_send(getfdFromCharaIndex(char_index), msg);
   }
 #endif
@@ -1985,14 +1965,12 @@ void GmsvServer_FS_recv(int fd, int flg) {
   char_index = CONNECT_getCharaindex(fd);
   /* �������������ڱ幫�������׷º��ޥ
    */
-  CHAR_setFlg(char_index, CHAR_ISPARTY,
-              (flg & CHAR_FS_PARTY) ? TRUE : FALSE);
+  CHAR_setFlg(char_index, CHAR_ISPARTY, (flg & CHAR_FS_PARTY) ? TRUE : FALSE);
   //  CHAR_setFlg( char_index, CHAR_ISBATTLE,
   //        (flg & CHAR_FS_BATTLE )? TRUE:FALSE);
 
 #ifdef _BATTLE_PK_TYPE
-  if ((CHAR_getFlg(char_index, CHAR_ISDUEL) == FALSE) &&
-      (flg & CHAR_FS_DUEL)) {
+  if ((CHAR_getFlg(char_index, CHAR_ISDUEL) == FALSE) && (flg & CHAR_FS_DUEL)) {
     CHAR_setWorkInt(char_index, CHAR_WORK_BATTLEPKTYPE, 0);
     char message[256];
     char buf[256];
@@ -2008,9 +1986,9 @@ void GmsvServer_FS_recv(int fd, int flg) {
 #endif
     );
 
-    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_SELECT, WINDOW_BUTTONTYPE_OKCANCEL,
-                     CHAR_WINDOWTYPE_BATTLEPKTYPE, -1,
-                     makeEscapeString(message, buf, sizeof(buf)));
+    GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_SELECT,
+                       WINDOW_BUTTONTYPE_OKCANCEL, CHAR_WINDOWTYPE_BATTLEPKTYPE,
+                       -1, makeEscapeString(message, buf, sizeof(buf)));
   }
 #endif
   CHAR_setFlg(char_index, CHAR_ISDUEL, (flg & CHAR_FS_DUEL) ? TRUE : FALSE);
@@ -2032,14 +2010,12 @@ void GmsvServer_FS_recv(int fd, int flg) {
 
 #ifdef _THE_WORLD_SEND
   // ����Ƶ������
-  CHAR_setFlg(char_index, CHAR_ISWORLD,
-              (flg & CHAR_FS_WORLD) ? TRUE : FALSE);
+  CHAR_setFlg(char_index, CHAR_ISWORLD, (flg & CHAR_FS_WORLD) ? TRUE : FALSE);
 #endif
 #endif
   CHAR_setFlg(char_index, CHAR_AI_MOD, (flg & CHAR_FS_AI) ? TRUE : FALSE);
 
-  CHAR_setFlg(char_index, CHAR_ISTRADE,
-              (flg & CHAR_FS_TRADE) ? TRUE : FALSE);
+  CHAR_setFlg(char_index, CHAR_ISTRADE, (flg & CHAR_FS_TRADE) ? TRUE : FALSE);
   GmsvServer_FS_send(fd, flg);
 }
 /*------------------------------------------------------------
@@ -2053,8 +2029,7 @@ void GmsvServer_PR_recv(int fd, int x, int y, int request) {
   if (!CHAR_CHECKINDEX(char_index))
     return;
 
-  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) !=
-      BATTLE_CHARMODE_NONE)
+  if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
   if (CHAR_getWorkInt(char_index, CHAR_WORKTRADEMODE) != CHAR_TRADE_FREE)
     return;
@@ -2294,8 +2269,8 @@ void GmsvServer_KN_recv(int fd, int havepetindex, char *data) {
   CHAR_inputUserPetName(char_index, havepetindex, data);
 }
 
-void GmsvServer_WN_recv(int fd, int x, int y, int seqno, int objindex, int select,
-                      char *data) {
+void GmsvServer_WN_recv(int fd, int x, int y, int seqno, int objindex,
+                        int select, char *data) {
   CHECKFDANDTIME;
   if (checkStringErr(data))
     return;
@@ -2324,8 +2299,9 @@ void GmsvServer_WN_recv(int fd, int x, int y, int seqno, int objindex, int selec
       print("====Check Angel Summon Mission Info====");
       getMissionNameInfo(char_index, name_info);
       SaacClient_ACMissionTable_send(acfd, mindex, 3, name_info, "");
-      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK, -1,
-                       -1, "�����ź���\n������İ���������ħ������Σ����½�������ˡ�");
+      GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGE, WINDOW_BUTTONTYPE_OK,
+                         -1, -1,
+                         "�����ź���\n������İ���������ħ������Σ����½�������ˡ�");
       sendAngelCleanToCli(fd);
     }
   }
@@ -2465,11 +2441,10 @@ void GmsvServer_HL_recv(int fd, int flg) {
   }
 
   for (i = 0; i < 5; i++) {
-    int toindex =
-        BattleArray[CHAR_getWorkInt(char_index, CHAR_WORKBATTLEINDEX)]
-            .Side[CHAR_getWorkInt(char_index, CHAR_WORKBATTLESIDE)]
-            .Entry[i]
-            .charaindex;
+    int toindex = BattleArray[CHAR_getWorkInt(char_index, CHAR_WORKBATTLEINDEX)]
+                      .Side[CHAR_getWorkInt(char_index, CHAR_WORKBATTLESIDE)]
+                      .Entry[i]
+                      .char_index;
     if (CHAR_CHECKINDEX(toindex)) {
       int tofd = getfdFromCharaIndex(toindex);
       if (tofd != -1) {
@@ -2533,7 +2508,7 @@ void GmsvServer_Shutdown_recv(int fd, char *passwd, int min) {
   }
 }
 void GmsvServer_PMSG_recv(int fd, int index, int petindex, int itemindex,
-                        char *message, int color) {
+                          char *message, int color) {
 
   // CoolFish: Prevent Trade Cheat 2001/4/18
   int char_index;
@@ -2551,9 +2526,9 @@ void GmsvServer_PMSG_recv(int fd, int index, int petindex, int itemindex,
     char buf[256];
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
     GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                     WINDOW_BUTTONTYPE_OKCANCEL,
-                     CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
-                     makeEscapeString(message, buf, sizeof(buf)));
+                       WINDOW_BUTTONTYPE_OKCANCEL,
+                       CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
+                       makeEscapeString(message, buf, sizeof(buf)));
 
     return;
   }
@@ -2566,7 +2541,7 @@ void GmsvServer_PMSG_recv(int fd, int index, int petindex, int itemindex,
 }
 
 void GmsvServer_PS_recv(int fd, int havepetindex, int havepetskill, int toindex,
-                      char *data) {
+                        char *data) {
   int charaindex = CONNECT_getCharaindex(fd);
   if (CHAR_getWorkInt(charaindex, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return;
@@ -2750,7 +2725,9 @@ void GmsvServer_KTEAM_recv(int fd, int si) {
 #endif
 
 #ifdef _CHATROOMPROTOCOL
-void GmsvServer_CHATROOM_recv(int fd, char *data) { ChatRoom_recvall(fd, data); }
+void GmsvServer_CHATROOM_recv(int fd, char *data) {
+  ChatRoom_recvall(fd, data);
+}
 #endif
 
 #ifdef _NEWREQUESTPROTOCOL // (���ɿ�) Syu ADD ����ProtocolҪ��ϸ��
@@ -2824,9 +2801,9 @@ void GmsvServer_STREET_VENDOR_recv(int fd, char *message) {
     char buf[256];
     sprintf(message, "Ϊ��ȷ�������Ʒ��ȫ����������İ�ȫ������н�����\n");
     GmsvServer_WN_send(fd, WINDOW_MESSAGETYPE_MESSAGEANDLINEINPUT,
-                     WINDOW_BUTTONTYPE_OKCANCEL,
-                     CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
-                     makeEscapeString(message, buf, sizeof(buf)));
+                       WINDOW_BUTTONTYPE_OKCANCEL,
+                       CHAR_WINDOWTYPE_ITEM_PET_LOCKED, -1,
+                       makeEscapeString(message, buf, sizeof(buf)));
 
     return;
   }

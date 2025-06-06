@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `capture_pet` (
   `check` tinyint(1) NOT NULL DEFAULT '0',
   `created_time` timestamp NOT NULL,
   PRIMARY KEY (`unicode`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 表的结构 `cash_draw`
 CREATE TABLE IF NOT EXISTS `cash_draw` (
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `cash_draw` (
   `fixtime` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 表的结构 `check`
 CREATE TABLE IF NOT EXISTS `check` (
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `check` (
   `usemac` varchar(64) DEFAULT NULL,
   `usetime` datetime DEFAULT NULL,
   PRIMARY KEY (`itemcode`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 表的结构 `consignment` 委托
 CREATE TABLE IF NOT EXISTS `consignment` (
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `counter` (
   `fame` int(11) NOT NULL,
   `fixtime` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 表的结构 `CSAinfo`
 CREATE TABLE IF NOT EXISTS `CSAinfo` (
@@ -115,8 +115,8 @@ CREATE TABLE IF NOT EXISTS `CSAinfo` (
 -- 表的结构 `CSAlogin`
 CREATE TABLE IF NOT EXISTS `CSAlogin` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
-  `password` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+  `username` varchar(32) NOT NULL COMMENT '用户名称',
+  `password` varchar(32) NOT NULL COMMENT '用户密码',
   `IP` varchar(16) NOT NULL DEFAULT '-',
   `MAC` varchar(64) NOT NULL,
   `RegTime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -147,8 +147,10 @@ CREATE TABLE IF NOT EXISTS `CSAlogin` (
   `Trust` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- 赌博
 -- 表的结构 `dice`
 CREATE TABLE IF NOT EXISTS `dice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

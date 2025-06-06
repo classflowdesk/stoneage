@@ -153,10 +153,9 @@ void SaacServer_ACShowFMTotem_send(int fd, char *result, int num, char *data);
 // 列出成员列表
 void SaacServer_ACShowMemberList_recv(int fd, int index);
 void SaacServer_ACShowMemberList_send(int fd, char *result, int index, int num,
-                                     int acceptflag, int fmjoinnum, char *data
+                                     int accept_flag, int fm_join_num, char *data
 #ifdef _FAMILYBADGE_
-                                     ,
-                                     int badge
+                                     , int badge
 #endif
 );
 // 列出家族详细资料

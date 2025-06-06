@@ -2,17 +2,21 @@
 #define __PET_EVENT_H__
 
 /*
- * Ê¸ÓÀĞşèú  ¼°É¬ÀÃÆ¥ÔÊ£Û
- * Ê¸ÓÀĞşÄÌÃ¬¼şĞşèú  
+ * 
+ * 2025.05.28 revise
  */
 
-void PET_Talkfunc( int meindex, int talkerindex, char *msg, int color);
+/**/
+void PET_Talkfunc(int meindex, int talkerindex, char *msg, int color);
 
-void PET_Watchfunc( int objmeindex, int objmoveindex,
-                           CHAR_ACTION act, int x, int y, int dir,
-                           int* opt, int optlen );
-int PET_CleanPetdeletetime( int objmeindex);
+/**/
+void PET_Watchfunc(int objmeindex, int objmoveindex, CHAR_ACTION act, int x,
+                   int y, int dir, int *opt, int optlen);
+/*æ¸…é™¤*/
+int PET_CleanPetdeletetime(int objmeindex);
+/*æ¸…é™¤æ‰€æœ‰FreeçŠ¶æ€çš„çš„Pet*/
 void PET_CleanFreePetAll();
-void PET_CHECKFreePetIsIt( int petindex);
+/*ç¡®å®šä¸€åªPetæ˜¯å¦æ˜¯FreePet*/
+void PET_CHECKFreePetIsIt(int petindex);
 
 #endif

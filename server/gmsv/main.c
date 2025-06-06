@@ -26,7 +26,7 @@
 #include "shop.h"
 
 static void ShutdownProc(void);
-void mainloop(void);
+void main_loop(void);
 struct tm tmNow, tmOld;
 void family_proc();
 
@@ -44,6 +44,7 @@ time_t AngelNextTime;
 void AngelReadyProc();
 #endif
 
+// 跃迁日志
 void warplog_proc();
 
 
@@ -77,11 +78,11 @@ int main(int argc, char **argv, char **env) {
   }
 #endif
 
-  mainloop();
+  main_loop();
   return 0;
 }
 
-void mainloop(void) {
+void main_loop(void) {
   print("Init NPC......");
   NPC_generateLoop(1);
   print("succeed.\n");
@@ -277,31 +278,30 @@ static void ShutdownProc(void) {
 }
 
 void family_proc() {
-  static unsigned gettime = 0;
-  static unsigned checktime = 0;
-  static unsigned proctime = 0;
+  static unsigned get_time = 0;
+  static unsigned check_time = 0;
+  static unsigned proc_time = 0;
 
-  if (time(NULL) < proctime)
+  unsigned int current_time = time(NULL);
+  if (current_time < proc_time)
     return;
-  proctime = time(NULL) + 5;
-
-  if ((unsigned long)NowTime.tv_sec > gettime) {
+  proc_time = current_time + 5;
+  if ((unsigned long)NowTime.tv_sec > get_time) {
     getNewFMList();
-    gettime = (unsigned long)NowTime.tv_sec + 60 * 10;
+    get_time = (unsigned long)NowTime.tv_sec + 60 * 10;
   }
 
-  if ((unsigned long)NowTime.tv_sec > checktime) {
+  if ((unsigned long)NowTime.tv_sec > check_time) {
     checkFamilyIndex();
-    checktime = (unsigned long)NowTime.tv_sec + 60 * 30;
+    check_time = (unsigned long)NowTime.tv_sec + 60 * 30;
   }
 }
 
 void warplog_proc() {
-  static unsigned long checktime = 0;
-
-  if ((unsigned long)NowTime.tv_sec > checktime) {
+  static unsigned long check_time = 0;
+  if ((unsigned long)NowTime.tv_sec > check_time) {
     warplog_to_file();
-    checktime = (unsigned long)NowTime.tv_sec + 300;
+    check_time = (unsigned long)NowTime.tv_sec + 300;
   }
 }
 
@@ -322,12 +322,11 @@ void AngelReadyProc() {
   if (player_online <= 10)
 #endif
   {
-    //		print("\n当前在线人数=%d\n",	player_online );
+    // print("\n当前在线人数=%d\n",	player_online);
     return;
   }
   AngelReady = 1;
-  // AngelNextTime = min( (int)(10000/player_online), 100)*60 + (unsigned
-  // long)nowTime;
+  // AngelNextTime = min((int)(10000/player_online), 100)*60 + (unsigned long)nowTime;
 #ifdef _ANGEL_TIME
   AngelNextTime = min((int)(getAngelPlayerTime() / player_online), 100) * 60 +
                   (unsigned long)nowTime;
@@ -337,7 +336,7 @@ void AngelReadyProc() {
 #endif
 
   temptime = localtime(&AngelNextTime);
-  sprintf(msg, "\n�����ٻ�:����һλȱ��  �´β���ʱ��=(%d/%d %d:%d) Ŀǰ����=%d\n",
+  sprintf(msg, "\n下一次出现天使召唤的时间=(%d::%d::%d::%d), 在线人数=%d\n",
           temptime->tm_mon + 1, temptime->tm_mday, temptime->tm_hour,
           temptime->tm_min, player_online);
   print(msg);

@@ -40,8 +40,11 @@ int PET_DEBUG_initPetOne(int char_index) {
   return havepetindex;
 }
 
-static int _PET_dropPet(int char_index, int havepetindex, int tofl, int tox,
-                        int toy) {
+static int _PET_dropPet(int char_index,   // 当前角色
+                        int havepetindex, // 
+                        int tofl,         // 
+                        int tox,          // 
+                        int toy) {        //
   char szPet[128];
   int dirx[9], diry[9];
   int i, j;
@@ -52,7 +55,8 @@ static int _PET_dropPet(int char_index, int havepetindex, int tofl, int tox,
 
   if (CHAR_getWorkInt(char_index, CHAR_WORKBATTLEMODE) != BATTLE_CHARMODE_NONE)
     return FALSE;
-  petindex = CHAR_getCharPet(char_index, havepetindex);
+  // 全局唯一的pet index.
+  const int petindex = CHAR_getCharPet(char_index, havepetindex);
   if (!CHAR_CHECKINDEX(petindex))
     return FALSE;
   if (!CHAR_CHECKINDEX(char_index))
@@ -365,6 +369,9 @@ int PET_createPetFromCharaIndex(int char_index, int enemy_index) {
 
   return newindex;
 }
+
+
+
 BOOL PET_SelectBattleEntryPet(int char_index, int petarray) {
   int pindex;
   if (!CHAR_CHECKINDEX(char_index))
@@ -404,15 +411,13 @@ BOOL PET_SelectBattleEntryPet(int char_index, int petarray) {
   }
 #endif
   CHAR_setInt(char_index, CHAR_DEFAULTPET, petarray);
-
   return TRUE;
 }
 
 // Robin 0707 petFollow <char_index>
-#if 1
-// 人物索引,宠物位置,地图,X,Y
 int PET_dropPetFollow(int char_index, int havepetindex, int tofl, int tox,
                       int toy) {
+// 人物索引, 宠物位置, 地图, X, Y
   char szPet[128];
   int dirx[9], diry[9];
   int i;
@@ -497,7 +502,6 @@ int PET_dropPetFollow(int char_index, int havepetindex, int tofl, int tox,
   }
 
 #ifdef _PETFOLLOW_NEW_
-
   int petnum;
   petnum = 0;
   for (; petnum < 5; petnum++) {
@@ -509,7 +513,6 @@ int PET_dropPetFollow(int char_index, int havepetindex, int tofl, int tox,
 #else
   CHAR_setWorkInt(char_index, CHAR_WORKPETFOLLOW, petindex);
 #endif
-
   CHAR_setWorkInt(petindex, CHAR_WORKPETFOLLOWMODE, CHAR_PETFOLLOW_NOW);
   CHAR_setWorkInt(petindex, CHAR_WORKPETFOLLOWCOUNT, 0);
   CHAR_setInt(petindex, CHAR_PUTPETTIME, (int)(NowTime.tv_sec));
@@ -522,13 +525,15 @@ int PET_dropPetFollow(int char_index, int havepetindex, int tofl, int tox,
          CHAR_getChar(petindex, CHAR_UNIQUECODE));
   return 1;
 }
-#endif
 
+
+/**
+ * @Param work: output 参数
+ */
 BOOL PET_getBaseForAllocpoint(int toindex, int *work) {
-  int LevelUpPoint = 0;
   if (CHAR_getInt(toindex, CHAR_WHICHTYPE) != CHAR_TYPEPET)
     return FALSE;
-  LevelUpPoint = CHAR_getInt(toindex, CHAR_ALLOCPOINT);
+  int LevelUpPoint = CHAR_getInt(toindex, CHAR_ALLOCPOINT);
   work[3] = ((LevelUpPoint >> 24) & 0xFF);
   work[0] = ((LevelUpPoint >> 16) & 0xFF);
   work[1] = ((LevelUpPoint >> 8) & 0xFF);
@@ -596,8 +601,8 @@ BOOL PET_getBaseAndSkill(int char_index, int baseindex, int *base, int *skill,
   }
   return TRUE;
 }
-
 #endif
+
 BOOL CHAR_DelPetForIndex(int char_index, int petindex) {
   int i;
   for (i = 0; i < CHAR_MAXPETHAVE; i++) {
@@ -616,7 +621,6 @@ BOOL CHAR_DelPetForIndex(int char_index, int petindex) {
     CHAR_setCharPet(char_index, i, -1);
     snprintf(szPet, sizeof(szPet), "K%d", i);
     CHAR_sendStatusString(char_index, szPet);
-
     snprintf(msgbuf, sizeof(msgbuf), "交出%s。",
              CHAR_getChar(petindex, CHAR_NAME));
     CHAR_talkToCli(char_index, -1, msgbuf, CHAR_COLORYELLOW);

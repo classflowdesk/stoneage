@@ -624,15 +624,12 @@ SINGLETHREAD BOOL GetOneLine_fix(int fd, char *buf, int max) {
     LogAcMess(fd, "RBUFFER", buf);
     logRBuseErr = 0;
   }
-
   Connect[fd].check_rb_oneline_b = Connect[fd].rbuse;
-
   return FALSE;
 }
 
 ANY_THREAD BOOL initConnectOne(int sockfd, struct sockaddr_in *sin, int len) {
   CONNECT_LOCK(sockfd);
-
   Connect[sockfd].use = TRUE;
   Connect[sockfd].ctype = NOTDETECTED;
   Connect[sockfd].wbuse = Connect[sockfd].rbuse = 0;
@@ -653,7 +650,6 @@ ANY_THREAD BOOL initConnectOne(int sockfd, struct sockaddr_in *sin, int len) {
   Connect[sockfd].wbuse = 0;
   Connect[sockfd].check_rb_oneline_b = 0;
   Connect[sockfd].check_rb_time = 0;
-
   Connect[sockfd].close_request = 0; /* �Ӭۢ�ư׷º� */
   // Nuke 08/27 For acceleration avoidance
   Connect[sockfd].Walktime = 0;
@@ -720,57 +716,38 @@ ANY_THREAD BOOL initConnectOne(int sockfd, struct sockaddr_in *sin, int len) {
 #endif
   // Arminius 6.22 Encounter
   Connect[sockfd].CEP = 0;
-
   // Arminius 7.12 login announce
   Connect[sockfd].announced = 0;
-
   Connect[sockfd].confirm_key = FALSE; // shan trade(DoubleCheck)
-
 #ifdef _NEW_FUNC_DECRYPT
   Connect[sockfd].newerrnum = 0;
 #endif
-
   if (sin != NULL)
     memcpy(&Connect[sockfd].sin, sin, len);
-
   memset(&Connect[sockfd].lastprocesstime, 0,
          sizeof(Connect[sockfd].lastprocesstime));
-
   memcpy(&Connect[sockfd].lastCAsendtime, &NowTime,
          sizeof(Connect[sockfd].lastCAsendtime));
-
   memcpy(&Connect[sockfd].lastCDsendtime, &NowTime,
          sizeof(Connect[sockfd].lastCDsendtime));
-
   memcpy(&Connect[sockfd].lastCharSaveTime, &NowTime,
          sizeof(Connect[sockfd].lastCharSaveTime));
-
   // Shan Add
   memcpy(&Connect[sockfd].lastrecvtime, &NowTime,
          sizeof(Connect[sockfd].lastrecvtime));
-
   memcpy(&Connect[sockfd].lastrecvtime_d, &NowTime,
          sizeof(Connect[sockfd].lastrecvtime_d));
-
   memcpy(&Connect[sockfd].battle_recvtime, &NowTime,
          sizeof(Connect[sockfd].battle_recvtime));
-
   memcpy(&Connect[sockfd].lastreadtime, &NowTime,
-
          sizeof(struct timeval));
-
   Connect[sockfd].lastreadtime.tv_sec -= DEBUG_ADJUSTTIME;
-
   Connect[sockfd].errornum = 0;
-
   Connect[sockfd].fdid = SERVSTATE_incrementFdid();
 
   CONNECT_UNLOCK(sockfd);
-
   Connect[sockfd].appendwb_overflow_flag = 0;
-
   Connect[sockfd].connecttime = time(NULL);
-
   memset(Connect[sockfd].mac, 0, sizeof(Connect[sockfd].mac));
   return TRUE;
 }

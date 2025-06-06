@@ -2,11 +2,11 @@
 
 #include "main.h"
 #include "db.h"
-#include "mail.h"
 #include "lock.h"
-#include <getopt.h>
+#include "mail.h"
 #include "saac_server.h"
 #include "util.h"
+#include <getopt.h>
 
 // CoolFish: Family 2001/5/9
 #include "acfamily.h"
@@ -38,8 +38,6 @@ static int consumeMemBufList(int top, char *out, int len, int flag,
                              int copyflag);
 static int getLineReadBuffer(int index, char *buf, int len);
 
-void logerr(char *token);
-
 struct membuf {
   int use;
   char buf[512];
@@ -60,18 +58,13 @@ struct connection {
 struct membuf *mb;
 int mbsize;
 int mbuse;
-
 int cpuuse;
-
 int mainsockfd;
 struct sockaddr_in localaddr;
 struct connection *con;
 static int mb_finder = 0;
-
 char tmpbuf[1024 * 1024];
-
 struct timeval select_timeout;
-
 time_t sys_time = 0; // Robin add
 
 extern gmsv gs[MAXCONNECTION];
@@ -88,20 +81,20 @@ int tcpstruct_countmbuse(void);
 int tcpstruct_connect(char *addr, int port);
 void set_nodelay(int sock);
 
-#define OK 0                  /* 岳   */
-#define TCPSTRUCT_ENOMEM -1   /* malloc 撩   */
-#define TCPSTRUCT_ESOCK -2    /* socket 撩   */
-#define TCPSTRUCT_EBIND -3    /* bind 撩   */
-#define TCPSTRUCT_ELISTEN -4  /* listen 撩   */
-#define TCPSTRUCT_EBUG -6     /* 田弘匹丐月 */
-#define TCPSTRUCT_EINVCIND -7 /* con尺及index互云井仄中方 */
-#define TCPSTRUCT_EREADFIN -8 /* read 允月犯□正互卅仁化 closed by remote */
+#define OK 0                      /* 调用成功 */
+#define TCPSTRUCT_ENOMEM -1       /* malloc 分配失败 */
+#define TCPSTRUCT_ESOCK -2        /* socket 创建失败 */
+#define TCPSTRUCT_EBIND -3        /* bind 调用失败 */
+#define TCPSTRUCT_ELISTEN -4      /* listen 调用失败 */
+#define TCPSTRUCT_EBUG -6         /* 程序内部错误 */
+#define TCPSTRUCT_EINVCIND -7     /* 无效的连接索引 */
+#define TCPSTRUCT_EREADFIN -8     /* read finished, due to closed by remote */
 #define TCPSTRUCT_EHOST -9        /* gethostbyname 撩   */
-#define TCPSTRUCT_ECONNECT -10    /* connect 撩   */
-#define TCPSTRUCT_ECFULL -11      /* con 互中匀天中 */
-#define TCPSTRUCT_ETOOLONG -12    /* 垫互卅互允亢 */
-#define TCPSTRUCT_EMBFULL -13     /* mb 互中匀天中  */
-#define TCPSTRUCT_ECLOSEAGAIN -14 /* close 互2荚今木凶 */
+#define TCPSTRUCT_ECONNECT -10    /* connect 失败 */
+#define TCPSTRUCT_ECFULL -11      /* 链接数达到最大值 */
+#define TCPSTRUCT_ETOOLONG -12    /* 数据太长 */
+#define TCPSTRUCT_EMBFULL -13     /* 内存缓冲区已满  */
+#define TCPSTRUCT_ECLOSEAGAIN -14 /* 重复关闭链接 */
 
 int port;
 int Total_Charlist;
@@ -198,50 +191,52 @@ void sigusr1(int a) {
 gmsv gs[MAXCONNECTION];
 
 #if _ATTESTAION_ID == 1
-int login_game_server(const int ti, const int id, const char *svname,
-                      const char *svpas, char *result, const int resultlen,
-                      char *retdata, const int retdatalen)
+int login_game_server(const int ti, const int id, const char *server_name,
+                      const char *server_pass, char *result,
+                      const int result_len, char *retdata,
+                      const int ret_data_len)
 #else
-int login_game_server(const int ti, const char *svname, const char *svpas,
-                      char *result, const int resultlen, char *retdata,
-                      const int retdatalen)
+int login_game_server(const int ti, const char *server_name,
+                      const char *server_pass, char *result,
+                      const int result_len, char *retdata,
+                      const int ret_data_len)
 #endif
 {
 #if _ATTESTAION_ID == 1
   if (id != _ATTESTAION_ID) {
     logErr("服务端版本错误\n");
-    snprintf(result, resultlen, "失败");
-    snprintf(retdata, retdatalen, "版本错误");
+    snprintf(result, result_len, "失败");
+    snprintf(retdata, ret_data_len, "版本错误");
     return 0;
   }
 #endif
-  if (strcmp(svpas, svpass) == 0) {
-    logErr("服务器密码正确 %s\n", svname);
+  // svpass 是一个外部变量
+  if (strcmp(server_pass, svpass) == 0) {
+    logErr("服务器密码正确 %s\n", server_name);
   } else {
-    logErr("服务器密码错误 %s\n", svname);
-    snprintf(result, resultlen, "失败");
-    snprintf(retdata, retdatalen, "密码错误");
+    logErr("服务器密码错误 %s\n", server_name);
+    snprintf(result, result_len, "失败");
+    snprintf(retdata, ret_data_len, "密码错误");
     return 0;
   }
-  {
-    int i;
-    for (i = 0; i < MAXCONNECTION; i++) {
-      if (gs[i].use && strcmp(gs[i].name, svname) == 0) {
-        snprintf(result, resultlen, "失败");
-        snprintf(retdata, retdatalen, "重复登陆");
-        return 0;
-      }
+  int i;
+  for (i = 0; i < MAXCONNECTION; i++) {
+    if (gs[i].use && strcmp(gs[i].name, server_name) == 0) {
+      snprintf(result, result_len, "失败");
+      snprintf(retdata, ret_data_len, "重复登陆");
+      return 0;
     }
   }
-  snprintf(gs[ti].name, sizeof(gs[ti].name), "%s", svname);
+  snprintf(gs[ti].name, sizeof(gs[ti].name), "%s", server_name);
   gs[ti].fd = ti;
-  snprintf(result, resultlen, SUCCESSFUL);
-  snprintf(retdata, retdatalen, "没有空间");
-  DeleteMemLockServer(svname); // Arminius 7.31 unlock server
+  snprintf(result, result_len, SUCCESSFUL);
+  snprintf(retdata, ret_data_len, "没有空间");
+  DeleteMemLockServer(server_name); // Arminius 7.31 unlock server
   return 0;
 }
 
-int logout_game_server(int ti) {
+// ti代表一个链接的标识
+int logout_game_server(const int ti) {
   gs[ti].use = '\0';
   gs[ti].fd = -1;
   gs[ti].name[0] = '\0';
@@ -251,7 +246,8 @@ int logout_game_server(int ti) {
   return 0;
 }
 
-int is_game_server_login(int ti) {
+// 判断ti链接是否已经登录
+int is_game_server_login(const int ti) {
   if (strlen(gs[ti].name) == 0) {
     return 0;
   } else {
@@ -260,7 +256,7 @@ int is_game_server_login(int ti) {
 }
 
 int servid;
-static int readConfig(char *path) {
+static int readConfig(const char *path) {
   char buf[2048];
   FILE *fp;
   fp = fopen(path, "r");
@@ -534,27 +530,23 @@ void dump() {
   size_t size;
   char **strings;
   size_t i;
-
   size = backtrace(array, 10);
   strings = backtrace_symbols(array, size);
-
   printf("Obtained %zd stack frames.\n", size);
-
   for (i = 0; i < size; i++) {
-    logerr(strings[i]);
-    printf("\n");
+    logFileToday(strings[i]);
   }
-
   free(strings);
 }
 
-void sigshutdown(int number) {
+void sigshutdown(const int number) {
   if (number == 0) {
-    printf("\n\n\nSAAC正常关闭\n");
+    logErr("SAAC正常关闭\n");
   } else if (number == 2) {
-    printf("\n\n\nSAAC被CTRL+C手动中断\n");
+    logErr("SAAC被CTRL+C手动中断\n");
   } else {
-    logerr("SAAC收到异常信号. DUMP!\n");
+    // 只有异常的时候, 才写文件
+    logFileToday("SAAC收到异常信号. DUMP!\n");
     dump();
   }
   signal(SIGINT, SIG_IGN);
@@ -568,7 +560,7 @@ void sigshutdown(int number) {
   signal(SIGSEGV, SIG_IGN);
   signal(SIGPIPE, SIG_IGN);
   signal(SIGTERM, SIG_IGN);
-  logErr("得到一个信号! 异常中断......\n");
+  logErr("收到一个信号! 异常中断......\n");
   writeFamily(familydir);
   writeFMPoint(fmpointdir);
   writeFMSMemo(fmsmemodir);
@@ -632,13 +624,13 @@ int main(int argc, char **argv) {
   Lock_Init(); // Arminius 7.17 memory lock
   UNlockM_Init();
   if (readConfig("acserv.cf") < 0) {
-    printf("Unable to find acserv.cf\n");
-    logErr("无法在当前目录里读取 acserv.cf .\n");
+    logErr("无法找到 acserv.cf 文件.\n");
     exit(1);
   }
 
 #ifdef _SASQL
   if (sasql_init() == FALSE) {
+    logErr("无法初始化 sql.\n");
     exit(1);
   }
 #ifdef _SQL_BACKGROUND
@@ -673,15 +665,16 @@ int main(int argc, char **argv) {
   do {
     int tcpr;
     if ((tcpr = tcpstruct_init(NULL, port, 0, CHARDATASIZE * 16 * MAXCONNECTION,
-                               1 /* DEBUG */)) < 0) {
-      logErr("不能监听TCP端口，错误代码: %d, 请稍等...\n", tcpr);
-      sleep(1);
-    } else {
+                               1 /* DEBUG */)) == 0) {
       break;
     }
-  } while(1);
-  printf("Init WorkSpace: %d %d\n", CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
-  InitWorkSpace(&gSaacWorkSpace, tcpstruct_write, CHARDATASIZE, SAAC_SERVER_MAXLSRPCARGS);
+    logErr("监听TCP端口失败, 错误代码: %d, 1s后重新尝试...\n", tcpr);
+    sleep(1);
+  } while (1);
+  printf("Init SAAC WorkSpace: %d %d\n", CHARDATASIZE,
+         SAAC_SERVER_MAXLSRPCARGS);
+  InitWorkSpace(&gSaacWorkSpace, tcpstruct_write, CHARDATASIZE,
+                SAAC_SERVER_MAXLSRPCARGS);
 
 #ifdef _AC_SEND_FM_PK // WON ADD 庄园对战列表储存在AC
   logErr("Init FM PK...");
@@ -714,6 +707,7 @@ int main(int argc, char **argv) {
     static time_t main_loop_time;
     sys_time = time(NULL);
 #ifdef _LOTTERY_SYSTEM
+    // 周期性的抽奖活动
     char todayaward[256] = "-1,-1,-1,-1,-1,-1,-1";
     {
       if (lotterysystem > 0) {
@@ -762,8 +756,8 @@ int main(int argc, char **argv) {
       counter2++; // expired mail num.
       counter3++;
       counter4++;
-      counter5++; // 重新 
-      counter6++; // 读取配置文件时间间隔. 600s
+      counter5++;         // 重新
+      counter6++;         // 读取配置文件时间间隔. 600s
       if (counter6 > 600) // 300( -> 60)
       {
         readConfig("acserv.cf");
@@ -786,7 +780,8 @@ int main(int argc, char **argv) {
           dbFlush(dbdir);
           gettimeofday(&et, NULL);
           logErr("Flushed db(%fsec)\n", time_diff(et, st));
-          logErr("档案表列总数:%d NG:%d\n", total_ok_charlist, total_ng_charlist);
+          logErr("档案表列总数:%d NG:%d\n", total_ok_charlist,
+                 total_ng_charlist);
         }
       }
       // Nuke **1 1012
@@ -823,51 +818,48 @@ int main(int argc, char **argv) {
         writeFMPoint(fmpointdir);
         writeFMSMemo(fmsmemodir);
         gettimeofday(&et, NULL);
-        logErr("记录家族(%fsec)\n", time_diff(et, st));
+        logErr("持久化家族数据(%fsec)\n", time_diff(et, st));
       }
 #endif
     }
 
     newti = tcpstruct_accept1();
     if (newti >= 0) {
-      logErr("同意: %d\n", newti);
+      logErr("同意连接: %d\n", newti);
       gs[newti].use = 1;
     }
 
     for (i = 0; i < MAXCONNECTION; i++) {
       //      char buf[CHARDATASIZE * 16;
       char buf[CHARDATASIZE];
-      int l;
-      l = tcpstruct_readline_chop(i, buf, sizeof(buf) - 1);
-      {
-        if (!gs[i].use)
-          continue;
-        if (l > 0) {
-          char debugfun[256];
-          buf[l] = 0;
-          if (SaacServer_ServerDispatchMessage(i, buf, debugfun) < 0) {
-            printf("buf:%s;%d\n", buf, strlen(buf));
-            char token[256];
-            char tmp[256];
-            struct tm now;
-            time_t timep;
-            time(&timep);
-            memcpy(&now, localtime(&timep), sizeof(now));
-            sprintf(tmp, "%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);
-            sprintf(token, "[%s]GMSV(%s) 消息:%s\n", tmp, gs[i].name, debugfun);
-            logerr(token);
-          }
-        } else if (l == TCPSTRUCT_ETOOLONG) {
+      const int ret_code = tcpstruct_readline_chop(i, buf, sizeof(buf) - 1);
+      if (!gs[i].use)
+        continue;
+      if (ret_code > 0) {
+        char debugfun[256];
+        buf[ret_code] = 0;
+        if (SaacServer_ServerDispatchMessage(i, buf, debugfun) < 0) {
+          logOut("buf:%s;%d\n", buf, strlen(buf));
           char token[256];
-          sprintf(token, "很长:%d 服务器名:%s\n", i, gs[i].name);
-          logerr(token);
-          logout_game_server(i);
-        } else if (l < 0) {
-          logErr("关闭:%d 服务器名:%s\n", i, gs[i].name);
-          logout_game_server(i);
-        } else if (l == 0) {
-          ;
+          char tmp[256];
+          struct tm now;
+          time_t timep;
+          time(&timep);
+          memcpy(&now, localtime(&timep), sizeof(now));
+          sprintf(tmp, "%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);
+          sprintf(token, "[%s]GMSV(%s) 消息:%s\n", tmp, gs[i].name, debugfun);
+          logFileToday(token);
         }
+      } else if (ret_code == TCPSTRUCT_ETOOLONG) {
+        logFileToday(
+            "连接%d, 接收到的数据长度超过预期, 服务器名:%s, 链接登出.\n", i,
+            gs[i].name);
+        logout_game_server(i);
+      } else if (ret_code < 0) {
+        logErr("关闭:%d 服务器名:%s\n", i, gs[i].name);
+        logout_game_server(i);
+      } else if (ret_code == 0) {
+        ; // do nothing
       }
     }
   }
@@ -1422,7 +1414,7 @@ void checkGSUCheck(char *id) {
   for (i = 0; i < MAXCONNECTION; i++) {
     if (gs[i].name[0] && strcmp(gs[i].name, gname) == 0) {
       logErr("发送解锁检查[%s] 到 %d.%x/%s 服务器:%d !!\n", id, i, getHash(id),
-          gname, gs[i].fd);
+             gname, gs[i].fd);
       SaacServer_ACUCheck_send(gs[i].fd, id);
       return;
     }
@@ -1512,9 +1504,9 @@ static int initMissionTable(void) {
       continue;
     missiontable[index].limittime = atoi(buf);
     logErr("%d=%s,%s,%d,%d,%d,%d \n", index, missiontable[index].angelinfo,
-        missiontable[index].heroinfo, missiontable[index].mission,
-        missiontable[index].flag, missiontable[index].time,
-        missiontable[index].limittime);
+           missiontable[index].heroinfo, missiontable[index].mission,
+           missiontable[index].flag, missiontable[index].time,
+           missiontable[index].limittime);
     index++;
     if (index >= MISSTION_TABLE_SIZE)
       break;
@@ -1554,7 +1546,7 @@ void delMissionTableOnedata(int index) {
   int gi;
 
   logErr("\n删除精灵召唤:%d:%s:%s \n", index, missiontable[index].angelinfo,
-      missiontable[index].heroinfo);
+         missiontable[index].heroinfo);
 
   if (index < 0 || index >= MISSTION_TABLE_SIZE)
     return;
@@ -1637,20 +1629,6 @@ void checkMissionTimelimit(void) {
 
 #endif
 
-void logerr(char *token) {
-  char tmp[256];
-  struct tm now;
-  time_t timep;
-  time(&timep);
-  memcpy(&now, localtime(&timep), sizeof(now));
-  sprintf(tmp, "%04d-%02d-%02d.log", now.tm_year + 1900, now.tm_mon + 1,
-          now.tm_mday);
-  FILE *fp = fopen(tmp, "a+");
-  fwrite(token, strlen(token), 1, fp);
-  fclose(fp);
-  printf(token);
-}
-
 #ifdef _SAVE_ZIP
 void savezipfile(void) {
   time_t timep;
@@ -1666,8 +1644,10 @@ void savezipfile(void) {
   sprintf(buf, "%d-%d-%d.zip", y, m, d);
   if (access(buf, W_OK) == 0)
     return; // 文件存在
-  sprintf(buf, "zip -q -r %d-%d-%d.zip char char_sleep data db "
-          "lock log mail pklist race&", y, m, d);
+  sprintf(buf,
+          "zip -q -r %d-%d-%d.zip char char_sleep data db "
+          "lock log mail pklist race&",
+          y, m, d);
   logErr("备份档案...");
   system(buf); // 执行shell命令.
   logErr("成功!\n");

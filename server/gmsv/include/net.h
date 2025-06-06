@@ -12,22 +12,22 @@
 
 #define LSGENWORKINGBUFFER SLICE_SIZE
 
+// 登录状态 -> LoginStatus
 typedef enum {
-  NULLCONNECT,
-  NOTLOGIN,
-  LOGIN,            /*  ����̼�            */
-  WHILELOGIN,       /*  ����̼��ƻ�����    */
-  WHILECREATE,      /*  ���Ȼ�����          */
-  WHILELOGOUTSAVE,  /*  ���ʧ����������Ƥ      */
-  WHILECANNOTLOGIN, /*  ����̼�ƥ��ئ�������ݼ�ʧ����������        */
-  WHILECHARDELETE,  /*  ƽ�ҷ´���      */
-  WHILEDOWNLOADCHARLIST, /*  ƽ�ҷ�������ĸ���������    */
-  WHILECHANGEPASSWD,        /*  �ɵ�������  ��      */
-  WHILELOSTCHARSAVE,        /*  ����ƥƽ�ҷ±���Ƥ��      */
-  WHILELOSTCHARDELETE,      /*  ����ƥƽ�ҷ�����      */
-  WHILECLOSEALLSOCKETSSAVE, /* closeallsockets ƥƽ�ҷ±���Ƥ��  */
-  WHILESAVEWAIT, /* ���ʧ����������Ƥ�����󡼰��  ����
-                  */
+  NULLCONNECT,              /* null connect. */
+  NOTLOGIN,                 /* not login. */
+  LOGIN,                    /* login */
+  WHILELOGIN,               /* while login. */
+  WHILECREATE,              /* while create role. */
+  WHILELOGOUTSAVE,          /* while logout. */
+  WHILECANNOTLOGIN,         /* login failed. */
+  WHILECHARDELETE,          /* while delete char. */
+  WHILEDOWNLOADCHARLIST,    /* while get char list. */
+  WHILECHANGEPASSWD,        /* while change password. */
+  WHILELOSTCHARSAVE,        /*  */
+  WHILELOSTCHARDELETE,      /*  */
+  WHILECLOSEALLSOCKETSSAVE, /* closeallsockets, 什么时候会有这个状态??? */
+  WHILESAVEWAIT,            /* */
 } LoginType;
 
 typedef enum {
@@ -42,7 +42,7 @@ typedef enum {
 
 #define CDKEYLEN 16
 #define PASSWDLEN 33
-/* ��ľ��  �ʷ��ص�(����ئ�� Char ��STRING64 �����ئ�����Ի���³���*/
+/* 角色名长度 */
 #define CHARNAMELEN 32
 
 #define CLITIMEOUT_SEC 120
@@ -50,10 +50,13 @@ typedef enum {
 #define NET_STRING_SUCCESSFULL "successful"
 #define NET_STRING_FAILED "failed"
 
+// GMSV网络读缓冲区大小
 #define RBSIZE (1024 * 64)
+// GMSV网络写缓冲区大小
 #define WBSIZE (1024 * 256)
-
+// SAAC网络读缓冲区大小
 #define AC_RBSIZE (1024 * 1024 * 6)
+// SAAC网络写缓冲区大小
 extern int AC_WBSIZE;
 
 EXTERN int epfd;
@@ -82,7 +85,7 @@ void SetTimerLua(void);
 BOOL DelTimer_net(int ID);
 #endif
 
-/* CA , CD */
+/* CA: Character Action, CD: Character Data */
 void CAcheck(void);
 void CAflush(int char_index);
 void CAsend(int fd);
@@ -92,7 +95,7 @@ void CDsend(int fd);
 BOOL CONNECT_appendCAbuf(int fd, char *data, int size);
 BOOL CONNECT_appendCDbuf(int fd, char *data, int size);
 
-/* Serverstate */
+/* Server State */
 void SERVSTATE_decrementCloseallsocketnum(void);
 int SERVSTATE_getCloseallsocketnum(void);
 int SERVSTATE_SetAcceptMore(int nvalue);
@@ -110,7 +113,7 @@ void closeAllConnectionandSaveData(void);
 BOOL SetShutdown(BOOL nvalue);
 int GetShutdown(void);
 
-/* ������ƻ��������� */
+/* 根据cdkey获取fd */
 int getfdFromCdkey(const char *cdkey);
 int getfdFromCdkeyWithLogin(const char *cdkey);
 int getfdFromCharaIndex(int char_index);

@@ -1,78 +1,76 @@
-#ifndef __OBJECT_h__
-#define __OBJECT_h__
+#ifndef __OBJECT_H__
+#define __OBJECT_H__
 
 #include "common.h"
 
-typedef enum
-{
-    OBJTYPE_NOUSE,      /*  ³ğ¼°ÄÌ¼ş·¸ÓÀÛÍµ©·´ÒøÔÈ»¯ÖĞØ¦ÖĞÎçÖĞµ¤ÒÇÃ«Ô÷ÔÊ*/
-    OBJTYPE_CHARA,      /*  Æ½ÅÒ·ÂÛÍÕı CHAR_chara³ß¼°ÄÌ¼ş·¸ÓÀÛÍµ©   */
-    OBJTYPE_ITEM,       /*  Ê§ÄÌ  Ø©    ITEM_item ³ß¼°ÄÌ¼ş·¸ÓÀÛÍµ©  */
-    OBJTYPE_GOLD,       /*  ´ò¡õ»ïÓñ    ÔÆàÅ¼°ĞÚ»¥index±å  ÔÈ»¯ÖĞÔÂ */
+typedef enum {
+  OBJTYPE_NOUSE,         /* æè¿°ä¸€ä¸ªæœªä½¿ç”¨çš„å¯¹è±¡ */
+  OBJTYPE_CHARA,         /* æè¿°ä¸€ä¸ªç©å®¶ */
+  OBJTYPE_ITEM,          /* æè¿°ä¸€ä¸ªç‰©å“ */
+  OBJTYPE_GOLD,          /* æè¿°ä¸€ä¸ªé‡‘å¸ */
 #ifdef __MAP_WARP_POINT
-	OBJTYPE_WARPPOINT,
+  OBJTYPE_WARPPOINT,     /* æè¿°ä¸€ä¸ªä¼ é€ç‚¹ */
 #endif
-    OBJTYPE_NUM
-}OBJTYPE;
+  OBJTYPE_NUM
+} OBJTYPE;
 
-typedef struct tagObject
-{
-    OBJTYPE     type;
-
-	char		objname[256];
-	int			npcsindex;
-	int			dir;
-	int			imagenum;
-
-	int			chartype;
-    int         index;
-    int         x;
-    int         y;
-    int         floor;
+typedef struct tagObject {
+  OBJTYPE type;
+  char objname[256];
+  int npcsindex;
+  int dir;
+  int imagenum;
+  int chartype;
+  int index;
+  int x;
+  int y;
+  int floor;
 #ifdef _DEL_DROP_GOLD
-	int			time;
+  int time;
 #endif
-}Object;
+} Object;
 
-BOOL CHECKOBJECT( int index );
-BOOL CHECKOBJECTUSE( int index );
-BOOL initObjectArray( int num );
-BOOL endObjectArray( void );
+BOOL CHECKOBJECT(int index);
+BOOL CHECKOBJECTUSE(int index);
+BOOL initObjectArray(int num);
+BOOL endObjectArray(void);
 
-INLINE int _initObjectOne( char *file, int line, Object* ob );
-#define initObjectOne( ob ) _initObjectOne( __FILE__, __LINE__, ob)
+INLINE int _initObjectOne(char *file, int line, Object *ob);
+#define initObjectOne(ob) _initObjectOne(__FILE__, __LINE__, ob)
 
-void endObjectOne( int index );
-int initObjectFromObjectMember(OBJTYPE type, int index, int x, int y , int floor );
+void endObjectOne(int index);
+int initObjectFromObjectMember(OBJTYPE type, int index, int x, int y,
+                               int floor);
 
-INLINE int OBJECT_getType( int index );
-INLINE int OBJECT_setType( int index, int newvalue );
-INLINE int OBJECT_getFloor( int index );
-INLINE int OBJECT_setFloor( int index, int newvalue );
-INLINE int OBJECT_getX( int index );
-INLINE int OBJECT_setX( int index, int newvalue );
-INLINE int OBJECT_getY( int index );
-INLINE int OBJECT_setY( int index, int newvalue );
-INLINE int OBJECT_getIndex( int index );
-INLINE int OBJECT_setIndex( int index, int newvalue );
-INLINE int OBJECT_getNum( void );
+INLINE int OBJECT_getType(int index);
+INLINE int OBJECT_setType(int index, int newvalue);
+INLINE int OBJECT_getFloor(int index);
+INLINE int OBJECT_setFloor(int index, int newvalue);
+INLINE int OBJECT_getX(int index);
+INLINE int OBJECT_setX(int index, int newvalue);
+INLINE int OBJECT_getY(int index);
+INLINE int OBJECT_setY(int index, int newvalue);
+INLINE int OBJECT_getIndex(int index);
+INLINE int OBJECT_setIndex(int index, int newvalue);
+INLINE int OBJECT_getNum(void);
 
-INLINE int OBJECT_getchartype( int index );
-INLINE void OBJECT_setchartype( int index, int flg);
+INLINE int OBJECT_getchartype(int index);
+INLINE void OBJECT_setchartype(int index, int flg);
 
 #ifdef _PET_ITEM
-BOOL storeObjects( char* dirname );
-BOOL restoreObjects( char* dirname );
+BOOL storeObjects(char *dirname);
+BOOL restoreObjects(char *dirname);
 #endif
 
 #ifdef _DEL_DROP_GOLD
-INLINE int OBJECT_setTime( int index, int newvalue );
-INLINE int OBJECT_getTime( int index );
+INLINE int OBJECT_setTime(int index, int newvalue);
+INLINE int OBJECT_getTime(int index);
 #endif
 
-int searchObjectFromCharaIndex( int index );
+int searchObjectFromCharaIndex(int index);
 #ifdef _MO_LNS_MAPSUOXU
-INLINE int get_mappointindex( int fl, int x,int y );
+INLINE int get_mappointindex(int fl, int x, int y);
 #endif
-#endif 
-/*__OBJECT_h__*/
+#endif
+
+/*__OBJECT_H__*/

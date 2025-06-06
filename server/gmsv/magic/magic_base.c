@@ -24,44 +24,43 @@ typedef struct tagMagicFunctionTable {
 
 static MagicFunctionTable sMageicFunctionTable[] = {
 #ifdef _MAGIC_FEATHERS
-    {"MAGIC_Feathers", MAGIC_Feathers, 0},
+    {"MAGIC_Feathers",       MAGIC_Feathers,       0},
 #endif
-    {"MAGIC_Recovery", MAGIC_Recovery, 0},
-    {"MAGIC_OtherRecovery", MAGIC_OtherRecovery, 0},
-    {"MAGIC_FieldAttChange", MAGIC_FieldAttChange, 0},
-    {"MAGIC_StatusChange", MAGIC_StatusChange, 0},
-    {"MAGIC_MagicDef", MAGIC_MagicDef, 0},
-    {"MAGIC_StatusRecovery", MAGIC_StatusRecovery, 0},
-    {"MAGIC_Ressurect", MAGIC_Ressurect, 0},
-    {"MAGIC_AttReverse", MAGIC_AttReverse, 0},
-    {"MAGIC_ResAndDef", MAGIC_ResAndDef, 0},
-
+    {"MAGIC_Recovery",       MAGIC_Recovery,       0},
+    {"MAGIC_OtherRecovery",  MAGIC_OtherRecovery,  0},
+    {"MAGIC_FieldAttChange", MAGIC_FieldAttChange, 0},  // 战场属性变化
+    {"MAGIC_StatusChange",   MAGIC_StatusChange,   0},  // 异常状态: 石化, 混乱, 睡眠
+    {"MAGIC_MagicDef",       MAGIC_MagicDef,       0},  // 魔法防御: 光、镜
+    {"MAGIC_StatusRecovery", MAGIC_StatusRecovery, 0},  // 解除异常状态: 治疗石化，混乱，睡眠
+    {"MAGIC_Ressurect",      MAGIC_Ressurect,      0},  // 复活
+    {"MAGIC_AttReverse",     MAGIC_AttReverse,     0},  // 属性反转
+    {"MAGIC_ResAndDef",      MAGIC_ResAndDef,      0},  // 恢复和防御
 #ifdef _ATTACK_MAGIC
-    {"MAGIC_AttMagic", MAGIC_AttMagic, 0},
+    {"MAGIC_AttMagic",       MAGIC_AttMagic,       0},  // 攻击魔法
 #endif
 #ifdef _OTHER_MAGICSTAUTS
     {"MAGIC_MagicStatusChange", MAGIC_MagicStatusChange, 0},
 #endif
 #ifdef _ITEM_METAMO
-    {"MAGIC_Metamo", MAGIC_Metamo, 0},
+    {"MAGIC_Metamo",         MAGIC_Metamo, 0},
 #endif
 #ifdef _ITEM_ATTSKILLMAGIC
-    {"MAGIC_AttSkill", MAGIC_AttSkill, 0},
+    {"MAGIC_AttSkill",       MAGIC_AttSkill, 0},
 #endif
 #ifdef _MAGIC_WEAKEN // vincent  精灵:虚弱
-    {"MAGIC_Weaken", MAGIC_Weaken, 0},
+    {"MAGIC_Weaken",         MAGIC_Weaken, 0},
 #endif
 #ifdef _MAGIC_DEEPPOISON // vincent  精灵:剧毒
-    {"MAGIC_StatusChange2", MAGIC_StatusChange2, 0},
+    {"MAGIC_StatusChange2",  MAGIC_StatusChange2, 0},
 #endif
 #ifdef _MAGIC_BARRIER // vincent  精灵:魔障
-    {"MAGIC_Barrier", MAGIC_Barrier, 0},
+    {"MAGIC_Barrier",        MAGIC_Barrier, 0},
 #endif
 #ifdef _MAGIC_NOCAST // vincent  精灵:沉默
-    {"MAGIC_Nocast", MAGIC_Nocast, 0},
+    {"MAGIC_Nocast",         MAGIC_Nocast, 0},
 #endif
 #ifdef _MAGIC_TOCALL // 奔龙阵
-    {"MAGIC_ToCallDragon", MAGIC_ToCallDragon, 0},
+    {"MAGIC_ToCallDragon",   MAGIC_ToCallDragon, 0},
 #endif
 };
 
@@ -93,7 +92,7 @@ INLINE int MAGIC_setInt(int index, MAGIC_DATAINT element, int data) {
   MAGIC_magic[index].data[element] = data;
   return buf;
 }
-/*----------------------------------------------------------------------*/
+
 INLINE char *MAGIC_getChar(int index, MAGIC_DATACHAR element) {
   if (!MAGIC_CHECKINDEX(index))
     return "\0";
@@ -102,7 +101,6 @@ INLINE char *MAGIC_getChar(int index, MAGIC_DATACHAR element) {
   return MAGIC_magic[index].string[element].string;
 }
 
-/*----------------------------------------------------------------------*/
 INLINE BOOL MAGIC_setChar(int index, MAGIC_DATACHAR element, char *new) {
   if (!MAGIC_CHECKINDEX(index))
     return FALSE;
@@ -112,9 +110,7 @@ INLINE BOOL MAGIC_setChar(int index, MAGIC_DATACHAR element, char *new) {
              sizeof(MAGIC_magic[index].string[element].string), new);
   return TRUE;
 }
-/*----------------------------------------------------------------------
- *   芊及醒毛襞月［
- *---------------------------------------------------------------------*/
+
 int MAGIC_getMagicNum(void) { return sMagicNum; }
 
 BOOL MAGIC_initMagic(char *filename) {
@@ -125,53 +121,35 @@ BOOL MAGIC_initMagic(char *filename) {
   int i, j;
   int max_magic_id = 0;
   char token[256];
-#ifdef _CRYPTO_DATA
-  char realopfile[256];
-  BOOL crypto = FALSE;
-  sprintf(realopfile, "%s.allblues", filename);
-  f = fopen(realopfile, "r");
-  if (f != NULL) {
-    crypto = TRUE;
-  } else
-#endif
-  {
-    f = fopen(filename, "r");
-  }
+  f = fopen(filename, "r");
   if (f == NULL) {
     print("文件打开失败\n");
     return FALSE;
   }
   sMagicNum = 0;
   while (fgets(line, sizeof(line), f)) {
-#ifdef _CRYPTO_DATA
-    if (crypto == TRUE) {
-      DecryptKey(line);
-    }
-#endif
     linenum++;
     if (line[0] == '#')
       continue; /* comment */
     if (line[0] == '\n')
       continue; /* none    */
     chomp(line);
-
 #ifdef _MAGIC_OPTIMUM // Robin 取出最大MAGIC ID
     if (getStringFromIndexWithDelim(line, ",", MAGIC_DATACHARNUM + MAGIC_ID + 1,
                                     token, sizeof(token)) == FALSE)
       continue;
     max_magic_id = max(atoi(token), max_magic_id);
 #endif
-
     sMagicNum++;
   }
 
 #ifdef _MAGIC_OPTIMUM
-  print("有效魔法:%d 最大魔法:%d ...", sMagicNum, max_magic_id);
+  logOut("有效魔法数量:%d 最大魔法id:%d ...", sMagicNum, max_magic_id);
   sMagicNum = max_magic_id + 1;
 #endif
 
   if (fseek(f, 0, SEEK_SET) == -1) {
-    fprint("搜索错误\n");
+    logOut("搜索错误\n");
     fclose(f);
     return FALSE;
   }
@@ -194,11 +172,6 @@ BOOL MAGIC_initMagic(char *filename) {
 
   linenum = 0;
   while (fgets(line, sizeof(line), f)) {
-#ifdef _CRYPTO_DATA
-    if (crypto == TRUE) {
-      DecryptKey(line);
-    }
-#endif
     linenum++;
     if (line[0] == '#')
       continue; /* comment */
@@ -229,36 +202,25 @@ BOOL MAGIC_initMagic(char *filename) {
         continue;
       magic_readlen = atoi(token);
 #endif
-
       for (i = 0; i < MAGIC_DATACHARNUM; i++) {
-
-        /*    侬  迕玄□弁件毛苇月    */
-        ret =
-            getStringFromIndexWithDelim(line, ",", i + 1, token, sizeof(token));
+        ret = getStringFromIndexWithDelim(line, ",", i + 1, token, sizeof(token));
         if (ret == FALSE) {
-          fprint("文件语法错误:%s 第%d行\n", filename, linenum);
+          logErr("文件语法错误:%s 第%d行\n", filename, linenum);
           break;
         }
         MAGIC_setChar(magic_readlen, i, token);
       }
-      /* 4勾  动嫦反醒袄犯□正 */
 #define MAGIC_STARTINTNUM 5
       for (i = MAGIC_STARTINTNUM; i < MAGIC_DATAINTNUM + MAGIC_STARTINTNUM;
            i++) {
         ret = getStringFromIndexWithDelim(line, ",", i, token, sizeof(token));
-
 #ifdef _ATTACK_MAGIC
-
         if (FALSE == ret)
-
           break;
-
         if (0 != strlen(token)) {
           MAGIC_setInt(magic_readlen, i - MAGIC_STARTINTNUM, atoi(token));
         }
-
 #else
-
         if (ret == FALSE) {
           fprint("文件语法错误:%s 第%d行\n", filename, linenum);
           break;
@@ -266,7 +228,6 @@ BOOL MAGIC_initMagic(char *filename) {
         if (strlen(token) != 0) {
           MAGIC_setInt(magic_readlen, i - MAGIC_STARTINTNUM, atoi(token));
         }
-
 #endif
       }
 
@@ -275,29 +236,21 @@ BOOL MAGIC_initMagic(char *filename) {
       if (i != MAGIC_STARTINTNUM + MAGIC_IDX &&
           i != MAGIC_DATAINTNUM + MAGIC_STARTINTNUM)
         continue;
-
 #else
-
       if (i < MAGIC_DATAINTNUM + MAGIC_STARTINTNUM)
         continue;
-
 #endif
-      /* 切斤匀午尕称鼎分仃升仇丹允月［ */
       if (MAGIC_getInt(magic_readlen, MAGIC_TARGET_DEADFLG) == 1) {
         MAGIC_setInt(magic_readlen, MAGIC_TARGET,
                      MAGIC_getInt(magic_readlen, MAGIC_TARGET) + 100);
       }
-
       magic_readlen++;
     }
   }
   fclose(f);
-
   sMagicNum = magic_readlen;
-
-  print("有效魔法数是 %d...", sMagicNum);
-
-  /* hash 及瓒   */
+  logOut("有效魔法数是 %d...", sMagicNum);
+  /* hash */
   for (i = 0; i < arraysizeof(sMageicFunctionTable); i++) {
     sMageicFunctionTable[i].hash =
         hashpjw(sMageicFunctionTable[i].functionname);
@@ -391,7 +344,6 @@ int MAGIC_isTargetValid(int magic_id, int to_index) {
 
   if (to_index >= 0 && to_index <= 19)
     return 0;
-
   // One side of players
   if (20 == to_index || 21 == to_index) {
     if (MAGIC_TARGET_WHOLEOTHERSIDE ==
