@@ -1,7 +1,9 @@
 #define __SAAC_SERVER_RECV_C__
 //
 #include "recv.h"
+#include "saac_config.h"
 #include "saac_server.h"
+
 //
 #include "char.h"
 #include "db.h"
@@ -230,10 +232,10 @@ void SaacServer_ACLock_recv(int ti, char *id, int lock, int mesgid) {
     sprintf(retdata, "GMUNLOCKALL");
   } else {
 #ifdef _LOCK_ADD_NAME
-    if (lockUser(getGSName(ti), id, "", "0", lock, result, sizeof(result),
+    if (lockUser(gs[ti].name, id, "", "0", lock, result, sizeof(result),
                  retdata, sizeof(retdata), "0", "0") < 0) {
 #else
-    if (lockUser(getGSName(ti), id, "0", lock, result, sizeof(result), retdata,
+    if (lockUser(gs[ti].name, id, "0", lock, result, sizeof(result), retdata,
                  sizeof(retdata), "0", "0") < 0) {
 #endif
       logOut("锁定用户: %s 失败\n", id);
@@ -252,10 +254,10 @@ void SaacServer_ACUCheck_recv(int ti, char *id, int status) {
   }
 
   if (status == 0) {
-    logOut("用户 %s 在 %s 并未锁定！\n", id, getGSName(ti));
+    logOut("用户 %s 在 %s 并未锁定！\n", id, gs[ti].name);
     SaacServer_ACKick_recv(ti, id, 6, -1);
   } else {
-    logOut("用户 %s 在 %s 已锁定！\n", id, getGSName(ti));
+    logOut("用户 %s 在 %s 已锁定！\n", id, gs[ti].name);
 #ifdef _WAEI_KICK
     SaacServer_ACKick_recv(ti, id, 1, -1);
 #endif
@@ -438,8 +440,8 @@ void SaacServer_Broadcast_recv(int fd, char *id, char *charname, char *message,
 void SaacServer_Message_recv(int fd, char *id_from, char *charname_from,
                              char *id_to, char *charname_to, char *message,
                              int option) {
-  receiveMail(id_from, charname_from, id_to, charname_to, message, option, 0,
-              0);
+  Mail_receive(id_from, charname_from, id_to, charname_to, message, option, 0,
+               0);
 }
 
 void SaacServer_MessageAck_recv(int fd, char *id, char *charname, char *result,
@@ -449,11 +451,11 @@ void SaacServer_MessageAck_recv(int fd, char *id, char *charname, char *result,
     a = 0;
   else
     a = -1;
-  receiveMailAck(id, charname, a, mesgid);
+  Mail_receive_ack(id, charname, a, mesgid);
 }
 
 void SaacServer_MessageFlush_recv(int fd, char *id, char *charname) {
-  flushMail(fd, id, charname);
+  Mail_flush(fd, id, charname);
 }
 
 /*******************************************************
@@ -855,7 +857,6 @@ void SaacServer_ACFMAnnounce_recv(int fd, char *fmname, int fmindex, int index,
     SaacServer_ACFMAnnounce_send(fd, FAILED, fmname, fmindex, index, 1, data,
                                  color);
   } else {
-    extern gmsv gs[MAXCONNECTION];
     for (i = 0; i < MAXCONNECTION; i++) {
       if (gs[i].use && gs[i].name[0]) {
         SaacServer_ACFMAnnounce_send(i, SUCCESSFUL, fmname, fmindex, index, 1,
@@ -939,7 +940,6 @@ void SaacServer_ACGetFMData_recv(int fd, char *fmname, int fmindex, int index,
 
 void SaacServer_ACreLoadFmData_recv(int fd, int type, int data) {
   int i = 0;
-  extern gmsv gs[MAXCONNECTION];
   switch (type) {
   case 1:
     logOut("reload FM_DATA:%d !\n", data);
@@ -947,7 +947,7 @@ void SaacServer_ACreLoadFmData_recv(int fd, int type, int data) {
     break;
   case 2: {
     char data[15000];
-    readFMPoint(fmpointdir);
+    readFMPoint(g_saac_config.fmpointdir);
     if (ACFMPointList(data) >= 0) {
       logOut("reload FM_POINT !\n");
       for (i = 0; i < MAXCONNECTION; i++) {
@@ -982,7 +982,6 @@ void SaacServer_ACLoadFmPk_recv(int fd, int fmpks_pos) {
 
 void SaacServer_ACSendFmPk_recv(int fd, int fmpks_pos, int userindex, int flg,
                                 char *data) {
-  extern gmsv gs[MAXCONNECTION];
   char buf[1024];
   int i = 0;
   sprintf(buf, "%d|%s", fmpks_pos, data);
@@ -1012,7 +1011,6 @@ void SaacServer_ACLoadFmPk_recv(int fd, int fmpks_pos) {
   SaacServer_ACLoadFmPk_send(fd, fm_pk_list[fmpks_pos - 1]);
 }
 void SaacServer_ACSendFmPk_recv(int fd, int fmpks_pos, char *data) {
-  extern gmsv gs[MAXCONNECTION];
   int i = 0;
 
   if ((fmpks_pos > MAX_FMPOINT) || (fmpks_pos < 1)) {
@@ -1038,7 +1036,6 @@ void SaacServer_ACManorPKAck_recv(int fd, char *data) {
 #ifdef _AC_SEND_FM_PK // WON ADD 庄园对战列表储存在AC
                       // 不处理
 #else
-  extern gmsv gs[MAXCONNECTION];
   int i;
 
   for (i = 0; i < MAXCONNECTION; i++) {
@@ -1077,17 +1074,15 @@ void SaacServer_ACKick_recv(int ti, char *id, int lock, int mesgid) {
     break;
   case 3: // UNLOCKALL
   {
-    extern gmsv gs[MAXCONNECTION];
-
     DeleteMemLockServer(gs[ti].name);
     sprintf(retdata, "GM UNLOCK ALL");
   } break;
   case 4: // LOCK
 #ifdef _LOCK_ADD_NAME
-    if (lockUser(getGSName(ti), id, "", "0", lock, result, sizeof(result),
+    if (lockUser(gs[ti].name, id, "", "0", lock, result, sizeof(result),
                  retdata, sizeof(retdata), "0", "0") < 0) {
 #else
-    if (lockUser(getGSName(ti), id, "0", lock, result, sizeof(result), retdata,
+    if (lockUser(gs[ti].name, id, "0", lock, result, sizeof(result), retdata,
                  sizeof(retdata), "0", "0") < 0) {
 #endif
       sprintf(retdata, "LOCK USER !!");
@@ -1107,10 +1102,10 @@ void SaacServer_ACKick_recv(int ti, char *id, int lock, int mesgid) {
     char result[100], retdata[100], process[16];
     int ret = 0;
 #ifdef _LOCK_ADD_NAME
-    ret = lockUser(getGSName(ti), id, "", "0", 0, result, sizeof(result),
-                   retdata, sizeof(retdata), "0", "0");
+    ret = lockUser(gs[ti].name, id, "", "0", 0, result, sizeof(result), retdata,
+                   sizeof(retdata), "0", "0");
 #else
-    ret = lockUser(getGSName(ti), id, "0", 0, result, sizeof(result), retdata,
+    ret = lockUser(gs[ti].name, id, "0", 0, result, sizeof(result), retdata,
                    sizeof(retdata), "0", "0");
 #endif
 
@@ -1141,7 +1136,6 @@ void SaacServer_ACKick_recv(int ti, char *id, int lock, int mesgid) {
 
 #ifdef _SEND_EFFECT // WON ADD 送下雪、下雨等特效
 void SendEffect(char *effect) {
-  extern gmsv gs[MAXCONNECTION];
   int i;
   for (i = 0; i < MAXCONNECTION; i++) {
     if (gs[i].use && gs[i].name[0]) {
@@ -1313,8 +1307,6 @@ void Send_A_herolist(int fd) {
 void Send_S_herolist(char *ocdkey, char *oname, char *ncdkey, char *nname,
                      char *title, int level, int trns, int floor) {
   int i;
-  extern gmsv gs[MAXCONNECTION];
-
   for (i = 0; i < MAXCONNECTION; i++) {
     if (gs[i].use && gs[i].name[0]) {
       SaacServer_S_UpdataStele_send(i, ocdkey, oname, ncdkey, nname, title,
@@ -1410,17 +1402,13 @@ int UNlockM_UnlockPlayer(void) {
 }
 
 #ifdef _ANGEL_SUMMON
-
 extern int saveMissionTable(void);
-
 // void SaacServer_ACMissionTable_recv( int fd, int num, int type, char *data,
 // int charaindex)
 void SaacServer_ACMissionTable_recv(int fd, int num, int type, char *data,
                                     char *angelinfo) {
-  extern gmsv gs[MAXCONNECTION];
   int i;
   char buf[1024];
-
   if (type == 1) {   // ask data list
     if (num == -1) { // ask all data
       char alldata[MISSTION_TABLE_SIZE * 100];

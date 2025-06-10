@@ -1,20 +1,14 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#include "common.h"
+//
 #include "version.h"
+//
+#include "common.h"
 
-
-#ifdef __MAIN_C__
-#define EXT
-#else
-#define EXT extern
-#endif
-
-#define SA_NODEFER  0x40000000
-#define SA_NOMASK  SA_NODEFER
-
-#define CHARDATASIZE (1024*1024)
+#define SA_NODEFER 0x40000000
+#define SA_NOMASK SA_NODEFER
+#define CHARDATASIZE (1024 * 1024)
 
 char *chartime();
 
@@ -22,37 +16,7 @@ char *chartime();
 #define USERID_MAX 32
 #define CHARNAME_MAX 32
 
-EXT char svpass[64];
-EXT char chardir[64];
-EXT char logdir[64];
-EXT char dbdir[64];
-EXT char maildir[64];
-
-// CoolFish: Family 2001/5/9
-EXT char familydir[64];
-EXT char fmpointdir[64];
-EXT char fmsmemodir[64];
-
-EXT int sameipmun;
-
-EXT int log_rotate_interval;
-EXT int total_ok_charlist, total_ng_charlist;
-
-#ifdef _AUTO_BACKUP
-EXT int autobackupday;
-EXT int autobackuphour;
-#endif
-
-#ifdef _LOTTERY_SYSTEM
-EXT int lotterysystem;
-#endif
-
-#ifdef _SLEEP_CHAR
-EXT char sleepchardir[64];
-#endif
-
-typedef struct _gmsv
-{
+typedef struct _gmsv {
   int use;
   int fd;
   char name[128];
@@ -60,29 +24,26 @@ typedef struct _gmsv
 
 int get_rotate_count(void);
 void checkGSUCheck(char *id);
-int logout_game_server( int ti );
-int is_game_server_login( int ti );
-char* getGSName( int i );
+int logout_game_server(int ti);
+int is_game_server_login(int ti);
 
-void gmsvBroadcast( int fd, char *p1, char *p2, char *p3 , int flag );
+void gmsvBroadcast(int fd, char *p1, char *p2, char *p3, int flag);
 
 #if _ATTESTAION_ID == 1
-int login_game_server(const int ti, const int id,
-                      const char *svname, const char *svpas,
-                      char *result, const int resultlen,
+int login_game_server(const int ti, const int id, const char *svname,
+                      const char *svpas, char *result, const int resultlen,
                       char *retdata, int retdatalen);
 #else
 int login_game_server(const int ti, const char *svname, const char *svpas,
-                      char *result, const int resultlen,
-                      char *retdata, const int retdatalen);
+                      char *result, const int resultlen, char *retdata,
+                      const int retdatalen);
 #endif
 
 #ifdef _ANGEL_SUMMON
 void delMissionTableOnedata(int index);
 
-typedef enum
-{
-  MISSION_NONE =0,
+typedef enum {
+  MISSION_NONE = 0,
   MISSION_WAIT_ANSWER,
   MISSION_DOING,
   MISSION_HERO_COMPLETE,
@@ -90,6 +51,45 @@ typedef enum
 } ANGEL_MISSIONFLAG;
 #endif
 
-#undef EXT
+typedef struct tagMemBuffer {
+  int use;
+  char buf[512];
+  int len;
+  int next;
+} MemBuffer;
+typedef struct tagConnection {
+  int use;
+  int fd;
+  int mbtop_ri;
+  int mbtop_wi;
+  struct sockaddr_in remoteaddr; // 远端地址，即客户端的socket地址
+  int closed_by_remote;
+} Connection;
+#ifdef __MAIN_C__
+#define EXT
+#else
+#define EXT extern
 #endif
+EXT MemBuffer *g_mem_buffer;
+EXT int g_mem_buffer_size;
+EXT int g_mem_buffer_used;
+EXT int g_mem_buffer_finder;
+EXT char g_temp_buffer[1 << 20];
+EXT Connection *g_con; // SAAC-Client连接
+EXT int g_main_sock_fd; // 主sock文件描述符
+EXT struct sockaddr_in g_local_addr; // 本地的地址
+EXT struct timeval select_timeout; // 选择超时时间
+EXT time_t sys_time; // Robin add
+EXT gmsv gs[MAXCONNECTION]; // SAAC-GMSV连接
+#undef EXT
 
+int findregBlankMemBuf(void);
+int unregMemBuf(int index);
+int findregBlankCon(void);
+int getFreeMem(void);
+int appendReadBuffer(int index, char *data, int len);
+int appendWriteBuffer(int index, char *data, int len);
+int appendMemBufList(int top, char *data, int len);
+int consumeMemBufList(int top, char *out, int len, int flag, int copyflag);
+int getLineReadBuffer(int index, char *buf, int len);
+#endif

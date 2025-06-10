@@ -2,6 +2,7 @@
 #include "acfamily.h"
 #include "main.h"
 #include "saac_server.h"
+#include "saac_config.h"
 #include "util.h"
 
 // 家族 Int 资料
@@ -3912,7 +3913,7 @@ int readOneFamilyFromTi(int ti) {
   char filename[256];
   struct stat s;
 
-  snprintf(filename, sizeof(filename), "%s/Family.%d", familydir, ti);
+  snprintf(filename, sizeof(filename), "%s/Family.%d", g_saac_config.familydir, ti);
 
   if (stat(filename, &s) < 0)
     return 0;

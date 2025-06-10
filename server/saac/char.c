@@ -1,8 +1,11 @@
 #define __CHAR_C__
 #include "char.h"
+//
 #include "main.h"
+#include "saac_config.h"
 #include "saac_server.h"
 #include "util.h"
+
 
 // CoolFish: Family 2001/6/12
 #include "acfamily.h"
@@ -11,10 +14,15 @@
 #include "lock.h"
 #include "recv.h"
 
+
+extern gmsv gs[MAXCONNECTION];
+
 static void getCharNameFromString(const char *in, char *output);
 static void getCharOptionFromString(const char *in, char *output);
-static void makeCharFileName(char *idstring, char *output, int outputlen, int num);
-static void makeDeletCharFileName(char *id, char *output, int outputlen, int num);
+static void makeCharFileName(char *idstring, char *output, int outputlen,
+                             int num);
+static void makeDeletCharFileName(char *id, char *output, int outputlen,
+                                  int num);
 // Nuke *1*1
 static int makeSaveCharString(char *output, int outputlen, char *nm, char *opt,
                               char *info);
@@ -22,8 +30,10 @@ static int findBlankCharIndex(char *id);
 
 static int unlinkCharFile(char *id, int num);
 #ifdef _SLEEP_CHAR // 取得非活跃人物档名
-static void makeSleepCharFileName(char *id, char *output, int outputlen, int num);
-static void makeSleepCharPoolItemFileName(char *id, char *output, int outputlen);
+static void makeSleepCharFileName(char *id, char *output, int outputlen,
+                                  int num);
+static void makeSleepCharPoolItemFileName(char *id, char *output,
+                                          int outputlen);
 static void makeSleepCharPoolPetFileName(char *id, char *output, int outputlen);
 static void makeCharPoolPetFileName(char *id, char *output, int outputlen);
 #endif
@@ -39,7 +49,8 @@ static void makeCharPoolItemFileName(char *id, char *output, int outputlen);
     char fn[1000];                                                             \
     if (id[0]) {                                                               \
       snprintf(body, sizeof(body), "%s.log.%d", id, get_rotate_count());       \
-      makeDirFilename(fn, sizeof(fn), logdir, getHash(id), body);              \
+      makeDirFilename(fn, sizeof(fn), g_saac_config.logdir, getHash(id),       \
+                      body);                                                   \
       logFile(fn, "%u ", (unsigned int)time(NULL));                            \
       logFile(fn, format, ##args);                                             \
     }                                                                          \
@@ -107,7 +118,7 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
     /* 非法的char_index */
 #ifdef _NewSave
     SaacServer_ACCharLoad_send(ti, FAILED, "char nonexistent", mesgid,
-                              char_index);
+                               char_index);
 #else
     SaacServer_ACCharLoad_send(ti, FAILED, "char nonexistent", mesgid);
 #endif
@@ -117,10 +128,10 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
   if (loadCharOne(id, char_index, loadbuf, sizeof(loadbuf)) < 0) {
 #ifdef _NewSave
     SaacServer_ACCharLoad_send(ti, FAILED, "cannot load ( disk i/o error?)",
-                              mesgid, char_index);
+                               mesgid, char_index);
 #else
     SaacServer_ACCharLoad_send(ti, FAILED, "cannot load ( disk i/o error?)",
-                              mesgid);
+                               mesgid);
 #endif
     return;
   } else {
@@ -135,11 +146,11 @@ void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
     char result[100];
     char retdata[100];
 #ifdef _LOCK_ADD_NAME
-    if (lockUser(getGSName(ti), id, charname, passwd, 1, result, sizeof(result),
+    if (lockUser(gs[ti].name, id, charname, passwd, 1, result, sizeof(result),
                  retdata, sizeof(retdata), process, deadline) < 0) {
 #else
     // Spock 2000/11/2
-    if (lockUser(getGSName(ti), id, passwd, 1, result, sizeof(result), retdata,
+    if (lockUser(gs[ti].name, id, passwd, 1, result, sizeof(result), retdata,
                  sizeof(retdata), process, deadline) < 0) {
 #endif
       SaacServer_ACCharLoad_send(ti, FAILED, "lock FAIL!!", mesgid, char_index);
@@ -191,10 +202,10 @@ int charSave(int ti, char *id, char *charname, char *opt, char *charinfo,
     char result[100];
     char retdata[100];
 #ifdef _LOCK_ADD_NAME
-    if ((ret = lockUser(getGSName(ti), id, "", "0", 0, result, sizeof(result),
+    if ((ret = lockUser(gs[ti].name, id, "", "0", 0, result, sizeof(result),
                         retdata, sizeof(retdata), "0", "0")) < 0) {
 #else
-    if ((ret = lockUser(getGSName(ti), id, "0", 0, result, sizeof(result),
+    if ((ret = lockUser(gs[ti].name, id, "0", 0, result, sizeof(result),
                         retdata, sizeof(retdata), "0", "0")) < 0) {
 #endif
       logErr("解锁:%s 失败!!\n", id);
@@ -251,10 +262,11 @@ void charListCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
   }
   // 取消下列 unlock 动作
   if (isLocked(id)) {
-    SaacServer_ACCharList_send(ti, FAILED,
-                              "你的账号处理锁定状态，请重新登陆，如果三次都不能"
-                              "进入，请联系管理员为您解锁！",
-                              mesgid);
+    SaacServer_ACCharList_send(
+        ti, FAILED,
+        "你的账号处理锁定状态，请重新登陆，如果三次都不能"
+        "进入，请联系管理员为您解锁！",
+        mesgid);
     SaacServer_ACKick_recv(ti, id, 1, -1);
     checkGSUCheck(id);
     total_ng_charlist++;
@@ -366,30 +378,30 @@ void charDeleteCallback(int ti, int auth, char *c0, char *c1, char *c2,
         if (ChangeFMLeader(index, fmname, fmindex) >= 0) {
           if (ACDelFM(index, fmname, fmindex) >= 0)
             logErr("删除家族成员:%d 家族名:%s 家族索引:%d 人物:%s, 账号:%s, "
-                "家族人物索引:%d\n",
-                index, fmname, fmindex, charname, id, fmchar_index);
+                   "家族人物索引:%d\n",
+                   index, fmname, fmindex, charname, id, fmchar_index);
         }
-        logErr("ChangeFMLeader_3 index:%d fmname:%s fmindex:%d\n", index, fmname,
-            fmindex);
+        logErr("ChangeFMLeader_3 index:%d fmname:%s fmindex:%d\n", index,
+               fmname, fmindex);
 #else
         if (ACDelFM(index, fmname, fmindex) >= 0)
           logErr("删除家族成员:%d 家族名:%s 家族索引:%d 人物:%s, 账号:%s, "
-              "家族人物索引:%d\n",
-              index, fmname, fmindex, charname, id, fmchar_index);
+                 "家族人物索引:%d\n",
+                 index, fmname, fmindex, charname, id, fmchar_index);
 #endif
       } else {
 #ifdef _FMVER21
         if (ACMemberLeaveFM(index, fmname, fmindex, charname, 0, 0,
                             fmchar_index) >= 0)
           logErr("ACMemberLeaveFM index:%d 家族名:%s 家族索引:%d 人物:%s, "
-              "账号:%s, 家族人物索引:%d\n",
-              index, fmname, fmindex, charname, id, fmchar_index);
+                 "账号:%s, 家族人物索引:%d\n",
+                 index, fmname, fmindex, charname, id, fmchar_index);
 #else
-        if (ACMemberLeaveFM(index, fmname, fmindex, charname, 0, fmchar_index) >=
-            0)
+        if (ACMemberLeaveFM(index, fmname, fmindex, charname, 0,
+                            fmchar_index) >= 0)
           logErr("ACMemberLeaveFM index:%d 家族名:%s 家族索引:%d 人物:%s, "
-              "账号:%s, 家族人物索引:%d\n",
-              index, fmname, fmindex, charname, id, fmchar_index);
+                 "账号:%s, 家族人物索引:%d\n",
+                 index, fmname, fmindex, charname, id, fmchar_index);
 #endif
       }
     }
@@ -479,7 +491,8 @@ void getCharInfoFromString(char *input, char *output) {
   }
 }
 
-static void makeDeletCharFileName(char *id, char *output, int outputlen, int num) {
+static void makeDeletCharFileName(char *id, char *output, int outputlen,
+                                  int num) {
   char body[1024];
   if (strlen(id) < 1)
     return;
@@ -498,17 +511,19 @@ static void makeCharFileName(char *id, char *output, int outputlen, int num) {
   if (strlen(id) < 1)
     return;
   snprintf(body, sizeof(body), "%s.%d.char", id, num);
-  makeDirFilename(output, outputlen, chardir, getHash(id), body);
+  makeDirFilename(output, outputlen, g_saac_config.chardir, getHash(id), body);
 }
 
 #ifdef _SLEEP_CHAR // 取得非活跃人物档名
-static void makeSleepCharFileName(char *id, char *output, int outputlen, int num) {
+static void makeSleepCharFileName(char *id, char *output, int outputlen,
+                                  int num) {
   char body[1024];
   if (strlen(id) < 1)
     return;
 
   snprintf(body, sizeof(body), "%s.%d.char", id, num);
-  makeDirFilename(output, outputlen, sleepchardir, getHash(id), body);
+  makeDirFilename(output, outputlen, g_saac_config.sleepchardir, getHash(id),
+                  body);
 }
 #endif
 
@@ -536,7 +551,8 @@ int loadCharNameAndOption(char *id, char *output, int outputlen) {
     } else {
       delim[0] = 0;
     }
-    snprintf(nm_work, sizeof(nm_work), "%s%s|%s", delim, name_work, option_work);
+    snprintf(nm_work, sizeof(nm_work), "%s%s|%s", delim, name_work,
+             option_work);
     l = strlen(nm_work);
     if ((so_far_bytes + l) < outputlen) {
       strcat(output, nm_work);
@@ -643,8 +659,9 @@ static int makeSaveCharString(char *output, int outputlen, char *nm, char *opt,
   optwork_p = makeEscapeString(opt, optwork, sizeof(optwork));
   infowork_p = makeEscapeString(info, infowork, sizeof(infowork));
 
-  snprintf(outputwork, sizeof(outputwork), "%s" SPACESTRING "%s" SPACESTRING "%s",
-           nmwork_p, optwork_p, infowork_p);
+  snprintf(outputwork, sizeof(outputwork),
+           "%s" SPACESTRING "%s" SPACESTRING "%s", nmwork_p, optwork_p,
+           infowork_p);
 
   l = strlen(outputwork);
   if (l >= (outputlen - 1)) {
@@ -773,16 +790,19 @@ static void makeCharPoolItemFileName(char *id, char *output, int outputlen) {
   if (strlen(id) < 1)
     return;
   snprintf(poolitem, sizeof(poolitem), "%s.item", id);
-  makeDirFilename(output, outputlen, chardir, getHash(id), poolitem);
+  makeDirFilename(output, outputlen, g_saac_config.chardir, getHash(id),
+                  poolitem);
 }
 
 #ifdef _SLEEP_CHAR // 取得非活跃人物仓库档名
-static void makeSleepCharPoolItemFileName(char *id, char *output, int outputlen) {
+static void makeSleepCharPoolItemFileName(char *id, char *output,
+                                          int outputlen) {
   char poolitem[256];
   if (strlen(id) < 1)
     return;
   snprintf(poolitem, sizeof(poolitem), "%s.item", id);
-  makeDirFilename(output, outputlen, sleepchardir, getHash(id), poolitem);
+  makeDirFilename(output, outputlen, g_saac_config.sleepchardir, getHash(id),
+                  poolitem);
 }
 #endif
 
@@ -887,16 +907,19 @@ static void makeCharPoolPetFileName(char *id, char *output, int outputlen) {
   if (strlen(id) < 1)
     return;
   snprintf(poolpet, sizeof(poolpet), "%s.pet", id);
-  makeDirFilename(output, outputlen, chardir, getHash(id), poolpet);
+  makeDirFilename(output, outputlen, g_saac_config.chardir, getHash(id),
+                  poolpet);
 }
 
 #ifdef _SLEEP_CHAR // 取得非活跃人物仓库档名
-static void makeSleepCharPoolPetFileName(char *id, char *output, int outputlen) {
+static void makeSleepCharPoolPetFileName(char *id, char *output,
+                                         int outputlen) {
   char poolpet[256];
   if (strlen(id) < 1)
     return;
   snprintf(poolpet, sizeof(poolpet), "%s.pet", id);
-  makeDirFilename(output, outputlen, sleepchardir, getHash(id), poolpet);
+  makeDirFilename(output, outputlen, g_saac_config.sleepchardir, getHash(id),
+                  poolpet);
 }
 #endif
 

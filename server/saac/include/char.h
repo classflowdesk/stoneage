@@ -2,6 +2,15 @@
 #define __CHAR_H__
 #include "version.h"
 
+#ifdef __CHAR_C__
+#define EXT
+#else
+#define EXT extern
+#endif
+EXT int total_ok_charlist;
+EXT int total_ng_charlist;
+#undef EXT
+
 #ifdef _MORECHARACTERS_
 #define MAXCHAR_PER_USER 4
 #else

@@ -1,5 +1,5 @@
-#ifndef __FAMILY_H__
-#define __FAMILY_H__
+#ifndef __ACFAMILY_H__
+#define __ACFAMILY_H__
 
 #include "version.h"
 #define MAX_FAMILY 1000 // 1000
@@ -259,4 +259,4 @@ void save_fm_pk_list(void);
 char fm_pk_list[FMPKLIST_MAXNUM][255];
 #endif
 
-#endif
+#endif // __ACFAMILY_H__

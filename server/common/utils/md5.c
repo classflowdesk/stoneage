@@ -85,7 +85,7 @@ inline void Decode(unsigned *output, unsigned char *input, unsigned len) {
                 (((unsigned)input[j + 3]) << 24);
 }
 
-// static避免其未定义的方法问题
+// 2025.06.06 添加static避免其未定义方法的问题
 // 取消inline和添加static都可以解决这个问题
 static inline void MD5Transform(unsigned state[4], unsigned char block[64]) {
   unsigned a = state[0], b = state[1], c = state[2], d = state[3], x[16];

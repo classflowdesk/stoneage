@@ -21,7 +21,7 @@ void Lock_Init(void) {
     memset(userlock[i]->name, 0, sizeof(userlock[i]->name));
 #endif
   }
-  logErr("存贮器初始化");
+  logErr("UserLock初始化完毕.\n");
 }
 
 LockNode *Creat_newNodes(void) {
