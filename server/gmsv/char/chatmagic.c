@@ -39,9 +39,6 @@
 #include "profession_skill.h"
 #endif
 #include "char_talk.h"
-#ifdef _PLAYER_QUESTION_ONLIEN
-#include "longzoro/playerquestion.h"
-#endif
 #ifdef _NPC_MAGICCARD
 #include "npc_magiccard.h"
 #endif
@@ -64,7 +61,6 @@ extern int CheckCharMaxItem(int charindex);
 #ifdef _MO_RELOAD_NPC
 #include "readnpc.h"
 #endif
-#include "longzoro/sasql.h"
 
 extern tagRidePetTable ridePetTable[296];
 extern int *pWorkAttackPower;

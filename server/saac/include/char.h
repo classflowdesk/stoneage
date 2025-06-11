@@ -9,8 +9,8 @@
 #endif
 EXT int total_ok_charlist;
 EXT int total_ng_charlist;
-#undef EXT
 
+// 一个用户在每个服务器能有多少个角色
 #ifdef _MORECHARACTERS_
 #define MAXCHAR_PER_USER 4
 #else
@@ -72,10 +72,9 @@ int loadCharPoolPetOne(char *id, char *output, int outlen);
 int checkCharPoolPet(char *id);
 #endif
 
+
 #ifdef _ANGEL_SUMMON
-
 #define MISSTION_TABLE_SIZE 200
-
 typedef struct tagMissionTable {
   char angelinfo[64];
   char heroinfo[64];
@@ -84,8 +83,9 @@ typedef struct tagMissionTable {
   int time;
   int limittime;
 } MissionTable;
+EXT MissionTable g_mission_table[MISSTION_TABLE_SIZE];
+#endif // _ANGEL_SUMMON
 
-extern MissionTable missiontable[MISSTION_TABLE_SIZE];
+#undef EXT
 
-#endif
-#endif
+#endif // __CHAR_H__

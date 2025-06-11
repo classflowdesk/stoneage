@@ -1694,60 +1694,12 @@ void SaacClient_OtherSaacLink_send(int acfd, char *filename, char *data) {
   Send(ws, acfd, ws->work);
 }
 #endif
-
-#ifdef _CHARADATA_SAVE_SQL
-void SaacClient_CharadataSaveSQL_send(int fd, char *id, Charadata charadata,
-                                      int saveindex, int flag) {
-  CreateHeader(ws->work, "CharadataSaveSQL");
-  strcatsafe(ws->work, mkstr_int(fd), ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(id), ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_info1_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_info2_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_count_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_info3_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_event_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_info4_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_attackmagic_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_info5_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_profession_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_info6_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_info_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_flg_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_skill_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_item_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_title_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_string(charadata.CHAR_list_mail_String),
-             ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_int(saveindex), ws->work_buf_size);
-  strcatsafe(ws->work, mkstr_int(flag), ws->work_buf_size);
-  Send(ws, acfd, ws->work);
-}
-#endif
-
 #ifdef _LOTTERY_SYSTEM
 void SaacClient_LotterySystem_send() {
   CreateHeader(ws->work, "LotterySystem");
   Send(ws, acfd, ws->work);
 }
 #endif
-
 #ifdef _ALL_SERV_SEND
 void SaacClient_AllServSend_send(char *data) {
   CreateHeader(ws->work, "AllServSend");

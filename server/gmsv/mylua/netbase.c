@@ -1,6 +1,4 @@
-#include <string.h>
 #include "lua.h"
-#include "longzoro/version.h"
 #include "lauxlib.h"
 #include "lualib.h"
 #include "net.h"
@@ -16,7 +14,7 @@ static int endOne(lua_State *L)
 	char charname[32];
 	CONNECT_getCharname(sockfd,charname,32);
 	CONNECT_getCdkey(sockfd,cdkey,16);
-	LogCharOut(charname,cdkey,__FILE__,__FUNCTION__,__LINE__,"ABLUAÌßÏÂÏß");
+	LogCharOut(charname,cdkey,__FILE__,__FUNCTION__,__LINE__,"ABLUAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
 #endif
 	CONNECT_endOne_debug(sockfd);
 

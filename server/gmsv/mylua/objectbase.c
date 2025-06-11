@@ -1,7 +1,5 @@
-#include <string.h>
 #include "char_base.h"
 #include "object.h"
-#include "longzoro/version.h"
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"

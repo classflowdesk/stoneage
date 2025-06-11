@@ -1,7 +1,7 @@
 #ifndef __ACFAMILY_H__
 #define __ACFAMILY_H__
 
-#include "version.h"
+#include "saac_common.h"
 #define MAX_FAMILY 1000 // 1000
 #define TEXT_MAX 1024
 #define MAX_MEMBERNUM FAMILY_MAX_MEMBER

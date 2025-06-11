@@ -1,9 +1,10 @@
 #define _FAMILY_C_
 #include "acfamily.h"
 #include "main.h"
-#include "saac_server.h"
 #include "saac_config.h"
+#include "saac_server.h"
 #include "util.h"
+
 
 // 家族 Int 资料
 static char *FAMILY_INTDATA[familymaxint] = {
@@ -44,7 +45,7 @@ static char *FAMILY_INTDATA[familymaxint] = {
 
 // 家族 char 资料
 static char *FAMILY_CHARDATA[familymaxchar] = {
-    "fmname", "fmleadername", "fmleaderid", "petname", "petattr", "fmrule",
+    "fmname",      "fmleadername", "fmleaderid", "petname", "petattr", "fmrule",
 #ifdef _FAMILY_TOTEM
     "familytotem",
 #endif
@@ -52,7 +53,7 @@ static char *FAMILY_CHARDATA[familymaxchar] = {
 
 // 家族成员 int 资料
 static char *MEMBER_INTDATA[memberdatamaxint] = {
-    "charlv", "charflag", "onlineflag", "charfdid", "predeltime", "popular",
+    "charlv",    "charflag", "onlineflag", "charfdid", "predeltime", "popular",
 #ifdef _FMVER21
     "eventflag",
 #endif
@@ -106,7 +107,7 @@ typedef struct {
                                   FMMEMBER_LEADER 族长
                                   FMMEMBER_ELDER  长老
                                */
-  int onlineflag;              // 0:offline; gmsv index
+  int onlineflag;              // ==0: offline; >0: gmsv index
   int charfdid;                // 成员在 gmsv 的 fd
   int predeltime;              // 预计删除成员时间
   int popular;                 // 成员的声望
@@ -179,8 +180,6 @@ int db_fmpointupdate = 0;
 int db_fmsmemoupdate = 0;
 int fmnownum = 0;
 int fmindexmaxnum = 0;
-extern gmsv gs[MAXCONNECTION];
-
 struct FAMILY family[MAX_FAMILY];
 int fmpopularindex[MAX_FAMILY]; // Arminius: sort family
 #ifdef _PERSONAL_FAME           // Arminius: 家族个人声望
@@ -817,7 +816,7 @@ int readFamily(const char *dir) {
     logErr("[读取家族资料]无法读取目录: %s\n", dirname);
     return -1;
   }
-  
+
   char filename[256];
   struct stat s;
   for (i = 0; i < MAX_FAMILY; i++) {
@@ -841,7 +840,7 @@ int readFamily(const char *dir) {
 
   fmindexmaxnum = fmmaxnum;
   fmnownum = fmnum;
-  
+
   closedir(p_dir);
 
 #ifdef _PERSONAL_FAME // Arminius: 家族个人声望
@@ -1250,8 +1249,8 @@ int CheckFM(int *index, char *fmname, int fmindex) {
     if ((family[*index].fmindex != fmindex) ||
         strcmp(family[*index].fmname, fmname) != 0) {
       logErr("CheckFM_3 [*index].fmindex:%d fmindex:%d [index].fmname:%s "
-          "fmname:%s\n",
-          family[*index].fmindex, fmindex, family[*index].fmname, fmname);
+             "fmname:%s\n",
+             family[*index].fmindex, fmindex, family[*index].fmname, fmname);
       return -1;
     }
   }
@@ -1276,7 +1275,6 @@ int CheckFM(int *index, char *fmname, int fmindex) {
 void delovertimeFMMem(int time) {
   int i = 0, j = 0, k = 0;
   char data[150 * MAX_FAMILY];
-  extern gmsv gs[MAXCONNECTION];
   for (i = 0; i <= fmindexmaxnum; i++) {
     if (CheckFMUse(i) == 0)
       continue;
@@ -1285,8 +1283,8 @@ void delovertimeFMMem(int time) {
         (family[i].fmjoinnum == 0)) {
 
       logErr("ACDelOverTimeFM fmindex:%d fmname:%s fmjoinnum:%d flag:%d \n",
-          family[i].fmindex, family[i].fmname, family[i].fmjoinnum,
-          family[i].fmsetupflag);
+             family[i].fmindex, family[i].fmname, family[i].fmjoinnum,
+             family[i].fmsetupflag);
 
       ACDelFM(i, family[i].fmname, family[i].fmindex);
 
@@ -1294,7 +1292,7 @@ void delovertimeFMMem(int time) {
       for (k = 0; k < MAXCONNECTION; k++) {
         if (gs[k].use && gs[k].name[0])
           SaacServer_ACFMAnnounce_send(k, SUCCESSFUL, family[i].fmname,
-                                      family[i].fmindex, i, 2, "", 0);
+                                       family[i].fmindex, i, 2, "", 0);
       }
 
       db_familyupdate[i] = 1;
@@ -1321,9 +1319,9 @@ void delovertimeFMMem(int time) {
           sprintf(buf, "(%s)因太久未上线而离开您的家族了！目前家族人数：%4d人",
                   family[i].fmmemberindex[j].charname, family[i].fmjoinnum);
           SaacServer_ACFMAnnounce_send(family[i].fmmemberindex[0].onlineflag,
-                                      SUCCESSFUL, family[i].fmname,
-                                      family[i].fmindex, i, 3, buf,
-                                      family[i].fmmemberindex[0].charfdid);
+                                       SUCCESSFUL, family[i].fmname,
+                                       family[i].fmindex, i, 3, buf,
+                                       family[i].fmmemberindex[0].charfdid);
         }
       } // if
     } // for
@@ -1511,8 +1509,8 @@ int ACJoinFM(int fd, int index, char *fmname, int fmindex, char *charname,
         sprintf(buf, "(%s lv:%d)正要求加入您的家族喔！目前家族人数：%4d人",
                 charname, charlv, family[index].fmjoinnum);
         SaacServer_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
-                                    SUCCESSFUL, fmname, fmindex, index, 3, buf,
-                                    family[index].fmmemberindex[0].charfdid);
+                                     SUCCESSFUL, fmname, fmindex, index, 3, buf,
+                                     family[index].fmmemberindex[0].charfdid);
       }
       return 0;
     }
@@ -1542,8 +1540,8 @@ int ACLeaveFM(int index, char *fmname, int fmindex, char *charname,
         sprintf(buf, "(%s)已经离开您的家族了！目前家族人数：%4d人", charname,
                 family[index].fmjoinnum);
         SaacServer_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
-                                    SUCCESSFUL, fmname, fmindex, index, 3, buf,
-                                    family[index].fmmemberindex[0].charfdid);
+                                     SUCCESSFUL, fmname, fmindex, index, 3, buf,
+                                     family[index].fmmemberindex[0].charfdid);
       }
       return 0;
     }
@@ -1568,8 +1566,8 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
     if (recvdata > MAXRECVPOP &&
         (kindflag == 2 || (kindflag >= 7 && kindflag <= 10))) {
       logErr("ACDelOverTimePOP index:%d fmname:%s kindflag:%d charindex:%d "
-          "recvdata:%d\n",
-          index, fmname, kindflag, charindex, recvdata);
+             "recvdata:%d\n",
+             index, fmname, kindflag, charindex, recvdata);
       return -1;
     }
   }
@@ -1660,8 +1658,8 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
       return -1;
     // shan 2002/01/04
     logErr("\nshan-->fmindex:%d fmname:%s newleadername:%s newleaderid->%s\n",
-        fmindex, fmname, family[index].fmmemberindex[charindex].charname,
-        family[index].fmmemberindex[charindex].charid);
+           fmindex, fmname, family[index].fmmemberindex[charindex].charname,
+           family[index].fmmemberindex[charindex].charid);
     strcpy(charname, family[index].fmmemberindex[charindex].charname);
     strcpy(charid, family[index].fmmemberindex[charindex].charid);
     charlv = family[index].fmmemberindex[charindex].charlv;
@@ -1855,15 +1853,15 @@ int ACFixFMData(int index, char *fmname, int fmindex, int kindflag,
       );
 #else
       SaacServer_ACFMCharLogin_send(family[index].fmmemberindex[0].onlineflag,
-                                   SUCCESSFUL, index, floor,
-                                   family[index].fmpopular,
+                                    SUCCESSFUL, index, floor,
+                                    family[index].fmpopular,
 #ifdef _FMVER21
-                                   family[index].fmmemberindex[0].charflag,
-                                   family[index].fmsetupflag, 1, 0,
+                                    family[index].fmmemberindex[0].charflag,
+                                    family[index].fmsetupflag, 1, 0,
 #else
                                     1, family[index].fmsetupflag, 1, 0,
 #endif
-                                   family[index].fmmemberindex[0].charfdid);
+                                    family[index].fmmemberindex[0].charfdid);
 #endif
     }
   }
@@ -1938,16 +1936,16 @@ int ACFixFMPK(int winindex, char *winfmname, int winfmindex, int loseindex,
 #endif
       );
 #else
-      SaacServer_ACFMCharLogin_send(family[winindex].fmmemberindex[0].onlineflag,
-                                   SUCCESSFUL, winindex, floor,
-                                   family[winindex].fmpopular,
+      SaacServer_ACFMCharLogin_send(
+          family[winindex].fmmemberindex[0].onlineflag, SUCCESSFUL, winindex,
+          floor, family[winindex].fmpopular,
 #ifdef _FMVER21
-                                   family[winindex].fmmemberindex[0].charflag,
-                                   family[winindex].fmsetupflag, 1, 0,
+          family[winindex].fmmemberindex[0].charflag,
+          family[winindex].fmsetupflag, 1, 0,
 #else
-                                    1, family[winindex].fmsetupflag, 1, 0,
+          1, family[winindex].fmsetupflag, 1, 0,
 #endif
-                                   family[winindex].fmmemberindex[0].charfdid);
+          family[winindex].fmmemberindex[0].charfdid);
 #endif
     }
     family[loseindex].fmpopular =
@@ -2077,10 +2075,10 @@ int ACDelFM(int index, char *fmname, int fmindex) {
 #else
     if (family[index].fmmemberindex[i].onlineflag > 0)
       SaacServer_ACFMCharLogin_send(family[index].fmmemberindex[i].onlineflag,
-                                   FAILED, index, family[index].fmpointindex,
-                                   family[index].fmpopular, -1,
-                                   family[index].fmsetupflag, 0, i,
-                                   family[index].fmmemberindex[i].charfdid);
+                                    FAILED, index, family[index].fmpointindex,
+                                    family[index].fmpopular, -1,
+                                    family[index].fmsetupflag, 0, i,
+                                    family[index].fmmemberindex[i].charfdid);
 #endif
     memset(family[index].fmmemberindex[i].charname, 0,
            sizeof(family[index].fmmemberindex[i].charname));
@@ -2410,15 +2408,15 @@ int ACMemberJoinFM(int index, char *fmname, int fmindex, char *charname,
       );
 #else
       SaacServer_ACFMCharLogin_send(family[index].fmmemberindex[0].onlineflag,
-                                   SUCCESSFUL, index, floor,
-                                   family[index].fmpopular,
+                                    SUCCESSFUL, index, floor,
+                                    family[index].fmpopular,
 #ifdef _FMVER21
-                                   family[index].fmmemberindex[0].charflag,
-                                   family[index].fmsetupflag, 1, 0,
+                                    family[index].fmmemberindex[0].charflag,
+                                    family[index].fmsetupflag, 1, 0,
 #else
                                     1, family[index].fmsetupflag, 1, 0,
 #endif
-                                   family[index].fmmemberindex[0].charfdid);
+                                    family[index].fmmemberindex[0].charfdid);
 #endif
     }
 #ifdef _FMVER21
@@ -2533,9 +2531,9 @@ int ACMemberLeaveFM(int index, char *fmname, int fmindex, char *charname,
           fmnum2 = fmnum2 + 1;
       }
       logErr("MemberLeave_fmnum err!\n index:%d fmname:%s"
-          " orifmnum:%d orifmjoinnum:%d\n fmnum1:%d fmnum2:%d\n",
-          index, fmname, family[index].fmnum, family[index].fmjoinnum, fmnum1,
-          fmnum2);
+             " orifmnum:%d orifmjoinnum:%d\n fmnum1:%d fmnum2:%d\n",
+             index, fmname, family[index].fmnum, family[index].fmjoinnum,
+             fmnum1, fmnum2);
       family[index].fmjoinnum = fmnum1;
       family[index].fmnum = fmnum2;
     }
@@ -2602,8 +2600,8 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
 #endif
 
   logErr("AsssignOcp index:%d fmindex:%d fmname:%s charname:%s charindex:%d "
-      "result:%d\n",
-      index, fmindex, fmname, charname, charindex, result);
+         "result:%d\n",
+         index, fmindex, fmname, charname, charindex, result);
   for (i = 0; i < MAX_MEMBERNUM; i++) {
     if (family[index].fmmemberindex[i].charflag == result &&
         result != FMMEMBER_MEMBER)
@@ -2613,8 +2611,8 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
     sprintf(buf, "\n只能指派%d位家族成员成为%s喔！", FMELDERNUM,
             MEMBERKIND_INTDATA[result]);
     SaacServer_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
-                                SUCCESSFUL, fmname, fmindex, index, 4, buf,
-                                family[index].fmmemberindex[0].charfdid);
+                                 SUCCESSFUL, fmname, fmindex, index, 4, buf,
+                                 family[index].fmmemberindex[0].charfdid);
     return -1;
   }
   if (strcmp(family[index].fmmemberindex[charindex].charname, charname) == 0) {
@@ -2654,8 +2652,8 @@ int ACFMAssignOcp(int index, char *fmname, int fmindex, char *charname,
       sprintf(buf, "\n你已经将%s的职等改为%s了！", charname,
               MEMBERKIND_INTDATA[result]);
       SaacServer_ACFMAnnounce_send(family[index].fmmemberindex[0].onlineflag,
-                                  SUCCESSFUL, fmname, fmindex, index, 4, buf,
-                                  family[index].fmmemberindex[0].charfdid);
+                                   SUCCESSFUL, fmname, fmindex, index, 4, buf,
+                                   family[index].fmmemberindex[0].charfdid);
     }
     db_familyupdate[index] = 1;
     return 0;
@@ -2798,7 +2796,7 @@ int ACgetFMInfoFromChar(char *fmname, int *fmindex, char *charname,
         return i;
       }
     } // for
-  }   // for
+  } // for
   return -1;
 }
 
@@ -3044,9 +3042,9 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
     if (family[winindex].fmgold < 0 || family[winindex].fmgold > FMMAXGOLD)
       family[winindex].fmgold = FMMAXGOLD;
     logErr("ACFMGetMoney fmindex:%d fmname:%s fmoldgold:%d getmoney:%d "
-        "fmnewgold:%d\n",
-        family[winindex].fmindex, family[winindex].fmname, iOldGold,
-        iTotalGetGold, family[winindex].fmgold);
+           "fmnewgold:%d\n",
+           family[winindex].fmindex, family[winindex].fmname, iOldGold,
+           iTotalGetGold, family[winindex].fmgold);
   }
 #endif
 #ifdef _FIX_FMPOINTTIME
@@ -3105,12 +3103,12 @@ int ACFixFMPoint(int winindex, char *winfmname, int winfmindex, int loseindex,
 #endif
       );
 #else
-      SaacServer_ACFMCharLogin_send(family[winindex].fmmemberindex[i].onlineflag,
-                                   SUCCESSFUL, winindex, floor,
-                                   family[winindex].fmpopular,
-                                   family[winindex].fmmemberindex[i].charflag,
-                                   family[winindex].fmsetupflag, 1, i,
-                                   family[winindex].fmmemberindex[i].charfdid);
+      SaacServer_ACFMCharLogin_send(
+          family[winindex].fmmemberindex[i].onlineflag, SUCCESSFUL, winindex,
+          floor, family[winindex].fmpopular,
+          family[winindex].fmmemberindex[i].charflag,
+          family[winindex].fmsetupflag, 1, i,
+          family[winindex].fmmemberindex[i].charfdid);
 #endif
 #else
       {
@@ -3443,7 +3441,7 @@ int ACGMFixFMData(int index, char *fmname, char *charid, char *cmd,
   if (index < 0 || index > MAX_FAMILY)
     return -1;
   logErr("GMFixFMData index:%d charid:%s cmd:%s data:%s\n", index, charid, cmd,
-      data);
+         data);
   strcpy(fmname, family[index].fmname);
   if (charid[0] == '-' && charid[1] == '1') {
     for (i = 0; i < familymaxint; i++) {
@@ -3913,7 +3911,8 @@ int readOneFamilyFromTi(int ti) {
   char filename[256];
   struct stat s;
 
-  snprintf(filename, sizeof(filename), "%s/Family.%d", g_saac_config.familydir, ti);
+  snprintf(filename, sizeof(filename), "%s/Family.%d", g_saac_config.familydir,
+           ti);
 
   if (stat(filename, &s) < 0)
     return 0;

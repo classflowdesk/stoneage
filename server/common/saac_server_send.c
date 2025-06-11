@@ -1147,74 +1147,7 @@ int SaacServer_ServerDispatchMessage(int fd, char *encoded, char *debugfun) {
     return 0;
   }
 #endif
-
-#ifdef _CHARADATA_SAVE_SQL
-  if (strcmp(funcname, "CharadataSaveSQL") == 0) {
-    Charadata charadata;
-    int clifd = demkstr_int(ws->token_list[2]);
-    char *id = strcpysafe2(ws->string_buffer[2], ws->work_buf_size,
-                           demkstr_string(ws->token_list[3]));
-    charadata.CHAR_list_String =
-        strcpysafe2(ws->string_buffer[3], ws->work_buf_size,
-                    demkstr_string(ws->token_list[4]));
-    charadata.CHAR_list_info1_String =
-        strcpysafe2(ws->string_buffer[4], ws->work_buf_size,
-                    demkstr_string(ws->token_list[5]));
-    charadata.CHAR_list_info2_String =
-        strcpysafe2(ws->string_buffer[5], ws->work_buf_size,
-                    demkstr_string(ws->token_list[6]));
-    charadata.CHAR_list_count_String =
-        strcpysafe2(ws->string_buffer[6], ws->work_buf_size,
-                    demkstr_string(ws->token_list[7]));
-    charadata.CHAR_list_info3_String =
-        strcpysafe2(ws->string_buffer[7], ws->work_buf_size,
-                    demkstr_string(ws->token_list[8]));
-    charadata.CHAR_list_event_String =
-        strcpysafe2(ws->string_buffer[8], ws->work_buf_size,
-                    demkstr_string(ws->token_list[9]));
-    charadata.CHAR_list_info4_String =
-        strcpysafe2(ws->string_buffer[9], ws->work_buf_size,
-                    demkstr_string(ws->token_list[10]));
-    charadata.CHAR_list_attackmagic_String =
-        strcpysafe2(ws->string_buffer[10], ws->work_buf_size,
-                    demkstr_string(ws->token_list[11]));
-    charadata.CHAR_list_info5_String =
-        strcpysafe2(ws->string_buffer[11], ws->work_buf_size,
-                    demkstr_string(ws->token_list[12]));
-    charadata.CHAR_list_profession_String =
-        strcpysafe2(ws->string_buffer[12], ws->work_buf_size,
-                    demkstr_string(ws->token_list[13]));
-    charadata.CHAR_list_info6_String =
-        strcpysafe2(ws->string_buffer[13], ws->work_buf_size,
-                    demkstr_string(ws->token_list[14]));
-    charadata.CHAR_list_info_String =
-        strcpysafe2(ws->string_buffer[14], ws->work_buf_size,
-                    demkstr_string(ws->token_list[15]));
-    charadata.CHAR_list_flg_String =
-        strcpysafe2(ws->string_buffer[15], ws->work_buf_size,
-                    demkstr_string(ws->token_list[16]));
-    charadata.CHAR_list_skill_String =
-        strcpysafe2(ws->string_buffer[16], ws->work_buf_size,
-                    demkstr_string(ws->token_list[17]));
-    charadata.CHAR_list_item_String =
-        strcpysafe2(ws->string_buffer[17], ws->work_buf_size,
-                    demkstr_string(ws->token_list[18]));
-    charadata.CHAR_list_title_String =
-        strcpysafe2(ws->string_buffer[18], ws->work_buf_size,
-                    demkstr_string(ws->token_list[19]));
-    charadata.CHAR_list_mail_String =
-        strcpysafe2(ws->string_buffer[19], ws->work_buf_size,
-                    demkstr_string(ws->token_list[20]));
-
-    int saveindex = demkstr_int(ws->token_list[21]);
-    int flag = demkstr_int(ws->token_list[22]);
-    SaacServer_CharadataSaveSQL_recv(fd, clifd, id, charadata, saveindex, flag);
-    return 0;
-  }
-#endif
-
   sprintf(debugfun, "%s", funcname);
-
   return -1;
 }
 

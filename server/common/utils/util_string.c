@@ -5,16 +5,20 @@
 #define PRIME 211
 
 int hashpjw(const char *s) {
+  return hashpjwEx(s, PRIME);
+}
+
+int hashpjwEx(const char *src, const int prime) {
   char *p;
   unsigned int h = 0, g;
-  for (p = s; *p; p++) {
+  for (p = src; *p; p++) {
     h = (h << 4) + (*p);
     if ((g = h & 0xF0000000) != 0) {
       h = h ^ (g >> 24);
       h = h ^ g;
     }
   }
-  return h % PRIME;
+  return h % prime;
 }
 
 int getHash(const char *s) {
@@ -296,13 +300,6 @@ int easyGetTokenFromBuf(const char *src, const char *delim, const int count,
   return 1;
 }
 
-double time_diff(struct timeval t1, struct timeval t2) {
-  return ((t1.tv_sec - t2.tv_sec) + (t1.tv_usec - t2.tv_usec) / (double)1E6);
-}
-
-unsigned time_diff_us(struct timeval t1, struct timeval t2) {
-  return (t1.tv_sec - t2.tv_sec) * 1000000 + (t1.tv_usec - t2.tv_usec);
-}
 
 BOOL GeneralSplitImpl(const char *src, const char *delim, const int index,
                       char *buf, const int buflen, const char *file,

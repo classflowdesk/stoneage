@@ -404,7 +404,9 @@ int CHAR_findEmptyItemBox(int index) {
 #endif
 #ifdef _TRUMP_EQUIPMENT
 #define NOTRUMP                                                                \
-  { CHAR_talkToCli(index, -1, "���ķ�����������δ������", CHAR_COLORWHITE); }
+  {                                                                            \
+    CHAR_talkToCli(index, -1, "���ķ�����������δ������", CHAR_COLORWHITE);      \
+  }
 #endif
 static BOOL CHAR_sendSIToCli(int charindex, int from, int to) {
   int fd = getfdFromCharaIndex(charindex);
@@ -512,10 +514,11 @@ static BOOL CHAR_moveItemFromItemBoxToEquip(int index, int fromindex,
                missiontable[mindex].heroinfo) ||
         strcmp(ITEM_getChar(fromid, ITEM_ANGELINFO), nameinfo)) {
 
-      CHAR_talkToCli(index, -1,
-                     "�Ⲣ��������������޷�װ���"
-                     "�",
-                     CHAR_COLORYELLOW);
+      CHAR_talkToCli(
+          index, -1,
+          "�Ⲣ��������������޷�װ���"
+          "�",
+          CHAR_COLORYELLOW);
       return FALSE;
     }
   }
@@ -894,12 +897,12 @@ void CHAR_ItemUse(int char_index, int to_char_index, int haveitem_index) {
                                                                ITEM_USEFUNC);
   if (usefunc) {
     {
-      LogItem(CHAR_getChar(char_index, CHAR_NAME), /* ƽ�ҷo */
+      LogItem(CHAR_getChar(char_index, CHAR_NAME),
               CHAR_getChar(char_index, CHAR_CDKEY),
-#ifdef _add_item_log_name // WON ADD ��item��log������item����
+#ifdef _add_item_log_name
               item_index,
 #else
-               ITEM_getInt(item_index, ITEM_ID),
+              ITEM_getInt(item_index, ITEM_ID),
 #endif
               "Use(ʹ�õ���)", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -909,9 +912,9 @@ void CHAR_ItemUse(int char_index, int to_char_index, int haveitem_index) {
     }
     usefunc(char_index, to_char_index, haveitem_index);
   } else {
-      char ansmsg[256];
-      strcpysafe(ansmsg, sizeof(ansmsg), "ʲ��Ҳû�з�����");
-      CHAR_talkToCli(char_index, -1, ansmsg, CHAR_COLORWHITE);
+    char ansmsg[256];
+    strcpysafe(ansmsg, sizeof(ansmsg), "ʲ��Ҳû�з�����");
+    CHAR_talkToCli(char_index, -1, ansmsg, CHAR_COLORWHITE);
   }
 }
 
@@ -987,7 +990,7 @@ BOOL CHAR_DropItemFXY(int char_index, int itemchar_index, int fl, int x, int y,
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
               item_index,
 #else
-               ITEM_getInt(item_index, ITEM_ID), /* ʧ��  ة  į */
+              ITEM_getInt(item_index, ITEM_ID), /* ʧ��  ة  į */
 #endif
               "Drop(��������)", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -1239,7 +1242,7 @@ void CHAR_DropItem(int char_index, int itemchar_index) {
 #ifdef _add_item_log_name // WON ADD ��item��log������item����
               item_index,
 #else
-               ITEM_getInt(item_index, ITEM_ID), /* ʧ��  ة  į */
+              ITEM_getInt(item_index, ITEM_ID), /* ʧ��  ة  į */
 #endif
               "Drop(��������)", CHAR_getInt(char_index, CHAR_FLOOR),
               CHAR_getInt(char_index, CHAR_X), CHAR_getInt(char_index, CHAR_Y),
@@ -1387,9 +1390,7 @@ void CHAR_DropItem(int char_index, int itemchar_index) {
               snprintf(tmpbuf, sizeof(tmpbuf), "���� %s ��ע��һ�Ų�ȯ",
                        casinomap[j].casinoinfo);
               if (dropflag >= MAXSTAKENUM) {
-                snprintf(tmpbuf, sizeof(tmpbuf),
-                         "���Ѿ���ע����ˣ��޷�����ע�"
-                         "�");
+                snprintf(tmpbuf, sizeof(tmpbuf), "DROP FLAG 大于最大的数值");
                 CHAR_talkToCli(char_index, -1, tmpbuf, CHAR_COLORYELLOW);
                 return;
               }
@@ -1486,7 +1487,7 @@ void CHAR_DropItem(int char_index, int itemchar_index) {
   }
 #ifdef _DROPCHECK
   if (droped != 1) {
-    CHAR_talkToCli(char_index, -1, "��Χ�ĵ����Ѿ����ˡ�", CHAR_COLORYELLOW);
+    CHAR_talkToCli(char_index, -1, "不能丢弃物品", CHAR_COLORYELLOW);
     return;
   }
 #endif
@@ -1597,16 +1598,19 @@ static int CHAR_PickUpItemFXY(int char_index, int fl, int x, int y,
               int pickupflag = 0;
               casinoflag = 1;
               if (casinomap[i].dropflag == 0) {
-                CHAR_talkToCli(char_index, -1,
-                               "�����Ѿ��޷�ȡ����ע��ȯ�ˣ"
-                               "�",
-                               CHAR_COLORYELLOW);
+                CHAR_talkToCli(
+                    char_index, -1,
+                    "�����Ѿ��޷�ȡ����ע��ȯ�ˣ"
+                    "�",
+                    CHAR_COLORYELLOW);
                 return -1;
               }
               stakeflag = CHAR_getWorkInt(char_index, CHAR_WORKSTAKEFLAG);
               if (stakeflag == 0) {
                 CHAR_talkToCli(char_index, -1,
-                               "����û����ע�������޷�ȡ�ز�ȯ�"
+                               "����û����ע�������޷�ȡ�ز�"
+                               "ȯ"
+                               "�"
                                "�",
                                CHAR_COLORYELLOW);
                 return -1;
@@ -1647,7 +1651,9 @@ static int CHAR_PickUpItemFXY(int char_index, int fl, int x, int y,
                 CHAR_setWorkInt(char_index, CHAR_WORKSTAKEFLAG, stakeflag);
               if (pickupflag == 0) {
                 CHAR_talkToCli(char_index, -1,
-                               "��û���ڴ���ע�������޷�ȡ�ز�ȯ�"
+                               "��û���ڴ���ע�������޷�ȡ�ز�"
+                               "ȯ"
+                               "�"
                                "�",
                                CHAR_COLORYELLOW);
                 return -1;
@@ -2067,8 +2073,8 @@ static BOOL CHAR_DropMoneyFXY(int char_index, int amount, int fl, int x, int y,
 #endif
       if (amount >= 100) { /* ����ë  ���׷�� */
         LogStone(-1, CHAR_getChar(char_index, CHAR_NAME), /* ƽ�ҷ�   */
-                 CHAR_getChar(char_index, CHAR_CDKEY), /* �����ǡ�ID */
-                 amount,                               /* �ź� */
+                 CHAR_getChar(char_index, CHAR_CDKEY),    /* �����ǡ�ID */
+                 amount,                                  /* �ź� */
                  CHAR_getInt(char_index, CHAR_GOLD), "Drop(���ý�Ǯ)",
                  CHAR_getInt(char_index, CHAR_FLOOR),
                  CHAR_getInt(char_index, CHAR_X),
@@ -2110,8 +2116,8 @@ static BOOL CHAR_DropMoneyFXY(int char_index, int amount, int fl, int x, int y,
 #endif
     if (amount >= 100) { /* ����ë  ���׷�� */
       LogStone(-1, CHAR_getChar(char_index, CHAR_NAME), /* ƽ�ҷ�   */
-               CHAR_getChar(char_index, CHAR_CDKEY), /* �����ǡ�ID */
-               amount,                               /* �ź� */
+               CHAR_getChar(char_index, CHAR_CDKEY),    /* �����ǡ�ID */
+               amount,                                  /* �ź� */
                CHAR_getInt(char_index, CHAR_GOLD), "Drop(���ý�Ǯ)",
                CHAR_getInt(char_index, CHAR_FLOOR),
                CHAR_getInt(char_index, CHAR_X),
@@ -2742,7 +2748,8 @@ void CHAR_movePetItem(int char_index, int petid, int fromindex, int toindex) {
         /*
                                         if (CHAR_getInt( char_index,
            CHAR_RIDEPET ) == petid ){ CHAR_talkToCli( char_index, -1,
-           "����еĳ��޷�װ������Ʒ��", CHAR_COLORRED
+           "����еĳ��޷�װ������Ʒ��",
+           CHAR_COLORRED
            ); return;
                                         }
         */
@@ -2801,7 +2808,9 @@ void CHAR_CheckUserItem(int char_index) {
             char itemname[128];
             sprintf(itemname,
                     "���ĵ���:%"
-                    "s�������������������ֽ׶Σ�ϵͳ�Զ��ջء"
+                    "s�������������������ֽ׶Σ�ϵͳ�Զ��"
+                    "ջ"
+                    "ء"
                     "�",
                     ITEM_getChar(item_index, ITEM_NAME));
             CHAR_talkToCli(char_index, -1, itemname, CHAR_COLORYELLOW);

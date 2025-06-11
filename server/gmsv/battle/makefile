@@ -1,5 +1,5 @@
 INCFLAGS=-I../include -I../../lua -I../../common
-CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
+CFLAGS=-m64 -w -O3 -Wall -pipe $(INCFLAGS)
 
 TARGET=libbattle.a
 SRC=$(wildcard *.c)
@@ -11,8 +11,6 @@ RM=rm -f
 AR=ar cr
 MV=mv
 RANLIB=ranlib
-SED=sed
-SHELL=/bin/sh
 endif
 
 all: $(TARGET)

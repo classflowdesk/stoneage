@@ -59,32 +59,10 @@ Table dbt[MAXTABLE];
 
 static void dbShowAllTable(void);
 
-// Spock 2000/10/12
-int dbHash(const char *s) {
-  char *p;
-  unsigned int h = 0, g;
-  for (p = s; *p; p++) {
-    h = (h << 4) + (*p);
-    if ((g = h & 0xf0000000) != 0) {
-      h = h ^ (g >> 24);
-      h = h ^ g;
-    }
-  }
-  return h % HASH_PRIME;
-}
-// Spock end
-
 static int reallocDB(void) {
   DBEntry *previous = gDBEntry;
   DBEntry *newbuf;
   int new_dbsize;
-  /* Spock deleted 2000/10/12
-      if( dbsize == 0 ){
-          new_dbsize = 1;
-      } else {
-          new_dbsize = dbsize * 2;
-      }
-  */
   // Spock+1 2000/10/12
   new_dbsize = dbsize + DBINIT_SIZE;
   newbuf = (DBEntry *)calloc(1, new_dbsize * sizeof(DBEntry));
@@ -193,26 +171,24 @@ static int reallocHash(int dbi) {
 }
 
 static int tableGetEntry(int dbi, char *k) {
-  int hashkey = dbHash(k);
+  int hashkey = hashpjwEx(k, HASH_PRIME);
   HashEntry *hash = dbt[dbi].hashtable;
   if (hash[hashkey].use == 0)
     return -1;
   while (1) {
-    // if (hash[hashkey].use == 1 && strcmp(hash[hashkey].key, k) == 0){
     if (hash[hashkey].use == 1) {
       if (strcmp(hash[hashkey].key, k) == 0)
         return hashkey;
     }
     hashkey = hash[hashkey].next;
     if (hashkey <= 0) {
-      // logErr("err not found hash[%x] -%s!\n", hashkey, k)
       return -1;
     }
   }
 }
 
 static int tableInsertNode(int dbi, char *k, int dbind) {
-  int hashkey = dbHash(k);
+  int hashkey = hashpjwEx(k, HASH_PRIME);
   int hashnext = -1;
   int i;
   HashEntry *hash = dbt[dbi].hashtable;

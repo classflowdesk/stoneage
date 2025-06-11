@@ -1,5 +1,4 @@
 #include "version.h"
-#include <string.h>
 #include "char.h"
 #include "object.h"
 #include "char_base.h"
@@ -8,9 +7,6 @@
 #include "pet_skill.h"
 #include "readmap.h"
 #include "battle.h"
-#ifdef _ALLBLUES_LUA
-#include "mylua/function.h"
-#endif
 enum {
 	CHAR_WORK_STONESELECT	= CHAR_NPCWORKINT1,
 };

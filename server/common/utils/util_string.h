@@ -26,6 +26,7 @@ char *chmopex(char *src);
 char *pohcd(char *src, const char *del_str);
 
 int hashpjw(const char *s);
+int hashpjwEx(const char *s, const int prime);
 
 int easyGetTokenFromBuf(const char *src, const char *delim, const int count,
                         char *output, const int len);
@@ -33,8 +34,5 @@ int easyGetTokenFromBuf(const char *src, const char *delim, const int count,
 void util_strncpysafe1(char *dst, const int dst_len, const char *src,
                        const int copy_bytes);
 void util_strncpysafe2(char *dst, const int dst_len, const char *src);
-
-double time_diff(struct timeval t1, struct timeval t2);
-unsigned time_diff_us(struct timeval t1, struct timeval t2);
 
 #endif /* __COMMON_UTILS_UTIL_STRING_H__ */

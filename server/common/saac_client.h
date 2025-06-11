@@ -403,22 +403,14 @@ void SaacClient_OnlineBuy_recv(int fd, char *data);
 void SaacClient_OldToNew_send(int acfd, int fd, char *id, int point);
 void SaacClient_OldToNew_recv(int fd, char *data);
 #endif
-
-#ifdef _CHARADATA_SAVE_SQL
-void SaacClient_CharadataSaveSQL_send(int fd, char *id, Charadata charadata,
-                                      int saveindex, int flag);
-#endif
-
 #ifdef _LOTTERY_SYSTEM
 void SaacClient_LotterySystem_send();
 void SaacClient_LotterySystem_recv(char *data);
 #endif
-
 #ifdef _ALL_SERV_SEND
 void SaacClient_AllServSend_recv(char *data);
 void SaacClient_AllServSend_send(char *data);
 #endif
-
 #ifdef _OTHER_SAAC_LINK
 void SaacClient_OtherSaacLink_send(int acfd, char *filename, char *data);
 #endif

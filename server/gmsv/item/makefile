@@ -1,5 +1,5 @@
 INCFLAGS=-I../include -I../../lua -I../../common
-CFLAGS=-m32 -w -O3 -Wall -pipe $(INCFLAGS)
+CFLAGS=-m64 -w -O3 -Wall -pipe $(INCFLAGS)
 
 TARGET=libitem.a
 SRC=$(wildcard *.c)

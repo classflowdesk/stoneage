@@ -1,4 +1,3 @@
-#include <string.h>
 #include "battle.h"
 #include "char_base.h"
 #include "npccreate.h"
@@ -8,13 +7,13 @@
 #include "char_base.h"
 #include "npc_eventaction.h"
 #include "lua.h"
-#include "longzoro/version.h"
 #include "lauxlib.h"
 #include "lualib.h"
 #include "npcutil.h"
 #include "log.h"
 #ifdef _ALLBLUES_LUA   
-#ifdef _NEW_ITEM_
+#ifdef _NEW_ITEM_
+
 extern int CheckCharMaxItem(int charindex);
 #endif
 static int CreateNpc (lua_State *L) {
@@ -411,8 +410,10 @@ static int DelItemNum (lua_State *L)
 	int i, item_index;
 	char token[256];
 	int num=0;
-#ifdef _NEW_ITEM_
-	int itemMax = CheckCharMaxItem(index);
+#ifdef _NEW_ITEM_
+
+	int itemMax = CheckCharMaxItem(index);
+
 	for( i = CHAR_STARTITEMARRAY ; i < itemMax ; i++ ){
 #else
 	for( i = CHAR_STARTITEMARRAY ; i < CHAR_MAXITEMHAVE ; i++ ){

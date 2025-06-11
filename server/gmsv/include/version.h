@@ -3,8 +3,6 @@
 
 #include "correct_bug.h"
 #include "common.h"
-#include "longzoro/version.h"
-#include "longzoro/debug.h"
 
 /*  网络模型  */
 //#define _EPOLL_ET_MODE         // EPOLL_ET模型

@@ -15,10 +15,6 @@
 
 #define _ATTESTAION_ID 1
 
-#if _ATTESTAION_ID == 1 || _ATTESTAION_ID == 2
-  // #define _VERSION_25
-#endif
-
 #ifndef _VERSION_25
   #define _TEACHER_SYSTEM   // 导师系统(未开放)
   #define _ALLDOMAN        // (可开放) Syu ADD 排行榜NPC
@@ -144,9 +140,6 @@
   #define FAMILY_MAX_MEMBER       50    // 家族人数
 #endif
 
-#if _ATTESTAION_ID != 11
-  #define _CHARADATA_SAVE_SQL      //将数据写入SQL
-#endif
 #if 1
   #define _ONE_SERVER              // 单机绑定
 #endif

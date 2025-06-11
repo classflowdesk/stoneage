@@ -47,18 +47,12 @@ void sasql_OnlineCost_add(int cost, int num, int point);
 char *sasql_OnlineBuy(char *id, char *costpasswd);
 void sasql_OnlineBuy_add(char *coststr, int type, int num);
 #endif
-#endif
 #ifdef _FORMULATE_AUTO_PK
 BOOL sasql_add_FormulateAutoPk(char *ID, int point);
 #endif
 #ifdef _OLDPS_TO_MD5PS
 void sasql_OldpsToMd5ps();
 #endif
-
-#ifdef _CHARADATA_SAVE_SQL
-
-void sasql_charadata_Save(char *id, char *table, char *data, int saveindex,
-                          int flag);
 
 enum {
   INSERT,
@@ -67,6 +61,6 @@ enum {
   DELETE,
 };
 
-#endif
+#endif // _SASQL
 
 #endif // __SASQL_H__

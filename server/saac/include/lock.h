@@ -2,9 +2,7 @@
 #define __LOCK_H__
 
 //
-#include "version.h"
-//
-#include "common.h"
+#include "saac_common.h"
 
 typedef struct tagLockNode {
   int use;
@@ -17,7 +15,14 @@ typedef struct tagLockNode {
   struct tagLockNode *next, *prev;
 } LockNode;
 
-extern LockNode **userlock;
+#ifdef __LOCK_C__
+#define EXT
+#else
+#define EXT extern
+#endif
+
+EXT LockNode **g_lock;
+#undef EXT // 必须在结束之前取消EXT的定义
 
 void Lock_Init(void);
 #ifdef _LOCK_ADD_NAME
@@ -36,5 +41,6 @@ int GetMemLockServer(int entry, char *cdkey, char *result);
 int LockNode_getGname(int entries, char *id, char *gname);
 
 int ChangeMemDeadline(int entry, char *cdkey, char *deadline);
+
 
 #endif /* __LOCK_H__ */

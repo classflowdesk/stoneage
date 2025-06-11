@@ -746,7 +746,7 @@ BOOL BATTLE_MakeCharaString(int battleindex, char *pszCommand, int size) {
 #endif
 #ifdef _PETSKILL_BECOMEPIG // ������������������ʱ��ѶϢ���� Client
           if (CHAR_getInt(char_index, CHAR_BECOMEPIG) > 120) // ���������
-            rideflg = -3; // client�����ж���ʾ����������
+            rideflg = -3; // client
                           // (��Ӧ��client����Ϊp_party[ BattleMyNo ]->onRide)
 #endif
           CHAR_setWorkInt(char_index, CHAR_WORKPETFALL, 0);
@@ -767,16 +767,14 @@ BOOL BATTLE_MakeCharaString(int battleindex, char *pszCommand, int size) {
               szEscapePetName, petlevel, pethp, petmaxhp);
       STRCPY_TAIL(pszTop, pszLast, szBuffer);
       if (pszTop >= pszLast)
-        return FALSE; // ����������
+        return FALSE;
     }
   }
-
   return TRUE;
 }
 
 void BATTLE_BpSendToWatch(BATTLE *pBattle,  //
-                          char *pszBcString // BC) {
-
+                          char *pszBcString) { // BC
   char szBp[256];
   int flg = 0, i, char_index;
   if (pBattle == NULL)

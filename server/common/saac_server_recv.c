@@ -20,7 +20,6 @@
 
 char retdata[CHARDATASIZE];
 char result[CHARDATASIZE];
-extern gmsv gs[MAXCONNECTION];
 
 // Spock +1 2000/11/1
 #define MAX_PROCESS 16777216
@@ -238,9 +237,9 @@ void SaacServer_ACLock_recv(int ti, char *id, int lock, int mesgid) {
     if (lockUser(gs[ti].name, id, "0", lock, result, sizeof(result), retdata,
                  sizeof(retdata), "0", "0") < 0) {
 #endif
-      logOut("锁定用户: %s 失败\n", id);
+      logOut("锁定用户: %s 失败.\n", id);
     } else {
-      logOut("锁定用户: %s 成功\n", id);
+      logOut("锁定用户: %s 成功.\n", id);
     }
   }
   // Spock end
@@ -1402,9 +1401,6 @@ int UNlockM_UnlockPlayer(void) {
 }
 
 #ifdef _ANGEL_SUMMON
-extern int saveMissionTable(void);
-// void SaacServer_ACMissionTable_recv( int fd, int num, int type, char *data,
-// int charaindex)
 void SaacServer_ACMissionTable_recv(int fd, int num, int type, char *data,
                                     char *angelinfo) {
   int i;
@@ -1414,36 +1410,23 @@ void SaacServer_ACMissionTable_recv(int fd, int num, int type, char *data,
       char alldata[MISSTION_TABLE_SIZE * 100];
       alldata[0] = '\0';
       for (i = 0; i < MISSTION_TABLE_SIZE; i++) {
-        if (missiontable[i].flag == MISSION_NONE)
+        if (g_mission_table[i].flag == MISSION_NONE)
           continue;
-        sprintf(buf, "%d|%s|%s|%d|%d|%d|%d ", i, missiontable[i].angelinfo,
-                missiontable[i].heroinfo, missiontable[i].mission,
-                missiontable[i].flag, missiontable[i].time,
-                missiontable[i].limittime);
+        sprintf(buf, "%d|%s|%s|%d|%d|%d|%d ", i, g_mission_table[i].angelinfo,
+                g_mission_table[i].heroinfo, g_mission_table[i].mission,
+                g_mission_table[i].flag, g_mission_table[i].time,
+                g_mission_table[i].limittime);
         strcat(alldata, buf);
       }
       SaacServer_ACMissionTable_send(fd, -1, 1, alldata, "");
       return;
     }
-    /*
-    else { // ask one data
-            sprintf( buf, "%d|%s|%s|%d|%d|%d ",
-                    num,
-                    missiontable[num].angelinfo,
-                    missiontable[num].heroinfo,
-                    missiontable[num].mission,
-                    missiontable[num].flag,
-                    missiontable[num].time );
-            SaacServer_ACMissionTable_send( fd, 1, 1, buf, "");
-            return;
-    }
-    */
   } else if (type == 2) { // add data
     int empty = -1;
 
     logOut("\n增加精灵召唤任务:%s \n", data);
     for (i = 0; i < MISSTION_TABLE_SIZE; i++) {
-      if (missiontable[i].angelinfo[0] == '\0') {
+      if (g_mission_table[i].angelinfo[0] == '\0') {
         empty = i;
         break;
       }
@@ -1454,46 +1437,34 @@ void SaacServer_ACMissionTable_recv(int fd, int num, int type, char *data,
     }
 
     easyGetTokenFromBuf(data, "|", 1, buf, sizeof(buf));
-    strcpy(missiontable[empty].angelinfo, buf);
+    strcpy(g_mission_table[empty].angelinfo, buf);
     easyGetTokenFromBuf(data, "|", 2, buf, sizeof(buf));
-    strcpy(missiontable[empty].heroinfo, buf);
+    strcpy(g_mission_table[empty].heroinfo, buf);
     easyGetTokenFromBuf(data, "|", 3, buf, sizeof(buf));
-    missiontable[empty].mission = atoi(buf);
+    g_mission_table[empty].mission = atoi(buf);
     easyGetTokenFromBuf(data, "|", 4, buf, sizeof(buf));
-    missiontable[empty].flag = atoi(buf);
-    // easyGetTokenFromBuf( data, "|", 5, buf, sizeof( buf));
-    // missiontable[empty].time = atoi( buf);
-    missiontable[empty].time = (int)time(NULL);
-    missiontable[empty].limittime = 1;
-
-    saveMissionTable();
-
-    sprintf(buf, "%d|%s|%s|%d|%d|%d|%d ", empty, missiontable[empty].angelinfo,
-            missiontable[empty].heroinfo, missiontable[empty].mission,
-            missiontable[empty].flag, missiontable[empty].time,
-            missiontable[empty].limittime);
-
+    g_mission_table[empty].flag = atoi(buf);
+    g_mission_table[empty].time = (int)time(NULL);
+    g_mission_table[empty].limittime = 1;
+    mission_table_save();
+    sprintf(buf, "%d|%s|%s|%d|%d|%d|%d ", empty,
+            g_mission_table[empty].angelinfo, g_mission_table[empty].heroinfo,
+            g_mission_table[empty].mission, g_mission_table[empty].flag,
+            g_mission_table[empty].time, g_mission_table[empty].limittime);
     for (i = 0; i < MAXCONNECTION; i++) {
       if (gs[i].use && gs[i].name[0]) {
         SaacServer_ACMissionTable_send(i, 1, 1, buf, "");
       }
     }
-
     SaacServer_ACMissionTable_send(fd, 0, 2, "", angelinfo);
-
     return;
   } else if (type == 3) { // del data
-
-    delMissionTableOnedata(num);
-
-    saveMissionTable();
-
+    mission_table_delete(num);
+    mission_table_save();
     return;
   } else if (type == 4) { // change data flag
-
     char angelinfo[64];
     int limittime = 0;
-
     logOut("\n增加精灵召唤任务:%s:%d \n", data, num);
 
     if (num == MISSION_DOING) {
@@ -1506,25 +1477,25 @@ void SaacServer_ACMissionTable_recv(int fd, int num, int type, char *data,
     }
 
     for (i = 0; i < MISSTION_TABLE_SIZE; i++) {
-      if (missiontable[i].angelinfo[0] == '\0')
+      if (g_mission_table[i].angelinfo[0] == '\0')
         continue;
-      if (strcmp(missiontable[i].angelinfo, angelinfo) &&
-          strcmp(missiontable[i].heroinfo, angelinfo))
+      if (strcmp(g_mission_table[i].angelinfo, angelinfo) &&
+          strcmp(g_mission_table[i].heroinfo, angelinfo))
         continue;
 
-      missiontable[i].flag = num;
+      g_mission_table[i].flag = num;
 
-      missiontable[i].time = time(NULL);
+      g_mission_table[i].time = time(NULL);
       if (num == MISSION_DOING) {
-        missiontable[i].limittime = limittime;
+        g_mission_table[i].limittime = limittime;
       }
 
-      saveMissionTable();
+      mission_table_save();
 
-      sprintf(buf, "%d|%s|%s|%d|%d|%d|%d ", i, missiontable[i].angelinfo,
-              missiontable[i].heroinfo, missiontable[i].mission,
-              missiontable[i].flag, missiontable[i].time,
-              missiontable[i].limittime);
+      sprintf(buf, "%d|%s|%s|%d|%d|%d|%d ", i, g_mission_table[i].angelinfo,
+              g_mission_table[i].heroinfo, g_mission_table[i].mission,
+              g_mission_table[i].flag, g_mission_table[i].time,
+              g_mission_table[i].limittime);
       for (i = 0; i < MAXCONNECTION; i++) {
         if (gs[i].use && gs[i].name[0]) {
           SaacServer_ACMissionTable_send(i, 1, 1, buf, "");
@@ -1539,7 +1510,7 @@ void SaacServer_ACMissionTable_recv(int fd, int num, int type, char *data,
 #ifdef _TEACHER_SYSTEM
 void SaacServer_ACCheckCharacterOnLine_recv(int fd, int charaindex, char *id,
                                             char *name, int flag) {
-  LockNode *ln = userlock[getHash(id) & 0xff];
+  LockNode *ln = g_lock[getHash(id) & 0xff];
   // 须要确认名字
   if (name != NULL) {
     while (ln != NULL) {
@@ -1707,7 +1678,7 @@ void SaacServer_ItemPetLocked_recv(int fd, int clifd, char *id,
   if (strcmp(data, "安全锁已经成功解锁！") == 0) {
     SaacServer_ItemPetLocked_send(fd, clifd, 1, data);
   } else if (strcmp(data, "您还未设置安全锁解锁密码，为了确保安全，请输入一次六"
-                          "位以上密码做为安全锁密码并劳劳记住！") == 0) {
+                          "位以上密码做为安全锁密码并牢牢记住！") == 0) {
     SaacServer_ItemPetLocked_send(fd, clifd, 0, data);
   } else {
     SaacServer_ItemPetLocked_send(fd, clifd, -1, data);
@@ -1739,7 +1710,7 @@ void SaacServer_OnlineBuy_recv(int fd, int clifd, char *id, char *costpasswd) {
 void SaacServer_OldToNew_recv(int fd, int clifd, char *id, int point) {
   int vippoint = sasql_add_vippoint(id, point);
   char data[256];
-  sprintf(data, "旧会员点%d已转换至SQL里，你当前会员点共%d", point, vippoint);
+  sprintf(data, "旧会员点%d已转换至SQL里, 你当前会员点共%d", point, vippoint);
   SaacServer_OldToNew_send(fd, clifd, data);
 }
 #endif
@@ -1749,55 +1720,12 @@ void SaacServer_FormulateAutoPk_recv(int fd, int clifd, char *id, int point) {
   int pkpoint = sasql_add_FormulateAutoPk(id, point);
   char data[256];
   if (pkpoint == -1) {
-    sprintf(data, "您的乱舞积分%d无法转换进SQL里，请与管理员联系！", point);
+    sprintf(data, "您的乱舞积分%d无法转换进SQL里, 请与管理员联系！", point);
   } else {
-    sprintf(data, "已将您的乱舞积分%d已转换至SQL里，你当前乱舞积分共%d", point,
+    sprintf(data, "已将您的乱舞积分%d已转换至SQL里, 你当前乱舞积分共%d", point,
             pkpoint);
   }
   SaacServer_FormulateAutoPk_send(fd, clifd, data);
-}
-#endif
-
-#ifdef _CHARADATA_SAVE_SQL
-void SaacServer_CharadataSaveSQL_recv(int fd, int clifd, char *id,
-                                      Charadata charadata, int saveindex,
-                                      int flag) {
-  sasql_charadata_Save(id, "list", charadata.CHAR_list_String, saveindex,
-                       DELETE);
-  sasql_charadata_Save(id, "list_info1", charadata.CHAR_list_info1_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_info2", charadata.CHAR_list_info2_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_count", charadata.CHAR_list_count_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_info3", charadata.CHAR_list_info3_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_event", charadata.CHAR_list_event_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_info4", charadata.CHAR_list_info4_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_attackmagic",
-                       charadata.CHAR_list_attackmagic_String, saveindex,
-                       DELETE);
-  sasql_charadata_Save(id, "list_info5", charadata.CHAR_list_info5_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_profession",
-                       charadata.CHAR_list_profession_String, saveindex,
-                       DELETE);
-  sasql_charadata_Save(id, "list_info6", charadata.CHAR_list_info6_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_info", charadata.CHAR_list_info_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_flg", charadata.CHAR_list_flg_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_skill", charadata.CHAR_list_skill_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_item", charadata.CHAR_list_item_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_title", charadata.CHAR_list_title_String,
-                       saveindex, DELETE);
-  sasql_charadata_Save(id, "list_mail", charadata.CHAR_list_mail_String,
-                       saveindex, DELETE);
 }
 #endif
 

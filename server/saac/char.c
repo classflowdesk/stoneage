@@ -6,16 +6,12 @@
 #include "saac_server.h"
 #include "util.h"
 
-
 // CoolFish: Family 2001/6/12
 #include "acfamily.h"
 
 // Arminius 7.17 memory lock
 #include "lock.h"
 #include "recv.h"
-
-
-extern gmsv gs[MAXCONNECTION];
 
 static void getCharNameFromString(const char *in, char *output);
 static void getCharOptionFromString(const char *in, char *output);
@@ -55,10 +51,6 @@ static void makeCharPoolItemFileName(char *id, char *output, int outputlen);
       logFile(fn, format, ##args);                                             \
     }                                                                          \
   }
-
-#ifdef _ANGEL_SUMMON
-MissionTable missiontable[MISSTION_TABLE_SIZE];
-#endif
 
 void charLoadCallback(int ti, int auth, char *c0, char *c1, char *c2, char *c3,
                       char *c4, int i0, int i1) {

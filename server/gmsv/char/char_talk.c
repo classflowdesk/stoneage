@@ -23,13 +23,6 @@
 #include "char_talk.h"
 #include "net.h"
 
-#ifdef _TALK_MOVE_FLOOR
-#include "longzoro/move.h"
-#endif
-#ifdef _PLAYER_QUESTION_ONLIEN
-#include "longzoro/playerquestion.h"
-#endif
-
 extern int channelMember[FAMILY_MAXNUM][FAMILY_MAXCHANNEL][FAMILY_MAXMEMBER];
 #ifdef _NEW_ITEM_
 
@@ -310,10 +303,6 @@ static CHAR_ChatMagicTable CHAR_cmtbl[] = {
     {"tile", CHAR_CHAT_Fixtile, TRUE, 0, 3, ""},
     {"obj", CHAR_CHAT_Fixobj, TRUE, 0, 3, ""},
 //	{ "fukuwa",		CHAR_CHAT_Fukuwa,      TRUE,   0,  3, "" },
-#endif
-#ifdef _PLAYER_QUESTION_ONLIEN
-    {"PlayerQuestion", CHAR_CHAT_DEBUG_PlayerQuestion, TRUE, 0, 3,
-     "问题 答案 奖品类别 奖品数值"},
 #endif
 #ifdef _GM_SAVE_ALL_CHAR
     {"GmSaveAllChar", CHAR_CHAT_DEBUG_GmSaveAllChar, TRUE, 0, 3, ""},
@@ -1295,18 +1284,6 @@ void CHAR_Talk(int fd, int index, char *message, int color, int area) {
       }
       return;
     }
-  }
-#endif
-
-#ifdef _TALK_MOVE_FLOOR
-  if (talk_move_map(index, messageeraseescape) == TRUE) {
-    return;
-  }
-#endif
-
-#ifdef _PLAYER_QUESTION_ONLIEN
-  if (PlayQuestionOnline(index, messageeraseescape) == TRUE) {
-    return;
   }
 #endif
 

@@ -1,11 +1,8 @@
-#include <string.h>
 #include "lua.h"
-#include "longzoro/version.h"
 #include "lauxlib.h"
 #include "lualib.h"
 #include "net.h"
 #include "log.h"
-#include "longzoro/sasql.h"
 
 #ifdef _ALLBLUES_LUA
 #ifdef _ALLBLUES_LUA_1_4

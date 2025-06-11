@@ -1,10 +1,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-//
-#include "version.h"
-//
-#include "common.h"
+#include "saac_common.h"
 
 #define SA_NODEFER 0x40000000
 #define SA_NOMASK SA_NODEFER
@@ -12,11 +9,7 @@
 
 char *chartime();
 
-#define MAXCONNECTION 15
-#define USERID_MAX 32
-#define CHARNAME_MAX 32
-
-typedef struct _gmsv {
+typedef struct tagGmsv {
   int use;
   int fd;
   char name[128];
@@ -77,7 +70,7 @@ EXT int g_mem_buffer_finder;
 EXT char g_temp_buffer[1 << 20];
 EXT Connection *g_con; // SAAC-Client连接
 EXT int g_main_sock_fd; // 主sock文件描述符
-EXT struct sockaddr_in g_local_addr; // 本地的地址
+EXT struct sockaddr_in g_local_addr; // 本地SAAC服务器的TCP地址
 EXT struct timeval select_timeout; // 选择超时时间
 EXT time_t sys_time; // Robin add
 EXT gmsv gs[MAXCONNECTION]; // SAAC-GMSV连接

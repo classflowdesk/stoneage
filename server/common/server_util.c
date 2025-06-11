@@ -2,14 +2,6 @@
 
 #include "server_util.h"
 
-// #ifdef _CHARADATA_SAVE_SQL
-// SAAC_SERVER_MAXLSRPCARGS = 65;
-// #else
-// SAAC_SERVER_MAXLSRPCARGS = 8;
-// #endif
-// SAAC_CLIENT_MAXLSRPCARGS = 8;
-// GMSV_SERVER_MAXLSRPCARGS = 14;
-
 #ifdef SERVER_ENCRYPT
 long ringoCompressor(unsigned char *code, long codelen, unsigned char *text,
                      long textlen);

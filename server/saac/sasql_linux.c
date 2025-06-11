@@ -851,49 +851,6 @@ void sasql_OldpsToMd5ps() {
 }
 #endif
 
-#ifdef _CHARADATA_SAVE_SQL
-void sasql_charadata_Save(char *id, char *table, char *data, int saveindex,
-                          int flag) {
-  if (strlen(data) == 0)
-    return;
-
-  char sqlstr[1024 * 16];
-
-  if (flag == INSERT) {
-    sprintf(sqlstr, "INSERT INTO %s VALUES %s", table, data);
-  } else if (flag == SELECT) {
-  } else if (flag == UPDATE) {
-    sprintf(
-        sqlstr,
-        "UPDATE %s set %s WHERE CHAR_CDKEY=BINARY'%s' and CHAR_SAVEINDEX=%d",
-        table, data, id, saveindex);
-  } else if (flag == DELETE) {
-    sprintf(sqlstr,
-            "DELETE FROM %s WHERE CHAR_CDKEY=BINARY'%s' and CHAR_SAVEINDEX=%d",
-            table, id, saveindex);
-  }
-
-  if (!mysql_query(&mysql, sqlstr)) {
-    if (flag == DELETE) {
-      sasql_charadata_Save(id, table, data, saveindex, INSERT);
-    }
-    return;
-  } else {
-    printf(table);
-    if (flag == INSERT) {
-      printf(" INSERT error\n");
-    } else if (flag == SELECT) {
-      printf(" SELECT error\n");
-    } else if (flag == UPDATE) {
-      printf(" UPDATE error\n");
-    } else if (flag == DELETE) {
-      printf(" DELETE error\n");
-    }
-  }
-}
-
-#endif
-
 void sasql_CleanCdkey(int date) {
   char sqlstr[256];
 

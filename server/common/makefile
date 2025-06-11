@@ -18,7 +18,7 @@ TARGET=$(LIBUTIL) $(LIBSERVERUTIL) $(LIBSAACSERVER) $(LIBSAACCLIENT) $(LIBGMSVSE
 SRC=$(wildcard *.c)
 OBJ=$(SRC:.c=.o)
 
-UTILS_SRC=utils/md5.c utils/util_string.c utils/util_file.c
+UTILS_SRC=utils/md5.c utils/util_string.c utils/util_file.c utils/util_time.c
 UTILS_OBJ=$(UTILS_SRC:.c=.o)
 SERVERUTIL_SRC=server_util.c workspace.c
 SERVERUTIL_OBJ=$(SERVERUTIL_SRC:.c=.o)

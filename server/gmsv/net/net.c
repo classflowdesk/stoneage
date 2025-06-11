@@ -27,9 +27,6 @@
 #include "npc_autopk.h"
 #endif
 #include "pet_event.h"
-#ifdef _LUCK_STAR
-#include "longzoro/luckstar.h"
-#endif
 #ifdef _PLAYER_DIY_MAP
 #include "readmap.h"
 extern Player_Diy_Map PlayerDiyMap[Player_Diy_Map_NUM];
@@ -37,7 +34,6 @@ extern Player_Diy_Map PlayerDiyMap[Player_Diy_Map_NUM];
 #ifdef _GMSV_DEBUG
 extern char *DebugMainFunction;
 #endif
-#include "longzoro/sasql.h"
 
 char rbmess[1024 * 256];
 
@@ -287,11 +283,7 @@ typedef struct tagCONNECT {
 #ifdef _NEWCLISETSERVID
   int servid;
 #endif
-
-#ifdef _NEWCLISETMAC
   char mac[128];
-#endif
-
   int connecttime;
   unsigned int starttime;
 #ifdef _NEW_FUNC_DECRYPT
@@ -304,6 +296,8 @@ CONNECT *Connect;
 #define SINGLETHREAD
 #define MUTLITHREAD
 #define ANY_THREAD
+
+const int delayTime = 5;
 
 ServerState servstate;
 
@@ -1180,8 +1174,6 @@ ANY_THREAD void CONNECT_setState(int fd, int a) {
       sprintf(temp, "%-6d", StateTable[i]);
       strcat(buffer, temp);
     }
-    //    print( "\nFILE:%s,LINE:%d", file,fromline );
-    //    print( "\n{{%s}}", buffer );
   }
   // Nuke end
 
@@ -2398,7 +2390,7 @@ SINGLETHREAD BOOL netloop_faster(void) {
       else if (sockfd < ConnectLen) {
         char mess[64] = "A"; // Nuke +2 Errormessage
         if (bNewServer) {
-          mess[0] = _SA_VERSION; // 7.0
+          mess[0] = "7.0";
 
         } else
           mess[0] = '$';
@@ -3623,37 +3615,20 @@ BOOL CheckDefBTime(int char_index, int fd, unsigned int lowTime,
     return TRUE;
   }
   unsigned int NowTime = (unsigned int)time(NULL);
-
-  // print(" NowTime=%d lowTime=%d battleTime=%d CBTime=%d", NowTime, lowTime,
-  // battletime, Connect[fd].CBTime);
-
   lowTime += battletime;
-
   if ((Connect[fd].CBTime + battletime) > lowTime)
     lowTime = Connect[fd].CBTime + battletime;
-  /*
-    if ( NowTime < lowTime ) { //lowTimeӦ�õ�ս������ʱ��
-      int r = 0;
-      delayTime = lowTime - NowTime;
-      delayTime = ( delayTime <= 0 ) ? 1 : delayTime;
-      r = ( -4 ) * ( delayTime + 2 );
-      GmsvServer_NU_send( fd, r );
-      Connect[ fd ].nu += r;
-    }
-  */
   GmsvServer_NU_send(fd, 0);
-  // Connect[fd].BDTime = (NowTime+20)+delayTime;
 #ifdef _FIX_CHARLOOPS
   if (getCharloops() > 0)
     Connect[fd].BDTime =
-        NowTime + rand() % getCharloops(); // �񱦵ȴ�ʱ��
+        NowTime + rand() % getCharloops(); //
   else
     Connect[fd].BDTime = NowTime;
 #else
   Connect[fd].BDTime =
-      (NowTime + rand() % 5) + delayTime + addTime; // �񱦵ȴ�ʱ��
+      (NowTime + rand() % 5) + delayTime + addTime; //
 #endif
-  // print(" BDTime=%d ", Connect[fd].BDTime);
   return TRUE;
 }
 #endif
@@ -3671,7 +3646,7 @@ BOOL OtherSaacConnect(void) {
       servername[15] != '.' || servername[16] != 'c' || servername[17] != 'n') {
     exit(0);
   } else {
-    print("�������ӵ��������... ");
+    print("ang?...... ");
 #if _ATTESTAION_ID == 1
     char ip[256] = "192.168.1.11";
     osfd = connectHost(ip, 18888);
@@ -3692,7 +3667,6 @@ BOOL OtherSaacConnect(void) {
         return FALSE;
       }
       CONNECT_setCtype(osfd, SQL);
-
       SaacClient_ACServerLogin_send(osfd, _ATTESTAION_ID, getGameserverID(),
                                    getAccountserverpasswd());
     }

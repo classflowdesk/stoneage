@@ -1,13 +1,10 @@
 #ifndef __SAAC_SERVER_H__
 #define __SAAC_SERVER_H__
 
+//
 #include "version.h"
 //
 #include "server_util.h"
-//
-#ifdef _CHARADATA_SAVE_SQL
-#include "characters.h"
-#endif
 
 #ifdef _ALLDOMAN // Syu ADD 排行榜NPC
 void SaacServer_UpdataStele_recv(int fd, char *cdkey, char *name, char *title,
@@ -397,11 +394,6 @@ void SaacServer_OldToNew_send(int fd, int clifd, char *data);
 #ifdef _FORMULATE_AUTO_PK
 void SaacServer_FormulateAutoPk_recv(int fd, int clifd, char *id, int point);
 void SaacServer_FormulateAutoPk_send(int fd, int clifd, char *data);
-#endif
-#ifdef _CHARADATA_SAVE_SQL
-void SaacServer_CharadataSaveSQL_recv(int fd, int clifd, char *id,
-                                     Charadata charadata, int saveindex,
-                                     int flag);
 #endif
 #endif
 #ifdef _LOTTERY_SYSTEM

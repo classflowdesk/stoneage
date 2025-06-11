@@ -3,7 +3,6 @@
 #include "main.h"
 // 版本信息
 #include "copyright.h"
-#include "version.h"
 // 标准 C 语言头文件
 #include <getopt.h>
 // CoolFish: Family 2001/5/9
@@ -41,27 +40,15 @@ char *chartime() {
   buf[strlen(buf) - 1] = 0;
   return (buf);
 }
+
 #ifdef _ANGEL_SUMMON
-extern MissionTable missiontable[MISSTION_TABLE_SIZE];
-static int initMissionTable(void);
-int saveMissionTable(void);
+int mission_table_init(void);
+int mission_table_save(void);
 void checkMissionTimelimit(void);
 #endif
 
-void sighandle(int a) {
-  if (a == SIGUSR1)
-    logErr("sigusr1信号!\n");
-  logErr("得到一个信号! 异常中断......\n");
-  writeFamily(g_saac_config.familydir);
-  writeFMPoint(g_saac_config.fmpointdir);
-  writeFMSMemo(g_saac_config.fmsmemodir);
-#ifdef _ANGEL_SUMMON
-  saveMissionTable();
-#endif
-  exit(1);
-}
-
 // Arminius 7.20 memory unlock
+// 处理用户自定义信号的方法
 void sigusr1(int a) {
   int i;
   FILE *f;
@@ -311,25 +298,21 @@ static void parse_opts(int argc, char **argv) {
   }
 }
 
-double time_diff(struct timeval t1, struct timeval t2);
-
-int passwd = 0;
-
-void dump() {
+void dump_error() {
   void *array[10];
   size_t size;
   char **strings;
   size_t i;
   size = backtrace(array, 10);
   strings = backtrace_symbols(array, size);
-  printf("Obtained %zd stack frames.\n", size);
+  logOut("Obtained %zd stack frames.\n", size);
   for (i = 0; i < size; i++) {
     logFileToday(strings[i]);
   }
   free(strings);
 }
 
-void sigshutdown(const int number) {
+void signal_shutdown(const int number) {
   if (number == 0) {
     logErr("SAAC正常关闭\n");
   } else if (number == 2) {
@@ -337,8 +320,9 @@ void sigshutdown(const int number) {
   } else {
     // 只有异常的时候, 才写文件
     logFileToday("SAAC收到异常信号. DUMP!\n");
-    dump();
+    dump_error();
   }
+  // 确认结束后，忽略之后的信号SIG_IGN
   signal(SIGINT, SIG_IGN);
   signal(SIGQUIT, SIG_IGN);
   signal(SIGILL, SIG_IGN);
@@ -355,15 +339,15 @@ void sigshutdown(const int number) {
   writeFMPoint(g_saac_config.fmpointdir);
   writeFMSMemo(g_saac_config.fmsmemodir);
 #ifdef _ANGEL_SUMMON
-  saveMissionTable();
+  mission_table_save();
 #endif
   exit(1);
 }
 
+// 定义SAAC要处理的信号, 之行后SAAC收到信号时会执行对应的方法.
 void signal_set(void) {
   // CoolFish: Test Signal 2001/10/26
   printf("\n开始获取信号..\n");
-
   printf("SIGINT:%d\n", SIGINT);
   printf("SIGQUIT:%d\n", SIGQUIT);
   printf("SIGFPE:%d\n", SIGILL);
@@ -375,18 +359,20 @@ void signal_set(void) {
   printf("SIGSEGV:%d\n", SIGSEGV);
   printf("SIGPIPE:%d\n", SIGPIPE);
   printf("SIGTERM:%d\n", SIGTERM);
-
-  signal(SIGINT, sigshutdown);
-  signal(SIGQUIT, sigshutdown);
-  signal(SIGILL, sigshutdown);
-  signal(SIGTRAP, sigshutdown);
-  signal(SIGIOT, sigshutdown);
-  signal(SIGBUS, sigshutdown);
-  signal(SIGFPE, sigshutdown);
-  signal(SIGKILL, sigshutdown);
-  signal(SIGSEGV, sigshutdown);
+  // 测试中：可以使用 kill -[SIGNAL_NAME] [PROCESS_ID] 向进程发送信号
+  signal(SIGINT, signal_shutdown);
+  signal(SIGQUIT, signal_shutdown);
+  signal(SIGILL, signal_shutdown);
+  signal(SIGTRAP, signal_shutdown);
+  signal(SIGIOT, signal_shutdown);
+  signal(SIGBUS, signal_shutdown);
+  signal(SIGFPE, signal_shutdown);
+  signal(SIGKILL, signal_shutdown);
+  signal(SIGSEGV, signal_shutdown);
   signal(SIGPIPE, SIG_IGN);
-  signal(SIGTERM, sigshutdown);
+  signal(SIGTERM, signal_shutdown);
+  // kill -SIGUSR1 [PROCESS_ID] 向进程发送SIGUSR1信号
+  // signal(SIGUSR1, sigusr1);
 }
 
 int main(int argc, char **argv) {
@@ -411,7 +397,6 @@ int main(int argc, char **argv) {
   int counter4 = 0;
   int counter5 = 0;
   int counter6 = 0;
-  // signal(SIGUSR1, sigusr1);
   g_saac_config.log_rotate_interval = 3600 * 24 * 7;
 
   Lock_Init(); // Arminius 7.17 memory lock
@@ -491,7 +476,7 @@ int main(int argc, char **argv) {
 
 #ifdef _ANGEL_SUMMON
   logErr("Load Mission Table...");
-  initMissionTable();
+  mission_table_init();
   logErr("Succeed.\n");
 #endif
   logErr("\n服务端版本: <%s>\n", SERVER_VERSION);
@@ -917,21 +902,20 @@ void gmsvBroadcast(int fd, char *p1, char *p2, char *p3, int flag) {
 
 #ifdef _ANGEL_SUMMON
 
-#define MISSIONFILE "db/missiontable.txt"
+#define MISSIONFILE "db/mission_table.txt"
 
-static int initMissionTable(void) {
+int mission_table_init(void) {
   FILE *fp;
   char onedata[1024];
   char buf[1024];
   int index = 0;
-
-  memset(missiontable, 0, sizeof(missiontable));
+  memset(g_mission_table, 0, sizeof(g_mission_table));
   fp = fopen(MISSIONFILE, "r");
   if (!fp) {
-    logErr("\n加载精灵召唤错误!!!! \n");
-    // return false;
+    logErr("\n读取精灵召唤mission_table文件错误\n");
+    return FALSE;
   }
-  logErr("\n加载精灵召唤...");
+  logErr("\n加载精灵召唤数据...");
   while (1) {
     //
     if (fgets(onedata, sizeof(onedata), fp) == NULL)
@@ -941,41 +925,41 @@ static int initMissionTable(void) {
     easyGetTokenFromBuf(onedata, ",", 1, buf, sizeof(buf));
     if (buf[0] == '\0')
       continue;
-    strcpy(missiontable[index].angelinfo, buf);
+    strcpy(g_mission_table[index].angelinfo, buf);
     easyGetTokenFromBuf(onedata, ",", 2, buf, sizeof(buf));
     if (buf[0] == '\0')
       continue;
-    strcpy(missiontable[index].heroinfo, buf);
+    strcpy(g_mission_table[index].heroinfo, buf);
     easyGetTokenFromBuf(onedata, ",", 3, buf, sizeof(buf));
     if (buf[0] == '\0')
       continue;
-    missiontable[index].mission = atoi(buf);
+    g_mission_table[index].mission = atoi(buf);
     easyGetTokenFromBuf(onedata, ",", 4, buf, sizeof(buf));
     if (buf[0] == '\0')
       continue;
-    missiontable[index].flag = atoi(buf);
+    g_mission_table[index].flag = atoi(buf);
     easyGetTokenFromBuf(onedata, ",", 5, buf, sizeof(buf));
     if (buf[0] == '\0')
       continue;
-    missiontable[index].time = atoi(buf);
+    g_mission_table[index].time = atoi(buf);
     easyGetTokenFromBuf(onedata, ",", 6, buf, sizeof(buf));
     if (buf[0] == '\0')
       continue;
-    missiontable[index].limittime = atoi(buf);
-    logErr("%d=%s,%s,%d,%d,%d,%d \n", index, missiontable[index].angelinfo,
-           missiontable[index].heroinfo, missiontable[index].mission,
-           missiontable[index].flag, missiontable[index].time,
-           missiontable[index].limittime);
+    g_mission_table[index].limittime = atoi(buf);
+    logErr("%d=%s,%s,%d,%d,%d,%d \n", index, g_mission_table[index].angelinfo,
+           g_mission_table[index].heroinfo, g_mission_table[index].mission,
+           g_mission_table[index].flag, g_mission_table[index].time,
+           g_mission_table[index].limittime);
     index++;
     if (index >= MISSTION_TABLE_SIZE)
       break;
   }
   fclose(fp);
-  logErr("..成功! \n");
+  logErr("...成功!\n");
   return TRUE;
 }
 
-int saveMissionTable(void) {
+int mission_table_save(void) {
   FILE *fp;
   char onedata[1024];
   int index = 0;
@@ -988,12 +972,12 @@ int saveMissionTable(void) {
   logErr("\n保存精灵召唤...");
   for (index = 0; index < MISSTION_TABLE_SIZE; index++) {
 
-    if (missiontable[index].angelinfo[0] == '\0')
+    if (g_mission_table[index].angelinfo[0] == '\0')
       continue;
-    sprintf(onedata, "%s,%s,%d,%d,%d,%d\n", missiontable[index].angelinfo,
-            missiontable[index].heroinfo, missiontable[index].mission,
-            missiontable[index].flag, missiontable[index].time,
-            missiontable[index].limittime);
+    sprintf(onedata, "%s,%s,%d,%d,%d,%d\n", g_mission_table[index].angelinfo,
+            g_mission_table[index].heroinfo, g_mission_table[index].mission,
+            g_mission_table[index].flag, g_mission_table[index].time,
+            g_mission_table[index].limittime);
     fputs(onedata, fp);
   }
   fclose(fp);
@@ -1001,20 +985,20 @@ int saveMissionTable(void) {
   return TRUE;
 }
 
-void delMissionTableOnedata(int index) {
+void mission_table_delete(int index) {
   int gi;
 
-  logErr("\n删除精灵召唤:%d:%s:%s \n", index, missiontable[index].angelinfo,
-         missiontable[index].heroinfo);
+  logErr("\n删除精灵召唤:%d:%s:%s \n", index, g_mission_table[index].angelinfo,
+         g_mission_table[index].heroinfo);
 
   if (index < 0 || index >= MISSTION_TABLE_SIZE)
     return;
-  strcpy(missiontable[index].angelinfo, "");
-  strcpy(missiontable[index].heroinfo, "");
-  missiontable[index].mission = 0;
-  missiontable[index].flag = MISSION_NONE;
-  missiontable[index].time = 0;
-  missiontable[index].limittime = 0;
+  strcpy(g_mission_table[index].angelinfo, "");
+  strcpy(g_mission_table[index].heroinfo, "");
+  g_mission_table[index].mission = 0;
+  g_mission_table[index].flag = MISSION_NONE;
+  g_mission_table[index].time = 0;
+  g_mission_table[index].limittime = 0;
 
   for (gi = 0; gi < MAXCONNECTION; gi++) {
     if (gs[gi].use && gs[gi].name[0]) {
@@ -1036,33 +1020,33 @@ void checkMissionTimelimit(void) {
 
   logErr("\n检查精灵召唤时间限制:%d \n", (int)sys_time);
   for (index = 0; index < MISSTION_TABLE_SIZE; index++) {
-    if (missiontable[index].flag == MISSION_NONE) {
+    if (g_mission_table[index].flag == MISSION_NONE) {
       continue;
     }
     // 等待使者回应1小时
-    else if (missiontable[index].flag == MISSION_WAIT_ANSWER &&
-             sys_time > missiontable[index].time + ANSWERTIME * 60 * 60) {
+    else if (g_mission_table[index].flag == MISSION_WAIT_ANSWER &&
+             sys_time > g_mission_table[index].time + ANSWERTIME * 60 * 60) {
 
-      delMissionTableOnedata(index); // 删
+      mission_table_delete(index); // 删
     }
     // 等待领奖完成 limittime小时
-    else if ((missiontable[index].flag == MISSION_DOING ||
-              missiontable[index].flag == MISSION_HERO_COMPLETE) &&
-             (sys_time > (missiontable[index].time +
-                          missiontable[index].limittime * 60 * 60))) {
+    else if ((g_mission_table[index].flag == MISSION_DOING ||
+              g_mission_table[index].flag == MISSION_HERO_COMPLETE) &&
+             (sys_time > (g_mission_table[index].time +
+                          g_mission_table[index].limittime * 60 * 60))) {
 
       char buf[1024];
       int gi;
       // 改TIMEOVER
       logErr("精灵召唤及领奖时间过:%d.", index);
-      missiontable[index].flag = MISSION_TIMEOVER;
-      missiontable[index].time = time(NULL);
-      missiontable[index].limittime = BOUNDSTIME;
+      g_mission_table[index].flag = MISSION_TIMEOVER;
+      g_mission_table[index].time = time(NULL);
+      g_mission_table[index].limittime = BOUNDSTIME;
 
       sprintf(buf, "%d|%s|%s|%d|%d|%d|%d ", index,
-              missiontable[index].angelinfo, missiontable[index].heroinfo,
-              missiontable[index].mission, missiontable[index].flag,
-              missiontable[index].time, missiontable[index].limittime);
+              g_mission_table[index].angelinfo, g_mission_table[index].heroinfo,
+              g_mission_table[index].mission, g_mission_table[index].flag,
+              g_mission_table[index].time, g_mission_table[index].limittime);
       for (gi = 0; gi < MAXCONNECTION; gi++) {
         if (gs[gi].use && gs[gi].name[0]) {
           SaacServer_ACMissionTable_send(gi, 1, 1, buf, "");
@@ -1072,13 +1056,13 @@ void checkMissionTimelimit(void) {
       continue;
     }
     // 资料保留时间(BOUNDSTIME小时)
-    else if (missiontable[index].flag == MISSION_TIMEOVER &&
-             sys_time > missiontable[index].time + BOUNDSTIME * 60 * 60) {
+    else if (g_mission_table[index].flag == MISSION_TIMEOVER &&
+             sys_time > g_mission_table[index].time + BOUNDSTIME * 60 * 60) {
       logErr("保留时间过:%d.", index);
-      delMissionTableOnedata(index); // 删
+      mission_table_delete(index); // 删
     }
   }
-  saveMissionTable();
+  mission_table_save();
 #ifdef _SAVE_ZIP
   if (SAVEZIP > 0)
     savezipfile();
