@@ -81,7 +81,8 @@
 #define _CHANNEL_ALL_SERV               // 增加星球频道 2011/12/21
 #define _EXTEND_FONT_PAL                // 扩展字体颜色色板 2011/12/22
 //#define _FONT_PARAGRAPH_COLOR         // 字体分离颜色 2011/12/22
-#define _NEW_CLIENT_LOGIN               // 登陆记录MAC地址及线路选择 2011/12/22
+// Offline 2.5 server uses the original two-field ClientLogin packet.
+// #define _NEW_CLIENT_LOGIN            // 登陆记录MAC地址及线路选择 2011/12/22
 //#define _NEW_SHOP_FRAME               // 新商店框架 2011/12/22
 
 #define _HI_COLOR_16                    // (可开) ANDY (8bit to 16bit) 含图档
@@ -670,4 +671,3 @@ unsigned int TimeGetTime(void);
 #define EXPRESSION_NOID_NUM ( EXPRESSION_NOID_END - EXPRESSION_NOID_START )
 #define    _SUNDAY_STR_SEARCH       // SUNDAY字符串匹配算法, 比KMP速度更快的算法
 #endif
-
