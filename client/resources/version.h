@@ -580,7 +580,7 @@ unsigned int TimeGetTime(void);
 #define _TIME_GET_TIME                // 用QueryPerformanceCounter取代timeGetTime
 #define _FAMILYBADGE_                 // 家族徽章
 #define _SHOWFAMILYBADGE_             // 显示家族徽章
-#define _NEWNET_                      // 新封包机制
+// #define _NEWNET_                   // 新封包机制（离线 2.5 服务端使用旧封包）
 //#define _SHOWIPSLEEP_               // 显示线路延时
 //#define _MEMORYLEAK_CHECK           // 内存泄漏检测
 //#define _COMFIRM_TRADE_REQUEST      // 交易请求确认
