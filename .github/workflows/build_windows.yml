@@ -1,0 +1,40 @@
+name: Build StoneAge Windows Client
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build StoneAge Client (VER25_RELEASE Win32)
+        run: |
+          msbuild client/stoneage.sln /p:Configuration=VER25_RELEASE /p:Platform=Win32 /p:PlatformToolset=v143 /verbosity:normal
+
+      - name: Verify Executable Output
+        run: |
+          if (Test-Path "client/build/VER25_RELEASE/stoneage.exe") {
+            Write-Host "SUCCESS: stoneage.exe compiled successfully!"
+            Get-Item "client/build/VER25_RELEASE/stoneage.exe" | Format-List
+          } else {
+            Write-Error "ERROR: stoneage.exe was not found in expected build path!"
+            exit 1
+          }
+
+      - name: Upload Windows Client Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stoneage-client-windows
+          path: client/build/VER25_RELEASE/stoneage.exe
+          if-no-files-found: error
