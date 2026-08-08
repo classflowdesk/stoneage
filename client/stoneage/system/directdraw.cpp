@@ -290,6 +290,27 @@ BOOL InitDirectDraw(void)
         }
 #endif
     }
+
+    DDPIXELFORMAT actualPixelFormat;
+    ZeroMemory(&actualPixelFormat, sizeof(actualPixelFormat));
+    actualPixelFormat.dwSize = sizeof(actualPixelFormat);
+    if (lpDraw->lpBACKBUFFER == NULL ||
+        lpDraw->lpBACKBUFFER->GetPixelFormat(&actualPixelFormat) != DD_OK) {
+        StartupTrace("DirectDraw", "GetPixelFormat failed");
+        return FALSE;
+    }
+    StartupTrace("DirectDraw",
+                 "surface format bpp=%u R=%08x G=%08x B=%08x",
+                 actualPixelFormat.dwRGBBitCount,
+                 actualPixelFormat.dwRBitMask,
+                 actualPixelFormat.dwGBitMask,
+                 actualPixelFormat.dwBBitMask);
+    if (actualPixelFormat.dwRGBBitCount == 8 ||
+        actualPixelFormat.dwRGBBitCount == 16 ||
+        actualPixelFormat.dwRGBBitCount == 32) {
+        displayBpp = actualPixelFormat.dwRGBBitCount;
+    }
+
     // WON REM 
 #ifdef _HI_COLOR_32
     if (displayBpp == 32){
