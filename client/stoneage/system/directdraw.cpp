@@ -8,6 +8,7 @@
 #include "systeminc/system.h"
 #include "systeminc/loadrealbin.h"
 #include "systeminc/map.h"
+#include "systeminc/startup_trace.h"
 #include "game/anim_tbl.h"
 
 #define PAL_CHANGE_INTERVAL_WIN     120
@@ -110,12 +111,17 @@ BOOL InitDirectDraw(void)
     HRESULT hResult;
     char szErrMsg[256];
     DDSCAPS ddscaps;
+    StartupTrace("DirectDraw", "begin bpp=%d window=%d size=%dx%d",
+                 displayBpp, WindowMode, lpDraw->xSize, lpDraw->ySize);
+    StartupTrace("DirectDraw", "DirectDrawCreate begin");
     if ((hResult = DirectDrawCreate(NULL, &lpDraw->lpDD, NULL)) != DD_OK){
+        StartupTrace("DirectDraw", "DirectDrawCreate hardware failed: 0x%08x", hResult);
         hErrorLogFile = CreateFile("ErrorLog.txt", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         sprintf_s(szErrMsg, "DirectDrawCreate error(1):error result (%x)", hResult);
         WriteFile(hErrorLogFile, szErrMsg, sizeof(szErrMsg), &dwWriteByte, NULL);
         CloseHandle(hErrorLogFile);
         if ((hResult = DirectDrawCreate((GUID *)DDCREATE_EMULATIONONLY, &lpDraw->lpDD, NULL)) != DD_OK){
+            StartupTrace("DirectDraw", "DirectDrawCreate emulation failed: 0x%08x", hResult);
             MessageBoxNew(hWnd, "DirectDrawCreate Error", "确定", MB_OK | MB_ICONSTOP);
             hErrorLogFile = CreateFile("ErrorLog.txt", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
             sprintf_s(szErrMsg, "DirectDrawCreate error(2):error result (%x)", hResult);
@@ -124,7 +130,10 @@ BOOL InitDirectDraw(void)
             return FALSE;
         }
     }
+    StartupTrace("DirectDraw", "DirectDrawCreate complete");
+    StartupTrace("DirectDraw", "QueryInterface IDirectDraw2 begin");
     if ((hResult = lpDraw->lpDD->QueryInterface(IID_IDirectDraw2, (LPVOID *)&lpDraw->lpDD2)) != DD_OK){
+        StartupTrace("DirectDraw", "QueryInterface failed: 0x%08x", hResult);
         MessageBoxNew(hWnd, "QueryInterface Error", "确定", MB_OK | MB_ICONSTOP);
         hErrorLogFile = CreateFile("ErrorLog.txt", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         sprintf_s(szErrMsg, "QueryInterface error:error result (%x)", hResult);
@@ -132,6 +141,7 @@ BOOL InitDirectDraw(void)
         CloseHandle(hErrorLogFile);
         return FALSE;
     }
+    StartupTrace("DirectDraw", "QueryInterface IDirectDraw2 complete");
 #ifdef _BACK_WINDOW
 #undef _BACK_VERSION
 #endif
@@ -171,16 +181,21 @@ BOOL InitDirectDraw(void)
             }
         }
 #endif
+        StartupTrace("DirectDraw", "SetCooperativeLevel windowed begin");
         if (lpDraw->lpDD2->SetCooperativeLevel(hWnd, DDSCL_NORMAL) != DD_OK){
+            StartupTrace("DirectDraw", "SetCooperativeLevel windowed failed");
             MessageBoxNew(hWnd, "SetCooperativeLevel Error", "确定", MB_OK | MB_ICONSTOP);
             return FALSE;
         }
+        StartupTrace("DirectDraw", "SetCooperativeLevel windowed complete");
 
         ZeroMemory(&lpDraw->ddsd, sizeof(lpDraw->ddsd));
         lpDraw->ddsd.dwSize = sizeof(lpDraw->ddsd);
         lpDraw->ddsd.dwFlags = DDSD_CAPS;
         lpDraw->ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+        StartupTrace("DirectDraw", "Create primary surface begin");
         if ((hResult = lpDraw->lpDD2->CreateSurface(&lpDraw->ddsd, &lpDraw->lpFRONTBUFFER, NULL)) != DD_OK){
+            StartupTrace("DirectDraw", "Create primary surface failed: 0x%08x", hResult);
             MessageBoxNew(hWnd, "主画面处理失败。", "确定", MB_OK | MB_ICONSTOP);
             hErrorLogFile = CreateFile("ErrorLog.txt", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
             sprintf_s(szErrMsg, "Create frontbuffer error(1):error result (%x)", hResult);
@@ -188,19 +203,25 @@ BOOL InitDirectDraw(void)
             CloseHandle(hErrorLogFile);
             return FALSE;
         }
+        StartupTrace("DirectDraw", "Create primary surface complete");
+        StartupTrace("DirectDraw", "Create clipper begin");
         if (lpDraw->lpDD2->CreateClipper(0, &lpDraw->lpCLIPPER, NULL) != DD_OK){
+            StartupTrace("DirectDraw", "Create clipper failed");
             MessageBoxNew(hWnd, "clipper处理失败。", "确定", MB_OK | MB_ICONSTOP);
             return FALSE;
         }
         lpDraw->lpCLIPPER->SetHWnd(0, hWnd);
         lpDraw->lpFRONTBUFFER->SetClipper(lpDraw->lpCLIPPER);
+        StartupTrace("DirectDraw", "Create clipper complete");
         ZeroMemory(&lpDraw->ddsd, sizeof(lpDraw->ddsd));
         lpDraw->ddsd.dwSize = sizeof(lpDraw->ddsd);
         lpDraw->ddsd.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT;
         lpDraw->ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
         lpDraw->ddsd.dwWidth = lpDraw->xSize;
         lpDraw->ddsd.dwHeight = lpDraw->ySize;
+        StartupTrace("DirectDraw", "Create backbuffer begin");
         if ((hResult = lpDraw->lpDD2->CreateSurface(&lpDraw->ddsd, &lpDraw->lpBACKBUFFER, NULL)) != DD_OK){
+            StartupTrace("DirectDraw", "Create backbuffer failed: 0x%08x", hResult);
             MessageBoxNew(hWnd, "暂存区处理失败", "确定", MB_OK | MB_ICONSTOP);
             hErrorLogFile = CreateFile("ErrorLog.txt", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
             sprintf_s(szErrMsg, "Create backbuffer error:error result (%x)", hResult);
@@ -208,6 +229,7 @@ BOOL InitDirectDraw(void)
             CloseHandle(hErrorLogFile);
             return FALSE;
         }
+        StartupTrace("DirectDraw", "Create backbuffer complete");
 #ifdef _READ16BITBMP
         if(g_bUseAlpha){
             lpDraw->ddsd.ddsCaps.dwCaps    = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
@@ -319,6 +341,7 @@ BOOL InitDirectDraw(void)
 #endif
     // ??????????
     if ((lpBattleSurface = CreateSurface(DEF_APPSIZEX, DEF_APPSIZEY, DEF_COLORKEY, DDSCAPS_VIDEOMEMORY)) == NULL){
+        StartupTrace("DirectDraw", "Video-memory battle surface unavailable; using system memory");
 #ifdef _STONDEBUG_
         MessageBoxNew( hWnd ,"建立VideoRam BattleSurface失败！" ,"确定",MB_OK | MB_ICONSTOP );
 #endif
@@ -345,6 +368,7 @@ BOOL InitDirectDraw(void)
 #endif
     DDinitFlag = TRUE;
     SetAnimTbl();
+    StartupTrace("DirectDraw", "complete");
     return TRUE;
 }
 

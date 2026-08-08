@@ -29,6 +29,10 @@ jobs:
             Write-Host "SUCCESS: stoneage.exe found at $($exe.FullName)"
             New-Item -ItemType Directory -Force -Path "output"
             Copy-Item $exe.FullName -Destination "output/stoneage.exe"
+            Get-ChildItem $exe.DirectoryName -Filter "*.pdb" |
+              Copy-Item -Destination "output/" -ErrorAction SilentlyContinue
+            Get-ChildItem $exe.DirectoryName -Filter "*.map" |
+              Copy-Item -Destination "output/" -ErrorAction SilentlyContinue
             Copy-Item "client/third_party/lua/lua51.dll" -Destination "output/lua51.dll" -ErrorAction SilentlyContinue
             Copy-Item "client/sdk/*.dll" -Destination "output/" -ErrorAction SilentlyContinue
           } else {

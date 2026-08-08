@@ -596,7 +596,9 @@ unsigned int TimeGetTime(void);
 #define _ANNOUNCEMENT_                // 公告系统
 //#define _EFFECT_MAP_                // 塔特效
 #ifndef _DEBUG__
+#ifndef STONEAGE_OFFLINE
 #define _VMP_                        //VMP功能开启
+#endif
 // #define _ANTI_DEBUG_               // 反调试: 测试版本注释, 正式版本开启.
 #else
 #define _CMD_MODE                    // 调试模式
@@ -614,7 +616,9 @@ unsigned int TimeGetTime(void);
 #define _RUNNING_KEY  "shiqi.hk"      // 运行中密钥
 #define _SYSTEM_SLEEP_   6            // 游戏速度设置
 #define _SURFACE_ANIM                 // 动态地上物显示
+#ifndef STONEAGE_OFFLINE
 #define _DEFENSETOOENNUM_ 5           // 限几开
+#endif
 #define DENGLUKEY1 "6D27AEB8326A2A8E7D04B9F9B44C59C7"
 #define _LEADERRIDE                   // (可开放) 四大家族骑暴功能 Robin 0921
 //#define _MO_IMAGE_EXTENSION         // 形象扩展

@@ -24,6 +24,7 @@
 #include "NewProto/autil.h"
 #include "NewProto/protocol.h"
 #include "systeminc/field.h"
+#include "systeminc/startup_trace.h"
 #include "sdk/VMProtectSDK.h"
 #include <tlhelp32.h>
 #ifdef _OPTIMIZATIONFLIP_
@@ -1137,7 +1138,11 @@ void GameErrorMessage(char *buf)
 
 bool GameInit(void)
 {
+  StartupTraceReset();
+  StartupTrace("GameInit", "begin");
+  StartupTrace("GameInit", "InitDInput begin");
   InitDInput();
+  StartupTrace("GameInit", "InitDInput complete");
 #ifdef _REMAKE_20
   DisableCheated();
 #ifndef _STONDEBUG_
@@ -1157,27 +1162,47 @@ bool GameInit(void)
   iTotalRunCount = 0;
 #endif
 #endif
+  StartupTrace("GameInit", "util_Init begin");
   util_Init();
+  StartupTrace("GameInit", "util_Init complete");
+  StartupTrace("GameInit", "InitDirectDraw begin");
   if (InitDirectDraw() == FALSE){
+      StartupTrace("GameInit", "InitDirectDraw failed");
       MessageBoxNew(hWnd, "初始化DirectDraw失败！", "确定", MB_OK | MB_ICONSTOP);
       return false;
   }
+  StartupTrace("GameInit", "InitDirectDraw complete");
+  StartupTrace("GameInit", "InitOffScreenSurface begin");
   if (InitOffScreenSurface() == FALSE){
+      StartupTrace("GameInit", "InitOffScreenSurface failed");
       MessageBoxNew(hWnd, "初始化Off Screan Surface失败！", "确定", MB_OK | MB_ICONSTOP);
       return false;
   }
-  if (InitPalette() == FALSE)
+  StartupTrace("GameInit", "InitOffScreenSurface complete");
+  StartupTrace("GameInit", "InitPalette begin");
+  if (InitPalette() == FALSE) {
+      StartupTrace("GameInit", "InitPalette failed");
       return FALSE;
+  }
+  StartupTrace("GameInit", "InitPalette complete");
+  StartupTrace("GameInit", "initRealbinFileOpen begin: %s / %s", realBinName, adrnBinName);
   if (initRealbinFileOpen(realBinName, adrnBinName) == FALSE) {
+      StartupTrace("GameInit", "initRealbinFileOpen failed");
       MessageBoxNew(hWnd, "开启Real.bin失败！", "确定", MB_OK | MB_ICONSTOP);
       return false;
   }
+  StartupTrace("GameInit", "initRealbinFileOpen complete");
   //PutLogo();
+  StartupTrace("GameInit", "initAutoMapColor begin");
   initAutoMapColor(adrnBinName);
+  StartupTrace("GameInit", "initAutoMapColor complete");
+  StartupTrace("GameInit", "InitSprBinFileOpen begin: %s / %s", sprBinName, sprAdrnBinName);
   if (InitSprBinFileOpen(sprBinName, sprAdrnBinName) == FALSE){
+      StartupTrace("GameInit", "InitSprBinFileOpen failed");
       MessageBoxNew(hWnd, "开启Spr.bin失败！", "确定", MB_OK | MB_ICONSTOP);
       return false;
   }
+  StartupTrace("GameInit", "InitSprBinFileOpen complete");
 #ifdef _READ16BITBMP
     int ref;
     if ((ref = InitRealTruebinFileOpen(realtrueBinName, adrntrueBinName)) < 0){
@@ -1189,7 +1214,9 @@ bool GameInit(void)
 
 #ifdef _PTTERN_SEPARATION_BIN
 #ifdef _SA_VERSION_25
+    StartupTrace("GameInit", "InitPteernSeparationBin begin");
     InitPteernSeparationBin(".//path");
+    StartupTrace("GameInit", "InitPteernSeparationBin complete");
 #endif
 #endif
 
@@ -1197,25 +1224,37 @@ bool GameInit(void)
     memset(gmsv, 0, sizeof(gameserver)*MAX_GMSV);
     memset(gmgroup, 0, sizeof(gamegroup)*MAX_GMGROUP);
     extern void LoadStoneAgeLUA(char *path);
+    StartupTrace("GameInit", "LoadStoneAgeLUA begin");
     LoadStoneAgeLUA(_LUA_PATCH_);
+    StartupTrace("GameInit", "LoadStoneAgeLUA complete");
 #endif
+    StartupTrace("GameInit", "InitAction and InitFont begin");
     InitAction();
     InitFont(0);
+    StartupTrace("GameInit", "InitAction and InitFont complete");
     srand(TimeGetTime());
     initRand2();
+    StartupTrace("GameInit", "t_music_init begin");
     t_music_init();
+    StartupTrace("GameInit", "t_music_init complete");
 
+    StartupTrace("GameInit", "InitIme begin");
     if (!InitIme(hWnd, StrToNowStrBuffer)){
+        StartupTrace("GameInit", "InitIme failed");
         MessageBoxNew(hWnd, "初始化输入法失败！", "确定", MB_OK | MB_ICONSTOP);
         return false;
     }
+    StartupTrace("GameInit", "InitIme complete");
     MouseInit();
+    StartupTrace("GameInit", "loadUserSetting begin");
     if (loadUserSetting() == FALSE){
+        StartupTrace("GameInit", "loadUserSetting failed: %d", savedataErrorCode);
         char msg[1024];
         sprintf_s(msg, SAVE_ERRMSG_loadNowState, savedataErrorCode);
         MessageBoxNew(hWnd, msg, "确定", MB_OK | MB_ICONSTOP);
         return false;
     }
+    StartupTrace("GameInit", "loadUserSetting complete");
     LoadChatRegistyStr();
     NowTime = TimeGetTime();
     DrawFrameTime = TimeGetTime();
@@ -1267,6 +1306,7 @@ bool GameInit(void)
 #ifdef _CHANNEL_MODIFY
     CreateDirectory("chat\\", NULL);
 #endif
+    StartupTrace("GameInit", "complete");
     return true;
 }
 
@@ -1449,4 +1489,3 @@ void InitConsoleWindow(void)
 }
 
 #endif
-

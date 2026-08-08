@@ -1,0 +1,57 @@
+--- a/gmsv/npc/npc_quiz.c
++++ b/gmsv/npc/npc_quiz.c
+@@ -40,6 +40,7 @@
+ 
+ 
+ static int quizcnt = 0;
++static int *QuizTable = NULL;
+ 
+ 
+ static void NPC_Quiz_selectWindow( int meindex, int talker, int num);
+@@ -937,6 +938,12 @@
+ 		fclose( f );
+ 		return FALSE;
+ 	}
++	QuizTable = allocateMemory( sizeof(int) * (quizcnt+1) );
++	if( QuizTable == NULL ){
++		fprint( "Can't allocate quiz table memory %d\n", sizeof(int) * (quizcnt+1));
++		fclose( f );
++		return FALSE;
++	}
+     linenum = 0;
+ 	memset( buf3, 0, sizeof(buf3));
+     while( fgets( line, sizeof( line ), f ) ){
+@@ -1011,7 +1018,6 @@
+ 	int type=0;
+ 	int answer=0;
+ 	int level=0;
+-	int *tbl;
+ 	char buf[16];
+ 	NPC_Util_GetArgStr( meindex, argstr, sizeof( argstr));
+ 
+@@ -1050,8 +1056,7 @@
+ 	}
+ 
+ 	{
+-		int tmp_tbl[j+1];
+-		tmp_tbl[0] = j+1;
++		QuizTable[0] = j+1;
+ 		for(j=1,i=0; i < quizcnt ;i++){
+ 			if( (type & (1 << (Quiz[i].type-1)))  != (1 << (Quiz[i].type-1))){
+ 				continue;
+@@ -1064,13 +1069,12 @@
+ 			if((level & (Quiz[i].level))  != Quiz[i].level){
+ 				continue;
+ 			}
+-			tmp_tbl[j] = i;
++			QuizTable[j] = i;
+ 
+ 			j++;
+ 		}
+ 
+-		tbl = tmp_tbl;
+-		return tbl;
++		return QuizTable;
+ 	}
+ }
+ 

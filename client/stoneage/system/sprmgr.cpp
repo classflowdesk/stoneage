@@ -5,6 +5,7 @@
 #include "../systeminc/system.h"
 #include "../systeminc/loadrealbin.h"
 #include "../systeminc/loadsprbin.h"
+#include "../systeminc/startup_trace.h"
 LPDIRECTDRAWSURFACE lpBattleSurface;
 #ifdef _READ16BITBMP
 LPDIRECTDRAWSURFACE lpBattleSurfaceSys;
@@ -281,7 +282,11 @@ BOOL InitOffScreenSurface( void )
     SurfaceCnt = 0;
     VramSurfaceCnt = 0;
     SysramSurfaceCnt = 0;
+    StartupTrace("Surface", "begin count=%d size=%dx%d",
+                 SURACE_INFO_MAX, SurfaceSizeX, SurfaceSizeY);
     for( i = 0 ; i < SURACE_INFO_MAX ; i++ ){
+        if ((i % 256) == 0)
+            StartupTrace("Surface", "creating surface %d/%d", i, SURACE_INFO_MAX);
         if( vramFullFlag == FALSE ){
             if ((SurfaceInfo[i].lpSurface = CreateSurface(SurfaceSizeX, SurfaceSizeY, DEF_COLORKEY, /*DDSCAPS_SYSTEMMEMORY*/ DDSCAPS_VIDEOMEMORY)) == NULL){
 #ifdef _STONDEBUG_
@@ -331,6 +336,8 @@ BOOL InitOffScreenSurface( void )
     SurfaceCnt = i;
     InitSurfaceInfo();
     InitSpriteInfo();
+    StartupTrace("Surface", "complete total=%d video=%d system=%d",
+                 SurfaceCnt, VramSurfaceCnt, SysramSurfaceCnt);
     return TRUE;
 }
 

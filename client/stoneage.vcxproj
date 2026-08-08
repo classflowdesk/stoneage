@@ -64,6 +64,7 @@
     <ClInclude Include="stoneage\systeminc\sndcnf.h" />
     <ClInclude Include="stoneage\systeminc\sprdisp.h" />
     <ClInclude Include="stoneage\systeminc\sprmgr.h" />
+    <ClInclude Include="stoneage\systeminc\startup_trace.h" />
     <ClInclude Include="stoneage\systeminc\system.h" />
     <ClInclude Include="stoneage\systeminc\talkwindow.h" />
     <ClInclude Include="stoneage\systeminc\testview.h" />
@@ -143,6 +144,7 @@
     <ClCompile Include="stoneage\system\skyisland.cpp" />
     <ClCompile Include="stoneage\system\sprdisp.cpp" />
     <ClCompile Include="stoneage\system\sprmgr.cpp" />
+    <ClCompile Include="stoneage\system\startup_trace.cpp" />
     <ClCompile Include="stoneage\system\talkwindow.cpp" />
     <ClCompile Include="stoneage\system\testview.cpp" />
     <ClCompile Include="stoneage\system\tool.cpp" />
@@ -273,7 +275,7 @@ VMProtectSDK32.lib;
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;DI_2;_SA_VERSION_25;_SA_VERSION_SPECIAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;DI_2;_SA_VERSION_25;_SA_VERSION_SPECIAL;STONEAGE_OFFLINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
         .;
         stoneage;
