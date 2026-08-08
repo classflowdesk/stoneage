@@ -24,11 +24,13 @@ jobs:
 
       - name: Verify Executable Output
         run: |
-          if (Test-Path "client/build/VER25_RELEASE/stoneage.exe") {
-            Write-Host "SUCCESS: stoneage.exe compiled successfully!"
-            Get-Item "client/build/VER25_RELEASE/stoneage.exe" | Format-List
+          $exe = Get-ChildItem -Recurse -Filter "stoneage.exe" | Select-Object -First 1
+          if ($exe) {
+            Write-Host "SUCCESS: stoneage.exe found at $($exe.FullName)"
+            New-Item -ItemType Directory -Force -Path "output"
+            Copy-Item $exe.FullName -Destination "output/stoneage.exe"
           } else {
-            Write-Error "ERROR: stoneage.exe was not found in expected build path!"
+            Write-Error "ERROR: stoneage.exe was not found anywhere in workspace!"
             exit 1
           }
 
@@ -36,5 +38,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stoneage-client-windows
-          path: client/build/VER25_RELEASE/stoneage.exe
+          path: output/stoneage.exe
           if-no-files-found: error
