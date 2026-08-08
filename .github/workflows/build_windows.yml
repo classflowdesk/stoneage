@@ -29,6 +29,8 @@ jobs:
             Write-Host "SUCCESS: stoneage.exe found at $($exe.FullName)"
             New-Item -ItemType Directory -Force -Path "output"
             Copy-Item $exe.FullName -Destination "output/stoneage.exe"
+            Copy-Item "client/third_party/lua/lua51.dll" -Destination "output/lua51.dll" -ErrorAction SilentlyContinue
+            Copy-Item "client/sdk/*.dll" -Destination "output/" -ErrorAction SilentlyContinue
           } else {
             Write-Error "ERROR: stoneage.exe was not found anywhere in workspace!"
             exit 1
@@ -38,5 +40,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stoneage-client-windows
-          path: output/stoneage.exe
+          path: output/*
           if-no-files-found: error
