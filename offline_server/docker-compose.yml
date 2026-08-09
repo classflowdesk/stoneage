@@ -24,6 +24,7 @@ services:
         condition: service_healthy
     volumes:
       - stoneage_state:/state
+      - ./config/setup.cf:/opt/stoneage/gmsv/setup.cf:ro
     healthcheck:
       test: ["CMD-SHELL", "nc -z 127.0.0.1 9300"]
       interval: 3s
@@ -41,7 +42,7 @@ services:
     volumes:
       - stoneage_state:/state
     ports:
-      - "127.0.0.1:9065:9065"
+      - "127.0.0.1:19065:9065"
     healthcheck:
       test: ["CMD-SHELL", "nc -z 127.0.0.1 9065"]
       interval: 3s

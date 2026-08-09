@@ -1,0 +1,7 @@
+--- a/gmsv/net.c
++++ b/gmsv/net.c
+@@ -2135 +2135,3 @@
+-      if((cono == 0) || (acceptmore <= 0) || isThereThisIP( sinip) ){
++      // The host port is bound to 127.0.0.1, so online admission limits
++      // are unnecessary for this single-player server.
++      if(0){

@@ -9,6 +9,7 @@ NETWORK="stoneage-offline"
 DB_CONTAINER="stoneage-db"
 SAAC_CONTAINER="stoneage-saac"
 GMSV_CONTAINER="stoneage-gmsv"
+GMSV_HOST_PORT="19065"
 DB_VOLUME="stoneage_db"
 STATE_VOLUME="stoneage_state"
 
@@ -94,8 +95,9 @@ docker run -d \
     --name "$GMSV_CONTAINER" \
     --platform linux/amd64 \
     --network "$NETWORK" \
-    -p 127.0.0.1:9065:9065 \
+    -p "127.0.0.1:$GMSV_HOST_PORT:9065" \
     -v "$STATE_VOLUME:/state" \
+    -v "$SERVER_DIR/config/setup.cf:/opt/stoneage/gmsv/setup.cf:ro" \
     -v "$SERVER_DIR/scripts/start-gmsv.sh:/mnt/start-gmsv.sh:ro" \
     "$IMAGE" /bin/bash /mnt/start-gmsv.sh >/dev/null
 
@@ -110,4 +112,4 @@ docker exec "$GMSV_CONTAINER" awk \
     '$2 ~ /:2369$/ && $4 == "0A" { found=1 } END { exit(found ? 0 : 1) }' \
     /proc/net/tcp \
     || fail "The game service stopped accepting connections."
-log "Offline server is ready at 127.0.0.1:9065."
+log "Offline server is ready at 127.0.0.1:$GMSV_HOST_PORT."

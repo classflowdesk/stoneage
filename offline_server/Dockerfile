@@ -20,6 +20,7 @@ RUN if ! grep -q 'static int \*QuizTable = NULL;' gmsv/npc/npc_quiz.c; then \
         patch -p1 </tmp/patches/npc-quiz-persistent-table.patch; \
     fi \
     && patch -p1 </tmp/patches/duplicate-ip-loop.patch \
+    && patch -p1 </tmp/patches/offline-local-admission.patch \
     && find saac -name makefile -type f \
         -exec sed -i -E 's/^CFLAGS=-O3 -w .*\$\(INCFLAGS\).*$/CFLAGS=-O3 -w -fcommon -fgnu89-inline -fno-stack-protector -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 $(INCFLAGS)/' {} + \
     && find gmsv -name makefile -type f \

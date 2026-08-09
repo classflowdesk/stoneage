@@ -2,7 +2,7 @@
 
 #include "windows.h"
 
-extern struct action;
+struct action;
 typedef struct action ACTION;
 
 typedef unsigned char     Uint8 ;     /* ????????þÐ? */

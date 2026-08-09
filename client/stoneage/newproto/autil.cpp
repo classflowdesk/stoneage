@@ -150,7 +150,11 @@ int util_GetFunctionFromSlice(int *func, int *fieldcount)
   strcpy(t1, MesgSlice[1]);
   // Robin adjust
   //*func=atoi(t1);
+#ifdef STONEAGE_OFFLINE
+  *func=atoi(t1);
+#else
   *func=atoi(t1)-23;
+#endif
   for (i=0; i<SLICE_MAX; i++)
     if (strcmp(MesgSlice[i], DEFAULTFUNCEND)==0) {
       *fieldcount=i-2;    // - "&" - "#" - "func" 3 fields
@@ -227,7 +231,11 @@ VMProtectBegin("util_SendMesg");
 #endif
   char t1[16384], t2[16384];
 
+#ifdef STONEAGE_OFFLINE
+  sprintf_s(t1, sizeof(t1),"&;%d%s;#;", func, buffer);
+#else
   sprintf_s(t1, sizeof(t1),"(&;%d%s;#;", func+13, buffer);
+#endif
 #ifdef _NEWNET_
   util_EncodeMessageTea(t2, t1);
 #else
@@ -958,4 +966,3 @@ void getStrSplitNew( char str[][256])
 }
 
 #endif
-

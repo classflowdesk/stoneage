@@ -397,6 +397,7 @@ BOOL IsContainsProcess(char* strProName, BOOL 判断 = 1)
     CloseHandle(hProcessSnap);
     return FALSE;
 }
+#ifdef _MSC_VER
 DWORD __forceinline IsInsideVPC_exceptionFilter(LPEXCEPTION_POINTERS ep)
 {
     PCONTEXT ctx = ep->ContextRecord;
@@ -432,6 +433,12 @@ bool IsInsideVPC()
 
     return rc;
 }
+#else
+bool IsInsideVPC()
+{
+    return false;
+}
+#endif
 
 BOOL 检测WARE()
 {
@@ -1629,4 +1636,3 @@ void SetResoMode(int Mode){
     viewOffsetY = SCREEN_HEIGHT_CENTER;
     PostMessage(hWnd, WM_MOVE, 0, 0L);
 }
-

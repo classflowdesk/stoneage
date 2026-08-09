@@ -619,8 +619,13 @@ unsigned int TimeGetTime(void);
 #define LABEL_STR_                 //标记重定义输出[普][密]
 
 #ifdef _SA_VERSION_25
+#ifdef STONEAGE_OFFLINE
+#define _DEFAULT_PKEY "cary"
+#define _RUNNING_KEY  "cary"
+#else
 #define _DEFAULT_PKEY "shiqi"         // 默认的密钥
 #define _RUNNING_KEY  "shiqi.hk"      // 运行中密钥
+#endif
 #define _SYSTEM_SLEEP_   6            // 游戏速度设置
 #define _SURFACE_ANIM                 // 动态地上物显示
 #ifndef STONEAGE_OFFLINE
