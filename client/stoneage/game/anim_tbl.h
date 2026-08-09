@@ -1977,6 +1977,17 @@
     #define CG_TITLE_ID_PASS_OK            26305
     #define CG_TITLE_ID_PASS_QUIT        26306
 #endif
+#ifdef STONEAGE_OFFLINE
+    // The bundled real_31/adrn_31 resources use the original 2.5 login artwork.
+    #undef CG_LOGO
+    #undef CG_TITLE_ID_PASS
+    #undef CG_TITLE_ID_PASS_OK
+    #undef CG_TITLE_ID_PASS_QUIT
+    #define CG_LOGO                        29025
+    #define CG_TITLE_ID_PASS               29046
+    #define CG_TITLE_ID_PASS_OK            29027
+    #define CG_TITLE_ID_PASS_QUIT          29028
+#endif
 #define CG_TITLE_SPRITEKING        29023
 
 // ????
