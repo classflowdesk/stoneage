@@ -10,6 +10,7 @@
 #include "systeminc/character.h"
 #include "systeminc/loadsprbin.h"
 #include "systeminc/savedata.h"
+#include "systeminc/startup_trace.h"
 #include "systeminc/chat.h"
 #include "sdk/caryime.h"
 #include "systeminc/ime_sa.h"
@@ -254,6 +255,7 @@ void idPasswordProc(void)
 #ifdef STONEAGE_OFFLINE
     if (SubProcNo == 2 && offlineAutoLoginPending) {
       offlineAutoLoginPending = FALSE;
+      StartupTrace("OfflineLogin", "submitting bundled account");
       ret = 1;
     }
 #endif
@@ -1131,10 +1133,19 @@ void titleProc(void)
     }
     if (SubProcNo == 1){
         if (initNet()){
+#ifdef STONEAGE_OFFLINE
+            nServerGroup = 0;
+            selectServerIndex = gmgroup[nServerGroup].startindex;
+            SubProcNo = 4;
+            StartupTrace("OfflineLogin", "selected local server index=%d name=%s address=%s:%s",
+                selectServerIndex, gmsv[selectServerIndex].name,
+                gmsv[selectServerIndex].ipaddr, gmsv[selectServerIndex].port);
+#else
             if (nGroup > 1)
                 SubProcNo = 2;
             else
                 SubProcNo = 3;
+#endif
             ProduceInitFlag = TRUE;
             initSelectServer();
             //    disconnectServerFlag = FALSE;
@@ -1564,6 +1575,10 @@ int connecGameServer(void)
         connecGameServerProcNo = 1;
 
         sprintf_s(msg, "%s服务器连线中", gmsv[selectServerIndex].name);
+#ifdef STONEAGE_OFFLINE
+        StartupTrace("OfflineLogin", "connecting to %s:%s",
+            gmsv[selectServerIndex].ipaddr, gmsv[selectServerIndex].port);
+#endif
 
         // ??????
         w = (strlen(msg) * 9 + 63) / 64;
@@ -1607,11 +1622,17 @@ int connecGameServer(void)
         if (ret2 == 1)
         {
             ret = 1;
+#ifdef STONEAGE_OFFLINE
+            StartupTrace("OfflineLogin", "game server login complete");
+#endif
         }
         else
             if (ret2 < 0)
             {
                 ret = -2;
+#ifdef STONEAGE_OFFLINE
+                StartupTrace("OfflineLogin", "game server login failed: %s", netprocErrmsg);
+#endif
             }
     }
 
