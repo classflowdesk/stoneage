@@ -557,6 +557,9 @@ unsigned int TimeGetTime(void);
 #define _NEW_CLOUD                  // (可开) Change 新的地图的云效果
 #define _FIX_BATTLE_AI              // 修复战斗AI转换的BUG
 #define _WIN_LUAJIT_                // 增加LUAJIT扩展功能:支持中文接口和中文路径LUA文件
+#ifdef STONEAGE_OFFLINE
+#define _RELUA_                     // Offline bundle ships readable .lua resources.
+#endif
 #define _NEW_COLOR_                 // 补丁支持16位RGB高彩图片
 #define _NEW_WIN_POS_               // 800窗口偏移设置
 #define _NEW_ALPHA_                 // 新建半透明处理
