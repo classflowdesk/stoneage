@@ -8,6 +8,7 @@
 #include "systeminc/netproc.h"
 #include "systeminc/lssproto_cli.h"
 #include "systeminc/savedata.h"
+#include "systeminc/startup_trace.h"
 #include "systeminc/process.h"
 #include "systeminc/pc.h"
 #include "systeminc/tool.h"
