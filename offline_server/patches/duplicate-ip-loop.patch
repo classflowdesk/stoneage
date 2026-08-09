@@ -1,0 +1,21 @@
+--- a/gmsv/net.c
++++ b/gmsv/net.c
+@@ -2019,13 +2019,14 @@
+   int i;
+   unsigned long ipa;
+ 
+-  for ( i = 0; i < ConnectLen ; i++ )
++  for ( i = 0; i < ConnectLen ; i++ ) {
+     if ( !Connect[ i ].use ) continue;
+ 
+-  if ( Connect[ i ].state == NOTLOGIN || Connect[ i ].state == WHILEDOWNLOADCHARLIST ) {
+-    memcpy( &ipa, &Connect[ i ].sin.sin_addr, 4 );
++    if ( Connect[ i ].state == NOTLOGIN || Connect[ i ].state == WHILEDOWNLOADCHARLIST ) {
++      memcpy( &ipa, &Connect[ i ].sin.sin_addr, 4 );
+ 
+-    if ( ipa == ip ) return 1;
++      if ( ipa == ip ) return 1;
++    }
+   }
+ 
+   return 0;
