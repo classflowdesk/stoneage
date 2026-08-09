@@ -69,6 +69,8 @@ void initConnecGameServer(void);
 int connecGameServer(void);
 void initDownloadCharList(void);
 int downloadCharList(void);
+void initCreateChar(void);
+int createChar(void);
 void initDeleteCharacter(void);
 int deleteCharacter(void);
 int commonYesNoWindow(int, int);
@@ -1707,6 +1709,31 @@ void selectCharacterProc(void)
 
         extern TCHAR 登陆错误内容[];
 
+#ifdef STONEAGE_OFFLINE
+        if (SubProcNo == 50)
+        {
+            ret = createChar();
+            if (ret == 1)
+            {
+                maxPcNo++;
+                strcpy(gamestate_login_charname, newCharacterName);
+                createCharFlag = 1;
+                StartupTrace("OfflineLogin", "default character created: %s", newCharacterName);
+                ChangeProc(PROC_CHAR_LOGIN_START);
+                return;
+            }
+            if (ret == 2)
+            {
+                StartupTrace("OfflineLogin", "default character creation failed");
+                strcpy(msg, "离线人物创建失败。");
+                SubProcNo = 100;
+            }
+            RunAction();
+            StockTaskDispBuffer();
+            return;
+        }
+#endif
+
         if (SubProcNo == 0)
         {
             SubProcNo++;
@@ -1718,8 +1745,52 @@ void selectCharacterProc(void)
         {
             ret = downloadCharList();
             if (ret == 1){
+#ifdef STONEAGE_OFFLINE
+                int offlineCharacterIndex = -1;
+                for (i = 0; i < MAXCHARACTER; i++)
+                {
+                    if (existCharacterListEntry(i))
+                    {
+                        offlineCharacterIndex = i;
+                        break;
+                    }
+                }
+
+                if (offlineCharacterIndex >= 0)
+                {
+                    selectPcNo = offlineCharacterIndex;
+                    strcpy(gamestate_login_charname, chartable[offlineCharacterIndex].name);
+                    newCharacterFaceGraNo = chartable[offlineCharacterIndex].faceGraNo;
+                    loginDp = chartable[offlineCharacterIndex].dp;
+                    map_bgm_no = 0;
+                    StartupTrace("OfflineLogin", "selecting character slot=%d name=%s",
+                        offlineCharacterIndex, gamestate_login_charname);
+                    ChangeProc(PROC_CHAR_LOGIN_START);
+                    return;
+                }
+
+                selectPcNo = 0;
+                strcpy(newCharacterName, "StoneAge");
+                newCharacterGraNo = SPR_001em;
+                newCharacterFaceGraNo = CG_CHR_MAKE_FACE;
+                newCharacterVit = 10;
+                newCharacterStr = 10;
+                newCharacterTgh = 0;
+                newCharacterDex = 0;
+                newCharacterEarth = 10;
+                newCharacterWater = 0;
+                newCharacterFire = 0;
+                newCharacterWind = 0;
+                newCharacterHomeTown = 0;
+                loginDp = 0;
+                initCreateChar();
+                SubProcNo = 50;
+                StartupTrace("OfflineLogin", "creating default character: %s", newCharacterName);
+                return;
+#else
                 SubProcNo = 10;
                 play_bgm(2);
+#endif
             }
             else if (ret == -1){
                 SubProcNo = 100;

@@ -3217,6 +3217,9 @@ int createNewCharProc(void)
 char 创建人物内容提示[512];
 void lssproto_CreateNewChar_recv( int fd, char *result, char *data ) 
 {
+#ifdef STONEAGE_OFFLINE
+    StartupTrace("OfflineLogin", "character creation response result=%s data=%s", result, data);
+#endif
     if ( netproc_sending == NETPROC_SENDING )
     {
         netproc_sending = NETPROC_RECEIVED;
