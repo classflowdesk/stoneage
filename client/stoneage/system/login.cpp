@@ -155,6 +155,9 @@ static int idPasswordGraId[] = { -2, -2 };
 static int idPasswordFocusSw = 0;
 static short idKeyBoxX, idKeyBoxY;
 static short passwdBoxX, passwdBoxY;
+#ifdef STONEAGE_OFFLINE
+static BOOL offlineAutoLoginPending = TRUE;
+#endif
 BOOL bAgain = FALSE;
 #ifdef _DELBORNPLACE                       // Syu ADD 6.0版本后，人物统一出生于新手村
 static ACTION *pActPet20;
@@ -248,6 +251,12 @@ void idPasswordProc(void)
     if (SubProcNo == 2)
       flag = TRUE;
     ret = inputIdPassword(flag);
+#ifdef STONEAGE_OFFLINE
+    if (SubProcNo == 2 && offlineAutoLoginPending) {
+      offlineAutoLoginPending = FALSE;
+      ret = 1;
+    }
+#endif
     if (ret == 1) {
       SubProcNo = 3;
       play_se(217, 320, 240);
@@ -419,17 +428,34 @@ void initInputIdPassword(void)
         idPasswordGraId[i] = -2;
     }
 
+#ifdef STONEAGE_OFFLINE
+    idKeyBoxX = 180;
+    idKeyBoxY = 351;
+#else
     idKeyBoxX = 364;
     idKeyBoxY = 253;
+#endif
     initStrBuffer( &idKey, idKeyBoxX, idKeyBoxY, 18, FONT_PAL_WHITE, FONT_PRIO_BACK );
+#ifdef STONEAGE_OFFLINE
+    strcpy(idKey.buffer, "stoneage");
+    idKey.cnt = idKey.cursor = strlen(idKey.buffer);
+    passwdBoxX = 180;
+    passwdBoxY = 386;
+#else
     idKey.cnt = 0;
     idKey.cursor=0;
     passwdBoxX = 364;
     passwdBoxY = 286;
+#endif
     initStrBuffer( &passwd, passwdBoxX, passwdBoxY, 18, FONT_PAL_WHITE, FONT_PRIO_BACK );
 
+#ifdef STONEAGE_OFFLINE
+    strcpy(passwd.buffer, "stoneage");
+    passwd.cnt = passwd.cursor = strlen(passwd.buffer);
+#else
     passwd.cnt = 0;
     passwd.cursor = 0;
+#endif
 #ifdef _SAHOOK //Syu ADD Hook程式
     passwd.filterFlag = HOOK_TYPE;
 #else
@@ -513,6 +539,12 @@ int inputIdPassword(BOOL flag)
 #endif
 
 #endif
+#ifdef STONEAGE_OFFLINE
+        x1 = 175;
+        y1 = 348;
+        x2 = 266;
+        y2 = 374;
+#endif
         if (MakeHitBox(x1, y1, x2, y2, DISP_PRIO_BOX))
         {
             id = 0;
@@ -528,6 +560,12 @@ int inputIdPassword(BOOL flag)
         y2=308;
 #endif
 
+#endif
+#ifdef STONEAGE_OFFLINE
+        x1 = 175;
+        y1 = 383;
+        x2 = 266;
+        y2 = 409;
 #endif
         if (MakeHitBox(x1, y1, x2, y2, DISP_PRIO_BOX))
         {
@@ -595,6 +633,14 @@ int inputIdPassword(BOOL flag)
 #endif
 
 #endif
+#ifdef STONEAGE_OFFLINE
+        x1 = 95;
+        y1 = 427;
+        x2 = 173;
+        y2 = 478;
+        cx = 134;
+        cy = 452;
+#endif
         if (MakeHitBox(x1, y1, x2, y2, -1) && selOkFlag)
             idPasswordGraId[0] = StockDispBuffer(cx, cy, DISP_PRIO_BG, CG_TITLE_ID_PASS_OK, 1);
         else
@@ -606,6 +652,14 @@ int inputIdPassword(BOOL flag)
         y2 = y1 + 30;
         cx = 459;
         cy = 338;
+#ifdef STONEAGE_OFFLINE
+        x1 = 224;
+        y1 = 427;
+        x2 = 304;
+        y2 = 478;
+        cx = 273;
+        cy = 452;
+#endif
         if (MakeHitBox(x1, y1, x2, y2, -1) && selOkFlag)
             idPasswordGraId[1] = StockDispBuffer(cx, cy, DISP_PRIO_BG, CG_TITLE_ID_PASS_QUIT, 1);
         else
