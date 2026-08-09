@@ -55,8 +55,8 @@ verify_size "$GAME_DIR/data/pal/PALET_1.SAP" 600 "palette data"
 verify_size "$DDRAW_DLL" 400000 "cnc-ddraw runtime"
 verify_size "$DDRAW_INI" 1000 "cnc-ddraw configuration"
 
-grep -Eiq '^[[:space:]]*renderer[[:space:]]*=[[:space:]]*opengl[[:space:]]*$' "$DDRAW_INI" \
-    || fail "ddraw.ini must use the OpenGL renderer"
+grep -Eiq '^[[:space:]]*renderer[[:space:]]*=[[:space:]]*gdi[[:space:]]*$' "$DDRAW_INI" \
+    || fail "ddraw.ini must use the GDI renderer"
 
 if [ -f "$AUTO_DATA" ]; then
     auto_size="$(stat -f '%z' "$AUTO_DATA" 2>/dev/null || echo 0)"
