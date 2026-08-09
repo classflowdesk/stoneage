@@ -99,10 +99,15 @@ docker run -d \
     -v "$SERVER_DIR/scripts/start-gmsv.sh:/mnt/start-gmsv.sh:ro" \
     "$IMAGE" /bin/bash /mnt/start-gmsv.sh >/dev/null
 
-wait_for "the game service" 120 nc -z 127.0.0.1 9065
+wait_for "the game service" 120 \
+    docker exec "$GMSV_CONTAINER" awk \
+    '$2 ~ /:2369$/ && $4 == "0A" { found=1 } END { exit(found ? 0 : 1) }' \
+    /proc/net/tcp
 sleep 15
 docker inspect -f '{{.State.Running}}' "$GMSV_CONTAINER" | grep -q true \
     || fail "The game service exited during initialization."
-nc -z 127.0.0.1 9065 \
+docker exec "$GMSV_CONTAINER" awk \
+    '$2 ~ /:2369$/ && $4 == "0A" { found=1 } END { exit(found ? 0 : 1) }' \
+    /proc/net/tcp \
     || fail "The game service stopped accepting connections."
 log "Offline server is ready at 127.0.0.1:9065."

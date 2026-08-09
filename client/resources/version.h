@@ -591,7 +591,11 @@ unsigned int TimeGetTime(void);
 #define _FANILYTEXIAOY_  45           // 家族徽章偏移Y 越大则越靠窗口顶部
 #define _OTHERTEXIAOY_  70            // 其它图标偏移Y 越大则越靠窗口顶部
 #define _ATTACK_EFFECT                // 角色攻击完后会播放攻击特效
+#ifdef STONEAGE_OFFLINE
+#define _SA_VERSION 'L'
+#else
 #define _SA_VERSION 'N'
+#endif
 #define _SA_MAC_VERSION_CONTROL       // MAC版本号控制
 #define FAMILY_MANOR_                 // 庄园光环
 #define _CHAR_MANOR_                  // 人物脚下光环
